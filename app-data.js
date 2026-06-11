@@ -67,6 +67,7 @@
       status: "new",
       payment_status: "unquoted",
       assigned_to: "",
+      assigned_partner_id: null,
       operator_notes: "",
       client_report: "",
       quote_amount: null,
@@ -238,6 +239,7 @@
       status: updates.status,
       payment_status: updates.payment_status,
       assigned_to: updates.assigned_to,
+      assigned_partner_id: updates.assigned_partner_id || null,
       operator_notes: updates.operator_notes,
       client_report: updates.client_report,
       quote_amount: updates.quote_amount,
@@ -428,6 +430,36 @@
     return { data: data || [], mode: "supabase" };
   }
 
+  async function listMyAssignedJobs() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const partnerEmails = new Set(
+        readLocalPartnerApplications()
+          .filter((application) => application.status === "vetted")
+          .map((application) => String(application.email || "").trim().toLowerCase())
+          .filter(Boolean),
+      );
+
+      const jobs = readLocalRequests().filter((request) => {
+        const assignedPartner = readLocalPartnerApplications().find(
+          (application) => application.id === request.assigned_partner_id,
+        );
+        return assignedPartner && partnerEmails.has(String(assignedPartner.email || "").trim().toLowerCase());
+      });
+
+      return { data: jobs, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_assigned_jobs");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
 
@@ -489,6 +521,7 @@
     createPartnerApplication,
     listPartnerApplications,
     listMyPartnerApplications,
+    listMyAssignedJobs,
     updatePartnerApplication,
     signInAdmin,
     signInPortal,

@@ -39,6 +39,7 @@ create table if not exists public.service_requests (
   status text not null default 'new' check (status in ('new', 'quoted', 'paid', 'in_progress', 'waiting_client', 'completed', 'cancelled')),
   payment_status text not null default 'unquoted' check (payment_status in ('unquoted', 'invoice_sent', 'deposit_paid', 'paid', 'refunded')),
   assigned_to text,
+  assigned_partner_id uuid,
   operator_notes text,
   client_report text,
   quote_amount integer,
@@ -92,6 +93,7 @@ alter table public.service_requests add column if not exists payment_method_pref
 alter table public.service_requests add column if not exists budget_range text not null default 'unsure';
 alter table public.service_requests add column if not exists proof_priority text not null default 'balanced';
 alter table public.service_requests add column if not exists referral_source text not null default 'not_sure';
+alter table public.service_requests add column if not exists assigned_partner_id uuid;
 alter table public.service_requests add column if not exists quote_amount integer;
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_link text;
@@ -275,11 +277,20 @@ begin
     alter table public.partner_applications
       add constraint partner_applications_status_check check (status in ('new', 'reviewing', 'vetted', 'on_hold', 'rejected'));
   end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_assigned_partner_id_fkey'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_assigned_partner_id_fkey
+      foreign key (assigned_partner_id) references public.partner_applications(id) on delete set null;
+  end if;
 end
 $$;
 
 create index if not exists service_requests_status_idx on public.service_requests (status);
 create index if not exists service_requests_created_at_idx on public.service_requests (created_at desc);
+create index if not exists service_requests_assigned_partner_id_idx on public.service_requests (assigned_partner_id);
 create index if not exists partner_applications_status_idx on public.partner_applications (status);
 create index if not exists partner_applications_created_at_idx on public.partner_applications (created_at desc);
 
@@ -469,6 +480,7 @@ grant update (
   status,
   payment_status,
   assigned_to,
+  assigned_partner_id,
   operator_notes,
   client_report,
   service_package,
@@ -702,6 +714,96 @@ $$;
 
 revoke all on function public.list_my_partner_applications() from public;
 grant execute on function public.list_my_partner_applications() to authenticated;
+
+create or replace function app_private.list_my_assigned_jobs()
+returns table (
+  request_code text,
+  service_package text,
+  task_type text,
+  kenya_location text,
+  urgency text,
+  deadline date,
+  local_contact_name text,
+  local_contact_phone text,
+  contact_window text,
+  proof_priority text,
+  report_pack text[],
+  supporting_links text[],
+  notes text,
+  status text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    sr.request_code,
+    sr.service_package,
+    sr.task_type,
+    sr.kenya_location,
+    sr.urgency,
+    sr.deadline,
+    sr.local_contact_name,
+    sr.local_contact_phone,
+    sr.contact_window,
+    sr.proof_priority,
+    sr.report_pack,
+    sr.supporting_links,
+    sr.notes,
+    sr.status,
+    sr.client_report,
+    sr.client_report_url,
+    sr.proof_links,
+    sr.updated_at
+  from public.service_requests sr
+  join public.partner_applications pa on pa.id = sr.assigned_partner_id
+  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+    and btrim(coalesce(pa.email, '')) <> ''
+    and pa.status = 'vetted'
+    and sr.status in ('paid', 'in_progress', 'waiting_client', 'completed')
+  order by sr.updated_at desc
+  limit 50;
+$$;
+
+revoke all on function app_private.list_my_assigned_jobs() from public;
+revoke all on function app_private.list_my_assigned_jobs() from anon, authenticated;
+
+create or replace function public.list_my_assigned_jobs()
+returns table (
+  request_code text,
+  service_package text,
+  task_type text,
+  kenya_location text,
+  urgency text,
+  deadline date,
+  local_contact_name text,
+  local_contact_phone text,
+  contact_window text,
+  proof_priority text,
+  report_pack text[],
+  supporting_links text[],
+  notes text,
+  status text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public, app_private
+as $$
+  select * from app_private.list_my_assigned_jobs();
+$$;
+
+revoke all on function public.list_my_assigned_jobs() from public;
+grant execute on function public.list_my_assigned_jobs() to authenticated;
 
 do $$
 begin

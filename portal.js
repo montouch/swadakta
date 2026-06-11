@@ -29,6 +29,13 @@ const paymentLabels = {
   refunded: "Refunded",
 };
 
+const taskLabels = {
+  quick: "Quick errand",
+  site: "Property or site visit",
+  registry: "Registry or legal errand",
+  virtual: "Virtual assistant support",
+};
+
 const servicePackageLabels = {
   quote_first: "Quote-first service",
   quick_errand: "Quick Errand",
@@ -175,20 +182,20 @@ function renderClientAccount(email, requests) {
   `;
 }
 
-function renderPartnerAccount(email, applications) {
+function renderPartnerAccount(email, applications, jobs = []) {
   if (!partnerAccountPanel) {
     return;
   }
 
-  if (!applications.length) {
+  if (!applications.length && !jobs.length) {
     partnerAccountPanel.innerHTML = `
       <strong>Signed in as ${escapeHtml(email)}</strong>
-      <span>No receiver applications are linked to this email yet.</span>
+      <span>No receiver applications or assigned jobs are linked to this email yet.</span>
     `;
     return;
   }
 
-  const items = applications
+  const applicationItems = applications
     .map((application) => {
       const categories = Array.isArray(application.service_categories)
         ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
@@ -205,9 +212,39 @@ function renderPartnerAccount(email, applications) {
     })
     .join("");
 
+  const jobItems = jobs
+    .map((job) => {
+      const supportingLinks = Array.isArray(job.supporting_links)
+        ? job.supporting_links.map(safeHttpUrl).filter(Boolean)
+        : [];
+      const proofLinks = Array.isArray(job.proof_links) ? job.proof_links.map(safeHttpUrl).filter(Boolean) : [];
+      const localContact = [job.local_contact_name, job.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
+
+      return `
+        <article>
+          <strong>${escapeHtml(job.request_code)}</strong>
+          <span>${escapeHtml(servicePackageLabels[job.service_package] || job.service_package || "Quote-first service")} - ${escapeHtml(taskLabels[job.task_type] || job.task_type || "Task")} in ${escapeHtml(job.kenya_location || "Kenya")}</span>
+          <span>Status: ${escapeHtml(statusLabels[job.status] || job.status)}. Urgency: ${escapeHtml(job.urgency || "standard")}.</span>
+          <span>Deadline: ${escapeHtml(job.deadline || "Flexible")}. Local contact: ${escapeHtml(localContact)}.</span>
+          <span>Proof needed: ${escapeHtml(Array.isArray(job.report_pack) && job.report_pack.length ? job.report_pack.join(", ") : "Basic update")}.</span>
+          <p>${escapeHtml(job.notes || "No job notes provided.")}</p>
+          ${supportingLinks.length ? `<p>${supportingLinks.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Supporting link ${index + 1}</a>`).join(" ")}</p>` : ""}
+          ${job.client_report ? `<p>Admin report note: ${escapeHtml(job.client_report)}</p>` : ""}
+          ${proofLinks.length ? `<p>${proofLinks.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Proof link ${index + 1}</a>`).join(" ")}</p>` : ""}
+          <small>Updated ${escapeHtml(formatDate(job.updated_at))}</small>
+        </article>
+      `;
+    })
+    .join("");
+
   partnerAccountPanel.innerHTML = `
     <strong>Signed in as ${escapeHtml(email)}</strong>
-    <div class="account-list">${items}</div>
+    ${
+      applications.length
+        ? `<span>Receiver application status</span><div class="account-list">${applicationItems}</div>`
+        : ""
+    }
+    ${jobs.length ? `<span>Assigned jobs</span><div class="account-list">${jobItems}</div>` : ""}
   `;
 }
 
@@ -220,13 +257,14 @@ async function loadAccountPanels() {
       return;
     }
 
-    const [clientResult, partnerResult] = await Promise.all([
+    const [clientResult, partnerResult, assignedJobsResult] = await Promise.all([
       window.SwadaktaData.listMyRequests(),
       window.SwadaktaData.listMyPartnerApplications(),
+      window.SwadaktaData.listMyAssignedJobs(),
     ]);
 
     renderClientAccount(email, clientResult.data || []);
-    renderPartnerAccount(email, partnerResult.data || []);
+    renderPartnerAccount(email, partnerResult.data || [], assignedJobsResult.data || []);
   } catch (error) {
     const message = escapeHtml(error.message || "Could not load account details.");
     if (clientAccountPanel) {

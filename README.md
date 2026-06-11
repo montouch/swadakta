@@ -7,10 +7,12 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Client-facing landing page and real intake form
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
 - Client and receiver magic-link portal access with sanitized account summaries
+- Receiver portal assigned-job view for vetted partners
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`
 - Receiver/field partner application pipeline for people in Kenya who want jobs
+- Vetted receiver assignment from admin to client requests
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
 - Copy-ready client updates and field operator briefs
 - Request status, payment status, operator notes, and client report workflow

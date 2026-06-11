@@ -248,6 +248,7 @@ function getFilteredRequests() {
       request.local_contact_phone,
       request.contact_preference,
       request.contact_window,
+      assignedPartnerLabel(request),
       servicePackageLabels[request.service_package] || request.service_package,
       paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
       budgetRangeLabels[request.budget_range] || request.budget_range,
@@ -337,6 +338,44 @@ function partnerStatusOptions(current) {
     .join("");
 }
 
+function formatPartnerLabel(application) {
+  if (!application) {
+    return "Unassigned";
+  }
+
+  const categories = Array.isArray(application.service_categories)
+    ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
+    : "No categories";
+
+  return `${application.full_name} (${application.partner_code}) - ${application.kenya_base || "Kenya"} - ${partnerStatusLabels[application.status] || application.status} - ${categories}`;
+}
+
+function getPartnerById(id) {
+  return partnerApplications.find((application) => application.id === id);
+}
+
+function assignedPartnerLabel(request) {
+  return formatPartnerLabel(getPartnerById(request.assigned_partner_id));
+}
+
+function assignedPartnerOptions(current) {
+  const currentPartner = getPartnerById(current);
+  const options = partnerApplications
+    .filter((application) => application.status === "vetted" || application.id === current)
+    .map(
+      (application) =>
+        `<option value="${escapeHtml(application.id)}" ${application.id === current ? "selected" : ""}>${escapeHtml(formatPartnerLabel(application))}</option>`,
+    )
+    .join("");
+
+  const fallback =
+    current && !currentPartner
+      ? `<option value="${escapeHtml(current)}" selected>Unknown assigned partner</option>`
+      : "";
+
+  return `<option value="">Unassigned</option>${fallback}${options}`;
+}
+
 function renderRequestCard(request) {
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
   return `
@@ -412,6 +451,7 @@ function renderRequestCardV2(request) {
   const consentStatus = formatConsentStatus(request);
   const contactPreference = request.contact_preference || "whatsapp";
   const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
+  const assignedPartner = assignedPartnerLabel(request);
   const supportingLinks = renderSupportingLinks(request);
 
   return `
@@ -433,6 +473,7 @@ function renderRequestCardV2(request) {
         <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
         <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
         <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
+        <div><dt>Receiver</dt><dd>${escapeHtml(assignedPartner)}</dd></div>
         <div><dt>Package</dt><dd>${escapeHtml(servicePackage)}</dd></div>
         <div><dt>Pay method</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
         <div><dt>Budget</dt><dd>${escapeHtml(budgetRange)}</dd></div>
@@ -502,7 +543,11 @@ function renderRequestCardV2(request) {
           </label>
         </div>
         <label class="field-group">
-          Assigned operator
+          Assigned receiver
+          <select name="assigned_partner_id">${assignedPartnerOptions(request.assigned_partner_id || "")}</select>
+        </label>
+        <label class="field-group">
+          Manual operator note
           <input name="assigned_to" type="text" value="${escapeHtml(request.assigned_to || "")}" />
         </label>
         <label class="field-group">
@@ -617,24 +662,30 @@ function renderPartnerApplications() {
   partnerBoard.innerHTML = partnerApplications.map(renderPartnerApplication).join("");
 }
 
-async function loadPartnerApplications() {
+async function loadPartnerApplications({ renderPanel = true } = {}) {
   if (!partnerBoard) {
     return;
   }
 
-  partnerBoard.innerHTML = `<div class="empty-state"><h2>Loading partner applications...</h2></div>`;
+  if (renderPanel) {
+    partnerBoard.innerHTML = `<div class="empty-state"><h2>Loading partner applications...</h2></div>`;
+  }
 
   try {
     const result = await window.SwadaktaData.listPartnerApplications();
     partnerApplications = result.data || [];
-    renderPartnerApplications();
+    if (renderPanel) {
+      renderPartnerApplications();
+    }
   } catch (error) {
-    partnerBoard.innerHTML = `
-      <div class="empty-state is-error">
-        <h2>Could not load partner applications</h2>
-        <p>${escapeHtml(error.message || "Check Supabase partner application policies.")}</p>
-      </div>
-    `;
+    if (renderPanel) {
+      partnerBoard.innerHTML = `
+        <div class="empty-state is-error">
+          <h2>Could not load partner applications</h2>
+          <p>${escapeHtml(error.message || "Check Supabase partner application policies.")}</p>
+        </div>
+      `;
+    }
   }
 }
 
@@ -681,11 +732,11 @@ async function loadRequests() {
 
     authCard.hidden = true;
     signOutButton.hidden = backendMode !== "supabase";
-    const result = await window.SwadaktaData.listRequests();
-    backendMode = result.mode;
-    requests = result.data || [];
+    const [requestResult] = await Promise.all([window.SwadaktaData.listRequests(), loadPartnerApplications({ renderPanel: false })]);
+    backendMode = requestResult.mode;
+    requests = requestResult.data || [];
     renderRequests();
-    await loadPartnerApplications();
+    renderPartnerApplications();
   } catch (error) {
     requestBoard.innerHTML = `
       <div class="empty-state is-error">
@@ -716,6 +767,7 @@ function formPayload(form) {
     status: formData.get("status"),
     payment_status: formData.get("payment_status"),
     service_package: formData.get("service_package"),
+    assigned_partner_id: formData.get("assigned_partner_id") || null,
     assigned_to: formData.get("assigned_to"),
     operator_notes: formData.get("operator_notes"),
     client_report: formData.get("client_report"),
@@ -822,6 +874,7 @@ function buildOperatorBrief(request, form) {
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
   const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
+  const assignedPartner = assignedPartnerLabel({ assigned_partner_id: payload.assigned_partner_id });
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
@@ -833,6 +886,7 @@ function buildOperatorBrief(request, form) {
     `Kenya location: ${request.kenya_location}`,
     `Client base: ${request.client_base || request.australia_location || "Not specified"}`,
     `Package: ${servicePackage}`,
+    `Assigned receiver: ${assignedPartner}`,
     `Urgency: ${request.urgency}`,
     `Deadline: ${request.deadline || "Flexible"}`,
     `Local contact: ${localContact}`,
@@ -924,6 +978,7 @@ if (partnerBoard) {
       await window.SwadaktaData.updatePartnerApplication(application.id, partnerFormPayload(form));
       statusElement.textContent = "Saved.";
       await loadPartnerApplications();
+      renderRequests();
     } catch (error) {
       statusElement.textContent = error.message || "Could not save.";
     }

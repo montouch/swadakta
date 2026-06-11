@@ -70,7 +70,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 7. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
 8. Client pays through the agreed provider.
 9. Admin sets status to `paid` after confirmation.
-10. Admin assigns only a vetted Kenya-side receiver/operator, then copies the operator brief.
+10. Admin assigns only a vetted Kenya-side receiver/operator in the request card, then copies the operator brief.
 11. Kenya-side operator executes the task.
 12. Admin adds proof links, report URL, and final notes.
 13. Admin sets status to `completed`.
@@ -86,6 +86,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - `/portal` exposes client access, receiver-partner applications, and admin access.
 - Client and receiver portal magic links return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must be marked `Vetted` before getting client jobs.
+- Assigned vetted receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.
