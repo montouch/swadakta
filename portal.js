@@ -21,6 +21,9 @@ const receiverAssistantDraft = document.querySelector("#receiver-assistant-draft
 const receiverAssistantStatus = document.querySelector("#receiver-assistant-status");
 
 let assignedJobs = [];
+let lastTrackedCode = "";
+let lastTrackedContact = "";
+let lastTrackedRequest = null;
 
 const statusLabels = {
   new: "New",
@@ -210,18 +213,30 @@ function receiverProvenance(application, jobs = []) {
   const base = clampScore(application.provenance_score ?? 25);
   const completedJobs = jobs.filter((job) => job.status === "completed").length;
   const cancelledJobs = jobs.filter((job) => job.status === "cancelled").length;
+  const reviewedJobs = jobs.filter((job) => Number(job.client_review_score || 0) > 0);
+  const lowReviewJobs = reviewedJobs.filter((job) => Number(job.client_review_score || 0) <= 2).length;
+  const averageReview =
+    reviewedJobs.length > 0
+      ? reviewedJobs.reduce((sum, job) => sum + Number(job.client_review_score || 0), 0) / reviewedJobs.length
+      : null;
   const identityBonus = application.identity_verification_status === "verified" ? 20 : 0;
   const vettedBonus = application.status === "vetted" ? 10 : 0;
   const proofBonus = application.proof_standard_consent ? 5 : 0;
   const completionBonus = Math.min(completedJobs * 5, 25);
-  const penalties = cancelledJobs * 15;
-  const score = clampScore(base + identityBonus + vettedBonus + proofBonus + completionBonus - penalties);
+  const reviewBonus = averageReview ? Math.round((averageReview - 3) * 10) : 0;
+  const penalties = cancelledJobs * 15 + lowReviewJobs * 12;
+  const score = clampScore(base + identityBonus + vettedBonus + proofBonus + completionBonus + reviewBonus - penalties);
 
   return {
     score,
     band: provenanceBand(score),
     label: provenanceLabel(score),
-    summary: `${completedJobs} completed job${completedJobs === 1 ? "" : "s"} / base ${base}%`,
+    summary: [
+      `${completedJobs} completed job${completedJobs === 1 ? "" : "s"}`,
+      `base ${base}%`,
+      averageReview ? `client rating ${averageReview.toFixed(1)}/5` : "no client ratings",
+      lowReviewJobs ? `${lowReviewJobs} low review${lowReviewJobs === 1 ? "" : "s"}` : "no low reviews",
+    ].join(" / "),
   };
 }
 
@@ -257,6 +272,56 @@ function renderProvenanceSeal(provenance, { subtle = false, title = "Provenance 
       <small>${escapeHtml(provenance.label)}</small>
       <div class="provenance-bar"><i style="width:${escapeHtml(provenance.score)}%"></i></div>
     </div>
+  `;
+}
+
+function reviewScoreOptions(current = "5") {
+  const options = [
+    ["5", "5 - Excellent"],
+    ["4", "4 - Good"],
+    ["3", "3 - Acceptable"],
+    ["2", "2 - Problematic"],
+    ["1", "1 - Serious issue"],
+  ];
+
+  return options
+    .map(([value, label]) => `<option value="${value}" ${String(current) === value ? "selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderServiceReview(request, contact = "") {
+  if (request.status !== "completed") {
+    return "";
+  }
+
+  if (request.client_review_score) {
+    return `
+      <div class="service-review service-review-complete">
+        <strong>Your review: ${escapeHtml(request.client_review_score)}/5</strong>
+        ${request.client_review_note ? `<p>${escapeHtml(request.client_review_note)}</p>` : "<p>Review received. Thank you.</p>"}
+        ${request.client_reviewed_at ? `<small>Submitted ${escapeHtml(formatDate(request.client_reviewed_at))}</small>` : ""}
+      </div>
+    `;
+  }
+
+  return `
+    <form class="service-review service-review-form" data-request-code="${escapeHtml(request.request_code)}" data-contact="${escapeHtml(contact)}">
+      <strong>Review this completed job</strong>
+      <div class="field-row">
+        <label class="field-group">
+          Rating
+          <select name="review_score" required>${reviewScoreOptions()}</select>
+        </label>
+        <label class="field-group">
+          Short note
+          <textarea name="review_note" rows="2" maxlength="1200" placeholder="What went well, what failed, or what Swadakta should check next."></textarea>
+        </label>
+      </div>
+      <div class="form-actions">
+        <button class="button button-primary" type="submit">Send review</button>
+        <span class="copy-status" role="status"></span>
+      </div>
+    </form>
   `;
 }
 
@@ -446,6 +511,7 @@ function renderTrackingResult(request) {
     ${request.client_report ? `<p>${escapeHtml(request.client_report)}</p>` : ""}
     ${reportLink ? `<p><a href="${escapeHtml(reportLink)}" target="_blank" rel="noreferrer">Open client report</a></p>` : ""}
     ${proofList}
+    ${renderServiceReview(request, lastTrackedContact)}
   `;
 }
 
@@ -609,6 +675,11 @@ function renderClientAccount(email, requests, profile) {
         fundsProtectionLabels[request.funds_protection_preference] ||
         request.funds_protection_preference ||
         "Quote first, then decide";
+      const reviewSummary = request.client_review_score
+        ? `Review: ${request.client_review_score}/5`
+        : request.status === "completed"
+          ? "Review pending"
+          : "";
       return `
         <article>
           <strong>${escapeHtml(request.request_code)}</strong>
@@ -618,6 +689,8 @@ function renderClientAccount(email, requests, profile) {
           <span>Value involved: ${escapeHtml(valueBand)}. Funds plan: ${escapeHtml(fundsPreference)}.</span>
           <span>Funds: ${escapeHtml(fundsStatus)}. Protected: ${escapeHtml(formatAmount(request.protected_amount, request.quote_currency))}.</span>
           ${renderMilestones(request)}
+          ${reviewSummary ? `<span>${escapeHtml(reviewSummary)}</span>` : ""}
+          ${renderServiceReview(request, email)}
           ${paymentLink ? `<a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">Open payment link</a>` : ""}
           <small>Updated ${escapeHtml(formatDate(request.updated_at))}</small>
         </article>
@@ -701,6 +774,13 @@ function renderPartnerAccount(email, applications, jobs = []) {
           <span>Status: ${escapeHtml(statusLabels[job.status] || job.status)}. Urgency: ${escapeHtml(job.urgency || "standard")}.</span>
           <span>Deadline: ${escapeHtml(job.deadline || "Flexible")}. Local contact: ${escapeHtml(localContact)}.</span>
           <span>Proof needed: ${escapeHtml(Array.isArray(job.report_pack) && job.report_pack.length ? job.report_pack.join(", ") : "Basic update")}.</span>
+          ${
+            job.client_review_score
+              ? `<span>Client review: ${escapeHtml(job.client_review_score)}/5${job.client_review_note ? ` - ${escapeHtml(job.client_review_note)}` : ""}</span>`
+              : job.status === "completed"
+                ? "<span>Client review pending.</span>"
+                : ""
+          }
           <p>${escapeHtml(job.notes || "No job notes provided.")}</p>
           ${supportingLinks.length ? `<p>${supportingLinks.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Supporting link ${index + 1}</a>`).join(" ")}</p>` : ""}
           ${job.client_report ? `<p>Admin report note: ${escapeHtml(job.client_report)}</p>` : ""}
@@ -811,11 +891,52 @@ trackingForm.addEventListener("submit", async (event) => {
   try {
     const code = document.querySelector("#portal-tracking-code").value;
     const contact = document.querySelector("#portal-tracking-contact").value;
+    lastTrackedCode = String(code || "").trim().toUpperCase();
+    lastTrackedContact = String(contact || "").trim();
     const result = await window.SwadaktaData.trackRequest(code, contact);
+    lastTrackedRequest = result.data || null;
     renderTrackingResult(result.data);
   } catch (error) {
+    lastTrackedRequest = null;
     trackingResult.className = "tracking-result is-error";
     trackingResult.textContent = error.message || "Could not check request.";
+  }
+});
+
+document.addEventListener("submit", async (event) => {
+  const form = event.target.closest(".service-review-form");
+  if (!form) {
+    return;
+  }
+
+  event.preventDefault();
+  const statusElement = form.querySelector(".copy-status");
+  const code = form.dataset.requestCode || lastTrackedCode;
+  const contact = form.dataset.contact || lastTrackedContact;
+  const formData = new FormData(form);
+  statusElement.textContent = "Sending review...";
+
+  try {
+    const result = await window.SwadaktaData.submitServiceReview(
+      code,
+      contact,
+      formData.get("review_score"),
+      formData.get("review_note"),
+    );
+    statusElement.textContent = "Review saved.";
+
+    if (trackingResult.contains(form) && lastTrackedRequest) {
+      lastTrackedRequest = {
+        ...lastTrackedRequest,
+        ...result.data,
+      };
+      renderTrackingResult(lastTrackedRequest);
+      return;
+    }
+
+    await loadAccountPanels();
+  } catch (error) {
+    statusElement.textContent = error.message || "Could not save review.";
   }
 });
 

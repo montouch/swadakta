@@ -91,6 +91,8 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 18. Admin adds approved proof links, report URL, and final client notes.
 19. Admin sets status to `completed`.
 20. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
+21. Client leaves a post-completion review from tracking or their client account.
+22. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
 
 ## 6. Launch Readiness Checklist
 
@@ -110,6 +112,9 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Only vetted and ID-verified receivers can be assigned to client jobs.
 - Assigned vetted and ID-verified receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
 - Assigned vetted and ID-verified receivers can submit field updates and proof links for admin review before anything becomes client-facing.
+- Completed clients can leave a 1-5 review that feeds the receiver provenance seal and future assignment sorting.
+- Receiver provenance starts at 25%, can reach 100% green through verified identity and clean delivery, and can drop into risk bands after poor reviews, blocked updates, disputes, or safety issues.
+- Client accounts show a quieter client seal based on ID status, funded requests, completions, and dispute history.
 - Admin tracks protected funds, provider references, and milestone releases before paying receivers.
 - ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
 - Smile ID is the default provider for Kenya-side receiver verification; store provider links and references in admin until API credentials are available.

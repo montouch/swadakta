@@ -1302,6 +1302,12 @@ function receiverProvenance(application) {
   const relatedMilestones = fundMilestones.filter((milestone) => assignedIds.has(milestone.service_request_id));
   const completedJobs = assignedRequests.filter((request) => request.status === "completed").length;
   const cancelledJobs = assignedRequests.filter((request) => request.status === "cancelled").length;
+  const reviewedJobs = assignedRequests.filter((request) => Number(request.client_review_score || 0) > 0);
+  const lowReviewJobs = reviewedJobs.filter((request) => Number(request.client_review_score || 0) <= 2).length;
+  const averageReview =
+    reviewedJobs.length > 0
+      ? reviewedJobs.reduce((sum, request) => sum + Number(request.client_review_score || 0), 0) / reviewedJobs.length
+      : null;
   const completedUpdates = updates.filter((update) => update.field_status === "completed").length;
   const blockedUpdates = updates.filter((update) => update.field_status === "blocked").length;
   const adminEscalations = updates.filter((update) => update.field_status === "needs_admin").length;
@@ -1316,9 +1322,18 @@ function receiverProvenance(application) {
   const proofBonus = application.proof_standard_consent ? 5 : 0;
   const completionBonus = Math.min(completedJobs * 5, 25);
   const updateBonus = Math.min(completedUpdates * 3, 15);
+  const reviewBonus = averageReview ? Math.round((averageReview - 3) * 10) : 0;
+  const lowReviewPenalty = lowReviewJobs * 12;
   const penalties =
-    cancelledJobs * 15 + blockedUpdates * 10 + adminEscalations * 8 + safetyIssues * 22 + disputedMilestones * 18;
-  const score = clampScore(base + identityBonus + vettedBonus + proofBonus + completionBonus + updateBonus - penalties);
+    cancelledJobs * 15 +
+    blockedUpdates * 10 +
+    adminEscalations * 8 +
+    safetyIssues * 22 +
+    disputedMilestones * 18 +
+    lowReviewPenalty;
+  const score = clampScore(
+    base + identityBonus + vettedBonus + proofBonus + completionBonus + updateBonus + reviewBonus - penalties,
+  );
 
   return {
     score,
@@ -1331,11 +1346,16 @@ function receiverProvenance(application) {
     adminEscalations,
     safetyIssues,
     disputedMilestones,
+    averageReview,
+    reviewedJobs: reviewedJobs.length,
+    lowReviewJobs,
     summary: [
       `Base ${base}%`,
       identityBonus ? "ID +20" : "ID pending",
       vettedBonus ? "vetted +10" : "not vetted",
       completedJobs ? `${completedJobs} completed job${completedJobs === 1 ? "" : "s"}` : "no completed jobs",
+      averageReview ? `client rating ${averageReview.toFixed(1)}/5` : "no client ratings",
+      lowReviewJobs ? `${lowReviewJobs} low review${lowReviewJobs === 1 ? "" : "s"}` : "no low reviews",
       penalties ? `issues -${penalties}` : "clean issue record",
     ].join(" / "),
   };
@@ -1526,6 +1546,9 @@ function renderRequestCardV2(request) {
   const verificationStatus =
     verificationStatusLabels[request.verification_status] || request.verification_status || "Not required";
   const verificationRequired = request.identity_verification_required ? "Required" : "Not required";
+  const clientReview = request.client_review_score
+    ? `${request.client_review_score}/5${request.client_review_note ? ` - ${request.client_review_note}` : ""}`
+    : "Not reviewed";
 
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
@@ -1564,6 +1587,7 @@ function renderRequestCardV2(request) {
         <div><dt>Protected</dt><dd>${escapeHtml(protectedAmount)}</dd></div>
         <div><dt>ID check</dt><dd>${escapeHtml(`${verificationRequired} - ${verificationStatus}`)}</dd></div>
         <div><dt>ID consent</dt><dd>${request.identity_verification_consent ? "Yes" : "No"}</dd></div>
+        <div><dt>Client review</dt><dd>${escapeHtml(clientReview)}</dd></div>
         <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
         <div><dt>Consent</dt><dd>${escapeHtml(consentStatus)}</dd></div>
         <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>

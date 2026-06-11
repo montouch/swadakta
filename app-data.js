@@ -156,6 +156,9 @@
       payment_processing_fee: 0,
       client_report_url: "",
       proof_links: [],
+      client_review_score: null,
+      client_review_note: "",
+      client_reviewed_at: null,
       contact_permission: false,
       professional_boundary_accepted: false,
       terms_accepted_at: null,
@@ -682,6 +685,9 @@
       client_report: request.client_report,
       client_report_url: request.client_report_url,
       proof_links: request.proof_links || [],
+      client_review_score: request.client_review_score || null,
+      client_review_note: request.client_review_note || "",
+      client_reviewed_at: request.client_reviewed_at || null,
       milestones,
       updated_at: request.updated_at,
     };
@@ -701,6 +707,66 @@
     const { data, error } = await supabase.rpc("track_service_request", {
       lookup_code: normalizedCode,
       lookup_contact: contact,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
+  }
+
+  async function submitServiceReview(code, contact, score, note) {
+    const normalizedCode = String(code || "").trim().toUpperCase();
+    const normalizedScore = Number(score);
+
+    if (!Number.isInteger(normalizedScore) || normalizedScore < 1 || normalizedScore > 5) {
+      throw new Error("Choose a review score from 1 to 5.");
+    }
+
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      let reviewedRequest = null;
+      const requests = readLocalRequests().map((request) => {
+        if (String(request.request_code || "").toUpperCase() !== normalizedCode || !contactMatches(request, contact)) {
+          return request;
+        }
+
+        if (request.status !== "completed") {
+          throw new Error("Reviews open after the job is completed.");
+        }
+
+        reviewedRequest = {
+          ...request,
+          client_review_score: normalizedScore,
+          client_review_note: String(note || "").trim().slice(0, 1200),
+          client_reviewed_at: new Date().toISOString(),
+        };
+        return reviewedRequest;
+      });
+
+      if (!reviewedRequest) {
+        throw new Error("No matching request found.");
+      }
+
+      writeLocalRequests(requests);
+      return {
+        data: {
+          request_code: reviewedRequest.request_code,
+          client_review_score: reviewedRequest.client_review_score,
+          client_review_note: reviewedRequest.client_review_note,
+          client_reviewed_at: reviewedRequest.client_reviewed_at,
+        },
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("submit_service_review", {
+      lookup_code: normalizedCode,
+      lookup_contact: contact,
+      input_score: normalizedScore,
+      input_note: String(note || "").trim().slice(0, 1200),
     });
 
     if (error) {
@@ -1169,6 +1235,7 @@
     listRequests,
     updateRequest,
     trackRequest,
+    submitServiceReview,
     listMyRequests,
     createPartnerApplication,
     listPartnerApplications,

@@ -13,6 +13,9 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Account-level ID verification tracking for all clients, receivers, and mixed-role users
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
+- Client post-completion reviews that feed receiver provenance scoring
+- Receiver provenance seal from 25% starter trust to 100% green trust, with low-review penalties
+- Subtle client seal for job-giving accounts based on ID, funded work, and completion history
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`

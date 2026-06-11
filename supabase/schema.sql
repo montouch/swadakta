@@ -84,6 +84,9 @@ create table if not exists public.service_requests (
   payment_processing_fee integer not null default 0,
   client_report_url text,
   proof_links text[] not null default array[]::text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   contact_permission boolean not null default false,
   professional_boundary_accepted boolean not null default false,
   terms_accepted_at timestamptz,
@@ -206,6 +209,9 @@ alter table public.service_requests add column if not exists field_costs integer
 alter table public.service_requests add column if not exists payment_processing_fee integer not null default 0;
 alter table public.service_requests add column if not exists client_report_url text;
 alter table public.service_requests add column if not exists proof_links text[] not null default array[]::text[];
+alter table public.service_requests add column if not exists client_review_score integer;
+alter table public.service_requests add column if not exists client_review_note text;
+alter table public.service_requests add column if not exists client_reviewed_at timestamptz;
 alter table public.service_requests add column if not exists contact_permission boolean not null default false;
 alter table public.service_requests add column if not exists professional_boundary_accepted boolean not null default false;
 alter table public.service_requests add column if not exists terms_accepted_at timestamptz;
@@ -443,6 +449,15 @@ begin
           coalesce(array_length(proof_links, 1), 0) = 0
           or array_to_string(proof_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
         )
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_client_review_score_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_client_review_score_check check (
+        client_review_score is null or client_review_score between 1 and 5
       );
   end if;
 
@@ -1032,7 +1047,10 @@ grant update (
   field_costs,
   payment_processing_fee,
   client_report_url,
-  proof_links
+  proof_links,
+  client_review_score,
+  client_review_note,
+  client_reviewed_at
 ) on public.service_requests to authenticated;
 
 grant insert (
@@ -1121,6 +1139,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   milestones jsonb,
   updated_at timestamptz
 )
@@ -1146,6 +1167,9 @@ as $$
     sr.client_report,
     sr.client_report_url,
     sr.proof_links,
+    sr.client_review_score,
+    sr.client_review_note,
+    sr.client_reviewed_at,
     (
       select coalesce(
         jsonb_agg(
@@ -1202,6 +1226,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   milestones jsonb,
   updated_at timestamptz
 )
@@ -1236,6 +1263,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   milestones jsonb,
   updated_at timestamptz
 )
@@ -1263,6 +1293,9 @@ as $$
     sr.client_report,
     sr.client_report_url,
     sr.proof_links,
+    sr.client_review_score,
+    sr.client_review_note,
+    sr.client_reviewed_at,
     (
       select coalesce(
         jsonb_agg(
@@ -1317,6 +1350,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   milestones jsonb,
   updated_at timestamptz
 )
@@ -1330,6 +1366,97 @@ $$;
 
 revoke all on function public.list_my_service_requests() from public;
 grant execute on function public.list_my_service_requests() to authenticated;
+
+create or replace function app_private.submit_service_review(
+  lookup_code text,
+  lookup_contact text,
+  input_score integer,
+  input_note text default ''
+)
+returns table (
+  request_code text,
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz
+)
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  target_request public.service_requests%rowtype;
+  clean_score integer := input_score;
+  clean_note text := left(btrim(coalesce(input_note, '')), 1200);
+begin
+  if clean_score is null or clean_score < 1 or clean_score > 5 then
+    raise exception 'Review score must be between 1 and 5.';
+  end if;
+
+  select *
+  into target_request
+  from public.service_requests sr
+  where upper(btrim(sr.request_code)) = upper(btrim(lookup_code))
+    and (
+      lower(btrim(coalesce(sr.email, ''))) = lower(btrim(lookup_contact))
+      or regexp_replace(coalesce(sr.whatsapp, ''), '\D', '', 'g') = regexp_replace(coalesce(lookup_contact, ''), '\D', '', 'g')
+    )
+  limit 1;
+
+  if target_request.id is null then
+    raise exception 'No matching request found.';
+  end if;
+
+  if target_request.status <> 'completed' then
+    raise exception 'Reviews open after the job is completed.';
+  end if;
+
+  update public.service_requests
+  set
+    client_review_score = clean_score,
+    client_review_note = clean_note,
+    client_reviewed_at = now()
+  where id = target_request.id
+  returning
+    public.service_requests.request_code,
+    public.service_requests.client_review_score,
+    public.service_requests.client_review_note,
+    public.service_requests.client_reviewed_at
+  into
+    request_code,
+    client_review_score,
+    client_review_note,
+    client_reviewed_at;
+
+  return next;
+end;
+$$;
+
+revoke all on function app_private.submit_service_review(text, text, integer, text) from public;
+grant execute on function app_private.submit_service_review(text, text, integer, text) to anon, authenticated;
+
+create or replace function public.submit_service_review(
+  lookup_code text,
+  lookup_contact text,
+  input_score integer,
+  input_note text default ''
+)
+returns table (
+  request_code text,
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz
+)
+language sql
+volatile
+security invoker
+set search_path = public, app_private
+as $$
+  select * from app_private.submit_service_review(lookup_code, lookup_contact, input_score, input_note);
+$$;
+
+revoke all on function public.submit_service_review(text, text, integer, text) from public;
+grant execute on function public.submit_service_review(text, text, integer, text) to anon, authenticated;
 
 create or replace function app_private.update_account_identity_verification(
   input_user_id uuid,
@@ -1521,6 +1648,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   updated_at timestamptz
 )
 language sql
@@ -1546,6 +1676,9 @@ as $$
     sr.client_report,
     sr.client_report_url,
     sr.proof_links,
+    sr.client_review_score,
+    sr.client_review_note,
+    sr.client_reviewed_at,
     sr.updated_at
   from public.service_requests sr
   join public.partner_applications pa on pa.id = sr.assigned_partner_id
@@ -1581,6 +1714,9 @@ returns table (
   client_report text,
   client_report_url text,
   proof_links text[],
+  client_review_score integer,
+  client_review_note text,
+  client_reviewed_at timestamptz,
   updated_at timestamptz
 )
 language sql
