@@ -42,127 +42,120 @@
 <link rel="apple-touch-icon" href="/favicon.svg" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="application-name" content="Swadakta" /></head>
-  <body class="min-h-screen font-body text-on-surface">
-    <main class="min-h-screen grid lg:grid-cols-[248px_minmax(0,1fr)_320px]">
-      <aside class="glass-panel m-3 rounded-[1.5rem] p-3 lg:sticky lg:top-3 lg:h-[calc(100vh-1.5rem)]">
-        <div class="px-3 py-4 flex items-center gap-3">
-          <span class="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-white font-display font-extrabold">S</span>
-          <div>
-            <a class="font-display text-xl font-extrabold text-primary" href="portal.html#home">Swadakta AI</a>
-            <p class="text-xs text-on-surface-variant">Corridor co-pilot</p>
-          </div>
-        </div>
-        <nav class="grid gap-1 font-label text-sm" aria-label="AI workspace tools">
-          <a class="flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="assistant.html"><span class="material-symbols-outlined text-[20px]">forum</span>Chat</a>
-          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="portal.html#home"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
-          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="corridor.html"><span class="material-symbols-outlined text-[20px]">add_task</span>Give job</a>
-          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html"><span class="material-symbols-outlined text-[20px]">work</span>My jobs</a>
-          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html"><span class="material-symbols-outlined text-[20px]">sms</span>Messages</a>
-          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="verification.html"><span class="material-symbols-outlined text-[20px]">verified_user</span>Verify</a>
-        </nav>
-        <button class="mt-4 w-full h-10 rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
-        <section class="mt-5 grid gap-2" aria-label="AI quick actions">
-          <p class="px-3 font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Quick asks</p>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="Explain my next step" data-prompt="I need help choosing the next step from my Swadakta account. Explain where to go first and what is blocked until verification." data-links="portal,corridor,verification">
-            <strong class="font-label text-on-surface">Next step</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Account, route, or verification.</span>
-          </button>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="Improve my paid brief" data-prompt="Improve this paid brief. Tell me what details are missing for a quote, proof plan, payment rail, lawful-goods check, and receiver assignment." data-links="corridor,brief,rules,payments">
-            <strong class="font-label text-on-surface">Improve brief</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Make a job quote-ready.</span>
-          </button>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="What happens after verification is requested?" data-prompt="Explain what happens after I request ID verification, which provider route is likely, and what I can do before it is approved." data-links="verification,portal,trust">
-            <strong class="font-label text-on-surface">Verification</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Provider-led ID checks.</span>
-          </button>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="Draft a message for this job" data-prompt="Draft a friendly, clear job message. Keep it professional, ask for proof where needed, and do not promise payment release, refunds, ID approval, or receiver assignment." data-links="messages,tracking,resolution">
-            <strong class="font-label text-on-surface">Write message</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Client or receiver reply.</span>
-          </button>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="Predict blockers" data-prompt="Predict likely blockers for this Swadakta job: ID, payment, route legality, restricted goods, proof, receiver availability, customs, timeline, and founder approval." data-links="rules,payments,trust">
-            <strong class="font-label text-on-surface">Predict blockers</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Catch risk early.</span>
-          </button>
-          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-left hover:border-primary" type="button" data-task="Resolve an issue" data-prompt="Help me open a Swadakta issue. Summarize what evidence is needed for proof, delay, payment, refund, receiver, restricted item, or safety problems." data-links="resolution,tracking,messages">
-            <strong class="font-label text-on-surface">Resolve issue</strong>
-            <span class="mt-1 block text-xs text-on-surface-variant">Proof, payment, delay.</span>
-          </button>
-        </section>
-      </aside>
-      <section class="min-h-screen flex flex-col px-3 py-3">
-        <header class="glass-panel rounded-[1.5rem] p-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <div>
-            <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Swadakta AI</p>
-            <h1 class="font-display text-2xl md:text-3xl font-extrabold mt-1">Ask, draft, decide the next safe step.</h1>
-            <p class="mt-1 text-sm text-on-surface-variant" data-no-ai-copy hidden>AI is off. Use the left tools or return home to post jobs, find work, track, pay, message, or verify manually.</p>
-          </div>
-          <div class="flex flex-wrap gap-2">
-            <select class="h-11 px-4 rounded-full bg-white/70 border border-outline-variant/40 text-sm" id="assistant-task">
-              <option>Explain my next step</option>
-              <option>What happens after verification is requested?</option>
-              <option>Draft a message for this job</option>
-              <option>Improve my paid brief</option>
-              <option>Predict blockers</option>
-              <option>Resolve an issue</option>
-            </select>
-            <a class="inline-flex h-11 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label text-sm" href="portal.html#home">Home</a>
-          </div>
-        </header>
-        <section class="mt-3 flex-1 glass-panel rounded-[1.5rem] overflow-hidden flex flex-col">
-          <div class="border-b border-outline-variant/30 px-4 py-3 flex items-center justify-between gap-3">
-            <div class="flex items-center gap-3">
-              <span class="grid h-9 w-9 place-items-center rounded-full bg-primary text-white text-xs font-bold">AI</span>
-              <div>
-                <strong class="font-label text-on-surface" id="assistant-context-title">Start from where you are.</strong>
-                <p class="text-xs text-on-surface-variant" id="assistant-context-copy">Choose a quick action or describe the job, payment, proof, verification, message, or blocker.</p>
-              </div>
-            </div>
-            <span class="hidden sm:inline-flex min-h-9 items-center rounded-full bg-primary/10 px-4 font-label text-xs text-primary" id="assistant-context-pill">Safe guidance</span>
-          </div>
-          <div class="flex-1 overflow-y-auto px-4 py-5 space-y-4" id="assistant-output" aria-live="polite">
-            <article class="max-w-[760px] rounded-3xl rounded-tl-md bg-white/78 border border-outline-variant/30 p-4">
-              <p class="text-sm text-on-surface-variant">Tell me what you want to do: give a job, apply for work, improve a brief, write a reply, check payment, or predict blockers. I will route you to the right Swadakta tool and keep protected actions gated.</p>
-            </article>
-          </div>
-          <div class="border-t border-outline-variant/30 bg-white/58 p-3">
-            <div class="rounded-[1.5rem] border border-outline-variant/40 bg-white/80 p-3">
-              <textarea class="min-h-20 w-full resize-none border-0 bg-transparent p-0 text-sm text-on-surface focus:ring-0" id="assistant-prompt" placeholder="Message Swadakta AI about a job, payment, proof, route, receiver, verification, or issue."></textarea>
-              <div class="mt-3 flex items-center justify-between gap-3">
-                <div class="flex items-center gap-1">
-                  <button class="grid h-9 w-9 place-items-center rounded-full text-on-surface-variant hover:bg-surface" type="button" aria-label="Attach media"><span class="material-symbols-outlined text-[20px]">attach_file</span></button>
-                  <button class="grid h-9 w-9 place-items-center rounded-full text-on-surface-variant hover:bg-surface" type="button" aria-label="Voice note"><span class="material-symbols-outlined text-[20px]">mic</span></button>
-                  <button class="grid h-9 w-9 place-items-center rounded-full text-on-surface-variant hover:bg-surface" type="button" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
+  <body class="min-h-screen overflow-x-hidden font-body text-on-surface">
+    <main class="min-h-screen overflow-hidden p-3 md:p-4">
+      <div class="mx-auto grid h-[calc(100vh-1.5rem)] w-full min-w-0 max-w-[1440px] grid-rows-[auto_minmax(0,1fr)] gap-3 lg:h-[calc(100vh-2rem)] lg:grid-cols-[88px_minmax(0,1fr)_300px] lg:grid-rows-none">
+        <aside class="glass-panel flex min-w-0 items-center justify-between rounded-[1.4rem] p-2 lg:sticky lg:top-4 lg:h-full lg:flex-col" aria-label="Swadakta tools">
+          <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.28)]" href="portal.html#home" aria-label="Swadakta home">
+            <span class="font-display text-lg font-extrabold">S</span>
+          </a>
+          <nav class="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto px-2 lg:flex-col lg:px-0" aria-label="AI workspace tools">
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-white" href="assistant.html" title="Ask AI" aria-label="Ask AI"><span class="material-symbols-outlined text-[22px]">forum</span></a>
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="portal.html#home" title="Home" aria-label="Home"><span class="material-symbols-outlined text-[22px]">space_dashboard</span></a>
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="corridor.html" title="Give job" aria-label="Give job"><span class="material-symbols-outlined text-[22px]">add_task</span></a>
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="tracking.html" title="Jobs" aria-label="Jobs"><span class="material-symbols-outlined text-[22px]">work</span></a>
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="messages.html" title="Messages" aria-label="Messages"><span class="material-symbols-outlined text-[22px]">sms</span></a>
+            <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="verification.html" title="Verify" aria-label="Verify"><span class="material-symbols-outlined text-[22px]">verified_user</span></a>
+          </nav>
+          <button class="h-10 shrink-0 rounded-full border border-outline-variant/40 bg-white/80 px-3 text-xs font-bold text-primary lg:h-auto lg:w-12 lg:px-0 lg:py-3" data-ai-toggle type="button" aria-pressed="true">AI on</button>
+        </aside>
+
+        <section class="assistant-chat-shell glass-panel flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[1.6rem]">
+          <header class="shrink-0 border-b border-outline-variant/30 bg-white/44 px-4 py-4 sm:px-6">
+            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0">
+                <div class="flex items-center gap-3">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.26)]">
+                    <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Swadakta AI</p>
+                    <h1 class="truncate font-display text-2xl font-extrabold md:text-3xl">Ask AI</h1>
+                  </div>
                 </div>
-                <button class="inline-flex h-10 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" data-ai-only id="assistant-run" type="button">Send</button>
-                <a class="inline-flex h-10 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" data-no-ai-copy hidden href="portal.html#home">Use tools</a>
+                <p class="mt-3 max-w-2xl text-sm text-on-surface-variant" id="assistant-context-copy">Choose a quick action or describe the job, payment, proof, verification, message, or blocker.</p>
+                <p class="mt-2 text-sm text-on-surface-variant" data-no-ai-copy hidden>AI is off. You can still use Home, Jobs, Messages, Payments, Verification, and Resolution without the assistant.</p>
+              </div>
+              <div class="flex shrink-0 flex-wrap items-center gap-2">
+                <select class="h-11 max-w-full rounded-full border border-outline-variant/40 bg-white/70 px-4 text-sm" id="assistant-task" aria-label="Assistant task">
+                  <option>Explain my next step</option>
+                  <option>What happens after verification is requested?</option>
+                  <option>Draft a message for this job</option>
+                  <option>Improve my paid brief</option>
+                  <option>Predict blockers</option>
+                  <option>Resolve an issue</option>
+                </select>
+                <a class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/40 bg-white/70 px-4 font-label text-sm text-primary" href="portal.html#home">Home</a>
               </div>
             </div>
-          </div>
+            <div class="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="AI quick actions">
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Explain my next step" data-prompt="I need help choosing the next step from my Swadakta account. Explain where to go first and what is blocked until verification." data-links="portal,corridor,verification">
+                <span class="material-symbols-outlined text-[18px]">route</span>Next step
+              </button>
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Improve my paid brief" data-prompt="Improve this paid brief. Tell me what details are missing for a quote, proof plan, payment rail, lawful-goods check, and receiver assignment." data-links="corridor,brief,rules,payments">
+                <span class="material-symbols-outlined text-[18px]">edit_note</span>Improve brief
+              </button>
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="What happens after verification is requested?" data-prompt="Explain what happens after I request ID verification, which provider route is likely, and what I can do before it is approved." data-links="verification,portal,trust">
+                <span class="material-symbols-outlined text-[18px]">verified_user</span>Verification
+              </button>
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Draft a message for this job" data-prompt="Draft a friendly, clear job message. Keep it professional, ask for proof where needed, and do not promise payment release, refunds, ID approval, or receiver assignment." data-links="messages,tracking,resolution">
+                <span class="material-symbols-outlined text-[18px]">chat</span>Write message
+              </button>
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Predict blockers" data-prompt="Predict likely blockers for this Swadakta job: ID, payment, route legality, restricted goods, proof, receiver availability, customs, timeline, and founder approval." data-links="rules,payments,trust">
+                <span class="material-symbols-outlined text-[18px]">radar</span>Predict blockers
+              </button>
+              <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Resolve an issue" data-prompt="Help me open a Swadakta issue. Summarize what evidence is needed for proof, delay, payment, refund, receiver, restricted item, or safety problems." data-links="resolution,tracking,messages">
+                <span class="material-symbols-outlined text-[18px]">support_agent</span>Resolve issue
+              </button>
+            </div>
+          </header>
+
+          <div class="assistant-message-list min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-5 sm:px-6" id="assistant-output" aria-live="polite" aria-label="Swadakta AI conversation"></div>
+
+          <form class="chat-composer shrink-0 border-t border-outline-variant/30 bg-white/58 p-3 sm:p-4" id="assistant-form">
+            <div class="rounded-[1.5rem] border border-outline-variant/40 bg-white/88 p-2 shadow-[0_18px_38px_rgba(48,52,150,0.09)]">
+              <div class="flex items-end gap-2">
+                <div class="hidden items-center gap-1 sm:flex">
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="media" aria-label="Attach media"><span class="material-symbols-outlined text-[20px]">attach_file</span></button>
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="voice" aria-label="Voice note"><span class="material-symbols-outlined text-[20px]">mic</span></button>
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="call" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
+                </div>
+                <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" rows="1" placeholder="Message Swadakta AI..."></textarea>
+                <button class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_12px_28px_rgba(70,72,212,0.28)] disabled:cursor-not-allowed disabled:opacity-50" data-ai-only id="assistant-run" type="submit" aria-label="Send message">
+                  <span class="material-symbols-outlined text-[22px]">arrow_upward</span>
+                </button>
+                <a class="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-primary px-4 text-sm font-bold text-white" data-no-ai-copy hidden href="portal.html#home">Use tools</a>
+              </div>
+            </div>
+          </form>
         </section>
-      </section>
-      <aside class="glass-panel m-3 rounded-[1.5rem] p-4 lg:sticky lg:top-3 lg:h-[calc(100vh-1.5rem)] overflow-y-auto">
-        <section class="rounded-3xl bg-white/62 border border-outline-variant/30 p-4" id="assistant-context-card">
-          <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Workflow-aware guide</p>
-          <p class="mt-2 text-sm text-on-surface-variant">AI helps with drafting, routing, checklists, and risk prediction. Provider/system evidence still controls ID approval, assignment, refunds, and money release.</p>
-        </section>
-        <section class="mt-4 rounded-3xl bg-white/62 border border-outline-variant/30 p-4">
-          <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Suggested next links</p>
-          <div class="mt-3 grid gap-2" id="assistant-action-links" aria-label="Suggested next links"></div>
-        </section>
-        <section class="mt-4 rounded-3xl bg-white/62 border border-outline-variant/30 p-4">
-          <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Protected actions</p>
-          <ul class="mt-3 space-y-2 text-sm text-on-surface-variant">
-            <li>ID approval needs provider evidence.</li>
-            <li>Money release needs provider/payment proof.</li>
-            <li>Receiver assignment needs verified fit.</li>
-            <li>Restricted goods need rules review.</li>
-          </ul>
-        </section>
-      </aside>
+
+        <aside class="glass-panel hidden min-w-0 rounded-[1.5rem] p-4 lg:sticky lg:top-4 lg:block lg:h-[calc(100vh-2rem)] lg:overflow-y-auto">
+          <section class="rounded-3xl border border-outline-variant/30 bg-white/62 p-4" id="assistant-context-card">
+            <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Workflow-aware guide</p>
+            <h2 class="mt-2 font-display text-xl font-extrabold" id="assistant-context-title">Start from where you are.</h2>
+            <p class="mt-2 text-sm text-on-surface-variant">AI helps with drafting, routing, checklists, and risk prediction. Provider/system evidence still controls ID approval, assignment, refunds, and money release.</p>
+            <span class="mt-4 inline-flex min-h-9 items-center rounded-full bg-primary/10 px-4 font-label text-xs text-primary" id="assistant-context-pill">Safe guidance</span>
+          </section>
+          <section class="mt-4 rounded-3xl border border-outline-variant/30 bg-white/62 p-4">
+            <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Suggested next links</p>
+            <div class="mt-3 grid gap-2" id="assistant-action-links" aria-label="Suggested next links"></div>
+          </section>
+          <section class="mt-4 rounded-3xl border border-outline-variant/30 bg-white/62 p-4">
+            <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Protected actions</p>
+            <ul class="mt-3 space-y-2 text-sm text-on-surface-variant">
+              <li>ID approval needs provider evidence.</li>
+              <li>Money release needs provider/payment proof.</li>
+              <li>Receiver assignment needs verified fit.</li>
+              <li>Restricted goods need rules review.</li>
+            </ul>
+          </section>
+        </aside>
+      </div>
     </main>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=44"></script>
     <script src="ai-preferences.js?v=1"></script>
-    <script src="assistant.js?v=4"></script>
+    <script src="assistant.js?v=5"></script>
   </body>
 </html>

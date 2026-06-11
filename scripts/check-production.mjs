@@ -80,6 +80,9 @@ const requiredAssistantMarkers = [
   "Resolve an issue",
   "Issue context loaded",
   "assistant-quick-action",
+  "assistant-message-list",
+  "assistant-form",
+  "chat-composer",
   "Workflow-aware guide",
   "renderActionLinks",
   "renderConversation",
@@ -532,8 +535,8 @@ for (const page of requiredPages) {
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=4")) {
-    fail(failures, `${page} does not reference assistant.js?v=4`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=5")) {
+    fail(failures, `${page} does not reference assistant.js?v=5`);
   }
   if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
     fail(failures, `${page} does not reference resolution.js?v=2`);
@@ -708,11 +711,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=4");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=5");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=4 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=5 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=4 returned 200");
+  pass("assistant.js?v=5 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {

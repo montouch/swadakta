@@ -1,4 +1,5 @@
 (function () {
+  const form = document.querySelector("#assistant-form");
   const task = document.querySelector("#assistant-task");
   const prompt = document.querySelector("#assistant-prompt");
   const run = document.querySelector("#assistant-run");
@@ -8,8 +9,12 @@
   const contextTitle = document.querySelector("#assistant-context-title");
   const contextCopy = document.querySelector("#assistant-context-copy");
   const contextPill = document.querySelector("#assistant-context-pill");
+  const toolButtons = document.querySelectorAll("[data-assistant-tool]");
   const params = new URLSearchParams(window.location.search);
   const workflowGuideLabel = "Workflow-aware guide";
+  const chatShellMarkers = ["assistant-message-list", "assistant-form", "chat-composer"];
+  const welcomeCopy =
+    "Tell me what you want to do: give a job, apply for work, improve a brief, write a reply, check payment, upload proof, or predict blockers. I will keep the flow simple and route you to the right Swadakta tool.";
   const linkTargets = {
     portal: ["Account home", "portal.html#home"],
     corridor: ["Choose corridor", "corridor.html"],
@@ -22,6 +27,18 @@
     resolution: ["Resolution", "resolution.html"],
     trust: ["Trust", "trust.html"],
   };
+  const conversation = [
+    {
+      id: "welcome",
+      role: "assistant",
+      text: welcomeCopy,
+      time: messageTime(),
+    },
+  ];
+
+  function messageTime() {
+    return new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  }
 
   function setTaskByLabel(label) {
     if (!task) return;
@@ -59,32 +76,67 @@
     return escapeHtml(value).replace(/\n/g, "<br>");
   }
 
-  function renderAssistantMessage(message, tone = "normal") {
-    if (!output) return;
-    const toneClass = tone === "thinking" ? "opacity-70" : "";
-    output.innerHTML = `
-      <article class="max-w-[760px] rounded-3xl rounded-tl-md bg-white/78 border border-outline-variant/30 p-4 ${toneClass}">
-        <div class="flex items-start gap-3">
-          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-white text-xs font-bold">AI</span>
-          <p class="text-sm leading-6 text-on-surface-variant">${answerToHtml(message)}</p>
+  function bubbleFor(message) {
+    const isUser = message.role === "user";
+    const isThinking = message.tone === "thinking";
+    const bubbleClass = isUser
+      ? "rounded-[1.25rem] rounded-br-sm bg-primary px-4 py-3 text-white shadow-[0_14px_32px_rgba(70,72,212,0.20)]"
+      : "rounded-[1.25rem] rounded-bl-sm border border-outline-variant/30 bg-white/82 px-4 py-3 text-on-surface shadow-[0_14px_32px_rgba(48,52,150,0.08)]";
+    const wrapperClass = isUser ? "ml-auto flex max-w-[86%] justify-end" : "mr-auto flex max-w-[88%] items-end gap-2";
+    const status = isThinking
+      ? `<span class="inline-flex items-center gap-1 text-xs opacity-75"><span class="h-1.5 w-1.5 rounded-full bg-current"></span><span class="h-1.5 w-1.5 rounded-full bg-current"></span><span class="h-1.5 w-1.5 rounded-full bg-current"></span></span>`
+      : "";
+
+    if (isUser) {
+      return `
+        <article class="${wrapperClass}" data-message-role="user" data-message-id="${message.id}">
+          <div class="${bubbleClass}">
+            <p class="whitespace-pre-wrap text-sm leading-6">${answerToHtml(message.text)}</p>
+            <p class="mt-1 text-right text-[11px] text-white/72">${escapeHtml(message.time)}</p>
+          </div>
+        </article>`;
+    }
+
+    return `
+      <article class="${wrapperClass}" data-message-role="assistant" data-message-id="${message.id}">
+        <span class="mb-1 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-white">AI</span>
+        <div class="${bubbleClass} ${isThinking ? "opacity-75" : ""}">
+          <p class="whitespace-pre-wrap text-sm leading-6 text-on-surface-variant">${status || answerToHtml(message.text)}</p>
+          ${isThinking ? "" : `<p class="mt-1 text-[11px] text-on-surface-variant/70">${escapeHtml(message.time)}</p>`}
         </div>
       </article>`;
+  }
+
+  function renderConversation() {
+    if (!output) return;
+    output.innerHTML = conversation.map(bubbleFor).join("");
     output.scrollTop = output.scrollHeight;
   }
 
-  function renderConversation(userMessage, assistantMessage) {
-    if (!output) return;
-    output.innerHTML = `
-      <article class="ml-auto max-w-[720px] rounded-3xl rounded-tr-md bg-primary text-white p-4">
-        <p class="text-sm leading-6">${answerToHtml(userMessage || task.value)}</p>
-      </article>
-      <article class="max-w-[760px] rounded-3xl rounded-tl-md bg-white/78 border border-outline-variant/30 p-4">
-        <div class="flex items-start gap-3">
-          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-white text-xs font-bold">AI</span>
-          <p class="text-sm leading-6 text-on-surface-variant">${answerToHtml(assistantMessage)}</p>
-        </div>
-      </article>`;
-    output.scrollTop = output.scrollHeight;
+  function addMessage(role, text, options = {}) {
+    const message = {
+      id: options.id || `${role}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      role,
+      text,
+      tone: options.tone || "",
+      time: options.time || messageTime(),
+    };
+    conversation.push(message);
+    renderConversation();
+    return message.id;
+  }
+
+  function updateMessage(id, text, options = {}) {
+    const message = conversation.find((item) => item.id === id);
+    if (!message) return;
+    message.text = text;
+    message.tone = options.tone || "";
+    message.time = options.time || messageTime();
+    renderConversation();
+  }
+
+  function renderAssistantMessage(message, tone = "normal") {
+    addMessage("assistant", message, { tone: tone === "thinking" ? "thinking" : "" });
   }
 
   function contextLabel() {
@@ -112,8 +164,9 @@
     return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timer));
   }
 
-  function fallbackAnswer() {
+  function fallbackAnswer(sourceText = "") {
     const selected = task.value;
+    const text = `${selected} ${sourceText} ${prompt.value}`;
     if (selected.includes("verification")) {
       return [
         "After verification is requested:",
@@ -125,22 +178,24 @@
         "5. The provider result updates your account status.",
         "6. Once verified, paid posting and paid receiver work unlock.",
         "",
-        "Manual review is only an exception: provider outage, unsupported country/document, mismatch, suspected fraud, legal uncertainty, or a high-value/sensitive job that needs extra controls."
+        "Manual review is only an exception: provider outage, unsupported country/document, mismatch, suspected fraud, legal uncertainty, or a high-value/sensitive job that needs extra controls.",
       ].join("\n");
     }
-    if (selected.includes("blockers") || /blocker|risk|stuck|law|customs|restricted/i.test(prompt.value)) {
+    if (selected.includes("message")) {
+      return messageDraftAnswer();
+    }
+    if (selected.includes("issue") || /resolution|refund|dispute|proof|delay|receiver|payment/i.test(text)) {
       return [
-        "Likely blockers to check:",
+        "Here is the safe issue flow:",
         "",
-        "- ID verification: account can open first, but paid posting and paid receiver work stay locked until provider evidence is recorded.",
-        "- Money: provider confirmation is needed before funds count as protected; AI cannot mark paid or release money.",
-        "- Corridor: pilot or unsupported lanes need founder approval before quote, purchase, shipping, or assignment.",
-        "- Goods: batteries, perfume/liquids, medicines, food, plants, animal-origin goods, valuables, and controlled documents need rules checks.",
-        "- Proof: every job needs clear proof requirements before receiver work starts.",
-        "- Receiver fit: paid jobs need a vetted, ID-verified receiver matched to the route and category.",
+        "1. Keep the request code, contact, provider reference, proof links, and timeline together in the Resolution Center.",
+        "2. AI can summarize facts, spot missing evidence, and draft the next message to the client or receiver.",
+        "3. Payment, refund, release, restricted item, safety, legal, receiver replacement, and ID decisions are protected actions.",
+        "4. Protected actions need provider/system evidence or founder review before the app changes money, identity, or assignment state.",
+        "5. If proof is missing, ask for dated photos, receipts, location notes, video/voice context, or provider records before escalation.",
       ].join("\n");
     }
-    if (selected.includes("brief") || /brief|quote|corridor|route|customs|item|goods/i.test(prompt.value)) {
+    if (selected.includes("brief") || /brief|quote|corridor|route|customs|item|goods/i.test(text)) {
       return [
         "Brief readiness checklist:",
         "",
@@ -154,27 +209,32 @@
         "AI can improve the brief and predict blockers. Founder/provider evidence is still required for restricted goods, paid status, ID approval, assignment, refunds, or payout release.",
       ].join("\n");
     }
-    if (selected.includes("issue") || /resolution|refund|dispute|proof|delay|receiver|payment/i.test(prompt.value)) {
+    if (selected.includes("blockers") || /blocker|risk|stuck|law|customs|restricted/i.test(text)) {
       return [
-        "Here is the safe issue flow:",
+        "Likely blockers to check:",
         "",
-        "1. Keep the request code, contact, provider reference, proof links, and timeline together in the Resolution Center.",
-        "2. AI can summarize facts, spot missing evidence, and draft the next message to the client or receiver.",
-        "3. Payment, refund, release, restricted item, safety, legal, receiver replacement, and ID decisions are protected actions.",
-        "4. Protected actions need provider/system evidence or founder review before the app changes money, identity, or assignment state.",
-        "5. If proof is missing, ask for dated photos, receipts, location notes, video/voice context, or provider records before escalation.",
+        "- ID verification: account can open first, but paid posting and paid receiver work stay locked until provider evidence is recorded.",
+        "- Money: provider confirmation is needed before funds count as protected; AI cannot mark paid or release money.",
+        "- Corridor: pilot or unsupported lanes need founder approval before quote, purchase, shipping, or assignment.",
+        "- Goods: batteries, perfume/liquids, medicines, food, plants, animal-origin goods, valuables, and controlled documents need rules checks.",
+        "- Proof: every job needs clear proof requirements before receiver work starts.",
+        "- Receiver fit: paid jobs need a vetted, ID-verified receiver matched to the route and category.",
       ].join("\n");
     }
-    if (selected.includes("message") || /draft|reply|message|whatsapp|email/i.test(prompt.value)) {
-      return [
-        "Message draft structure:",
-        "",
-        "Hi, thanks for the update. To keep this job safe, please send the request code, current status, clear proof photos or video, any receipt or provider reference, and what you need Swadakta to do next.",
-        "",
-        "Important: payment release, refunds, ID approval, receiver replacement, and restricted-item decisions can only happen after provider/system evidence or founder review.",
-      ].join("\n");
+    if (/draft|reply|message|whatsapp|email/i.test(text)) {
+      return messageDraftAnswer();
     }
     return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or receive jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, receiver assignment, and sensitive task approval cannot be done by AI alone.";
+  }
+
+  function messageDraftAnswer() {
+    return [
+      "Message draft structure:",
+      "",
+      "Hi, thanks for the update. To keep this job safe, please send the request code, current status, clear proof photos or video, any receipt or provider reference, and what you need Swadakta to do next.",
+      "",
+      "Important: payment release, refunds, ID approval, receiver replacement, and restricted-item decisions can only happen after provider/system evidence or founder review.",
+    ].join("\n");
   }
 
   function applyQueryContext() {
@@ -183,6 +243,7 @@
 
     if (incomingPrompt && !prompt.value.trim()) {
       prompt.value = incomingPrompt.slice(0, 2400);
+      syncPromptHeight();
     }
 
     if (incomingTask) {
@@ -197,59 +258,122 @@
     renderActionLinks((params.get("links") || "").split(","));
   }
 
-  function selectedLinkKeys() {
+  function selectedLinkKeys(sourceText = "") {
     if (!task) return ["portal", "corridor", "verification"];
     const selected = task.value.toLowerCase();
-    const text = `${selected} ${prompt.value}`.toLowerCase();
+    const text = `${selected} ${sourceText} ${prompt.value}`.toLowerCase();
+    if (selected.includes("message")) return ["messages", "tracking", "resolution"];
+    if (selected.includes("issue")) return ["resolution", "tracking", "messages"];
+    if (selected.includes("blockers")) return ["rules", "payments", "trust"];
+    if (selected.includes("brief")) return ["corridor", "brief", "rules"];
+    if (/issue|refund|dispute|delay|safety|resolve/.test(text)) return ["resolution", "tracking", "messages"];
     if (/blocker|risk|stuck|law|restricted/.test(text)) return ["rules", "payments", "trust"];
     if (/verification|id|provider/.test(text)) return ["verification", "portal", "trust"];
     if (/brief|quote|corridor|route|customs|goods|item/.test(text)) return ["corridor", "brief", "rules"];
     if (/payment|money|milestone|escrow|stripe|paypal|mpesa|wise/.test(text)) return ["payments", "tracking", "trust"];
     if (/message|reply|receiver|proof|voice|media/.test(text)) return ["messages", "tracking", "resolution"];
-    if (/issue|refund|dispute|delay|safety/.test(text)) return ["resolution", "tracking", "messages"];
     return ["portal", "corridor", "verification"];
   }
 
-  quickActions.forEach((button) => {
-    button.addEventListener("click", () => {
-      setTaskByLabel(button.dataset.task);
-      prompt.value = button.dataset.prompt || "";
-      renderAssistantMessage("Quick action loaded. Ask AI for a draft, checklist, or next safe step.");
-      renderActionLinks((button.dataset.links || "").split(","));
-    });
-  });
+  function syncPromptHeight() {
+    if (!prompt) return;
+    prompt.style.height = "auto";
+    prompt.style.height = `${Math.min(prompt.scrollHeight, 144)}px`;
+  }
 
-  run?.addEventListener("click", async () => {
-    run.disabled = true;
+  function focusPrompt() {
+    prompt?.focus({ preventScroll: true });
+  }
+
+  function setComposerDisabled(disabled) {
+    if (run) run.disabled = disabled;
+    if (prompt) prompt.disabled = disabled;
+  }
+
+  async function sendMessage() {
+    if (!prompt || !task) return;
     const userPrompt = prompt.value.trim() || task.value;
-    renderConversation(userPrompt, "Thinking...");
-    renderActionLinks(selectedLinkKeys());
+    if (!userPrompt) return;
+
+    if (window.SwadaktaAiPreference && !window.SwadaktaAiPreference.enabled()) {
+      renderAssistantMessage("AI is off. Use the normal Swadakta tools from the side rail, or turn AI on when you want help drafting, sorting, or checking the next step.");
+      renderActionLinks(selectedLinkKeys(userPrompt));
+      return;
+    }
+
+    prompt.value = "";
+    syncPromptHeight();
+    setComposerDisabled(true);
+    addMessage("user", userPrompt);
+    const thinkingId = addMessage("assistant", "Typing...", { tone: "thinking" });
+    renderActionLinks(selectedLinkKeys(userPrompt));
+
     try {
-      const session = await window.SwadaktaData.getSession();
-      if (!session.session?.access_token) {
-        renderConversation(userPrompt, `${fallbackAnswer()}\n\nSign in for live protected AI.`);
+      const session = await window.SwadaktaData?.getSession?.();
+      if (!session?.session?.access_token) {
+        updateMessage(thinkingId, `${fallbackAnswer(userPrompt)}\n\nSign in for live protected AI.`);
         return;
       }
       const result = await withTimeout(
         window.SwadaktaData.assist({
           role: "client",
           task: task.value,
-          draft: prompt.value,
+          draft: userPrompt,
           context: { page: "assistant", source: params.get("source") || params.get("context") || "" },
         }),
       );
-      renderConversation(userPrompt, result.data?.output || fallbackAnswer());
+      updateMessage(thinkingId, result.data?.output || fallbackAnswer(userPrompt));
     } catch (error) {
-      renderConversation(
-        userPrompt,
-        `${fallbackAnswer()}\n\nLive AI did not respond quickly, so this safe guide stayed local. Try again after checking the account session or admin AI readiness.`,
+      updateMessage(
+        thinkingId,
+        `${fallbackAnswer(userPrompt)}\n\nLive AI did not respond quickly, so this safe guide stayed local. Try again after checking the account session or admin AI readiness.`,
       );
     } finally {
-      run.disabled = false;
+      setComposerDisabled(false);
+      focusPrompt();
+    }
+  }
+
+  quickActions.forEach((button) => {
+    button.addEventListener("click", () => {
+      setTaskByLabel(button.dataset.task);
+      prompt.value = button.dataset.prompt || "";
+      syncPromptHeight();
+      renderAssistantMessage("Quick action loaded. Edit the message below, then send it like a normal chat.");
+      renderActionLinks((button.dataset.links || "").split(","));
+      focusPrompt();
+    });
+  });
+
+  toolButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const type = button.dataset.assistantTool;
+      const copy =
+        type === "media"
+          ? "Media upload belongs inside Messages or Tracking after a job exists. Tell me what proof you need and I can help format the request."
+          : type === "voice"
+            ? "Voice notes belong inside job messages once both sides are connected. Tell me the update and I can turn it into a clean written summary."
+            : "Video calls should be used only after a job exists and both sides are verified where needed. Tell me the call purpose and I can draft the agenda.";
+      renderAssistantMessage(copy);
+      renderActionLinks(["messages", "tracking", "verification"]);
+    });
+  });
+
+  form?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    sendMessage();
+  });
+
+  prompt?.addEventListener("input", syncPromptHeight);
+  prompt?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      form?.requestSubmit();
     }
   });
 
   updateContextCard();
+  renderConversation();
   applyQueryContext();
   if (!params.get("links")) renderActionLinks(selectedLinkKeys());
 })();
