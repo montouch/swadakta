@@ -52,6 +52,8 @@ const requiredPortalMarkers = [
   "rememberAccountHome",
   "forceAccountHomeRoute",
   "showContinueHomeButton",
+  "renderPaymentReturnPanel",
+  "Payment returned successfully",
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",
   "renderReceiverApplications",

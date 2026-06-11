@@ -158,6 +158,26 @@
             Exit
         </a>
 </header>
+<section class="px-margin-mobile md:px-margin-desktop pt-2" id="payment-return-panel" aria-live="polite" hidden>
+<div class="max-w-[1120px] mx-auto glass-panel p-5 md:p-6 rounded-[2rem]">
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-4xl" id="payment-return-icon">payments</span>
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.18em]" id="payment-return-eyebrow">Payment return</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="payment-return-title">Payment status received</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl" id="payment-return-copy">Swadakta received a payment redirect.</p>
+<p class="font-label-sm text-on-surface-variant mt-3" id="payment-return-reference"></p>
+</div>
+</div>
+<div class="flex flex-wrap gap-3">
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="payment-return-tracking-link" href="tracking.html">Track request</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="payment-return-messages-link" href="messages.html">Open messages</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="payment-return-resolution-link" href="resolution.html">Open issue</a>
+</div>
+</div>
+</div>
+</section>
 <!-- Main Content Canvas -->
 <main class="flex-grow flex items-center justify-center px-margin-mobile py-section-gap">
 <div class="w-full max-w-[480px] glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">
@@ -527,5 +547,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=43"></script>
-<script src="stitch-portal.js?v=17"></script>
+<script src="stitch-portal.js?v=18"></script>
 </body></html>

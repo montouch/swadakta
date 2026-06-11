@@ -7,6 +7,15 @@
   const googleButton = document.querySelector("#account-google-sign-in");
   const resetButton = document.querySelector("#account-password-reset");
   const continueHomeButton = document.querySelector("#account-continue-home");
+  const paymentReturnPanel = document.querySelector("#payment-return-panel");
+  const paymentReturnIcon = document.querySelector("#payment-return-icon");
+  const paymentReturnEyebrow = document.querySelector("#payment-return-eyebrow");
+  const paymentReturnTitle = document.querySelector("#payment-return-title");
+  const paymentReturnCopy = document.querySelector("#payment-return-copy");
+  const paymentReturnReference = document.querySelector("#payment-return-reference");
+  const paymentReturnTrackingLink = document.querySelector("#payment-return-tracking-link");
+  const paymentReturnMessagesLink = document.querySelector("#payment-return-messages-link");
+  const paymentReturnResolutionLink = document.querySelector("#payment-return-resolution-link");
   const profileCard = document.querySelector("#account-profile-card");
   const nextActions = document.querySelector("#account-next-actions");
   const signOutButton = document.querySelector("#account-sign-out");
@@ -105,6 +114,40 @@
     "zimbabwe",
   ]);
   const YOUVERIFY_COUNTRIES = new Set(["nigeria", "ghana"]);
+  const PAYMENT_RETURN_STATES = {
+    success: {
+      icon: "verified",
+      eyebrow: "Stripe checkout",
+      title: "Payment returned successfully",
+      copy:
+        "Stripe sent you back to Swadakta. Funds are treated as protected only after the provider confirmation and webhook evidence finish, then milestone release still follows proof review.",
+      tone: "text-primary",
+    },
+    cancelled: {
+      icon: "undo",
+      eyebrow: "Stripe checkout",
+      title: "Payment was not completed",
+      copy:
+        "Stripe checkout was cancelled or closed. The job can stay open while you retry the quote link or ask Swadakta to refresh the payment instructions.",
+      tone: "text-tertiary",
+    },
+    "paypal-success": {
+      icon: "verified",
+      eyebrow: "PayPal order",
+      title: "PayPal approval returned",
+      copy:
+        "PayPal sent approval back to Swadakta. The order still needs provider capture/confirmation before funds are treated as protected for milestone work.",
+      tone: "text-primary",
+    },
+    "paypal-cancelled": {
+      icon: "undo",
+      eyebrow: "PayPal order",
+      title: "PayPal was not completed",
+      copy:
+        "PayPal approval was cancelled or closed. The request can stay active while you retry PayPal or use another payment rail.",
+      tone: "text-tertiary",
+    },
+  };
 
   function authMode() {
     return form.querySelector('input[name="account-auth-mode"]:checked')?.value || "sign_in";
@@ -120,6 +163,60 @@
 
   function accountHomeUrl() {
     return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
+  }
+
+  function addReturnParams(url, code, contact) {
+    if (code) url.searchParams.set("code", code);
+    if (contact) url.searchParams.set("contact", contact);
+    return url.href;
+  }
+
+  function renderPaymentReturnPanel() {
+    if (!paymentReturnPanel) return;
+
+    const params = new URLSearchParams(window.location.search);
+    const state = String(params.get("payment") || "").trim().toLowerCase();
+    const details = PAYMENT_RETURN_STATES[state];
+
+    if (!details) {
+      paymentReturnPanel.hidden = true;
+      return;
+    }
+
+    const requestCode = String(params.get("request_code") || params.get("code") || "")
+      .trim()
+      .toUpperCase();
+    const contact = String(params.get("contact") || "").trim();
+    const providerReference = String(params.get("session_id") || params.get("token") || params.get("order_id") || "")
+      .trim();
+    const referenceParts = [];
+
+    if (requestCode) referenceParts.push(`Request ${requestCode}`);
+    if (providerReference) referenceParts.push(`Provider reference ${providerReference}`);
+
+    paymentReturnPanel.hidden = false;
+    if (paymentReturnIcon) {
+      paymentReturnIcon.textContent = details.icon;
+      paymentReturnIcon.className = `material-symbols-outlined ${details.tone} text-4xl`;
+    }
+    if (paymentReturnEyebrow) paymentReturnEyebrow.textContent = details.eyebrow;
+    if (paymentReturnTitle) paymentReturnTitle.textContent = details.title;
+    if (paymentReturnCopy) paymentReturnCopy.textContent = details.copy;
+    if (paymentReturnReference) {
+      paymentReturnReference.textContent = referenceParts.length
+        ? referenceParts.join(" - ")
+        : "Keep your request code handy if Swadakta sent one separately.";
+    }
+
+    if (paymentReturnTrackingLink) {
+      paymentReturnTrackingLink.href = addReturnParams(new URL("tracking.html", window.location.href), requestCode, contact);
+    }
+    if (paymentReturnMessagesLink) {
+      paymentReturnMessagesLink.href = addReturnParams(new URL("messages.html", window.location.href), requestCode, contact);
+    }
+    if (paymentReturnResolutionLink) {
+      paymentReturnResolutionLink.href = addReturnParams(new URL("resolution.html", window.location.href), requestCode, contact);
+    }
   }
 
   function isAccountHomeOpen() {
@@ -1004,6 +1101,7 @@
     accountHomeSignOutButton.addEventListener("click", () => signOutCurrentAccount(accountHomeSignOutButton));
   }
 
+  renderPaymentReturnPanel();
   updateMode();
   setVerificationEnabled(false);
   setAccountState("checking");
