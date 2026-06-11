@@ -1703,6 +1703,7 @@ function renderRequestCardV2(request) {
         </label>
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save update</button>
+          <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
           <button class="button button-secondary copy-quote" type="button">Copy quote</button>
           <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
@@ -2289,6 +2290,49 @@ async function copyText(text, statusElement) {
   }, 2400);
 }
 
+async function generateStripeCheckout(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before creating checkout.";
+    return;
+  }
+
+  statusElement.textContent = "Creating Stripe checkout...";
+
+  const result = await window.SwadaktaData.createStripeCheckoutSession(request, payload);
+  const checkoutUrl = result.data?.url || "";
+  const reference = result.data?.provider_reference || result.data?.id || "";
+
+  if (!checkoutUrl) {
+    throw new Error("Stripe did not return a checkout URL.");
+  }
+
+  const paymentLinkInput = form.querySelector('[name="payment_link"]');
+  const paymentStatusSelect = form.querySelector('[name="payment_status"]');
+  const fundsStatusSelect = form.querySelector('[name="funds_status"]');
+  const paymentReferenceInput = form.querySelector('[name="payment_reference"]');
+
+  if (paymentLinkInput) {
+    paymentLinkInput.value = checkoutUrl;
+  }
+
+  if (paymentStatusSelect) {
+    paymentStatusSelect.value = result.data?.payment_status || "invoice_sent";
+  }
+
+  if (fundsStatusSelect) {
+    fundsStatusSelect.value = result.data?.funds_status || "payment_link_sent";
+  }
+
+  if (paymentReferenceInput && reference) {
+    paymentReferenceInput.value = reference;
+  }
+
+  await copyText(checkoutUrl, statusElement);
+  statusElement.textContent = "Stripe checkout ready. Review and save.";
+}
+
 function buildClientUpdate(request, form) {
   const payload = formPayload(form);
   const quoteLine = payload.quote_amount ? `Quote: ${formatCurrency(payload.quote_amount, payload.quote_currency)}` : "Quote: Pending.";
@@ -2577,6 +2621,25 @@ if (partnerBoard) {
 }
 
 requestBoard.addEventListener("click", async (event) => {
+  const checkoutButton = event.target.closest(".create-stripe-checkout");
+  if (checkoutButton) {
+    const form = checkoutButton.closest(".request-update-form");
+    const card = checkoutButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await generateStripeCheckout(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "Stripe checkout failed.";
+    }
+    return;
+  }
+
   const button = event.target.closest(".copy-update, .copy-quote, .copy-operator");
   if (!button) {
     return;

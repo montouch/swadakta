@@ -31,6 +31,7 @@ Use Stripe Payment Links for standard deposits, card payments, and repeatable pa
 
 - https://docs.stripe.com/payment-links
 - https://docs.stripe.com/payment-links/create
+- https://docs.stripe.com/api/checkout/sessions/create
 
 Suggested first links:
 
@@ -47,12 +48,54 @@ Use the intake `Service package` field to choose the right reusable deposit or r
 Use the intake budget comfort field as a guide, not as a binding price cap; the final quote should still reflect travel, access, urgency, and proof requirements.
 Use the admin `Copy quote` action to send a consistent quote message that includes the amount, payment link, due date, proof plan, scope boundary, and card-data safety warning.
 
+## Stripe Checkout Automation
+
+The admin app now includes a server-side Stripe Checkout handoff at:
+
+- `POST /api/payments/stripe-checkout`
+
+The endpoint:
+
+- Requires a signed-in Supabase admin session.
+- Verifies the user exists in `admin_users`.
+- Calls Stripe from the Vercel Function, never from browser JavaScript.
+- Adds `request_code`, payment kind, service package, value band, and funds preference to Stripe metadata.
+- Returns the Checkout URL to the admin card.
+- Sets the form fields to `Payment: Invoice sent`, `Funds: Payment link sent`, and provider reference.
+- Does not mark money paid, does not assign receivers, and does not release funds.
+
+Required Vercel environment variables:
+
+- `STRIPE_SECRET_KEY`: Stripe secret key for the active Stripe account.
+- `PUBLIC_BASE_URL`: `https://swadakta.com`.
+
+Optional Vercel environment variables:
+
+- `SUPABASE_URL`: defaults to the current Swadakta Supabase URL if absent.
+- `SUPABASE_PUBLISHABLE_KEY`: defaults to the current publishable key if absent.
+
+Admin workflow:
+
+1. Quote the request in admin with amount and currency.
+2. Click `Generate Stripe checkout`.
+3. Review the generated payment link and provider reference.
+4. Click `Save update`.
+5. Use `Copy quote` to send the client the approved payment message.
+
+Stripe Checkout is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Use PayPal, Wise, bank, or manual M-Pesa references for other currencies until the Stripe account/currency support is confirmed.
+
+Webhook automation is still a later step. Stripe's webhook docs require raw-body signature verification, so do not mark payments paid automatically until a verified webhook endpoint is deployed and tested:
+
+- https://docs.stripe.com/webhooks
+- https://docs.stripe.com/webhooks/signature
+
 ## PayPal
 
 Use PayPal invoices when the client prefers PayPal or when a formal invoice link is easier to share. PayPal documents creating invoices from `Pay & Get Paid > Create an Invoice`, and PayPal invoice links can be copied and shared by email, text, or messaging app:
 
 - https://www.paypal.com/us/cshelp/article/how-do-i-create-and-send-an-invoice-help319
 - https://developer.paypal.com/docs/invoicing/
+- https://developer.paypal.com/docs/api/orders/v2/
 
 In the admin desk, paste the invoice link into `Payment link` and mention PayPal in the client update.
 

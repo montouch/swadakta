@@ -31,6 +31,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Funds-protection controls for held/authorized/deposit/released/refunded/disputed payments
 - Milestone release ledger for staged receiver payouts and client-visible release status
 - Provider reference tracking for Stripe, PayPal, Wise, M-Pesa, bank, or escrow records
+- Admin-only Stripe Checkout session generation through a Vercel Function
 - ID verification gates for higher-value, sensitive-document, title, family-authority, or risky jobs
 - Required client permission, scope, terms, and privacy consent capture
 - Service package intent, contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture

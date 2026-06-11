@@ -49,7 +49,7 @@ Start with quote-based payment links, then automate later.
 
 Automation later:
 
-- Move from manual links to Stripe Checkout sessions when the app has a server layer.
+- Configure `STRIPE_SECRET_KEY` and `PUBLIC_BASE_URL` in Vercel, then use the admin `Generate Stripe checkout` button for quoted `AUD`, `USD`, `GBP`, and `EUR` jobs.
 - Add payment webhooks only when there is a backend route that can verify Stripe webhook signatures.
 - Store provider transaction IDs on the request record after payment confirmation.
 
