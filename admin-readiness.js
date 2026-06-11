@@ -11,11 +11,13 @@
   const signOutButtons = document.querySelectorAll(".admin-sign-out-control");
   const refreshButton = document.querySelector("#refresh-readiness");
   const copyChecklistButton = document.querySelector("#copy-checklist");
+  const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
   const readinessMode = document.querySelector("#readiness-mode");
   const readinessStatus = document.querySelector("#readiness-status");
   const nextActionsList = document.querySelector("#next-actions-list");
   const nextActionsCount = document.querySelector("#next-actions-count");
   const categories = document.querySelector("#readiness-categories");
+  const providerPackList = document.querySelector("#provider-pack-list");
   const protectedActions = document.querySelector("#protected-actions");
 
   let latestReport = null;
@@ -110,6 +112,63 @@
     ].join("\n");
   }
 
+  function actionableCategoryItems(category = {}) {
+    const items = Array.isArray(category.items) ? category.items : [];
+    return items.filter((entry) => entry.status !== "ready" || entry.copy_value || entry.docs_url);
+  }
+
+  function categoryStatusSummary(category = {}) {
+    const items = Array.isArray(category.items) ? category.items : [];
+    const counts = items.reduce(
+      (summary, entry) => {
+        summary[entry.status] = (summary[entry.status] || 0) + 1;
+        return summary;
+      },
+      { ready: 0, warning: 0, missing: 0, manual: 0 },
+    );
+    return `${counts.ready || 0} ready / ${counts.warning || 0} check / ${counts.missing || 0} missing / ${counts.manual || 0} manual`;
+  }
+
+  function providerPackCategoryText(category = {}, report = latestReport) {
+    const safeValues = Object.entries(report?.safe_copy_values || {});
+    const categoryItems = actionableCategoryItems(category);
+    const lines = [
+      `Swadakta provider setup pack: ${category.label || category.id || "Readiness"}`,
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      `Environment: ${report?.environment?.vercel_env || "unknown"} / ${report?.environment?.public_base_url || "domain unknown"}`,
+      `Status: ${categoryStatusSummary(category)}`,
+      "",
+      "Setup actions:",
+      ...(categoryItems.length
+        ? categoryItems.map((entry, index) => {
+            const missing = entry.missing?.length ? ` Missing env/settings: ${entry.missing.join(", ")}.` : "";
+            const docs = entry.docs_url ? ` Docs: ${entry.docs_url}.` : "";
+            const safeValue = entry.copy_value ? ` Safe copy value: ${entry.copy_value}.` : "";
+            return `${index + 1}. [${statusLabel(entry.status)}] ${entry.label}: ${entry.next || entry.detail || "Review setup."}${missing}${safeValue}${docs} Owner: ${entry.owner || "Founder/admin"}.`;
+          })
+        : ["1. No non-ready setup items in this category."]),
+      "",
+      "Global safe callback values:",
+      ...(safeValues.length ? safeValues.map(([key, value]) => `${key}: ${value}`) : ["No safe callback values returned."]),
+      "",
+      "Boundary:",
+      "Do not paste secret keys into chat, email, screenshots, support tickets, or client-visible pages.",
+      "AI can help draft setup notes, but provider dashboards and founder/admin approval control secrets, money, identity, assignment, and release decisions.",
+    ];
+
+    return lines.join("\n");
+  }
+
+  function buildProviderPack(report = latestReport) {
+    if (!report) return "";
+    return [
+      "Swadakta provider setup pack",
+      "Use this to configure Stripe, PayPal, M-Pesa/Daraja, Wise fallback, Supabase, Vercel, AI, and ID-provider dashboards.",
+      "",
+      ...(report.categories || []).map((category) => providerPackCategoryText(category, report)),
+    ].join("\n\n---\n\n");
+  }
+
   function updateStats(counts = {}) {
     document.querySelector("#stat-ready").textContent = counts.ready || 0;
     document.querySelector("#stat-warning").textContent = counts.warning || 0;
@@ -182,6 +241,34 @@
     `;
   }
 
+  function renderProviderPacks(report) {
+    if (!providerPackList) return;
+    const categories = Array.isArray(report?.categories) ? report.categories : [];
+
+    providerPackList.innerHTML = categories.length
+      ? categories
+          .map((category) => {
+            const items = actionableCategoryItems(category);
+            const copyCount = items.filter((entry) => entry.copy_value).length;
+            const docsCount = items.filter((entry) => entry.docs_url).length;
+            return `
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(category.id || "provider")}</p>
+                    <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(category.label || "Provider setup")}</h3>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(categoryStatusSummary(category))}</p>
+                    <p class="mt-2 text-xs text-secondary">${escapeHtml(String(items.length))} action lines, ${escapeHtml(String(copyCount))} safe values, ${escapeHtml(String(docsCount))} docs links.</p>
+                  </div>
+                  <button class="copy-category-pack inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" data-copy-category-pack="${escapeHtml(category.id || "")}" type="button">Copy pack</button>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider packs returned by the readiness API.</div>`;
+  }
+
   function renderReport(report, mode) {
     latestReport = report;
     const counts = report.counts || {};
@@ -197,6 +284,7 @@
       ? nextActions.map(renderAction).join("")
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No missing setup actions returned by the readiness API.</div>`;
     categories.innerHTML = (report.categories || []).map(renderCategory).join("");
+    renderProviderPacks(report);
     protectedActions.innerHTML = (report.protected_actions || [])
       .map(
         (action) => `
@@ -214,6 +302,9 @@
     nextActionsCount.textContent = "0 priorities";
     nextActionsList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     categories.innerHTML = "";
+    if (providerPackList) {
+      providerPackList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
     protectedActions.innerHTML = "";
   }
 
@@ -297,10 +388,24 @@
     await copyText(buildChecklist(), "Launch checklist copied.");
   });
 
+  copyProviderPackButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildProviderPack(), "Provider setup pack copied.");
+    });
+  });
+
   document.addEventListener("click", async (event) => {
     const button = event.target.closest(".copy-value");
-    if (!button) return;
-    await copyText(button.dataset.copyValue, "Safe value copied.");
+    if (button) {
+      await copyText(button.dataset.copyValue, "Safe value copied.");
+      return;
+    }
+
+    const categoryButton = event.target.closest(".copy-category-pack");
+    if (categoryButton) {
+      const category = (latestReport?.categories || []).find((entry) => entry.id === categoryButton.dataset.copyCategoryPack);
+      await copyText(providerPackCategoryText(category, latestReport), "Category provider pack copied.");
+    }
   });
 
   loadReadiness();

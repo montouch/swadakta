@@ -193,6 +193,15 @@ const requiredAdminVerificationMarkers = [
   "Provider handoff pack",
   "Provider docs",
 ];
+const requiredAdminReadinessMarkers = [
+  "buildProviderPack",
+  "providerPackCategoryText",
+  "renderProviderPacks",
+  "copy-provider-pack",
+  "copy-category-pack",
+  "Provider setup pack copied",
+  "Do not paste secret keys",
+];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
   "storageBackendItems",
@@ -740,6 +749,21 @@ for (const marker of requiredAdminVerificationMarkers) {
     fail(failures, `Production admin-verification.js is missing marker ${marker}`);
   } else {
     pass(`Production admin-verification.js contains ${marker}`);
+  }
+}
+
+const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=3");
+if (adminReadinessResponse.status !== 200) {
+  fail(failures, `admin-readiness.js?v=3 returned ${adminReadinessResponse.status}`);
+} else {
+  pass("admin-readiness.js?v=3 returned 200");
+}
+
+for (const marker of requiredAdminReadinessMarkers) {
+  if (!adminReadinessText.includes(marker)) {
+    fail(failures, `Production admin-readiness.js is missing marker ${marker}`);
+  } else {
+    pass(`Production admin-readiness.js contains ${marker}`);
   }
 }
 
