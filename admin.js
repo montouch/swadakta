@@ -327,6 +327,11 @@ function formatDateTimeInput(value) {
   return localDate.toISOString().slice(0, 16);
 }
 
+function formatDateInput(date) {
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 10);
+}
+
 function calculateFounderMargin(source) {
   const revenue = toMoneyNumber(source.quote_amount);
   const directCosts =
@@ -910,7 +915,7 @@ function buildOpsAiPrompt(item) {
     `Funds plan: ${fundsProtectionLabels[request.funds_protection_preference] || request.funds_protection_preference || "quote first"}`,
     `ID status: ${verificationStatusLabels[request.verification_status] || request.verification_status || "not set"}`,
     "",
-    "Draft the next safe system action. Let self-serve or receiver-routing continue only if the route, item, money, ID, and proof risks are acceptable. Escalate to founder for legal/import-export uncertainty, unsupported corridors, ID issues, disputes, high-value funds, release decisions, or prohibited/restricted goods.",
+    "Draft the next safe system action. Let self-serve or receiver-routing continue only if the route, item, money, ID, and proof risks are acceptable. AI/autopilot may prepare payment requests, checklists, quote wording, proof review summaries, and admin notes. Escalate to founder for legal/import-export uncertainty, unsupported corridors, ID issues, disputes, manual payment confirmation, receiver assignment, high-value funds, release decisions, or prohibited/restricted goods.",
   ].join("\n");
 }
 
@@ -1070,6 +1075,7 @@ function renderFounderCommand() {
         <span class="mode-badge">${escapeHtml(opsAiItems.length ? `${opsAiItems.length} prompts` : "Clear")}</span>
       </div>
       <p class="form-note">Hardwired triage drafts the next admin prompt. It does not contact clients, assign receivers, or release funds without founder approval.</p>
+      <p class="form-note">Use per-request safe autopilot to let the system save routine triage, quote readiness, payment-request prep, due dates, proof checklists, and internal notes. Protected decisions remain locked to founder/admin approval.</p>
       <div class="ops-ai-list">
         ${opsAiList || `<p class="form-note">No urgent prompts right now. New requests, payment gaps, ID checks, proof reviews, and release decisions will appear here.</p>`}
       </div>
@@ -2063,8 +2069,10 @@ function renderRequestCardV2(request) {
         </label>
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save update</button>
+          <button class="button button-secondary run-safe-autopilot" type="button">Run safe autopilot</button>
           <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
           <button class="button button-secondary create-paypal-order" type="button">Generate PayPal order</button>
+          <button class="button button-secondary create-wise-request" type="button">Prepare Wise request</button>
           <button class="button button-secondary capture-paypal-order" type="button">Capture PayPal order</button>
           <button class="button button-secondary create-mpesa-stk" type="button">Send M-Pesa STK</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
@@ -2736,6 +2744,260 @@ async function generatePayPalOrder(request, form, statusElement) {
   statusElement.textContent = "PayPal order ready. Review and save.";
 }
 
+function applyWisePaymentRequestResult(form, result) {
+  const wiseUrl = result.data?.url || "";
+  const reference = result.data?.provider_reference || result.data?.id || "";
+
+  if (!wiseUrl) {
+    throw new Error("Wise did not return a payment URL.");
+  }
+
+  const paymentLinkInput = form.querySelector('[name="payment_link"]');
+  const paymentStatusSelect = form.querySelector('[name="payment_status"]');
+  const fundsStatusSelect = form.querySelector('[name="funds_status"]');
+  const paymentReferenceInput = form.querySelector('[name="payment_reference"]');
+  const releaseNotesInput = form.querySelector('[name="release_notes"]');
+
+  if (paymentLinkInput) {
+    paymentLinkInput.value = wiseUrl;
+  }
+
+  if (paymentStatusSelect) {
+    paymentStatusSelect.value = result.data?.payment_status || "invoice_sent";
+  }
+
+  if (fundsStatusSelect) {
+    fundsStatusSelect.value = result.data?.funds_status || "payment_link_sent";
+  }
+
+  if (paymentReferenceInput && reference) {
+    paymentReferenceInput.value = reference;
+  }
+
+  if (releaseNotesInput && result.data?.release_notes) {
+    releaseNotesInput.value = result.data.release_notes;
+  }
+
+  return result.data?.customer_message || `${wiseUrl}\nReference: ${reference}`;
+}
+
+async function generateWisePaymentRequest(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before preparing a Wise request.";
+    return;
+  }
+
+  statusElement.textContent = "Preparing Wise request...";
+
+  const result = await window.SwadaktaData.createWisePaymentRequest(request, payload);
+  const clientMessage = applyWisePaymentRequestResult(form, result);
+
+  await copyText(clientMessage, statusElement);
+  statusElement.textContent = "Wise request ready. Client message copied; review and save.";
+}
+
+function applyFormPatch(form, updates) {
+  Object.entries(updates).forEach(([name, value]) => {
+    const field = form.querySelector(`[name="${name}"]`);
+    if (!field) {
+      return;
+    }
+
+    if (field.type === "checkbox") {
+      field.checked = Boolean(value);
+      return;
+    }
+
+    field.value = Array.isArray(value) ? value.join("\n") : value ?? "";
+  });
+}
+
+function appendAutopilotNote(existing, lines) {
+  const usefulLines = lines.filter(Boolean);
+  if (!usefulLines.length) {
+    return existing || "";
+  }
+
+  const stamp = new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
+  const block = [`[Autopilot ${stamp}]`, ...usefulLines.map((line) => `- ${line}`)].join("\n");
+
+  return [String(existing || "").trim(), block].filter(Boolean).join("\n\n");
+}
+
+function isRoutineAutopilotClearable(request, payload) {
+  const riskyGoods = !["none", "general_goods", "clothing_household"].includes(payload.goods_category);
+  const riskyLogistics = ["postal_courier", "airport_handoff"].includes(payload.logistics_mode);
+  const highValue = ["2000_10000", "10000_plus"].includes(payload.job_value_band);
+  const blockedStatus = ["restricted", "permit_required", "prohibited"].includes(payload.compliance_status);
+
+  return (
+    payload.route_status === "active" &&
+    !payload.admin_review_required &&
+    !request.sensitive_documents_expected &&
+    !riskyGoods &&
+    !riskyLogistics &&
+    !highValue &&
+    !blockedStatus
+  );
+}
+
+function buildSafeAutopilotPatch(request, payload, notes) {
+  const patch = {};
+  const merged = { ...request, ...payload };
+  const quoteAmount = toMoneyNumber(payload.quote_amount);
+
+  if (!payload.release_condition) {
+    patch.release_condition = "Autopilot prepares the work, but founder/admin verifies proof before receiver payout.";
+    notes.push("Added a protected milestone release condition.");
+  }
+
+  if (quoteAmount && !payload.payment_due_at && isPaymentOpen(payload)) {
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 3);
+    patch.payment_due_at = formatDateInput(dueDate);
+    notes.push("Set a 3-day payment window for the quote.");
+  }
+
+  if (isRoutineAutopilotClearable(request, payload)) {
+    patch.compliance_status = payload.goods_category === "none" ? "not_applicable" : "cleared";
+    patch.compliance_risk_level = "standard";
+    patch.admin_review_required = false;
+    patch.admin_review_reason = "";
+    patch.automation_status = "self_service";
+    notes.push("Cleared a routine active-lane request for self-service handling.");
+  } else if (needsComplianceReview(merged)) {
+    patch.admin_review_required = true;
+    patch.automation_status =
+      payload.route_status === "unsupported" || payload.compliance_risk_level === "blocked"
+        ? "founder_approval"
+        : "admin_review";
+    patch.admin_review_reason =
+      payload.admin_review_reason ||
+      "Autopilot paused this request for founder/admin review because corridor, goods, ID, payment, value, or proof risk needs a human decision.";
+    notes.push("Paused protected corridor/compliance decisions for founder/admin review.");
+  }
+
+  if (
+    ["500_2000", "2000_10000"].includes(payload.job_value_band) &&
+    payload.funds_protection_preference === "quote_first"
+  ) {
+    patch.funds_protection_preference = "deposit_milestones";
+    notes.push("Selected deposit plus milestone controls for a funded job.");
+  }
+
+  if (payload.job_value_band === "10000_plus" && payload.funds_protection_preference !== "regulated_escrow") {
+    patch.funds_protection_preference = "regulated_escrow";
+    patch.admin_review_required = true;
+    patch.automation_status = "founder_approval";
+    patch.admin_review_reason =
+      payload.admin_review_reason ||
+      "High-value work needs founder review and regulated escrow or equivalent payment-provider controls.";
+    notes.push("Escalated high-value work to founder approval and regulated escrow controls.");
+  }
+
+  if (["paid", "deposit_paid"].includes(payload.payment_status)) {
+    notes.push(
+      `Payment is already marked ${paymentLabels[payload.payment_status] || payload.payment_status}; founder/admin must verify provider evidence before release or protected amount changes.`,
+    );
+  }
+
+  if (quoteAmount && payload.payment_link && payload.status === "new") {
+    patch.status = "quoted";
+    notes.push("Moved request to quoted because a quote and payment link are ready.");
+  } else if (
+    payload.assigned_partner_id &&
+    ["paid", "in_progress"].includes(payload.status) &&
+    payload.automation_status !== "receiver_routed"
+  ) {
+    patch.automation_status = "receiver_routed";
+    notes.push("Marked the request as receiver-routed because a receiver is already assigned.");
+  }
+
+  if (payload.identity_verification_required && !["verified", "not_required"].includes(payload.verification_status)) {
+    notes.push("Kept ID verification as a human/provider gate before sensitive work, assignment, or release.");
+  }
+
+  patch.operator_notes = appendAutopilotNote(payload.operator_notes, notes);
+
+  return patch;
+}
+
+async function prepareAutopilotPaymentRoute(request, form, payload, notes) {
+  const currency = payload.quote_currency || request.preferred_currency || "AUD";
+  const method = request.payment_method_preference || "discuss";
+  const stripeCurrencies = new Set(["AUD", "USD", "GBP", "EUR"]);
+  let clientMessage = "";
+
+  if (!toMoneyNumber(payload.quote_amount) || payload.payment_link) {
+    return clientMessage;
+  }
+
+  if (method === "card" && stripeCurrencies.has(currency)) {
+    const result = await window.SwadaktaData.createStripeCheckoutSession(request, payload);
+    const checkoutUrl = applyPaymentLinkResult(form, result);
+    notes.push("Generated a Stripe checkout link without marking funds paid.");
+    return checkoutUrl;
+  }
+
+  if (method === "paypal" && stripeCurrencies.has(currency)) {
+    const result = await window.SwadaktaData.createPayPalOrder(request, payload);
+    const checkoutUrl = applyPaymentLinkResult(form, result);
+    notes.push("Generated a PayPal order without capturing funds.");
+    return checkoutUrl;
+  }
+
+  if (method === "wise") {
+    const result = await window.SwadaktaData.createWisePaymentRequest(request, payload);
+    clientMessage = applyWisePaymentRequestResult(form, result);
+    notes.push("Prepared a Wise payment request and kept funds as unconfirmed.");
+    return clientMessage;
+  }
+
+  if (method === "mpesa" && currency === "KES") {
+    notes.push("Left M-Pesa STK for explicit admin action because it sends a phone prompt to the payer.");
+    return clientMessage;
+  }
+
+  if (method === "bank") {
+    notes.push("Left bank transfer as a manual receipt trail requiring founder/admin reconciliation.");
+    return clientMessage;
+  }
+
+  notes.push("No automatic payment rail was selected; choose Stripe, PayPal, Wise, M-Pesa, or bank after reviewing the client preference.");
+  return clientMessage;
+}
+
+async function runSafeAutopilot(request, form, statusElement) {
+  statusElement.textContent = "Autopilot checking safe actions...";
+  const notes = [];
+  let copiedMessage = "";
+  let payload = formPayload(form);
+
+  try {
+    copiedMessage = await prepareAutopilotPaymentRoute(request, form, payload, notes);
+  } catch (error) {
+    notes.push(error.message || "Payment-route preparation failed; founder/admin should choose the payment route manually.");
+  }
+
+  payload = formPayload(form);
+  const patch = buildSafeAutopilotPatch(request, payload, notes);
+  applyFormPatch(form, patch);
+
+  await window.SwadaktaData.updateRequest(request.id, formPayload(form));
+
+  if (copiedMessage) {
+    await copyText(copiedMessage, statusElement);
+  }
+
+  statusElement.textContent = `Autopilot saved ${Math.max(notes.length, 1)} safe action${notes.length === 1 ? "" : "s"}. Protected decisions still need founder/admin approval.`;
+  await loadRequests();
+}
+
 function applyMpesaStkResult(form, result) {
   const paymentStatusSelect = form.querySelector('[name="payment_status"]');
   const fundsStatusSelect = form.querySelector('[name="funds_status"]');
@@ -3189,6 +3451,25 @@ if (partnerBoard) {
 }
 
 requestBoard.addEventListener("click", async (event) => {
+  const autopilotButton = event.target.closest(".run-safe-autopilot");
+  if (autopilotButton) {
+    const form = autopilotButton.closest(".request-update-form");
+    const card = autopilotButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await runSafeAutopilot(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "Safe autopilot failed.";
+    }
+    return;
+  }
+
   const checkoutButton = event.target.closest(".create-stripe-checkout");
   if (checkoutButton) {
     const form = checkoutButton.closest(".request-update-form");
@@ -3242,6 +3523,25 @@ requestBoard.addEventListener("click", async (event) => {
       await capturePayPalOrder(request, form, statusElement);
     } catch (error) {
       statusElement.textContent = error.message || "PayPal capture failed.";
+    }
+    return;
+  }
+
+  const wiseButton = event.target.closest(".create-wise-request");
+  if (wiseButton) {
+    const form = wiseButton.closest(".request-update-form");
+    const card = wiseButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await generateWisePaymentRequest(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "Wise request prep failed.";
     }
     return;
   }

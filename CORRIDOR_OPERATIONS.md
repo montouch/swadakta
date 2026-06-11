@@ -56,7 +56,28 @@ AI/autopilot:
 
 - Classifies route, goods, logistics, value band, ID need, proof need, payment state, and founder-review status.
 - Drafts client replies, receiver briefs, quote language, missing-info checks, and proof-review summaries.
+- Prepares Wise/bank-transfer messages and receipt-review checklists where automated checkout confirmation is unavailable.
+- Runs safe admin actions for routine triage, quote readiness, payment-request preparation, due dates, release-condition defaults, proof checklists, and internal notes.
 - Never releases funds, verifies identity, assigns a receiver, sends external messages, or clears legal/customs risk without founder approval.
+
+The target operating model is 90/10: AI/autopilot should complete most routine back-office work, while founder/admin time is reserved for protected decisions.
+
+Autopilot-safe actions:
+
+- Classify active, pilot, unsupported, and blocked lanes.
+- Generate or prepare non-sending payment requests for Stripe, PayPal, or Wise when the quote and client preference support it.
+- Set quote due dates, routine release-condition wording, self-service status, and founder-review flags.
+- Draft client messages, receiver briefs, missing-information asks, proof-review summaries, and receipt-reconciliation checklists.
+- Save internal notes explaining what it did and why a protected decision is still needed.
+
+Protected actions:
+
+- Marking Wise, bank-transfer, or uploaded-receipt payments as paid.
+- Releasing, refunding, or disputing client/receiver funds.
+- Marking any user ID verified or overriding a failed/expired verification.
+- Assigning, rejecting, or vetting receivers.
+- Clearing legal, customs, import/export, title, tax, or regulated-goods uncertainty.
+- Sending WhatsApp/email/client messages outside the app.
 
 ## Autopilot Flow
 
@@ -145,6 +166,7 @@ Launch rails:
 Milestone release rule:
 
 - Client payment confirmation and receiver payout release are separate decisions.
+- Wise and bank-transfer payments stay as requested until a receipt, statement line, or bank-side confirmation matches the amount, payer, date, and Swadakta reference.
 - Receiver payout should be released bit by bit only after proof, client scope, dispute status, and founder margin are checked.
 - The public app can show protected-funds and release status, but internal margin, receiver payout, and payment fees stay in the founder console.
 
@@ -156,3 +178,4 @@ Milestone release rule:
 4. Add receiver availability, categories, country coverage, payout preference, and provenance sorting.
 5. Add notification automation for missing info, quote sent, payment confirmed, receiver assigned, proof submitted, and milestone review.
 6. Add marketplace-style job matching only after vetting and payout controls are mature.
+7. Add receipt upload and AI-assisted reconciliation for Wise/bank transfers, with founder approval before paid status.

@@ -126,6 +126,7 @@ function systemPrompt(role) {
     "Be concise, practical, warm, and operations-focused.",
     "Never claim Swadakta is a licensed escrow provider, bank, law firm, tax advisor, title office, or identity verification provider.",
     "For high-value funds, recommend a regulated escrow/payment provider or staged milestone controls plus founder approval.",
+    "For Wise or bank-transfer payments, you may prepare payment wording and reconciliation checklists, but you must not mark funds paid unless provider-grade evidence or founder approval is already present in the app context.",
     "You may draft replies, quote follow-ups, receiver briefs, proof-review notes, risk summaries, checklists, and safe admin note suggestions.",
     "Never state or imply that you performed an external action outside this response.",
     "Protected actions always require founder/admin approval: releasing/refunding money, marking payment paid, marking ID verified, vetting/rejecting/assigning receivers, changing provenance manually, sending WhatsApp/email messages, or giving legal/tax/title/financial advice.",
@@ -221,6 +222,7 @@ async function callOpenAI(payload, role, user) {
     guardrails: [
       "draft_only",
       "founder_approval_for_money_identity_assignment_and_messages",
+      "wise_and_bank_transfer_require_verified_receipt_or_statement",
       "no_legal_tax_title_or_financial_advice",
     ],
   };

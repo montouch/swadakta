@@ -182,7 +182,57 @@ Use Wise when a diaspora client wants international transfer, local account deta
 - https://wise.com/help/articles/4qr3kkvIQlHNiD8BegEB4u/getting-paid-to-your-wise-business-by-payment-link
 - https://wise.com/us/business/receive-money
 
-Use Wise for larger site visits, supplier deposits, or monthly retainers where bank-style settlement may be preferred.
+Wise's public API does not create Wise payment links for online checkout. Wise's own platform support page says payment links should still be created in the Wise.com interface, while the API can be used for payout workflows and statement-style reconciliation:
+
+- https://docs.wise.com/guides/product/partner/business-account-support
+- https://docs.wise.com/api-reference/balance-statement
+
+Swadakta therefore uses Wise as a prepared payment-request/reference rail:
+
+- `POST /api/payments/wise-payment-request`
+
+The endpoint:
+
+- Requires a signed-in Supabase admin session.
+- Verifies the user exists in `admin_users`.
+- Requires a positive quote amount.
+- Uses a Wise Business payment link or receive-details URL configured in Vercel.
+- Generates a Swadakta Wise provider reference such as `WISE-SW-123ABC-20260611190000`.
+- Sets the admin form to `Payment: Invoice sent` and `Funds: Payment link sent`.
+- Copies a client-ready Wise message with amount, link, and reference.
+- Does not mark money paid, assign receivers, or release milestones.
+
+Required Vercel environment variable:
+
+- `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`: a Wise Business single-use or reusable payment link created inside Wise.
+
+Optional Vercel environment variables:
+
+- `WISE_RECEIVE_DETAILS_URL`: fallback link to Wise receive/account-details instructions if no payment-link variable is set.
+- `WISE_SETTLEMENT_CURRENCIES`: comma-separated quote currencies allowed for Wise prep, for example `AUD,USD,GBP,EUR`.
+- `WISE_ALLOW_KES`: set to `true` only if the Wise account and operating model explicitly support KES settlement for the job type.
+
+Admin workflow:
+
+1. Create or reuse a Wise Business payment link in Wise.
+2. Add that link to Vercel as `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`.
+3. Quote the request in an allowed Wise settlement currency.
+4. Click `Prepare Wise request`.
+5. Review the payment link and provider reference populated in admin.
+6. Click `Save update`.
+7. Send the copied Wise message to the client.
+8. Mark funds paid only after a Wise receipt, statement line, or bank-side confirmation matches the amount, sender, date, and Swadakta reference.
+
+Use Wise for larger site visits, supplier deposits, monthly retainers, or cross-border clients who prefer bank-style settlement. Use Stripe or PayPal when the client needs card checkout, and M-Pesa for KES phone-prompt collections.
+
+AI boundary:
+
+- AI can recommend Wise as the payment route when card checkout is not ideal.
+- AI can prepare the Wise client message and reconciliation checklist.
+- AI can compare uploaded receipt text against the request amount, currency, payer, date, and Swadakta reference once file upload/receipt parsing exists.
+- AI/autopilot can save the Wise link/reference as `Invoice sent` and write internal reconciliation notes.
+- AI cannot mark Wise funds as paid, assign a receiver because of a Wise receipt, or release any milestone without provider-grade evidence or founder approval.
+- Wise payment status should stay `Invoice sent` / `Payment link sent` until a receipt, statement line, or bank-side confirmation has been reviewed.
 
 ## M-Pesa
 

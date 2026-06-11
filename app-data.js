@@ -1234,6 +1234,51 @@
     return { data, mode: "paypal" };
   }
 
+  async function createWisePaymentRequest(request, updates = {}) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      throw new Error("Wise payment request prep requires Supabase admin sign-in.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in as an admin before preparing a Wise payment request.");
+    }
+
+    const response = await fetch("/api/payments/wise-payment-request", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        request_code: request.request_code,
+        client_name: request.client_name,
+        email: request.email,
+        service_package: updates.service_package || request.service_package,
+        quote_amount: updates.quote_amount || request.quote_amount,
+        quote_currency: updates.quote_currency || request.quote_currency || request.preferred_currency,
+        funds_protection_preference:
+          updates.funds_protection_preference || request.funds_protection_preference,
+        job_value_band: updates.job_value_band || request.job_value_band,
+        payment_kind: "wise_payment_request",
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not prepare Wise payment request.");
+    }
+
+    return { data, mode: "wise" };
+  }
+
   async function capturePayPalOrder(request, updates = {}) {
     const supabase = await getSupabase();
 
@@ -1396,6 +1441,7 @@
     assist,
     createStripeCheckoutSession,
     createPayPalOrder,
+    createWisePaymentRequest,
     capturePayPalOrder,
     createMpesaStkPush,
     signInAdmin,
