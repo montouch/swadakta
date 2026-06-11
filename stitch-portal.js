@@ -289,6 +289,26 @@
     }
   }
 
+  function handOffToAccountHome(email, profile = {}, renderVersion = nextAccountRenderVersion()) {
+    setSignedInShell(email, profile);
+    openAccountHome();
+    setStatus("Signed in. Opening your account home.", "text-primary");
+
+    window.setTimeout(() => {
+      showCurrentAccount({
+        autoOpen: true,
+        fallbackEmail: email,
+        renderVersion,
+      }).catch(() => {
+        setVerificationEnabled(true);
+        setVerificationStatus(
+          "Account is open. Profile details can finish loading in the background.",
+          "text-primary",
+        );
+      });
+    }, 0);
+  }
+
   function renderAccountHome(profile = {}, { email = "" } = {}) {
     if (!accountHome) return;
     const displayEmail = email || profile.email || signedInEmail || "your account";
@@ -559,15 +579,12 @@
         const signedInUserEmail = signInResult.user?.email || signInResult.session?.user?.email || email;
         signedInEmail = signedInUserEmail;
         const signedInRenderVersion = nextAccountRenderVersion();
-        setSignedInShell(signedInUserEmail, { account_role: accountRole });
-        openAccountHome();
+        handOffToAccountHome(signedInUserEmail, { account_role: accountRole }, signedInRenderVersion);
         window.SwadaktaData.saveAccountProfile({
           email: signedInUserEmail,
           account_role: accountRole,
           onboarding_status: "started",
         }).catch(() => {});
-        setStatus("Signed in. Opening your account home.", "text-primary");
-        await showCurrentAccount({ autoOpen: true, fallbackEmail: signedInUserEmail, renderVersion: signedInRenderVersion });
         return;
       }
       if (shouldOpenWorkspace) {
