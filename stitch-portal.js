@@ -13,6 +13,7 @@
   const verificationStatus = document.querySelector("#account-verification-status");
   const verificationPill = document.querySelector("#verification-pill");
   const verificationList = document.querySelector("#verification-request-list");
+  const accountWorkspace = document.querySelector("#work");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -30,6 +31,18 @@
     const role = roleIntent();
     const reason = role === "receiver" ? "receiver_work" : role === "both" ? "paid_work" : "account_required";
     return new URL(`verification.html?reason=${encodeURIComponent(reason)}&role=${encodeURIComponent(role)}`, window.location.href).href;
+  }
+
+  function openAccountWorkspace() {
+    if (!accountWorkspace) return;
+
+    const nextUrl = new URL(window.location.href);
+    nextUrl.hash = "work";
+    window.history.replaceState(null, "", nextUrl);
+    window.setTimeout(() => {
+      accountWorkspace.scrollIntoView({ behavior: "smooth", block: "start" });
+      field("#account-full-name")?.focus({ preventScroll: true });
+    }, 60);
   }
 
   function setStatus(message, tone = "") {
@@ -179,7 +192,7 @@
     }
   }
 
-  async function showCurrentAccount() {
+  async function showCurrentAccount({ autoOpen = false } = {}) {
     try {
       const sessionResult = await window.SwadaktaData.getSession();
       const email = sessionResult.session?.user?.email || "";
@@ -204,6 +217,9 @@
       if (nextActions) nextActions.hidden = false;
       populateVerificationProfile(profile);
       await refreshVerificationWorkspace(profile);
+      if (autoOpen || window.location.hash === "#work") {
+        openAccountWorkspace();
+      }
     } catch {
       // The account card is only a convenience; auth errors are shown on submit.
     }
@@ -227,8 +243,10 @@
 
     try {
       let result;
+      let shouldOpenWorkspace = true;
       if (creating) {
         result = await window.SwadaktaData.signUpAccount(email, password, accountRedirect());
+        shouldOpenWorkspace = !result.needsConfirmation;
         if (!result.needsConfirmation) {
           await window.SwadaktaData.saveAccountProfile({
             email,
@@ -254,7 +272,7 @@
         });
         setStatus("Signed in. Your Swadakta account is ready.", "text-primary");
       }
-      await showCurrentAccount();
+      await showCurrentAccount({ autoOpen: shouldOpenWorkspace });
     } catch (error) {
       setStatus(error.message || "Account action failed.", "text-error");
     } finally {
@@ -289,7 +307,7 @@
         } else {
           setVerificationStatus("Profile saved.", "text-primary");
         }
-        await showCurrentAccount();
+        await showCurrentAccount({ autoOpen: true });
       } catch (error) {
         setVerificationStatus(error.message || "Could not save account details.", "text-error");
       } finally {
@@ -339,6 +357,7 @@
         signedInEmail = "";
         profileCard.hidden = true;
         if (nextActions) nextActions.hidden = true;
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
         setStatus("Signed out.", "text-primary");
         await refreshVerificationWorkspace(null);
       } catch (error) {
@@ -351,5 +370,5 @@
 
   updateMode();
   setVerificationEnabled(false);
-  showCurrentAccount();
+  showCurrentAccount({ autoOpen: true });
 })();

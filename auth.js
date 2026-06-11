@@ -14,7 +14,23 @@
       if (target.origin !== window.location.origin) {
         return "/portal";
       }
-      if (!["/", "/index.html", "/portal", "/portal.html", "/admin", "/admin.html"].includes(target.pathname)) {
+      const allowedPaths = new Set([
+        "/",
+        "/index.html",
+        "/portal",
+        "/portal.html",
+        "/verification",
+        "/verification.html",
+        "/brief",
+        "/brief.html",
+        "/tracking",
+        "/tracking.html",
+        "/admin",
+        "/admin.html",
+        "/admin-verification",
+        "/admin-verification.html",
+      ]);
+      if (!allowedPaths.has(target.pathname)) {
         return "/portal";
       }
       return `${target.pathname}${target.search}${target.hash}`;
