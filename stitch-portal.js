@@ -99,11 +99,11 @@
   }
 
   function accountRedirect() {
-    return new URL("portal.html#home", window.location.href).href;
+    return new URL("/portal#home", window.location.origin).href;
   }
 
   function accountHomeUrl() {
-    return new URL("portal.html#home", window.location.href).href;
+    return new URL("/portal#home", window.location.origin).href;
   }
 
   function setAccountState(state) {
