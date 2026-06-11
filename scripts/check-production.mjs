@@ -116,6 +116,26 @@ async function fetchPage(urlPath) {
   return { ...fallback, urlPath: `${urlPath}.html`, originalStatus: result.response.status };
 }
 
+async function fetchRedirectChain(urlPath, maxHops = 4) {
+  const chain = [];
+  let current = urlPath;
+
+  for (let hop = 0; hop < maxHops; hop += 1) {
+    const { response } = await fetchText(current);
+    const location = response.headers.get("location") || "";
+    chain.push({ urlPath: current, status: response.status, location });
+
+    if (![301, 302, 303, 307, 308].includes(response.status) || !location) {
+      return chain;
+    }
+
+    const next = new URL(location, baseUrl);
+    current = `${next.pathname}${next.search}${next.hash}`;
+  }
+
+  return chain;
+}
+
 function isLocalBaseUrl() {
   try {
     return localBaseHosts.has(new URL(baseUrl).hostname);
@@ -230,12 +250,19 @@ if (isLocalBaseUrl()) {
   pass("Skipping hosted /admin redirect check for local static server");
 } else {
   for (const adminEntry of ["/admin", "/admin.html"]) {
-    const { response } = await fetchText(adminEntry);
-    const location = response.headers.get("location") || "";
-    if (![301, 302, 303, 307, 308].includes(response.status) || !location.startsWith("/admin-ops")) {
-      fail(failures, `${adminEntry} should redirect to /admin-ops, got ${response.status} ${location}`);
+    const chain = await fetchRedirectChain(adminEntry);
+    const final = chain[chain.length - 1] || {};
+    const reachedAdminOps =
+      chain.some((entry) => entry.location.startsWith("/admin-ops")) ||
+      String(final.urlPath || "").startsWith("/admin-ops");
+
+    if (!reachedAdminOps || final.status !== 200) {
+      const summary = chain
+        .map((entry) => `${entry.urlPath} -> ${entry.status}${entry.location ? ` ${entry.location}` : ""}`)
+        .join(" | ");
+      fail(failures, `${adminEntry} should end at /admin-ops, got ${summary}`);
     } else {
-      pass(`${adminEntry} redirects to ${location}`);
+      pass(`${adminEntry} reaches ${final.urlPath}`);
     }
   }
 }
