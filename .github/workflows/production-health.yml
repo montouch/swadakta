@@ -1,0 +1,26 @@
+name: Production Health
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: "Base URL to check"
+        required: false
+        default: "https://swadakta.com"
+
+jobs:
+  production-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Check production bundle
+        run: node scripts/check-production.mjs
+        env:
+          SWADAKTA_BASE_URL: ${{ inputs.base_url }}

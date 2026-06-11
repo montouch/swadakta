@@ -82,6 +82,16 @@ Then open:
 - Portal: `http://localhost:4173/portal.html`
 - Founder console: `http://localhost:4173/admin.html` redirects to `http://localhost:4173/admin-readiness.html`
 
+## Production health
+
+Run a no-secret bundle check before demos or after Vercel deploys:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
+```
+
+Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The same check is available as a manual GitHub Action named `Production Health`.
+
 ## Go live
 
 See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, founder console, Vercel, payments, domain, corridor, and pilot launch checklist.
