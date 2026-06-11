@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=13" />
+    <link rel="stylesheet" href="styles.css?v=15" />
   </head>
   <body class="portal-body">
     <header class="site-header" aria-label="Portal navigation">
@@ -32,10 +32,19 @@
     </header>
 
     <main class="portal-shell" id="top">
+      <section class="account-status-bar" id="account-status-bar" aria-live="polite">
+        <div>
+          <span class="request-code">Account</span>
+          <strong id="account-status-title">Not signed in</strong>
+          <small id="account-status-detail">Use your email to create or open a client or receiver account.</small>
+        </div>
+        <button class="button button-secondary" type="button" id="portal-sign-out" hidden>Sign out</button>
+      </section>
+
       <section class="portal-hero" aria-labelledby="portal-title">
         <div>
           <p class="eyebrow">Swadakta Access</p>
-          <h1 id="portal-title">Choose the side you are on.</h1>
+          <h1 id="portal-title">Create or open the right account.</h1>
           <p>
             Clients outside Kenya get jobs done. Kenya-side receivers apply to get work.
             Admin controls quoting, vetting, assignment, payment status, and delivery quality.
@@ -44,13 +53,13 @@
         <div class="portal-choice-grid" aria-label="Swadakta portal choices">
           <a class="portal-choice" href="#client">
             <span>01</span>
-            <strong>Client portal</strong>
-            <small>Track a request or start a new Kenya brief.</small>
+            <strong>Client account</strong>
+            <small>Create or open your account, then track Kenya requests.</small>
           </a>
           <a class="portal-choice" href="#partner">
             <span>02</span>
-            <strong>Get jobs</strong>
-            <small>Apply as a receiver, runner, or field partner in Kenya.</small>
+            <strong>Receiver account</strong>
+            <small>Apply, get vetted, then receive assigned jobs in Kenya.</small>
           </a>
           <a class="portal-choice" href="#admin">
             <span>03</span>
@@ -65,8 +74,8 @@
           <p class="eyebrow">Client Portal</p>
           <h2 id="client-portal-title">Get a Kenya job done.</h2>
           <p>
-            Start with a brief or check the status of an existing request using the request code
-            and the original email or WhatsApp.
+            Create or open an email account to see requests linked to that email. You can also
+            check one request instantly with its request code and original email or WhatsApp.
           </p>
           <div class="portal-actions">
             <a class="button button-primary" href="index.html#intake">Start a new brief</a>
@@ -74,10 +83,10 @@
           </div>
           <form class="portal-login-form" id="client-login-form">
             <label class="field-group" for="client-login-email">
-              Client email login
+              Client account email
               <input id="client-login-email" name="clientEmail" type="email" placeholder="Email used on your brief" autocomplete="email" required />
             </label>
-            <button class="button button-secondary" type="submit">Send client magic link</button>
+            <button class="button button-secondary" type="submit">Create or open client account</button>
             <span class="copy-status" id="client-login-status" role="status"></span>
           </form>
           <div class="account-panel" id="client-account-panel" aria-live="polite"></div>
@@ -101,15 +110,15 @@
           <p class="eyebrow">Receiver Portal</p>
           <h2 id="partner-portal-title">Apply to get Swadakta jobs in Kenya.</h2>
           <p>
-            Receiver partners can be runners, site visitors, delivery helpers, document errand
-            assistants, sourcing agents, or virtual operations support.
+            Create or open a receiver account after applying. Vetted receivers can see assigned
+            jobs and send field updates from this portal.
           </p>
           <form class="portal-login-form" id="partner-login-form">
             <label class="field-group" for="partner-login-email">
-              Receiver email login
+              Receiver account email
               <input id="partner-login-email" name="partnerEmail" type="email" placeholder="Email used on your application" autocomplete="email" required />
             </label>
-            <button class="button button-secondary" type="submit">Send receiver magic link</button>
+            <button class="button button-secondary" type="submit">Create or open receiver account</button>
             <span class="copy-status" id="partner-login-status" role="status"></span>
           </form>
           <div class="account-panel" id="partner-account-panel" aria-live="polite"></div>
@@ -205,8 +214,8 @@
           <p class="eyebrow">Admin Access</p>
           <h2 id="admin-portal-title">Founder and operations desk.</h2>
           <p>
-            Admin access is for quoting, assigning jobs, reviewing receiver applications, tracking
-            payments, and protecting founder margin.
+            Admin access is for approved operators only. This account controls quoting, assigning
+            jobs, reviewing receivers, tracking protected funds, and protecting founder margin.
           </p>
           <div class="portal-actions">
             <a class="button button-secondary" href="admin.html">Open admin dashboard</a>
@@ -234,7 +243,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=14"></script>
-    <script src="portal.js?v=5"></script>
+    <script src="app-data.js?v=15"></script>
+    <script src="portal.js?v=6"></script>
   </body>
 </html>

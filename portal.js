@@ -10,6 +10,9 @@ const partnerLoginStatus = document.querySelector("#partner-login-status");
 const partnerAccountPanel = document.querySelector("#partner-account-panel");
 const adminForm = document.querySelector("#portal-admin-form");
 const adminStatus = document.querySelector("#portal-admin-status");
+const accountStatusTitle = document.querySelector("#account-status-title");
+const accountStatusDetail = document.querySelector("#account-status-detail");
+const portalSignOut = document.querySelector("#portal-sign-out");
 
 const statusLabels = {
   new: "New",
@@ -245,6 +248,26 @@ function buildPartnerPayload() {
   };
 }
 
+function setAccountStatus({ email = "", mode = "supabase", clientCount = 0, receiverCount = 0, jobCount = 0 } = {}) {
+  if (!accountStatusTitle || !accountStatusDetail || !portalSignOut) {
+    return;
+  }
+
+  if (!email) {
+    accountStatusTitle.textContent = mode === "local" ? "Demo account mode" : "Not signed in";
+    accountStatusDetail.textContent =
+      mode === "local"
+        ? "Local demo data is available without email sign-in."
+        : "Use your email to create or open a client or receiver account.";
+    portalSignOut.hidden = true;
+    return;
+  }
+
+  accountStatusTitle.textContent = `Signed in as ${email}`;
+  accountStatusDetail.textContent = `${clientCount} client request${clientCount === 1 ? "" : "s"}; ${receiverCount} receiver application${receiverCount === 1 ? "" : "s"}; ${jobCount} assigned job${jobCount === 1 ? "" : "s"}.`;
+  portalSignOut.hidden = false;
+}
+
 function renderClientAccount(email, requests) {
   if (!clientAccountPanel) {
     return;
@@ -375,6 +398,7 @@ async function loadAccountPanels() {
     const email = sessionResult.session?.user?.email || "";
 
     if (!email) {
+      setAccountStatus({ mode: sessionResult.mode });
       return;
     }
 
@@ -386,8 +410,19 @@ async function loadAccountPanels() {
 
     renderClientAccount(email, clientResult.data || []);
     renderPartnerAccount(email, partnerResult.data || [], assignedJobsResult.data || []);
+    setAccountStatus({
+      email,
+      mode: sessionResult.mode,
+      clientCount: (clientResult.data || []).length,
+      receiverCount: (partnerResult.data || []).length,
+      jobCount: (assignedJobsResult.data || []).length,
+    });
   } catch (error) {
     const message = escapeHtml(error.message || "Could not load account details.");
+    if (accountStatusTitle && accountStatusDetail) {
+      accountStatusTitle.textContent = "Account unavailable";
+      accountStatusDetail.textContent = error.message || "Could not load account details.";
+    }
     if (clientAccountPanel) {
       clientAccountPanel.innerHTML = `<span>${message}</span>`;
     }
@@ -403,8 +438,11 @@ async function sendPortalMagicLink(email, hash, statusElement) {
   const result = await window.SwadaktaData.signInPortal(email, redirectTo);
   statusElement.textContent =
     result.mode === "supabase"
-      ? "Magic link sent. Open it in this browser to continue."
+      ? "Account link sent. Open it in this browser to create or open your account."
       : "Demo mode does not require sign-in.";
+  if (result.mode === "local") {
+    await loadAccountPanels();
+  }
 }
 
 trackingForm.addEventListener("submit", async (event) => {
@@ -433,6 +471,21 @@ clientLoginForm.addEventListener("submit", async (event) => {
     clientLoginStatus.textContent = error.message || "Could not send client magic link.";
   }
 });
+
+if (portalSignOut) {
+  portalSignOut.addEventListener("click", async () => {
+    portalSignOut.textContent = "Signing out...";
+    await window.SwadaktaData.signOut();
+    if (clientAccountPanel) {
+      clientAccountPanel.innerHTML = "";
+    }
+    if (partnerAccountPanel) {
+      partnerAccountPanel.innerHTML = "";
+    }
+    setAccountStatus();
+    portalSignOut.textContent = "Sign out";
+  });
+}
 
 partnerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -519,7 +572,7 @@ adminForm.addEventListener("submit", async (event) => {
     adminStatus.className = "tracking-result is-success";
     adminStatus.textContent =
       result.mode === "supabase"
-        ? "Magic link sent. Open it in this browser to enter the admin desk."
+        ? "Admin account link sent. Open it in this browser to enter the admin desk."
         : "Demo mode does not require sign-in. Open the admin dashboard.";
   } catch (error) {
     adminStatus.className = "tracking-result is-error";

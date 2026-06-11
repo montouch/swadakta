@@ -10,12 +10,14 @@ const paymentFilter = document.querySelector("#payment-filter");
 const sensitiveFilter = document.querySelector("#sensitive-filter");
 const searchRequests = document.querySelector("#search-requests");
 const partnerBoard = document.querySelector("#partner-board");
+const founderCommand = document.querySelector("#founder-command");
 
 let requests = [];
 let partnerApplications = [];
 let fieldUpdates = [];
 let fundMilestones = [];
 let backendMode = "local";
+let actionFilter = "all";
 
 const taskLabels = {
   quick: "Quick errand",
@@ -197,6 +199,13 @@ function formatMoney(amount, currency = "AUD") {
   return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(toMoneyNumber(amount))}`;
 }
 
+function formatSignedMoney(amount, currency = "AUD") {
+  const number = Number(amount || 0);
+  const absolute = Math.abs(Number.isFinite(number) ? number : 0);
+  const prefix = number < 0 ? "-" : "";
+  return `${prefix}${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(absolute)}`;
+}
+
 function formatDateTimeInput(value) {
   if (!value) {
     return "";
@@ -231,7 +240,7 @@ function formatFounderMargin(source) {
     return "Add quote";
   }
 
-  const amount = `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(margin.amount)}`;
+  const amount = formatSignedMoney(margin.amount, currency);
   const label =
     margin.percent < 0
       ? "loss"
@@ -513,6 +522,191 @@ function renderFieldUpdates(request) {
   `;
 }
 
+function isClosedRequest(request) {
+  return ["completed", "cancelled"].includes(request.status);
+}
+
+function isPaymentOpen(request) {
+  return !["deposit_paid", "paid", "refunded"].includes(request.payment_status);
+}
+
+function isPaymentOverdue(request) {
+  if (!request.payment_due_at || !isPaymentOpen(request) || request.status === "cancelled") {
+    return false;
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const dueDate = new Date(`${request.payment_due_at}T00:00:00`);
+  return dueDate < today;
+}
+
+function needsQuoteOrPaymentLink(request) {
+  if (isClosedRequest(request)) {
+    return false;
+  }
+
+  return (
+    request.status === "new" ||
+    request.payment_status === "unquoted" ||
+    (request.status === "quoted" && (!toMoneyNumber(request.quote_amount) || !request.payment_link))
+  );
+}
+
+function hasClearedOrProtectedFunds(request) {
+  return (
+    ["deposit_paid", "paid"].includes(request.payment_status) ||
+    ["authorized", "held_by_provider", "deposit_confirmed", "partially_released"].includes(request.funds_status)
+  );
+}
+
+function isReadyToAssign(request) {
+  return !isClosedRequest(request) && hasClearedOrProtectedFunds(request) && !request.assigned_partner_id;
+}
+
+function needsProofReview(request) {
+  return !isClosedRequest(request) && getFieldUpdatesForRequest(request).length > 0;
+}
+
+function needsReleaseDecision(request) {
+  return (
+    !isClosedRequest(request) &&
+    getFundMilestonesForRequest(request).some((milestone) =>
+      ["ready_to_release", "refund_pending", "disputed"].includes(milestone.release_status),
+    )
+  );
+}
+
+function needsIdVerification(request) {
+  return (
+    request.identity_verification_required &&
+    !["verified", "not_required"].includes(request.verification_status) &&
+    request.status !== "cancelled"
+  );
+}
+
+function hasMarginRisk(request) {
+  const margin = calculateFounderMargin(request);
+  return margin.revenue > 0 && margin.percent < 30 && request.status !== "cancelled";
+}
+
+function matchesActionFilter(request, selectedAction) {
+  if (selectedAction === "all") {
+    return true;
+  }
+
+  const checks = {
+    quote: needsQuoteOrPaymentLink,
+    overdue: isPaymentOverdue,
+    assign: isReadyToAssign,
+    proof: needsProofReview,
+    release: needsReleaseDecision,
+    id: needsIdVerification,
+    margin: hasMarginRisk,
+  };
+
+  return checks[selectedAction] ? checks[selectedAction](request) : true;
+}
+
+function sumRequests(items, getter) {
+  return items.reduce((sum, item) => sum + toMoneyNumber(getter(item)), 0);
+}
+
+function sumMilestones(items, getter) {
+  return items.reduce((sum, item) => sum + toMoneyNumber(getter(item)), 0);
+}
+
+function renderFounderCommand() {
+  if (!founderCommand) {
+    return;
+  }
+
+  const openRequests = requests.filter((request) => request.status !== "cancelled");
+  const quotedRequests = openRequests.filter((request) => toMoneyNumber(request.quote_amount) > 0);
+  const outstandingRequests = quotedRequests.filter((request) => isPaymentOpen(request));
+  const totalRevenue = sumRequests(quotedRequests, (request) => request.quote_amount);
+  const totalMargin = quotedRequests.reduce((sum, request) => sum + calculateFounderMargin(request).amount, 0);
+  const protectedTotal = sumRequests(openRequests, (request) => request.protected_amount);
+  const outstandingTotal = sumRequests(outstandingRequests, (request) => request.quote_amount);
+  const readyReleaseTotal = sumMilestones(
+    fundMilestones.filter((milestone) => milestone.release_status === "ready_to_release"),
+    (milestone) => toMoneyNumber(milestone.amount) - toMoneyNumber(milestone.released_amount),
+  );
+  const actionCounts = {
+    all: requests.length,
+    quote: requests.filter(needsQuoteOrPaymentLink).length,
+    overdue: requests.filter(isPaymentOverdue).length,
+    assign: requests.filter(isReadyToAssign).length,
+    proof: requests.filter(needsProofReview).length,
+    release: requests.filter(needsReleaseDecision).length,
+    id: requests.filter(needsIdVerification).length,
+    margin: requests.filter(hasMarginRisk).length,
+  };
+  const actionTotal =
+    actionCounts.quote +
+    actionCounts.overdue +
+    actionCounts.assign +
+    actionCounts.proof +
+    actionCounts.release +
+    actionCounts.id +
+    actionCounts.margin;
+
+  const summaryCards = [
+    ["Quoted revenue", formatMoney(totalRevenue, "AUD"), "Open quoted pipeline"],
+    ["Founder margin", formatSignedMoney(totalMargin, "AUD"), "After receiver, field, and payment costs"],
+    ["Protected funds", formatMoney(protectedTotal, "AUD"), "Held, authorized, or confirmed"],
+    ["To collect", formatMoney(outstandingTotal, "AUD"), "Quoted but not paid/deposited"],
+    ["Ready release", formatMoney(readyReleaseTotal, "AUD"), "Milestones waiting for payout decision"],
+    ["Action items", String(actionTotal), "Open money, trust, or delivery blockers"],
+  ];
+  const actions = [
+    ["all", "All jobs", "Full queue"],
+    ["quote", "Quote/pay link", "Make client money ask"],
+    ["overdue", "Overdue pay", "Chase payment"],
+    ["assign", "Assign receiver", "Paid/protected, no receiver"],
+    ["proof", "Review proof", "Receiver update waiting"],
+    ["release", "Release decision", "Pay/refund/dispute milestone"],
+    ["id", "ID check", "Verification not done"],
+    ["margin", "Margin risk", "Below 30%"],
+  ];
+
+  founderCommand.innerHTML = `
+    <div class="founder-command-header">
+      <div>
+        <p class="eyebrow">Founder desk</p>
+        <h2>Money, trust, and delivery control.</h2>
+      </div>
+      <span class="mode-badge">${escapeHtml(actionFilter === "all" ? "All action queues" : "Action filter active")}</span>
+    </div>
+    <div class="founder-command-grid">
+      ${summaryCards
+        .map(
+          ([label, value, note]) => `
+            <article>
+              <span>${escapeHtml(label)}</span>
+              <strong>${escapeHtml(value)}</strong>
+              <small>${escapeHtml(note)}</small>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+    <div class="command-filter-row" aria-label="Founder action filters">
+      ${actions
+        .map(
+          ([value, label, note]) => `
+            <button class="command-filter ${actionFilter === value ? "is-active" : ""}" type="button" data-action-filter="${escapeHtml(value)}">
+              <strong>${escapeHtml(String(actionCounts[value]))}</strong>
+              <span>${escapeHtml(label)}</span>
+              <small>${escapeHtml(note)}</small>
+            </button>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function getFilteredRequests() {
   const selectedStatus = statusFilter.value;
   const selectedPayment = paymentFilter.value;
@@ -526,6 +720,7 @@ function getFilteredRequests() {
       selectedSensitive === "all" ||
       (selectedSensitive === "sensitive" && request.sensitive_documents_expected) ||
       (selectedSensitive === "standard" && !request.sensitive_documents_expected);
+    const matchesAction = matchesActionFilter(request, actionFilter);
     const searchable = [
       request.request_code,
       request.client_name,
@@ -575,7 +770,7 @@ function getFilteredRequests() {
     ]
       .join(" ")
       .toLowerCase();
-    return matchesStatus && matchesPayment && matchesSensitive && (!query || searchable.includes(query));
+    return matchesStatus && matchesPayment && matchesSensitive && matchesAction && (!query || searchable.includes(query));
   });
 }
 
@@ -979,6 +1174,7 @@ function renderRequestCardV2(request) {
 
 function renderRequests() {
   updateMetrics();
+  renderFounderCommand();
   const visibleRequests = getFilteredRequests();
 
   if (!visibleRequests.length) {
@@ -1146,6 +1342,14 @@ async function loadRequests() {
           </div>
         `;
       }
+      if (founderCommand) {
+        founderCommand.innerHTML = `
+          <div class="empty-state">
+            <h2>Sign in to view founder controls</h2>
+            <p>Money, release, and margin queues stay behind admin access.</p>
+          </div>
+        `;
+      }
       fieldUpdates = [];
       fundMilestones = [];
       return;
@@ -1172,6 +1376,14 @@ async function loadRequests() {
     `;
     if (partnerBoard) {
       partnerBoard.innerHTML = "";
+    }
+    if (founderCommand) {
+      founderCommand.innerHTML = `
+        <div class="empty-state is-error">
+          <h2>Founder controls unavailable</h2>
+          <p>${escapeHtml(error.message || "Could not load money and action queues.")}</p>
+        </div>
+      `;
     }
   }
 }
@@ -1536,5 +1748,16 @@ statusFilter.addEventListener("change", renderRequests);
 paymentFilter.addEventListener("change", renderRequests);
 sensitiveFilter.addEventListener("change", renderRequests);
 searchRequests.addEventListener("input", renderRequests);
+if (founderCommand) {
+  founderCommand.addEventListener("click", (event) => {
+    const button = event.target.closest(".command-filter");
+    if (!button) {
+      return;
+    }
+
+    actionFilter = button.dataset.actionFilter || "all";
+    renderRequests();
+  });
+}
 
 loadRequests();

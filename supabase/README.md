@@ -22,6 +22,9 @@ The schema creates:
 - Public request tracking:
   - clients can look up limited status/report/payment details with request code plus original email or WhatsApp
   - clients can see safe funds-protection and milestone release status only
+- Email magic-link account access:
+  - Supabase Auth creates or opens an account from the client, receiver, or admin email form
+  - client and receiver account summaries are matched by authenticated email
 - private helper functions under `app_private`
 
 Admin activation:

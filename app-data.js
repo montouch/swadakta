@@ -744,6 +744,7 @@
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
+        shouldCreateUser: true,
         emailRedirectTo: redirectTo,
       },
     });

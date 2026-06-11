@@ -7,6 +7,8 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Client-facing landing page and real intake form
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
 - Client and receiver magic-link portal access with sanitized account summaries
+- Email magic-link account creation/opening for clients, receivers, and admins
+- Portal account status and sign-out controls
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
 - Local demo persistence before backend setup

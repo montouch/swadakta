@@ -87,6 +87,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
 - `/portal` exposes client access, receiver-partner applications, and admin access.
+- Client and receiver account access is email magic-link based; the same email creates the account if needed and opens it later.
 - Client and receiver portal magic links return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must be marked `Vetted` before getting client jobs.
 - Assigned vetted receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
