@@ -55,8 +55,8 @@ The browser helper tries the Supabase Edge Function first. If the Edge Function 
 Swadakta should not depend on the founder manually remembering every next step. The app should run the routine flow through rules:
 
 - New request arrives.
-- App classifies the job, value band, funds preference, ID requirement, payment state, receiver state, proof state, and release state.
-- Admin dashboard shows the exact action queue.
+- App classifies the corridor, service direction, logistics mode, goods category, value band, funds preference, ID requirement, payment state, receiver state, proof state, and release state.
+- Founder console shows the exact exception queue.
 - AI drafts the next operational note or message only when language, judgment, or prioritization is useful.
 - Admin/founder clicks to save or apply anything sensitive.
 
@@ -84,9 +84,9 @@ The founder/admin must click to apply any suggested field changes.
 
 ## Current autonomous behavior
 
-The public app can collect qualified job details from clients outside Kenya, including funds-protection preference and value band. The admin app then automatically builds action queues for quote/payment links, funds guardrails, overdue payment, ID checks, receiver assignment, proof review, release decisions, and margin risk.
+The public app can collect qualified corridor details from clients in the launch regions, including origin, destination, logistics mode, goods category, funds-protection preference, and value band. The admin app then automatically builds action queues for route risk, quote/payment links, funds guardrails, overdue payment, ID checks, receiver assignment, proof review, release decisions, compliance review, and margin risk.
 
-The AI can now generate a draft from those queues and save that draft into the request's internal notes. It still cannot move money, verify identity, assign receivers, or send external messages by itself.
+The AI can now generate a draft from those queues and save that draft into the request's internal notes. It still cannot move money, clear customs/legal uncertainty, verify identity, assign receivers, or send external messages by itself.
 
 ## Provenance seals
 

@@ -69,7 +69,7 @@ Minimum production checklist:
 - Admin dashboard filters by status, payment state, and sensitive-document risk
 - Admin shows budget comfort, proof priority, and lead source on each request
 - Admin can add quote amount, payment link, report link, and proof links
-- Admin can copy a client update or Kenya-side operator brief from each request
+- Admin can copy a client update or corridor operator brief from each request
 - Supabase rejects unsafe non-HTTP client-visible links for supporting, payment, report, and proof URLs
 - Public intake requires client permission, scope, terms, and privacy consent
 - Public intake can capture supporting links and sensitive-document needs without asking for raw files
@@ -86,7 +86,7 @@ Use these statuses:
 - `new`: request received
 - `quoted`: price confirmed with client
 - `paid`: client has paid or deposit is confirmed
-- `in_progress`: Kenya-side execution has started
+- `in_progress`: receiver-side execution has started
 - `waiting_client`: blocked by client response or documents
 - `completed`: report delivered
 - `cancelled`: no longer active

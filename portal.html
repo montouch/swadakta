@@ -6,7 +6,7 @@
     <title>Swadakta Portal</title>
     <meta
       name="description"
-      content="Swadakta portal for diaspora clients, Kenya-side receiver partners, and admin operations."
+      content="Swadakta portal for corridor clients, vetted receiver partners, and founder exception operations."
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -19,7 +19,7 @@
         <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
         <span>
           <strong>Swadakta</strong>
-          <small>Client + Kenya Partner Desk</small>
+          <small>Client + Receiver Portal</small>
         </span>
       </a>
       <nav class="nav-links" aria-label="Portal sections">
@@ -48,8 +48,8 @@
           <p class="eyebrow">Swadakta Access</p>
           <h1 id="portal-title">Create or open the right account.</h1>
           <p>
-            Clients outside Kenya get jobs done. Kenya-side receivers apply to get work.
-            Admin controls quoting, vetting, assignment, payment status, and delivery quality.
+            Clients request cross-border or local tasks. Receivers apply to get vetted corridor work.
+            The app handles routine routing, while founder review protects money, identity, compliance, and disputes.
           </p>
         </div>
         <div class="portal-choice-grid" aria-label="Swadakta portal choices">
@@ -65,8 +65,8 @@
           </a>
           <a class="portal-choice" href="#admin">
             <span>03</span>
-            <strong>Admin desk</strong>
-            <small>Founder and operations sign-in.</small>
+            <strong>Founder console</strong>
+            <small>Exception review and protected decisions.</small>
           </a>
         </div>
       </section>
@@ -74,7 +74,7 @@
       <section class="section portal-section" id="client" aria-labelledby="client-portal-title">
         <div class="tracking-copy">
           <p class="eyebrow">Client Portal</p>
-          <h2 id="client-portal-title">Get a Kenya job done.</h2>
+          <h2 id="client-portal-title">Get a corridor job done.</h2>
           <p>
             Create or open an email account to see requests linked to that email. You can also
             check one request instantly with its request code and original email or WhatsApp.
@@ -110,7 +110,7 @@
       <section class="section portal-section" id="partner" aria-labelledby="partner-portal-title">
         <div class="intake-copy">
           <p class="eyebrow">Receiver Portal</p>
-          <h2 id="partner-portal-title">Apply to get Swadakta jobs in Kenya.</h2>
+          <h2 id="partner-portal-title">Apply to get Swadakta receiver jobs.</h2>
           <p>
             Create or open a receiver account after applying. Vetted receivers can see assigned
             jobs and send field updates from this portal.
@@ -144,8 +144,8 @@
               <input id="partner-email" name="email" type="email" autocomplete="email" required />
             </div>
             <div class="field-group">
-              <label for="partner-base">Kenya base</label>
-              <input id="partner-base" name="kenyaBase" type="text" placeholder="Town/county where you operate" required />
+              <label for="partner-base">Operating base</label>
+              <input id="partner-base" name="kenyaBase" type="text" placeholder="Town, county, state, or country where you operate" required />
             </div>
           </div>
 
@@ -228,13 +228,13 @@
       <section class="section portal-section" id="admin" aria-labelledby="admin-portal-title">
         <div class="tracking-copy">
           <p class="eyebrow">Admin Access</p>
-          <h2 id="admin-portal-title">Founder and operations desk.</h2>
+          <h2 id="admin-portal-title">Founder exception console.</h2>
           <p>
-            Admin access is for approved operators only. This account controls quoting, assigning
-            jobs, reviewing receivers, tracking protected funds, and protecting founder margin.
+            Founder access is for approved operators only. This console reviews exceptions,
+            protected money, identity risk, receiver quality, unsupported lanes, and compliance.
           </p>
           <div class="portal-actions">
-            <a class="button button-secondary" href="admin.html">Open admin dashboard</a>
+            <a class="button button-secondary" href="admin.html">Open founder console</a>
           </div>
         </div>
         <form class="tracking-panel" id="portal-admin-form">
@@ -249,7 +249,7 @@
     </main>
 
     <footer class="site-footer">
-      <p>Swadakta Diaspora Concierge</p>
+      <p>Swadakta Corridor Concierge</p>
       <nav aria-label="Footer links">
         <a href="index.html#intake">Start brief</a>
         <a href="admin.html">Admin</a>
@@ -259,7 +259,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=27"></script>
+    <script src="app-data.js?v=28"></script>
     <script src="portal.js?v=14"></script>
   </body>
 </html>

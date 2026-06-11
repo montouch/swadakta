@@ -23,6 +23,7 @@ let actionFilter = "all";
 
 const taskLabels = {
   quick: "Quick errand",
+  shopping: "Shopping or sourcing",
   site: "Property or site visit",
   registry: "Registry or legal errand",
   virtual: "Virtual assistant support",
@@ -51,7 +52,8 @@ const paymentMethodLabels = {
   card: "Card or Stripe link",
   paypal: "PayPal invoice or link",
   wise: "Wise transfer",
-  bank: "Bank or mobile money transfer",
+  mpesa: "M-Pesa STK or Paybill",
+  bank: "Bank transfer or manual receipt",
 };
 
 const fundsStatusLabels = {
@@ -83,8 +85,66 @@ const servicePackageLabels = {
   site_visit: "Site Visit - from AUD 180",
   registry_errand: "Registry/Document Run - from AUD 150",
   family_support: "Family Support Run - from AUD 120",
+  shopping_sourcing: "Shopping and sourcing - quoted per item",
   monthly_retainer: "Monthly Retainer - from AUD 450/mo",
   business_ops: "Business Ops Support - quoted monthly",
+};
+
+const serviceDirectionLabels = {
+  origin_to_destination: "Origin to destination",
+  destination_to_origin: "Destination to origin",
+  two_way: "Two-way corridor",
+  local_in_country: "Local in one country",
+  digital_global: "Digital/global support",
+};
+
+const logisticsModeLabels = {
+  not_needed: "No physical delivery",
+  local_delivery: "Local delivery or errand",
+  postal_courier: "Post or courier shipment",
+  pickup_hold: "Pickup and hold",
+  supplier_direct: "Supplier ships directly",
+  airport_handoff: "Airport/traveller handoff",
+  digital_only: "Digital/documents only",
+};
+
+const goodsCategoryLabels = {
+  none: "No physical goods",
+  general_goods: "General goods",
+  clothing_household: "Clothing or household items",
+  electronics: "Electronics",
+  cosmetics: "Cosmetics or personal care",
+  food_plant_animal: "Food, plant, or animal product",
+  medicine_health: "Medicine or health product",
+  documents: "Documents",
+  valuable_items: "Valuable items",
+  restricted_or_unsure: "Restricted or not sure",
+};
+
+const complianceStatusLabels = {
+  not_applicable: "Not applicable",
+  needs_ai_review: "Needs AI review",
+  needs_admin_review: "Needs founder review",
+  cleared: "Cleared",
+  restricted: "Restricted",
+  permit_required: "Permit required",
+  prohibited: "Prohibited",
+};
+
+const complianceRiskLabels = {
+  standard: "Standard",
+  medium: "Medium",
+  high: "High",
+  blocked: "Blocked",
+};
+
+const automationStatusLabels = {
+  ai_triage: "AI triage",
+  self_service: "Self-service",
+  receiver_routed: "Receiver routed",
+  admin_review: "Founder review",
+  founder_approval: "Founder approval",
+  blocked: "Blocked",
 };
 
 const budgetRangeLabels = {
@@ -787,6 +847,8 @@ function buildOpsAiPrompt(item) {
   const request = item.request;
   const currency = request.quote_currency || request.preferred_currency || "AUD";
   const assignedPartner = getPartnerById(request.assigned_partner_id);
+  const route = `${request.origin_country || "Australia"} to ${request.destination_country || "Kenya"}`;
+  const taskLocation = request.task_location || request.kenya_location || "Not specified";
   const receiverLine = assignedPartner
     ? `${assignedPartner.full_name} (${assignedPartner.partner_code}) - seal ${receiverProvenance(assignedPartner).score}%`
     : "Unassigned";
@@ -798,7 +860,14 @@ function buildOpsAiPrompt(item) {
     `Action needed: ${item.type}`,
     `Recommended next step: ${item.action}`,
     `Reason: ${item.reason}`,
-    `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya`,
+    `Route: ${route}`,
+    `Direction: ${serviceDirectionLabels[request.service_direction] || request.service_direction || "Origin to destination"}`,
+    `Task: ${taskLabels[request.task_type] || request.task_type} in ${taskLocation}`,
+    `Logistics: ${logisticsModeLabels[request.logistics_mode] || request.logistics_mode || "No physical delivery"}`,
+    `Goods: ${goodsCategoryLabels[request.goods_category] || request.goods_category || "No physical goods"}`,
+    `Compliance: ${complianceStatusLabels[request.compliance_status] || request.compliance_status || "Needs AI review"}; risk ${complianceRiskLabels[request.compliance_risk_level] || request.compliance_risk_level || "standard"}`,
+    `Automation: ${automationStatusLabels[request.automation_status] || request.automation_status || "AI triage"}`,
+    `Founder review reason: ${request.admin_review_reason || "None"}`,
     `Quote: ${request.quote_amount ? formatMoney(request.quote_amount, currency) : "not quoted"}`,
     `Payment: ${paymentLabels[request.payment_status] || request.payment_status}; funds ${fundsStatusLabels[request.funds_status] || request.funds_status}`,
     `Receiver: ${receiverLine}`,
@@ -806,7 +875,7 @@ function buildOpsAiPrompt(item) {
     `Funds plan: ${fundsProtectionLabels[request.funds_protection_preference] || request.funds_protection_preference || "quote first"}`,
     `ID status: ${verificationStatusLabels[request.verification_status] || request.verification_status || "not set"}`,
     "",
-    "Draft the admin-approved next action. Do not contact the client, assign a receiver, or release money unless the founder approves.",
+    "Draft the next safe system action. Let self-serve or receiver-routing continue only if the route, item, money, ID, and proof risks are acceptable. Escalate to founder for legal/import-export uncertainty, unsupported corridors, ID issues, disputes, high-value funds, release decisions, or prohibited/restricted goods.",
   ].join("\n");
 }
 
@@ -981,8 +1050,19 @@ function renderFounderCommand() {
           type: item.type,
           request_code: item.request.request_code,
           client_name: item.request.client_name,
+          origin_country: item.request.origin_country,
+          destination_country: item.request.destination_country,
+          service_direction: item.request.service_direction,
           task_type: item.request.task_type,
+          task_location: item.request.task_location || item.request.kenya_location,
           kenya_location: item.request.kenya_location,
+          logistics_mode: item.request.logistics_mode,
+          goods_category: item.request.goods_category,
+          compliance_status: item.request.compliance_status,
+          compliance_risk_level: item.request.compliance_risk_level,
+          automation_status: item.request.automation_status,
+          admin_review_required: item.request.admin_review_required,
+          admin_review_reason: item.request.admin_review_reason,
           status: item.request.status,
           payment_status: item.request.payment_status,
           quote_amount: item.request.quote_amount,
@@ -1052,6 +1132,10 @@ function getFilteredRequests() {
       request.client_name,
       request.whatsapp,
       request.email,
+      request.origin_country,
+      request.destination_country,
+      serviceDirectionLabels[request.service_direction] || request.service_direction,
+      request.task_location,
       request.kenya_location,
       request.client_base,
       request.australia_location,
@@ -1059,6 +1143,13 @@ function getFilteredRequests() {
       request.local_contact_phone,
       request.contact_preference,
       request.contact_window,
+      logisticsModeLabels[request.logistics_mode] || request.logistics_mode,
+      goodsCategoryLabels[request.goods_category] || request.goods_category,
+      complianceStatusLabels[request.compliance_status] || request.compliance_status,
+      complianceRiskLabels[request.compliance_risk_level] || request.compliance_risk_level,
+      automationStatusLabels[request.automation_status] || request.automation_status,
+      request.admin_review_reason,
+      request.logistics_notes,
       assignedPartnerLabel(request),
       servicePackageLabels[request.service_package] || request.service_package,
       paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
@@ -1194,6 +1285,60 @@ function milestoneProviderOptions(current) {
 
 function servicePackageOptions(current) {
   return Object.entries(servicePackageLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function serviceDirectionOptions(current) {
+  return Object.entries(serviceDirectionLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function logisticsModeOptions(current) {
+  return Object.entries(logisticsModeLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function goodsCategoryOptions(current) {
+  return Object.entries(goodsCategoryLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function complianceStatusOptions(current) {
+  return Object.entries(complianceStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function complianceRiskOptions(current) {
+  return Object.entries(complianceRiskLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function automationStatusOptions(current) {
+  return Object.entries(automationStatusLabels)
     .map(
       ([value, label]) =>
         `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
@@ -1461,6 +1606,7 @@ function assignedPartnerOptions(current) {
 
 function renderRequestCard(request) {
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
+  const taskLocation = request.task_location || request.kenya_location || "Not specified";
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
       <header class="request-card-header">
@@ -1521,6 +1667,19 @@ function renderRequestCardV2(request) {
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
   const proofLinks = Array.isArray(request.proof_links) ? request.proof_links.join("\n") : "";
   const clientBase = request.client_base || request.australia_location || "Not specified";
+  const originCountry = request.origin_country || "Australia";
+  const destinationCountry = request.destination_country || "Kenya";
+  const taskLocation = request.task_location || request.kenya_location || "Not specified";
+  const serviceDirection =
+    serviceDirectionLabels[request.service_direction] || request.service_direction || "Origin to destination";
+  const logisticsMode = logisticsModeLabels[request.logistics_mode] || request.logistics_mode || "No physical delivery";
+  const goodsCategory = goodsCategoryLabels[request.goods_category] || request.goods_category || "No physical goods";
+  const complianceStatus =
+    complianceStatusLabels[request.compliance_status] || request.compliance_status || "Needs AI review";
+  const complianceRisk =
+    complianceRiskLabels[request.compliance_risk_level] || request.compliance_risk_level || "Standard";
+  const automationStatus =
+    automationStatusLabels[request.automation_status] || request.automation_status || "AI triage";
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
   const servicePackage =
@@ -1556,7 +1715,7 @@ function renderRequestCardV2(request) {
         <div>
           <span class="request-code">${escapeHtml(request.request_code)}</span>
           <h2>${escapeHtml(request.client_name)}</h2>
-          <p>${escapeHtml(taskLabels[request.task_type] || request.task_type)} - ${escapeHtml(request.kenya_location)}, Kenya</p>
+          <p>${escapeHtml(originCountry)} to ${escapeHtml(destinationCountry)} - ${escapeHtml(taskLabels[request.task_type] || request.task_type)} in ${escapeHtml(taskLocation)}</p>
         </div>
         <span class="status-pill status-${escapeHtml(request.status)}">${escapeHtml(statusLabels[request.status] || request.status)}</span>
       </header>
@@ -1565,9 +1724,16 @@ function renderRequestCardV2(request) {
         <div><dt>WhatsApp</dt><dd>${escapeHtml(request.whatsapp)}</dd></div>
         <div><dt>Email</dt><dd>${escapeHtml(request.email || "Not provided")}</dd></div>
         <div><dt>Client base</dt><dd>${escapeHtml(clientBase)}</dd></div>
+        <div><dt>Corridor</dt><dd>${escapeHtml(`${originCountry} -> ${destinationCountry}`)}</dd></div>
+        <div><dt>Direction</dt><dd>${escapeHtml(serviceDirection)}</dd></div>
+        <div><dt>Task location</dt><dd>${escapeHtml(taskLocation)}</dd></div>
+        <div><dt>Logistics</dt><dd>${escapeHtml(logisticsMode)}</dd></div>
+        <div><dt>Goods</dt><dd>${escapeHtml(goodsCategory)}</dd></div>
+        <div><dt>Automation</dt><dd>${escapeHtml(automationStatus)}</dd></div>
+        <div><dt>Compliance</dt><dd>${escapeHtml(`${complianceStatus} - ${complianceRisk}`)}</dd></div>
         <div><dt>Urgency</dt><dd>${escapeHtml(request.urgency)}</dd></div>
         <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
-        <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
+        <div><dt>Task contact</dt><dd>${escapeHtml(localContact)}</dd></div>
         <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
         <div><dt>Receiver</dt><dd>${escapeHtml(assignedPartner)}</dd></div>
         <div><dt>Package</dt><dd>${escapeHtml(servicePackage)}</dd></div>
@@ -1594,6 +1760,12 @@ function renderRequestCardV2(request) {
       </dl>
 
       <p class="request-notes">${escapeHtml(request.notes)}</p>
+      ${request.logistics_notes ? `<p class="request-notes"><strong>Logistics:</strong> ${escapeHtml(request.logistics_notes)}</p>` : ""}
+      ${
+        request.admin_review_required || request.admin_review_reason
+          ? `<p class="request-notes"><strong>Founder review:</strong> ${escapeHtml(request.admin_review_reason || "Required by automation state.")}</p>`
+          : ""
+      }
       <div class="verification-panel">
         <span class="status-pill status-${escapeHtml(fundsGuardrailLevel(request))}">${escapeHtml(fundsGuardrailLevel(request) === "regulated_escrow" ? "Escrow review" : fundsGuardrailLevel(request) === "milestone_control" ? "Milestone control" : "Standard funds")}</span>
         ${fundsGuardrailLines(request).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
@@ -1613,6 +1785,60 @@ function renderRequestCardV2(request) {
             <select name="payment_status">${paymentOptions(request.payment_status)}</select>
           </label>
         </div>
+        <div class="field-row">
+          <label class="field-group">
+            Origin
+            <input name="origin_country" type="text" value="${escapeHtml(originCountry)}" />
+          </label>
+          <label class="field-group">
+            Destination
+            <input name="destination_country" type="text" value="${escapeHtml(destinationCountry)}" />
+          </label>
+          <label class="field-group">
+            Direction
+            <select name="service_direction">${serviceDirectionOptions(request.service_direction || "origin_to_destination")}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Logistics
+            <select name="logistics_mode">${logisticsModeOptions(request.logistics_mode || "not_needed")}</select>
+          </label>
+          <label class="field-group">
+            Goods category
+            <select name="goods_category">${goodsCategoryOptions(request.goods_category || "none")}</select>
+          </label>
+          <label class="field-group">
+            Automation
+            <select name="automation_status">${automationStatusOptions(request.automation_status || "ai_triage")}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Compliance
+            <select name="compliance_status">${complianceStatusOptions(request.compliance_status || "needs_ai_review")}</select>
+          </label>
+          <label class="field-group">
+            Risk
+            <select name="compliance_risk_level">${complianceRiskOptions(request.compliance_risk_level || "standard")}</select>
+          </label>
+          <label class="field-group">
+            Task location
+            <input name="task_location" type="text" value="${escapeHtml(taskLocation)}" />
+          </label>
+        </div>
+        <label class="field-group">
+          Logistics/compliance notes
+          <textarea name="logistics_notes" rows="3">${escapeHtml(request.logistics_notes || "")}</textarea>
+        </label>
+        <label class="field-group">
+          Founder review reason
+          <input name="admin_review_reason" type="text" value="${escapeHtml(request.admin_review_reason || "")}" />
+        </label>
+        <label class="single-check">
+          <input name="admin_review_required" type="checkbox" ${request.admin_review_required ? "checked" : ""} />
+          Founder review required before quoting, assigning, buying, shipping, or releasing funds
+        </label>
         <div class="field-row">
           <label class="field-group">
             Service package
@@ -2231,6 +2457,19 @@ function formPayload(form) {
   return {
     status: formData.get("status"),
     payment_status: formData.get("payment_status"),
+    origin_country: String(formData.get("origin_country") || "").trim() || "Australia",
+    destination_country: String(formData.get("destination_country") || "").trim() || "Kenya",
+    service_direction: formData.get("service_direction") || "origin_to_destination",
+    task_location: String(formData.get("task_location") || "").trim(),
+    logistics_mode: formData.get("logistics_mode") || "not_needed",
+    goods_category: formData.get("goods_category") || "none",
+    logistics_notes: formData.get("logistics_notes") || "",
+    compliance_acknowledged: true,
+    compliance_status: formData.get("compliance_status") || "needs_ai_review",
+    compliance_risk_level: formData.get("compliance_risk_level") || "standard",
+    automation_status: formData.get("automation_status") || "ai_triage",
+    admin_review_required: Boolean(formData.get("admin_review_required")),
+    admin_review_reason: formData.get("admin_review_reason") || "",
     service_package: formData.get("service_package"),
     job_value_band: formData.get("job_value_band") || "unsure",
     funds_protection_preference: formData.get("funds_protection_preference") || "quote_first",
@@ -2527,6 +2766,18 @@ function buildQuoteMessage(request, form) {
     : "Payment link: Not issued yet. We will send the secure link after confirming the quote.";
   const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const route = `${request.origin_country || "Australia"} to ${request.destination_country || "Kenya"}`;
+  const taskLocation = request.task_location || request.kenya_location || "the task location";
+  const logisticsMode =
+    logisticsModeLabels[payload.logistics_mode || request.logistics_mode] ||
+    payload.logistics_mode ||
+    request.logistics_mode ||
+    "No physical delivery";
+  const goodsCategory =
+    goodsCategoryLabels[payload.goods_category || request.goods_category] ||
+    payload.goods_category ||
+    request.goods_category ||
+    "No physical goods";
   const valueBand = jobValueBandLabels[payload.job_value_band] || payload.job_value_band || "Not sure yet";
   const fundsPreference =
     fundsProtectionLabels[payload.funds_protection_preference] ||
@@ -2546,7 +2797,9 @@ function buildQuoteMessage(request, form) {
     "",
     `Swadakta quote for request ${request.request_code}: ${quoteLine}.`,
     `Package: ${servicePackage}.`,
-    `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya.`,
+    `Route: ${route}.`,
+    `Task: ${taskLabels[request.task_type] || request.task_type} in ${taskLocation}.`,
+    `Logistics: ${logisticsMode}. Goods category: ${goodsCategory}.`,
     `Preferred payment route: ${paymentMethod}.`,
     `Value involved: ${valueBand}. Funds plan: ${fundsPreference}.`,
     dueLine,
@@ -2585,6 +2838,23 @@ function buildOperatorBrief(request, form) {
     payload.funds_protection_preference ||
     "Quote first, then decide";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const route = `${request.origin_country || "Australia"} to ${request.destination_country || "Kenya"}`;
+  const taskLocation = request.task_location || request.kenya_location || "Not specified";
+  const logisticsMode =
+    logisticsModeLabels[payload.logistics_mode || request.logistics_mode] ||
+    payload.logistics_mode ||
+    request.logistics_mode ||
+    "No physical delivery";
+  const goodsCategory =
+    goodsCategoryLabels[payload.goods_category || request.goods_category] ||
+    payload.goods_category ||
+    request.goods_category ||
+    "No physical goods";
+  const complianceStatus =
+    complianceStatusLabels[payload.compliance_status || request.compliance_status] ||
+    payload.compliance_status ||
+    request.compliance_status ||
+    "Needs AI review";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
   const milestoneSummary = getFundMilestonesForRequest(request)
     .map((milestone) => `- ${renderClientMilestoneLine(milestone)}; provider ${milestoneProviderLabels[milestone.provider] || milestone.provider}; trigger: ${milestone.release_trigger}`)
@@ -2594,8 +2864,13 @@ function buildOperatorBrief(request, form) {
   return [
     `Swadakta operator brief: ${request.request_code}`,
     `Client: ${request.client_name}`,
+    `Route: ${route}`,
     `Task: ${taskLabels[request.task_type] || request.task_type}`,
-    `Kenya location: ${request.kenya_location}`,
+    `Task location: ${taskLocation}`,
+    `Logistics: ${logisticsMode}`,
+    `Goods category: ${goodsCategory}`,
+    `Compliance: ${complianceStatus}`,
+    `Founder review: ${payload.admin_review_required ? "Required" : "Not required"}${payload.admin_review_reason ? ` - ${payload.admin_review_reason}` : ""}`,
     `Client base: ${request.client_base || request.australia_location || "Not specified"}`,
     `Package: ${servicePackage}`,
     `Assigned receiver: ${assignedPartner}`,

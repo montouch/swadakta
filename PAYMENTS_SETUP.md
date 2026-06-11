@@ -2,15 +2,15 @@
 
 Last updated: June 11, 2026
 
-Swadakta should stay quote-first at launch. Each request can vary by travel, access, risk, urgency, and proof requirements, so the admin desk should create a client-specific payment link after reviewing the brief.
+Swadakta should stay quote-first at launch. Each request can vary by travel, access, risk, urgency, corridor, compliance, and proof requirements, so the autopilot should classify the request and the founder console should create or approve a client-specific payment link before money moves.
 
 ## Recommended Launch Stack
 
 1. Stripe Payment Links for card payments and deposits.
 2. PayPal invoices for clients who prefer PayPal or need a familiar invoice workflow.
 3. Wise Business payment links or account details for international transfers where card fees or currency conversion matter.
-4. Bank transfer or mobile money only when the client and operator have a clear receipt trail.
-5. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
+4. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
+5. Bank transfer or manual payment references only when the client and operator have a clear receipt trail.
 6. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
 
 ## Funds Protection and Milestones
@@ -121,7 +121,7 @@ Use PayPal invoices when the client prefers PayPal or when a formal invoice link
 - https://developer.paypal.com/docs/api/orders/v2/
 - https://developer.paypal.com/api/rest/authentication/
 
-In the admin desk, paste the invoice link into `Payment link` and mention PayPal in the client update.
+In the founder console, paste the invoice link into `Payment link` and mention PayPal in the client update.
 
 ## PayPal Order Automation
 
@@ -201,6 +201,7 @@ The endpoint:
 - Requires a signed-in Supabase admin session.
 - Verifies the user exists in `admin_users`.
 - Requires the quote currency to be `KES`.
+- Matches the public intake `M-Pesa STK or Paybill` payment preference.
 - Exchanges `MPESA_CONSUMER_KEY` and `MPESA_CONSUMER_SECRET` for a Daraja access token server-side.
 - Sends an STK Push through the configured Paybill/Till shortcode.
 - Records the `MerchantRequestID` and `CheckoutRequestID` in `Payment/provider ref`.
@@ -255,6 +256,7 @@ Future Kenya payment work:
 
 - Add C2B Paybill/Till confirmation and validation URLs for offline Paybill payments after Safaricom registration.
 - Add transaction-status checks for cases where callbacks fail or are delayed.
+- Evaluate Pesapal or Flutterwave as a secondary Kenya gateway if Swadakta needs one checkout flow for M-Pesa plus local/international cards before direct Daraja operations are approved.
 - Add B2C payout workflows only after receiver vetting, payout limits, reversal/dispute process, tax/accounting handling, and founder approval controls are ready.
 - Keep M-Pesa as one provider in the milestone ledger, not the only source of truth.
 
@@ -262,6 +264,8 @@ Future Kenya payment work:
 
 - Do not hold client construction or family-support funds as an informal escrow.
 - Do not call funds "escrow" in client terms unless a regulated escrow/payment provider is actually holding them.
+- Treat client payment confirmation and receiver payout release as separate protected decisions.
+- Require founder review before any milestone release involving high-value goods, unsupported corridors, customs uncertainty, identity mismatch, or a dispute.
 - Keep payment links HTTP/HTTPS only; Supabase rejects unsafe links.
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
 - Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.

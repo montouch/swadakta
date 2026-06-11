@@ -1,6 +1,6 @@
-# Swadakta Diaspora Concierge
+# Swadakta Corridor Concierge
 
-A launch-ready MVP for a global diaspora concierge and virtual assistant service for Kenya-bound errands, property checks, family logistics, and local business support.
+A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing, logistics, and proof-of-work service across Africa, Australia, the USA, Europe, and China launch regions.
 
 ## What is included
 
@@ -11,6 +11,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Portal account status and sign-out controls
 - Signed-in account profiles for role, name, WhatsApp, country/base, Kenya coverage, and preferred currency
 - Account-level ID verification tracking for all clients, receivers, and mixed-role users
+- Global corridor intake for origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
 - Client post-completion reviews that feed receiver provenance scoring
@@ -21,7 +22,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Admin operations dashboard at `admin.html`
 - Receiver/field partner application pipeline for people in Kenya who want jobs
 - Vetted receiver assignment from admin to client requests
-- Mandatory receiver ID verification before a Kenya-side counterpart can be vetted or assigned
+- Mandatory receiver ID verification before a corridor counterpart can be vetted or assigned
 - Mandatory client ID-verification consent on every new public request
 - Admin receiver-update review trail per request before client report publishing
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
@@ -41,7 +42,8 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Admin-only M-Pesa STK Push for KES collections through Safaricom Daraja
 - M-Pesa callback confirmation that records receipts without releasing receiver payouts
 - Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
-- Admin-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, and external messages
+- Founder-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, cross-border compliance, and external messages
+- Autopilot route classification for active lanes, pilot lanes, unsupported corridors, physical-item logistics, and founder escalation
 - ID verification gates for higher-value, sensitive-document, title, family-authority, or risky jobs
 - Required client permission, scope, terms, and privacy consent capture
 - Service package intent, contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture
@@ -49,6 +51,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`
 - Swadakta SVG brand mark in `assets/swadakta-brand-mark.svg`
+- Corridor operating model in `CORRIDOR_OPERATIONS.md`
 - Privacy, terms, sitemap, robots, and security-contact files
 - Vercel static deployment config plus Cloudflare Pages headers and redirects
 
@@ -64,12 +67,12 @@ Then open:
 
 - Client site: `http://localhost:4173`
 - Portal: `http://localhost:4173/portal.html`
-- Admin desk: `http://localhost:4173/admin.html`
+- Founder console: `http://localhost:4173/admin.html`
 
 ## Go live
 
-See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
+See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, founder console, Vercel, payments, domain, corridor, and pilot launch checklist.
 
 See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, Wise, and bank-transfer launch workflow.
 
-See [IDENTITY_VERIFICATION.md](IDENTITY_VERIFICATION.md) for the Smile ID-first receiver verification workflow.
+See [IDENTITY_VERIFICATION.md](IDENTITY_VERIFICATION.md) for the Smile ID-first Africa verification workflow plus wider global verification options.

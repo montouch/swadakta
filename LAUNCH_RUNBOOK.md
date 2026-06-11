@@ -72,27 +72,29 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 ## 5. First Paid Job Workflow
 
 1. Client submits the public intake form.
-2. Admin confirms consent status is `Complete`, including client ID-verification consent.
-3. Admin checks whether the client has a saved account profile and account-level ID verification status.
-4. Admin reviews the service package, supporting links, contact preference, and sensitive-document flag.
-5. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
-6. Admin sends or records the client account verification link before paid or sensitive work proceeds.
-7. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-8. Admin sets the funds status, protected amount, release condition, provider reference, and request ID verification status.
-9. Admin creates one or more release milestones, for example deposit, travel/access confirmation, site media delivered, final report accepted, or receiver payout.
-10. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, funds-protection wording, and safety wording.
-11. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
-12. Client pays through the agreed provider.
-13. Admin sets payment and funds statuses after confirmation.
-14. Admin confirms the Kenya-side receiver has completed Smile ID or approved-provider identity verification.
-15. Admin assigns only a vetted and ID-verified Kenya-side receiver/operator in the request card, then copies the operator brief.
-16. Kenya-side operator executes the task and submits field updates/proof links from the receiver portal.
-17. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
-18. Admin adds approved proof links, report URL, and final client notes.
-19. Admin sets status to `completed`.
-20. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
-21. Client leaves a post-completion review from tracking or their client account.
-22. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
+2. Autopilot classifies origin, destination, service direction, logistics mode, goods category, payment preference, compliance status, and founder-review need.
+3. Founder reviews only if the lane is pilot/unsupported, the goods are risky, ID is missing, the value is high, or the legal/customs/payment path is unclear.
+4. Admin confirms consent status is `Complete`, including client ID-verification consent.
+5. Admin checks whether the client has a saved account profile and account-level ID verification status.
+6. Admin reviews the service package, supporting links, contact preference, and sensitive-document flag.
+7. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
+8. Admin sends or records the client account verification link before paid or sensitive work proceeds.
+9. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
+10. Admin sets the funds status, protected amount, release condition, provider reference, and request ID verification status.
+11. Admin creates one or more release milestones, for example deposit, travel/access confirmation, site media delivered, final report accepted, or receiver payout.
+12. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, funds-protection wording, and safety wording.
+13. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
+14. Client pays through the agreed provider.
+15. Admin sets payment and funds statuses after confirmation.
+16. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification.
+17. Admin assigns only a vetted and ID-verified receiver/operator in the request card, then copies the operator brief.
+18. Receiver-side operator executes the task and submits field updates/proof links from the receiver portal.
+19. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
+20. Admin adds approved proof links, report URL, and final client notes.
+21. Admin sets status to `completed`.
+22. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
+23. Client leaves a post-completion review from tracking or their client account.
+24. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
 
 ## 6. Launch Readiness Checklist
 
@@ -107,6 +109,9 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Signed-in clients and receivers can save an account profile so Swadakta has their role, contact, base, and currency context.
 - Every saved account profile has an account-level ID verification status, link, reference, and admin notes.
 - Every new public client request requires client ID-verification consent.
+- Intake captures origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement.
+- Africa-Australia is the first active corridor; Africa-USA, Africa-Europe, and Africa-China are pilot lanes; non-Africa corridors require founder approval until coverage is proven.
+- Physical-item requests require legal/customs checks before buying, shipping, carrying, receiving, or releasing money.
 - Client and receiver portal magic links return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must complete ID verification before being marked `Vetted`.
 - Only vetted and ID-verified receivers can be assigned to client jobs.
@@ -117,8 +122,8 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Client accounts show a quieter client seal based on ID status, funded requests, completions, and dispute history.
 - Admin tracks protected funds, provider references, and milestone releases before paying receivers.
 - ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
-- Smile ID is the default provider for Kenya-side receiver verification; store provider links and references in admin until API credentials are available.
-- M-Pesa/Daraja is a future Kenya payment rail; record M-Pesa references manually first, then integrate once the business PayBill/Till/API access and callback URLs are ready.
+- Smile ID is the default Africa verification provider; Persona, Sumsub, or Stripe Identity can cover wider global verification after provider setup.
+- M-Pesa/Daraja is now represented in the app as a Kenya payment rail; use sandbox/test mode until the business PayBill/Till/API access and callback URLs are approved for live collection.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.

@@ -37,6 +37,19 @@ create table if not exists public.service_requests (
   whatsapp text not null,
   client_base text,
   australia_location text,
+  origin_country text not null default 'Australia',
+  destination_country text not null default 'Kenya',
+  service_direction text not null default 'origin_to_destination',
+  task_location text,
+  logistics_mode text not null default 'not_needed',
+  goods_category text not null default 'none',
+  logistics_notes text,
+  compliance_acknowledged boolean not null default false,
+  compliance_status text not null default 'needs_ai_review',
+  compliance_risk_level text not null default 'standard',
+  automation_status text not null default 'ai_triage',
+  admin_review_required boolean not null default false,
+  admin_review_reason text,
   deadline date,
   local_contact_name text,
   local_contact_phone text,
@@ -52,7 +65,7 @@ create table if not exists public.service_requests (
   budget_range text not null default 'unsure',
   proof_priority text not null default 'balanced',
   referral_source text not null default 'not_sure',
-  task_type text not null check (task_type in ('quick', 'site', 'registry', 'virtual')),
+  task_type text not null check (task_type in ('quick', 'shopping', 'site', 'registry', 'virtual')),
   kenya_location text not null,
   urgency text not null check (urgency in ('standard', 'priority', 'same-day')),
   report_pack text[] not null default array[]::text[],
@@ -174,6 +187,19 @@ alter table public.account_profiles add column if not exists created_at timestam
 alter table public.account_profiles add column if not exists updated_at timestamptz not null default now();
 
 alter table public.service_requests add column if not exists client_base text;
+alter table public.service_requests add column if not exists origin_country text not null default 'Australia';
+alter table public.service_requests add column if not exists destination_country text not null default 'Kenya';
+alter table public.service_requests add column if not exists service_direction text not null default 'origin_to_destination';
+alter table public.service_requests add column if not exists task_location text;
+alter table public.service_requests add column if not exists logistics_mode text not null default 'not_needed';
+alter table public.service_requests add column if not exists goods_category text not null default 'none';
+alter table public.service_requests add column if not exists logistics_notes text;
+alter table public.service_requests add column if not exists compliance_acknowledged boolean not null default false;
+alter table public.service_requests add column if not exists compliance_status text not null default 'needs_ai_review';
+alter table public.service_requests add column if not exists compliance_risk_level text not null default 'standard';
+alter table public.service_requests add column if not exists automation_status text not null default 'ai_triage';
+alter table public.service_requests add column if not exists admin_review_required boolean not null default false;
+alter table public.service_requests add column if not exists admin_review_reason text;
 alter table public.service_requests add column if not exists deadline date;
 alter table public.service_requests add column if not exists local_contact_name text;
 alter table public.service_requests add column if not exists local_contact_phone text;
@@ -230,6 +256,16 @@ alter table public.partner_applications add column if not exists provenance_revi
 update public.service_requests
 set client_base = australia_location
 where client_base is null and australia_location is not null;
+
+update public.service_requests
+set task_location = kenya_location
+where task_location is null and kenya_location is not null;
+
+update public.service_requests
+set service_direction = 'origin_to_destination'
+where service_direction in ('to_kenya', 'to_australia')
+   or service_direction is null
+   or btrim(service_direction) = '';
 
 alter table public.service_requests alter column identity_verification_required set default true;
 alter table public.service_requests alter column verification_status set default 'required';
@@ -296,6 +332,48 @@ begin
   end if;
 
   if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_service_direction_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_service_direction_check check (service_direction in ('origin_to_destination', 'destination_to_origin', 'two_way', 'local_in_country', 'digital_global'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_logistics_mode_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_logistics_mode_check check (logistics_mode in ('not_needed', 'local_delivery', 'postal_courier', 'pickup_hold', 'supplier_direct', 'airport_handoff', 'digital_only'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_goods_category_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_goods_category_check check (goods_category in ('none', 'general_goods', 'clothing_household', 'electronics', 'cosmetics', 'food_plant_animal', 'medicine_health', 'documents', 'valuable_items', 'restricted_or_unsure'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_compliance_status_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_compliance_status_check check (compliance_status in ('not_applicable', 'needs_ai_review', 'needs_admin_review', 'cleared', 'restricted', 'permit_required', 'prohibited'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_compliance_risk_level_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_compliance_risk_level_check check (compliance_risk_level in ('standard', 'medium', 'high', 'blocked'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_automation_status_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_automation_status_check check (automation_status in ('ai_triage', 'self_service', 'receiver_routed', 'admin_review', 'founder_approval', 'blocked'));
+  end if;
+
+  if not exists (
     select 1 from pg_constraint where conname = 'service_requests_quote_amount_check'
   ) then
     alter table public.service_requests
@@ -327,14 +405,14 @@ begin
     select 1 from pg_constraint where conname = 'service_requests_service_package_check'
   ) then
     alter table public.service_requests
-      add constraint service_requests_service_package_check check (service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'monthly_retainer', 'business_ops'));
+      add constraint service_requests_service_package_check check (service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'shopping_sourcing', 'monthly_retainer', 'business_ops'));
   end if;
 
   if not exists (
     select 1 from pg_constraint where conname = 'service_requests_payment_method_preference_check'
   ) then
     alter table public.service_requests
-      add constraint service_requests_payment_method_preference_check check (payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank'));
+      add constraint service_requests_payment_method_preference_check check (payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'mpesa', 'bank'));
   end if;
 
   if not exists (
@@ -829,8 +907,18 @@ with check (
   and btrim(client_name) <> ''
   and btrim(whatsapp) <> ''
   and btrim(coalesce(client_base, australia_location, '')) <> ''
+  and btrim(origin_country) <> ''
+  and btrim(destination_country) <> ''
   and btrim(kenya_location) <> ''
+  and btrim(coalesce(task_location, kenya_location, '')) <> ''
   and btrim(notes) <> ''
+  and service_direction in ('origin_to_destination', 'destination_to_origin', 'two_way', 'local_in_country', 'digital_global')
+  and logistics_mode in ('not_needed', 'local_delivery', 'postal_courier', 'pickup_hold', 'supplier_direct', 'airport_handoff', 'digital_only')
+  and goods_category in ('none', 'general_goods', 'clothing_household', 'electronics', 'cosmetics', 'food_plant_animal', 'medicine_health', 'documents', 'valuable_items', 'restricted_or_unsure')
+  and compliance_acknowledged = true
+  and compliance_status in ('not_applicable', 'needs_ai_review', 'needs_admin_review', 'cleared', 'restricted', 'permit_required', 'prohibited')
+  and compliance_risk_level in ('standard', 'medium', 'high', 'blocked')
+  and automation_status in ('ai_triage', 'self_service', 'receiver_routed', 'admin_review', 'founder_approval', 'blocked')
   and contact_preference in ('whatsapp', 'email', 'either')
   and coalesce(array_length(supporting_links, 1), 0) <= 10
   and (
@@ -838,14 +926,14 @@ with check (
     or array_to_string(supporting_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
   )
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
-  and service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'monthly_retainer', 'business_ops')
-  and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank')
+  and service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'shopping_sourcing', 'monthly_retainer', 'business_ops')
+  and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'mpesa', 'bank')
   and job_value_band in ('unsure', 'under_500', '500_2000', '2000_10000', '10000_plus')
   and funds_protection_preference in ('quote_first', 'deposit_milestones', 'regulated_escrow', 'not_sure')
   and budget_range in ('unsure', 'under_100', '100_250', '250_500', '500_plus', 'retainer')
   and proof_priority in ('balanced', 'speed', 'detailed_media', 'receipts', 'debrief')
   and referral_source in ('not_sure', 'facebook_instagram', 'whatsapp_group', 'friend_referral', 'search', 'community_event', 'other')
-  and task_type in ('quick', 'site', 'registry', 'virtual')
+  and task_type in ('quick', 'shopping', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')
   and hours_estimate between 1 and 80
   and estimate_aud >= 0
@@ -987,6 +1075,19 @@ grant insert (
   whatsapp,
   client_base,
   australia_location,
+  origin_country,
+  destination_country,
+  service_direction,
+  task_location,
+  logistics_mode,
+  goods_category,
+  logistics_notes,
+  compliance_acknowledged,
+  compliance_status,
+  compliance_risk_level,
+  automation_status,
+  admin_review_required,
+  admin_review_reason,
   deadline,
   local_contact_name,
   local_contact_phone,
@@ -1026,6 +1127,19 @@ grant update (
   assigned_partner_id,
   operator_notes,
   client_report,
+  origin_country,
+  destination_country,
+  service_direction,
+  task_location,
+  logistics_mode,
+  goods_category,
+  logistics_notes,
+  compliance_acknowledged,
+  compliance_status,
+  compliance_risk_level,
+  automation_status,
+  admin_review_required,
+  admin_review_reason,
   service_package,
   job_value_band,
   funds_protection_preference,

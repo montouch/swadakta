@@ -80,7 +80,39 @@ const paymentMethodLabels = {
   card: "Card or Stripe link",
   paypal: "PayPal invoice or link",
   wise: "Wise transfer",
-  bank: "Bank or mobile money transfer",
+  mpesa: "M-Pesa STK or Paybill",
+  bank: "Bank transfer or manual receipt",
+};
+
+const serviceDirectionLabels = {
+  origin_to_destination: "Origin to destination",
+  destination_to_origin: "Destination to origin",
+  two_way: "Two-way corridor",
+  local_in_country: "Local in one country",
+  digital_global: "Digital/global support",
+};
+
+const logisticsModeLabels = {
+  not_needed: "No physical delivery",
+  local_delivery: "Local delivery or errand",
+  postal_courier: "Post or courier shipment",
+  pickup_hold: "Pickup and hold",
+  supplier_direct: "Supplier ships directly",
+  airport_handoff: "Airport/traveller handoff",
+  digital_only: "Digital/documents only",
+};
+
+const goodsCategoryLabels = {
+  none: "No physical goods",
+  general_goods: "General goods",
+  clothing_household: "Clothing or household items",
+  electronics: "Electronics",
+  cosmetics: "Cosmetics or personal care",
+  food_plant_animal: "Food, plant, or animal product",
+  medicine_health: "Medicine or health product",
+  documents: "Documents",
+  valuable_items: "Valuable items",
+  restricted_or_unsure: "Restricted or not sure",
 };
 
 const servicePackageLabels = {
@@ -89,6 +121,7 @@ const servicePackageLabels = {
   site_visit: "Site Visit - from AUD 180",
   registry_errand: "Registry/Document Run - from AUD 150",
   family_support: "Family Support Run - from AUD 120",
+  shopping_sourcing: "Shopping and sourcing - quoted per item",
   monthly_retainer: "Monthly Retainer - from AUD 450/mo",
   business_ops: "Business Ops Support - quoted monthly",
 };
@@ -137,6 +170,7 @@ const referralSourceLabels = {
 
 const baseRates = {
   quick: 85,
+  shopping: 110,
   site: 180,
   registry: 150,
   virtual: 120,
@@ -144,6 +178,7 @@ const baseRates = {
 
 const hourlyRates = {
   quick: 20,
+  shopping: 25,
   site: 35,
   registry: 30,
   virtual: 40,
@@ -220,6 +255,12 @@ function buildBrief() {
   const whatsapp = document.querySelector("#whatsapp").value.trim() || "Not specified";
   const email = document.querySelector("#email").value.trim() || "Not specified";
   const diasporaLocation = document.querySelector("#diaspora-location").value.trim() || "Not specified";
+  const originCountry = document.querySelector("#origin-country").value;
+  const destinationCountry = document.querySelector("#destination-country").value;
+  const serviceDirection = document.querySelector("#service-direction").value;
+  const logisticsMode = document.querySelector("#logistics-mode").value;
+  const goodsCategory = document.querySelector("#goods-category").value;
+  const logisticsNotes = document.querySelector("#logistics-notes").value.trim() || "Not provided";
   const deadline = document.querySelector("#deadline").value.trim() || "Flexible";
   const preferredCurrency = document.querySelector("#preferred-currency").value;
   const servicePackage = document.querySelector("#service-package").value;
@@ -236,6 +277,7 @@ function buildBrief() {
   const contactWindow = document.querySelector("#contact-window").value.trim() || "Not specified";
   const supportingLinks = getSupportingLinks();
   const sensitiveDocuments = document.querySelector("#sensitive-documents").checked ? "yes" : "no";
+  const complianceAcknowledged = document.querySelector("#compliance-acknowledged").checked ? "yes" : "no";
   const notes = document.querySelector("#notes").value.trim() || "No notes added.";
   const selectedTask = taskType.options[taskType.selectedIndex].text;
   const selectedUrgency = urgency.options[urgency.selectedIndex].text;
@@ -248,11 +290,16 @@ function buildBrief() {
   ].join(", ");
 
   return [
-    "Swadakta Diaspora Concierge Brief",
+    "Swadakta Corridor Concierge Brief",
     `Client: ${clientName}`,
     `WhatsApp: ${whatsapp}`,
     `Email: ${email}`,
     `Client base: ${diasporaLocation}`,
+    `Origin: ${originCountry}`,
+    `Destination: ${destinationCountry}`,
+    `Direction: ${serviceDirectionLabels[serviceDirection] || serviceDirection}`,
+    `Logistics: ${logisticsModeLabels[logisticsMode] || logisticsMode}`,
+    `Goods category: ${goodsCategoryLabels[goodsCategory] || goodsCategory}`,
     `Preferred quote currency: ${preferredCurrency}`,
     `Service package: ${servicePackageLabels[servicePackage] || servicePackage}`,
     `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
@@ -262,20 +309,165 @@ function buildBrief() {
     `Proof priority: ${proofPriorityLabels[proofPriority] || proofPriority}`,
     `Lead source: ${referralSourceLabels[referralSource] || referralSource}`,
     `Task: ${selectedTask}`,
-    `Location: ${location}, Kenya`,
+    `Task location: ${location}`,
     `Ideal deadline: ${deadline}`,
-    `Kenya contact: ${localContactName} (${localContactPhone})`,
+    `Task-side contact: ${localContactName} (${localContactPhone})`,
     `Preferred contact: ${contactPreference}`,
     `Best contact window: ${contactWindow}`,
     `Urgency: ${selectedUrgency}`,
     `Estimated hours: ${hours.value}`,
     `Report pack: ${reports}`,
     `Supporting links: ${supportingLinks.join(", ") || "None provided"}`,
+    `Logistics notes: ${logisticsNotes}`,
     `Sensitive documents expected: ${sensitiveDocuments}`,
+    `Compliance acknowledgement: ${complianceAcknowledged}`,
     `AUD planning estimate: ${estimateOutput.textContent}`,
     `Permissions: ${permissions}`,
     `Notes: ${notes}`,
   ].join("\n");
+}
+
+function supportedRegion(country) {
+  const value = String(country || "").trim().toLowerCase();
+  if (!value) {
+    return "";
+  }
+
+  if (value.includes("australia")) {
+    return "Australia";
+  }
+
+  if (value.includes("united states") || value === "usa" || value === "us" || value.includes("america")) {
+    return "USA";
+  }
+
+  if (value.includes("china")) {
+    return "China";
+  }
+
+  const europeMarkers = [
+    "europe",
+    "uk",
+    "united kingdom",
+    "england",
+    "scotland",
+    "wales",
+    "ireland",
+    "france",
+    "germany",
+    "italy",
+    "spain",
+    "netherlands",
+    "sweden",
+    "norway",
+    "denmark",
+    "belgium",
+    "switzerland",
+    "poland",
+    "portugal",
+    "greece",
+  ];
+  if (europeMarkers.some((marker) => value.includes(marker))) {
+    return "Europe";
+  }
+
+  const africaMarkers = [
+    "africa",
+    "kenya",
+    "uganda",
+    "tanzania",
+    "rwanda",
+    "ethiopia",
+    "somalia",
+    "south africa",
+    "nigeria",
+    "ghana",
+    "zambia",
+    "zimbabwe",
+    "malawi",
+    "botswana",
+    "namibia",
+    "cameroon",
+    "senegal",
+    "morocco",
+    "egypt",
+  ];
+  if (africaMarkers.some((marker) => value.includes(marker))) {
+    return "Africa";
+  }
+
+  return "Founder review";
+}
+
+function corridorStatus(originCountry, destinationCountry) {
+  const originRegion = supportedRegion(originCountry);
+  const destinationRegion = supportedRegion(destinationCountry);
+
+  if (!originRegion || !destinationRegion || originRegion === "Founder review" || destinationRegion === "Founder review") {
+    return {
+      automation_status: "founder_approval",
+      admin_review_required: true,
+      admin_review_reason: "Route is outside the launch regions and needs founder approval.",
+    };
+  }
+
+  const involvesAfrica = originRegion === "Africa" || destinationRegion === "Africa";
+  const involvesAustralia = originRegion === "Australia" || destinationRegion === "Australia";
+
+  if (involvesAfrica && involvesAustralia) {
+    return {
+      automation_status: "ai_triage",
+      admin_review_required: false,
+      admin_review_reason: "",
+    };
+  }
+
+  if (involvesAfrica && ["USA", "Europe", "China"].includes(originRegion === "Africa" ? destinationRegion : originRegion)) {
+    return {
+      automation_status: "admin_review",
+      admin_review_required: true,
+      admin_review_reason: "Pilot corridor: AI can triage, but founder approval is required before quoting or assigning.",
+    };
+  }
+
+  return {
+    automation_status: "founder_approval",
+    admin_review_required: true,
+    admin_review_reason: "Non-Africa corridor requested; keep in founder review until the lane is activated.",
+  };
+}
+
+function complianceTriage({ logisticsMode, goodsCategory, sensitiveDocuments, jobValueBand, originCountry, destinationCountry }) {
+  const riskyGoods = ["food_plant_animal", "medicine_health", "cosmetics", "valuable_items", "restricted_or_unsure"];
+  const physical = !["not_needed", "digital_only"].includes(logisticsMode) || goodsCategory !== "none";
+  const route = corridorStatus(originCountry, destinationCountry);
+
+  if (riskyGoods.includes(goodsCategory)) {
+    return {
+      ...route,
+      compliance_status: "needs_admin_review",
+      compliance_risk_level: "high",
+      automation_status: "founder_approval",
+      admin_review_required: true,
+      admin_review_reason: "Restricted, regulated, high-value, health, food, plant, animal, cosmetic, or uncertain goods need legal/import-export review before action.",
+    };
+  }
+
+  if (physical || sensitiveDocuments || ["2000_10000", "10000_plus"].includes(jobValueBand)) {
+    return {
+      ...route,
+      compliance_status: "needs_ai_review",
+      compliance_risk_level: "medium",
+      admin_review_required: route.admin_review_required,
+    };
+  }
+
+  return {
+    ...route,
+    compliance_status: "not_applicable",
+    compliance_risk_level: "standard",
+    automation_status: route.admin_review_required ? route.automation_status : "self_service",
+  };
 }
 
 function buildPayload() {
@@ -284,6 +476,21 @@ function buildPayload() {
   const professionalBoundaryAccepted = document.querySelector("#scope-acceptance").checked;
   const identityVerificationConsent = document.querySelector("#client-id-consent").checked;
   const termsAccepted = document.querySelector("#terms-acceptance").checked;
+  const originCountry = document.querySelector("#origin-country").value;
+  const destinationCountry = document.querySelector("#destination-country").value;
+  const serviceDirection = document.querySelector("#service-direction").value;
+  const logisticsMode = document.querySelector("#logistics-mode").value;
+  const goodsCategory = document.querySelector("#goods-category").value;
+  const sensitiveDocuments = document.querySelector("#sensitive-documents").checked;
+  const taskLocation = document.querySelector("#location").value.trim();
+  const triage = complianceTriage({
+    logisticsMode,
+    goodsCategory,
+    sensitiveDocuments,
+    jobValueBand: document.querySelector("#job-value-band").value,
+    originCountry,
+    destinationCountry,
+  });
 
   return {
     client_name: document.querySelector("#client-name").value.trim(),
@@ -291,13 +498,26 @@ function buildPayload() {
     whatsapp: document.querySelector("#whatsapp").value.trim(),
     client_base: document.querySelector("#diaspora-location").value.trim(),
     australia_location: document.querySelector("#diaspora-location").value.trim(),
+    origin_country: originCountry,
+    destination_country: destinationCountry,
+    service_direction: serviceDirection,
+    task_location: taskLocation,
+    logistics_mode: logisticsMode,
+    goods_category: goodsCategory,
+    logistics_notes: document.querySelector("#logistics-notes").value.trim(),
+    compliance_acknowledged: document.querySelector("#compliance-acknowledged").checked,
+    compliance_status: triage.compliance_status,
+    compliance_risk_level: triage.compliance_risk_level,
+    automation_status: triage.automation_status,
+    admin_review_required: triage.admin_review_required,
+    admin_review_reason: triage.admin_review_reason,
     deadline: document.querySelector("#deadline").value || null,
     local_contact_name: document.querySelector("#local-contact-name").value.trim(),
     local_contact_phone: document.querySelector("#local-contact-phone").value.trim(),
     contact_preference: document.querySelector("#contact-preference").value,
     contact_window: document.querySelector("#contact-window").value.trim(),
     supporting_links: getSupportingLinks(),
-    sensitive_documents_expected: document.querySelector("#sensitive-documents").checked,
+    sensitive_documents_expected: sensitiveDocuments,
     preferred_currency: document.querySelector("#preferred-currency").value,
     service_package: document.querySelector("#service-package").value,
     payment_method_preference: document.querySelector("#payment-method-preference").value,
@@ -307,7 +527,7 @@ function buildPayload() {
     proof_priority: document.querySelector("#proof-priority").value,
     referral_source: document.querySelector("#referral-source").value,
     task_type: taskType.value,
-    kenya_location: document.querySelector("#location").value.trim(),
+    kenya_location: taskLocation,
     urgency: urgency.value,
     report_pack: getReportItems(),
     hours_estimate: Number(hours.value),
@@ -325,7 +545,14 @@ function buildPayload() {
 
 function buildClientAssistantDraft() {
   const task = taskType.options[taskType.selectedIndex].text;
-  const location = document.querySelector("#location").value.trim() || "the Kenya location I listed";
+  const location = document.querySelector("#location").value.trim() || "the task location I listed";
+  const originCountry = document.querySelector("#origin-country").value;
+  const destinationCountry = document.querySelector("#destination-country").value;
+  const serviceDirection =
+    serviceDirectionLabels[document.querySelector("#service-direction").value] || "the selected direction";
+  const logisticsMode = logisticsModeLabels[document.querySelector("#logistics-mode").value] || "the selected logistics mode";
+  const goodsCategory = goodsCategoryLabels[document.querySelector("#goods-category").value] || "the selected goods category";
+  const logisticsNotes = document.querySelector("#logistics-notes").value.trim();
   const deadline = document.querySelector("#deadline").value || "a flexible date";
   const localContact = [document.querySelector("#local-contact-name").value.trim(), document.querySelector("#local-contact-phone").value.trim()]
     .filter(Boolean)
@@ -338,13 +565,18 @@ function buildClientAssistantDraft() {
     ? "This may involve sensitive documents, so please advise on ID verification and safe document handling before work starts."
     : "I do not expect to send sensitive documents at this stage.";
   const contactLine = localContact
-    ? `The Kenya-side contact is ${localContact}.`
-    : "I will confirm the Kenya-side contact if one is needed.";
+    ? `The task-side contact is ${localContact}.`
+    : "I will confirm the task-side contact if one is needed.";
+  const logisticsLine = logisticsNotes
+    ? `Logistics notes: ${logisticsNotes}.`
+    : `Logistics route: ${logisticsMode}; goods category: ${goodsCategory}. Please advise what customs, courier, packing, duties, or legal checks are needed.`;
 
   return [
     `I need Swadakta to help with ${task.toLowerCase()} in ${location}.`,
+    `Route: ${originCountry} to ${destinationCountry}; direction: ${serviceDirection}.`,
     `My ideal deadline is ${deadline}, but please confirm what is realistic before quoting.`,
     contactLine,
+    logisticsLine,
     `I would like proof by ${reports}.`,
     `Approximate value involved: ${valueBand}. Funds preference: ${fundsPreference}.`,
     sensitiveLine,
