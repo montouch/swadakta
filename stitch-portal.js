@@ -93,6 +93,15 @@
     family_support: "Family support errands",
     business_support: "Business support",
   };
+  const RECEIVER_COVERAGE_LABELS = {
+    local_in_country: "In-country work",
+    africa_to_africa: "Africa-to-Africa coverage",
+    diaspora_to_africa: "Diaspora-to-Africa support",
+    africa_to_diaspora: "Africa-to-diaspora support",
+    postal_courier_ready: "Postal or courier coordination",
+    digital_remote: "Digital or remote tasks",
+  };
+  const RECEIVER_GENERATED_NOTE_PREFIXES = ["Coverage scope:", "Coverage route:", "Coverage safety:"];
   const AFRICA_COUNTRIES = new Set([
     "algeria",
     "angola",
@@ -722,6 +731,76 @@
     );
   }
 
+  function receiverApplicationCoverageScopes() {
+    if (!receiverApplicationForm) return [];
+    return Array.from(receiverApplicationForm.querySelectorAll('input[name="receiver_coverage_scope"]:checked')).map(
+      (input) => input.value,
+    );
+  }
+
+  function stripGeneratedReceiverApplicationNotes(notes = "") {
+    return String(notes || "")
+      .split(/\n/)
+      .filter((line) => {
+        const trimmed = line.trim();
+        return !RECEIVER_GENERATED_NOTE_PREFIXES.some((prefix) => trimmed.startsWith(prefix));
+      })
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  function receiverCoverageNote({ scopes = [], base = "", serviceRegions = "" } = {}) {
+    const labels = scopes.map((scope) => RECEIVER_COVERAGE_LABELS[scope]).filter(Boolean);
+    const crossBorder = scopes.some((scope) =>
+      ["africa_to_africa", "diaspora_to_africa", "africa_to_diaspora", "postal_courier_ready"].includes(scope),
+    );
+    const lines = [
+      labels.length ? `Coverage scope: ${labels.join(", ")}` : "",
+      base || serviceRegions ? `Coverage route: base ${base || "not set"}; areas ${serviceRegions || "not set"}` : "",
+      crossBorder
+        ? "Coverage safety: Cross-border lawful-goods check, customs, courier, duties, and proof requirements apply before assignment."
+        : "Coverage safety: Local proof standard and location check apply before assignment.",
+    ].filter(Boolean);
+    return lines.join("\n");
+  }
+
+  function receiverCoverageScopesFromNotes(notes = "") {
+    const scopeLine = String(notes || "").match(/Coverage scope:\s*([^\n]+)/i)?.[1] || "";
+    const normalized = scopeLine.toLowerCase();
+    if (!normalized) return [];
+    return Object.entries(RECEIVER_COVERAGE_LABELS)
+      .filter(([scope, label]) => {
+        const readableScope = scope.replace(/_/g, " ");
+        return normalized.includes(label.toLowerCase()) || normalized.includes(readableScope);
+      })
+      .map(([scope]) => scope);
+  }
+
+  function receiverApplicationCoverageLabels(application = {}) {
+    const storedScopes = Array.isArray(application.coverage_scopes) ? application.coverage_scopes : [];
+    const noteScopes = receiverCoverageScopesFromNotes(application.notes);
+    const inferredScopes = [];
+    const coverageText = `${application.kenya_base || ""} ${application.service_regions || ""} ${application.notes || ""}`.toLowerCase();
+
+    if (!storedScopes.length && !noteScopes.length) {
+      if (coverageText.includes("africa")) inferredScopes.push("africa_to_africa");
+      if (/(remote|digital|online|virtual)/.test(coverageText)) inferredScopes.push("digital_remote");
+      if (/(postal|courier|shipping|delivery)/.test(coverageText)) inferredScopes.push("postal_courier_ready");
+    }
+
+    return [...new Set([...storedScopes, ...noteScopes, ...inferredScopes])]
+      .map((scope) => RECEIVER_COVERAGE_LABELS[scope])
+      .filter(Boolean);
+  }
+
+  function renderReceiverCoverageChips(labels = []) {
+    const visibleLabels = labels.length ? labels : ["Coverage scope pending"];
+    return visibleLabels
+      .map((label) => `<span class="rounded-full bg-white px-3 py-1">${escapeHtml(label)}</span>`)
+      .join("");
+  }
+
   function setReceiverApplicationStatus(message, tone = "") {
     if (!receiverApplicationStatus) return;
     receiverApplicationStatus.textContent = message;
@@ -983,26 +1062,37 @@
 
   function populateReceiverApplication(profile = {}) {
     if (!receiverApplicationForm) return;
+    const notes = profile.profile_notes || "";
+    const coverageScopes = receiverCoverageScopesFromNotes(notes);
     field("#receiver-full-name").value = profile.full_name || "";
     field("#receiver-whatsapp").value = profile.whatsapp || "";
     field("#receiver-base").value = profile.kenya_base || profile.country || "";
     field("#receiver-regions").value = profile.kenya_base || profile.country || "";
-    field("#receiver-notes").value = profile.profile_notes || "";
+    field("#receiver-notes").value = stripGeneratedReceiverApplicationNotes(notes);
+    receiverApplicationForm.querySelectorAll('input[name="receiver_coverage_scope"]').forEach((input) => {
+      input.checked = coverageScopes.includes(input.value);
+    });
     fillReceiverProfileSetup(profile);
   }
 
   function receiverApplicationPayload() {
     const categories = receiverApplicationCategories();
+    const coverageScopes = receiverApplicationCoverageScopes();
+    const base = field("#receiver-base")?.value.trim() || "";
+    const serviceRegions = field("#receiver-regions")?.value.trim() || "";
+    const rawNotes = stripGeneratedReceiverApplicationNotes(field("#receiver-notes")?.value.trim() || "");
+    const coverageNote = receiverCoverageNote({ scopes: coverageScopes, base, serviceRegions });
     return {
       full_name: field("#receiver-full-name")?.value.trim() || "",
       email: signedInEmail,
       whatsapp: field("#receiver-whatsapp")?.value.trim() || "",
-      kenya_base: field("#receiver-base")?.value.trim() || "",
-      service_regions: field("#receiver-regions")?.value.trim() || "",
+      kenya_base: base,
+      service_regions: serviceRegions,
       service_categories: categories,
+      coverage_scopes: coverageScopes,
       availability: field("#receiver-availability")?.value || "flexible",
       transport_access: field("#receiver-transport")?.value || "mixed",
-      notes: field("#receiver-notes")?.value.trim() || "",
+      notes: [rawNotes, coverageNote].filter(Boolean).join("\n\n"),
       id_verification_consent: Boolean(field("#receiver-id-consent")?.checked),
       proof_standard_consent: Boolean(field("#receiver-proof-consent")?.checked),
     };
@@ -1031,6 +1121,7 @@
         const categories = Array.isArray(application.service_categories)
           ? application.service_categories.map((category) => RECEIVER_CATEGORY_LABELS[category] || category).join(", ")
           : application.service_categories || "Coverage categories pending";
+        const coverageLabels = receiverApplicationCoverageLabels(application);
         const score = Number(application.provenance_score ?? 25);
         const scoreTone = score >= 80 ? "text-emerald-700" : score >= 55 ? "text-primary" : "text-amber-700";
         const assignedCount = jobs.filter((job) => job.assigned_partner_id === application.id).length;
@@ -1040,15 +1131,19 @@
               <div>
                 <strong class="font-label-md text-on-surface">${escapeHtml(application.partner_code || "Receiver application")}</strong>
                 <p class="font-body-md text-on-surface-variant text-sm mt-1">${escapeHtml(application.kenya_base || "Base pending")} - ${escapeHtml(categories)}</p>
+                <p class="font-body-md text-on-surface-variant text-sm mt-1">Covers: ${escapeHtml(application.service_regions || "Areas pending")}</p>
               </div>
               <span class="rounded-full bg-primary-container/10 px-3 py-1 text-primary font-label-sm">${escapeHtml(formatStatus(application.status || "new"))}</span>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2 text-sm text-on-surface-variant">
+              ${renderReceiverCoverageChips(coverageLabels)}
             </div>
             <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
               <span><strong class="${scoreTone}">${escapeHtml(score)}%</strong><br/><small class="text-on-surface-variant">Provenance</small></span>
               <span><strong class="text-on-surface">${escapeHtml(formatStatus(application.identity_verification_status || "not_started"))}</strong><br/><small class="text-on-surface-variant">ID status</small></span>
               <span><strong class="text-on-surface">${escapeHtml(assignedCount)}</strong><br/><small class="text-on-surface-variant">Assigned</small></span>
             </div>
-            <p class="font-body-md text-on-surface-variant text-sm mt-4">Next: complete provider verification, keep proof consent current, and wait for Swadakta to vet coverage before assignment.</p>
+            <p class="font-body-md text-on-surface-variant text-sm mt-4">Next: complete provider verification, keep proof consent current, and let Swadakta match only lawful routes your coverage supports.</p>
           </article>`;
       })
       .join("");
@@ -1546,6 +1641,10 @@
       }
       if (!payload.service_categories.length) {
         setReceiverApplicationStatus("Choose at least one work category.", "text-error");
+        return;
+      }
+      if (!payload.coverage_scopes.length) {
+        setReceiverApplicationStatus("Choose at least one coverage scope so the system can match the right route.", "text-error");
         return;
       }
       if (!payload.id_verification_consent || !payload.proof_standard_consent) {

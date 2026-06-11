@@ -398,7 +398,7 @@
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Profile setup</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Build your verified work profile</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and receive jobs. Your public receiver profile should look real: honest photo, real name, current base, work strengths, languages, and a provider ID/selfie check before paid work unlocks.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and receive jobs. Your public field-partner profile should look real: honest photo, real name, current base, coverage lanes, work strengths, languages, and a provider ID/selfie check before paid work unlocks.</p>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-label-md" id="receiver-profile-strength">25% starter provenance</span>
 </div>
@@ -426,7 +426,7 @@
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-profile-location">Current base</label>
-<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-profile-location" placeholder="Nairobi, Adelaide, Lagos..." type="text"/>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-profile-location" placeholder="Lagos, Nairobi, Accra, Adelaide..." type="text"/>
 </div>
 <label class="space-y-2 md:col-span-2">
 <span class="font-label-md text-label-md text-on-surface-variant ml-1">About your work style</span>
@@ -533,7 +533,7 @@
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
 <h2 class="font-headline-sm text-headline-sm text-on-surface mt-1">Apply once, then receive matched work</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Set your base, coverage, categories, availability, and proof tools. Paid work stays locked until verification is complete.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Set your base, coverage lanes, categories, availability, and proof tools. Paid work stays locked until verification is complete.</p>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
 </div>
@@ -545,16 +545,28 @@
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-whatsapp">Mobile / WhatsApp</label>
-<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-whatsapp" name="whatsapp" placeholder="+254..." type="tel" autocomplete="tel" required/>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-whatsapp" name="whatsapp" placeholder="+254, +234, +61..." type="tel" autocomplete="tel" required/>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-base">Current base</label>
-<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-base" name="kenya_base" placeholder="Nairobi, Adelaide, Guangzhou..." type="text" required/>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-base" name="kenya_base" placeholder="Lagos, Nairobi, Accra, Adelaide..." type="text" required/>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-regions">Coverage areas</label>
-<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-regions" name="service_regions" placeholder="Cities, estates, counties, countries" type="text" required/>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-regions" name="service_regions" placeholder="City, state, region, country, or border route" type="text" required/>
 </div>
+<fieldset class="md:col-span-2 rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<legend class="font-label-md text-label-md text-on-surface-variant px-1">Coverage scope</legend>
+<p class="mt-2 font-body-md text-on-surface-variant text-sm">Choose what you can genuinely do. Cross-border work still runs through lawful-goods, customs, courier, and proof checks before assignment.</p>
+<div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="local_in_country"/>In-country work near my base</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="africa_to_africa"/>Africa-to-Africa coverage</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="diaspora_to_africa"/>Diaspora-to-Africa support</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="africa_to_diaspora"/>Africa-to-diaspora support</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="postal_courier_ready"/>Postal or courier coordination</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_coverage_scope" type="checkbox" value="digital_remote"/>Digital or remote tasks</label>
+</div>
+</fieldset>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-availability">Availability</label>
 <select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-availability" name="availability">
@@ -587,13 +599,13 @@
 </div>
 </fieldset>
 <label class="space-y-2 md:col-span-2">
-<span class="font-label-md text-label-md text-on-surface-variant ml-1">Receiver notes</span>
+<span class="font-label-md text-label-md text-on-surface-variant ml-1">Work profile notes</span>
 <textarea class="w-full p-4 rounded-xl sunken-input font-body-md text-on-surface resize-none" id="receiver-notes" name="notes" placeholder="Experience, languages, limits, proof tools, video call availability, and anything Swadakta should know before assigning work." rows="4"></textarea>
 </label>
 <div class="md:col-span-2 grid gap-3">
 <label class="flex items-start gap-3 rounded-2xl bg-white/60 border border-outline-variant/30 p-4 text-sm text-on-surface-variant">
 <input class="mt-1" id="receiver-id-consent" type="checkbox" required/>
-<span>I understand ID verification is required before any paid or sensitive receiver work is assigned.</span>
+<span>I understand ID verification is required before any paid or sensitive field-partner work is assigned.</span>
 </label>
 <label class="flex items-start gap-3 rounded-2xl bg-white/60 border border-outline-variant/30 p-4 text-sm text-on-surface-variant">
 <input class="mt-1" id="receiver-proof-consent" type="checkbox" required/>
@@ -601,14 +613,14 @@
 </label>
 </div>
 <div class="md:col-span-2 flex flex-col sm:flex-row gap-3">
-<button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-tertiary text-white font-bold shadow-[0px_16px_32px_rgba(129,39,207,0.18)]" type="submit">Apply for receiver work</button>
+<button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-tertiary text-white font-bold shadow-[0px_16px_32px_rgba(129,39,207,0.18)]" type="submit">Apply for paid work</button>
 <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="/verification?reason=receiver_work">Open verification</a>
 </div>
 <p class="md:col-span-2 font-label-md text-label-md text-on-surface-variant min-h-6" id="receiver-application-status" role="status"></p>
 </form>
 <div class="rounded-[1.5rem] bg-white/60 border border-outline-variant/30 p-5">
 <h3 class="font-headline-sm text-headline-sm text-on-surface">Application status</h3>
-<p class="font-body-md text-on-surface-variant mt-2">Swadakta uses a provenance score that starts at 25%. Good verified work, proof quality, and reviews raise it; missed updates or poor reviews lower trust.</p>
+<p class="font-body-md text-on-surface-variant mt-2">Swadakta uses a provenance score that starts at 25%. Good verified work, proof quality, lawful route handling, and reviews raise it; missed updates or poor reviews lower trust.</p>
 <div class="mt-5 grid gap-3" id="receiver-application-list" aria-live="polite"></div>
 </div>
 </div>
@@ -770,6 +782,6 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=44"></script>
 <script src="ai-preferences.js?v=1"></script>
-<script src="stitch-portal.js?v=25"></script>
+<script src="stitch-portal.js?v=26"></script>
 <script src="assistant-dock.js?v=4"></script>
 </body></html>

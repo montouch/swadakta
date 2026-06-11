@@ -68,6 +68,9 @@ const requiredPortalMarkers = [
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",
   "renderReceiverApplications",
+  "receiverApplicationCoverageScopes",
+  "Africa-to-Africa coverage",
+  "Cross-border lawful-goods check",
   "saveReceiverProfileSetup",
   "renderAccountSetupChecklist",
   "receiverProfileScore",
@@ -218,7 +221,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "stitch-portal.js?v=25",
+  "stitch-portal.js?v=26",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
