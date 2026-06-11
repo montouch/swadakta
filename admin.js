@@ -1141,6 +1141,66 @@ function renderFounderCommand() {
   );
 }
 
+function compactAdminRequest(request) {
+  return {
+    request_code: request.request_code,
+    client_name: request.client_name,
+    origin_country: request.origin_country,
+    destination_country: request.destination_country,
+    task_type: request.task_type,
+    task_location: request.task_location || request.kenya_location,
+    status: request.status,
+    payment_status: request.payment_status,
+    funds_status: request.funds_status,
+    quote_amount: request.quote_amount,
+    quote_currency: request.quote_currency,
+    job_value_band: request.job_value_band,
+    funds_protection_preference: request.funds_protection_preference,
+    verification_status: request.verification_status,
+    compliance_status: request.compliance_status,
+    compliance_risk_level: request.compliance_risk_level,
+    automation_status: request.automation_status,
+    assigned_receiver: assignedPartnerLabel(request),
+    updated_at: request.updated_at,
+  };
+}
+
+window.SwadaktaAdminContext = function swadaktaAdminContext() {
+  const openRequests = requests.filter((request) => request.status !== "cancelled");
+  const opsItems = buildOpsAiItems();
+
+  return {
+    page: "Founder console",
+    summary: {
+      total_requests: requests.length,
+      open_requests: openRequests.length,
+      payment_gaps: requests.filter(needsQuoteOrPaymentLink).length + requests.filter(isPaymentOverdue).length,
+      id_gaps: requests.filter(needsIdVerification).length,
+      proof_gaps: requests.filter(needsProofReview).length,
+      release_decisions: requests.filter(needsReleaseDecision).length,
+      receiver_applications: partnerApplications.length,
+      account_profiles: accountProfiles.length,
+      field_updates: fieldUpdates.length,
+      fund_milestones: fundMilestones.length,
+    },
+    urgent_prompts: opsItems.slice(0, 6).map((item) => ({
+      type: item.type,
+      request_code: item.request.request_code,
+      action: item.action,
+      reason: item.reason,
+    })),
+    recent_requests: requests.slice(0, 6).map(compactAdminRequest),
+    receiver_pipeline: partnerApplications.slice(0, 6).map((application) => ({
+      partner_code: application.partner_code,
+      status: application.status,
+      identity_verification_status: application.identity_verification_status,
+      provenance_score: application.provenance_score,
+      service_regions: application.service_regions,
+      updated_at: application.updated_at,
+    })),
+  };
+};
+
 async function saveOpsAiDraftToNotes(item, draft) {
   const request = requests.find(
     (candidate) => candidate.id === item.requestId || candidate.request_code === item.requestCode,

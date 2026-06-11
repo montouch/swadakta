@@ -28,9 +28,9 @@
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="preload" href="assets/saas-burst.png" as="image" />
     <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=21" />
+    <link rel="stylesheet" href="styles.css?v=22" />
   </head>
-  <body>
+  <body class="public-site">
     <header class="site-header" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Swadakta Corridor Concierge home">
         <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
@@ -40,47 +40,62 @@
         </span>
       </a>
       <nav class="nav-links" aria-label="Page sections">
-        <a href="#services">Services</a>
+        <a href="#services">Paths</a>
         <a href="#workflow">Workflow</a>
         <a href="#trust">Trust</a>
-        <a href="#pricing">Pricing</a>
+        <a href="#pricing">Money</a>
         <a href="portal.html">Portals</a>
-        <a href="#intake">Intake</a>
+        <a href="#intake">Start</a>
         <a href="#tracking">Track</a>
       </nav>
-      <a class="header-action" href="portal.html">Open portal</a>
+      <button class="ai-desk-trigger" type="button" data-ai-desk-open>AI Desk</button>
+      <a class="header-action" href="portal.html">Portal</a>
     </header>
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
         <div class="hero-media" aria-hidden="true">
           <div class="hero-dashboard">
-            <div class="dashboard-bar">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-            <div class="dashboard-grid">
-              <div class="dashboard-panel wide">
-                <small>Live brief</small>
-                <strong>London to Kiambu</strong>
-                <p>Site visit, video proof, contractor check.</p>
+            <div class="product-window">
+              <div class="dashboard-bar">
+                <span></span>
+                <span></span>
+                <span></span>
+                <strong>Swadakta Ops</strong>
               </div>
-              <div class="dashboard-panel">
-                <small>Status</small>
-                <strong>Quoted</strong>
-              </div>
-              <div class="dashboard-panel">
-                <small>Proof pack</small>
-                <strong>8 files</strong>
+              <div class="product-grid">
+                <aside class="product-sidebar">
+                  <span class="sidebar-dot is-active"></span>
+                  <span class="sidebar-dot"></span>
+                  <span class="sidebar-dot"></span>
+                  <span class="sidebar-dot"></span>
+                </aside>
+                <div class="product-main">
+                  <div class="product-title">
+                    <small>Live corridor brief</small>
+                    <strong>London to Kiambu</strong>
+                  </div>
+                  <div class="mission-list">
+                    <span class="is-done">Route triaged</span>
+                    <span class="is-active">Quote pending</span>
+                    <span>Receiver matching</span>
+                    <span>Proof pack</span>
+                  </div>
+                  <div class="proof-grid">
+                    <span>AI risk</span>
+                    <strong>Low</strong>
+                    <span>Media</span>
+                    <strong>8 files</strong>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <p class="eyebrow">Africa, Australia, USA, Europe, China</p>
-          <h1 id="hero-title">Trusted corridor support between countries.</h1>
+          <p class="eyebrow">Swadakta corridor desk</p>
+          <h1 id="hero-title">Pathway to trusted work across borders.</h1>
           <p class="hero-copy">
             Swadakta helps clients request errands, sourcing, parcel handoffs, proof checks,
             family support, and business operations across launch corridors, with AI triage,
@@ -91,9 +106,9 @@
               <svg aria-hidden="true" viewBox="0 0 24 24">
                 <path d="M5 12h14M13 6l6 6-6 6" />
               </svg>
-              Plan an errand
+              Get started
             </a>
-            <a class="button button-secondary" href="portal.html">Choose portal</a>
+            <a class="button button-secondary" href="#tracking">Track job</a>
           </div>
           <dl class="hero-proof" aria-label="Service highlights">
             <div>
@@ -354,7 +369,7 @@
           <h2 id="payments-title">Quote first, then pay through a secure link.</h2>
           <p>
             Because each job has different travel, access, and risk, Swadakta confirms the final
-            price before payment. Stripe, PayPal, Wise, M-Pesa, or bank-transfer links can be attached by the system or founder-approved payment flow.
+            price before payment. Stripe, PayPal, M-Pesa, or bank-transfer links can be attached by the system or founder-approved payment flow.
           </p>
         </div>
         <div class="payment-flow">
@@ -829,5 +844,6 @@
     <script src="app-config.js?v=3"></script>
     <script src="app-data.js?v=30"></script>
     <script src="script.js?v=18"></script>
+    <script src="ai-desk.js?v=1"></script>
   </body>
 </html>

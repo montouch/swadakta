@@ -524,6 +524,8 @@ function portalGuideContext() {
   };
 }
 
+window.SwadaktaPortalContext = portalGuideContext;
+
 async function askSwadaktaGuide(payload, fallbackText = "") {
   try {
     const result = await window.SwadaktaData.assist(payload);
