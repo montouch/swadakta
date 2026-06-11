@@ -96,6 +96,21 @@ const budgetRangeLabels = {
   retainer: "Monthly retainer",
 };
 
+const jobValueBandLabels = {
+  unsure: "Not sure yet",
+  under_500: "Under AUD 500",
+  "500_2000": "AUD 500-2,000",
+  "2000_10000": "AUD 2,000-10,000",
+  "10000_plus": "AUD 10,000+",
+};
+
+const fundsProtectionLabels = {
+  quote_first: "Quote first, then decide",
+  deposit_milestones: "Deposit plus staged milestones",
+  regulated_escrow: "Regulated escrow for high-value work",
+  not_sure: "Not sure, advise me",
+};
+
 const proofPriorityLabels = {
   balanced: "Balanced proof pack",
   speed: "Fast confirmation",
@@ -301,6 +316,48 @@ function formatConsentStatus(request) {
   }
 
   return "Legacy or missing";
+}
+
+function fundsGuardrailLevel(request) {
+  const preference = request.funds_protection_preference || "quote_first";
+  const valueBand = request.job_value_band || "unsure";
+
+  if (preference === "regulated_escrow" || valueBand === "10000_plus") {
+    return "regulated_escrow";
+  }
+
+  if (preference === "deposit_milestones" || valueBand === "2000_10000") {
+    return "milestone_control";
+  }
+
+  return "standard";
+}
+
+function needsFundsPlanReview(request) {
+  return !isClosedRequest(request) && fundsGuardrailLevel(request) !== "standard";
+}
+
+function fundsGuardrailLines(request) {
+  const level = fundsGuardrailLevel(request);
+  const lines = [];
+
+  if (level === "regulated_escrow") {
+    lines.push(
+      "Funds guardrail: use a regulated escrow or payment provider for client funds before high-value property, title, supplier, or construction work. Do not hold informal client funds.",
+    );
+  } else if (level === "milestone_control") {
+    lines.push(
+      "Funds guardrail: create staged milestones and release receiver money only after Swadakta reviews proof for each milestone.",
+    );
+  } else {
+    lines.push("Funds guardrail: quote first and collect only through a confirmed provider link or recorded transfer.");
+  }
+
+  if (request.sensitive_documents_expected) {
+    lines.push("Sensitive-doc guardrail: complete client ID verification before paid work, release decisions, or document handling.");
+  }
+
+  return lines;
 }
 
 function safeHttpUrl(value) {
@@ -617,6 +674,142 @@ function hasMarginRisk(request) {
   return margin.revenue > 0 && margin.percent < 30 && request.status !== "cancelled";
 }
 
+function hasReceiverProvenanceRisk(request) {
+  const partner = getPartnerById(request.assigned_partner_id);
+  return Boolean(partner && !isClosedRequest(request) && receiverProvenance(partner).score < 45);
+}
+
+function buildOpsAiItems() {
+  const items = [];
+
+  requests.forEach((request) => {
+    if (request.status === "cancelled") {
+      return;
+    }
+
+    if (needsFundsPlanReview(request)) {
+      items.push({
+        priority: 95,
+        type: "Funds guardrail",
+        request,
+        action: "Confirm regulated escrow or milestone controls before quoting or starting work.",
+        reason: fundsGuardrailLines(request).join(" "),
+      });
+    }
+
+    if (needsQuoteOrPaymentLink(request)) {
+      items.push({
+        priority: 85,
+        type: "Quote needed",
+        request,
+        action: "Review scope, price the work, choose payment route, and send a quote.",
+        reason: "The request is new, unquoted, or missing a payment link.",
+      });
+    }
+
+    if (needsIdVerification(request)) {
+      items.push({
+        priority: 80,
+        type: "ID check",
+        request,
+        action: "Send or review identity verification before paid or sensitive work proceeds.",
+        reason: `Current ID status is ${verificationStatusLabels[request.verification_status] || request.verification_status || "not set"}.`,
+      });
+    }
+
+    if (isPaymentOverdue(request)) {
+      items.push({
+        priority: 75,
+        type: "Payment follow-up",
+        request,
+        action: "Send a polite payment reminder or reset the quote/payment window.",
+        reason: `Payment due date ${request.payment_due_at} has passed while payment is still open.`,
+      });
+    }
+
+    if (hasMarginRisk(request)) {
+      items.push({
+        priority: 70,
+        type: "Margin review",
+        request,
+        action: "Adjust price, operator payout, field cost, or scope before committing delivery.",
+        reason: `Founder margin is ${formatFounderMargin(request)}.`,
+      });
+    }
+
+    if (hasReceiverProvenanceRisk(request)) {
+      const partner = getPartnerById(request.assigned_partner_id);
+      const provenance = receiverProvenance(partner);
+      items.push({
+        priority: 68,
+        type: "Receiver seal risk",
+        request,
+        action: "Review receiver performance before continuing; pause or reassign if the proof trail is weak.",
+        reason: `${partner.full_name} has a ${provenance.score}% provenance seal. ${provenance.summary}.`,
+      });
+    }
+
+    if (isReadyToAssign(request)) {
+      items.push({
+        priority: 65,
+        type: "Assign receiver",
+        request,
+        action: "Assign a vetted and ID-verified Kenya-side receiver.",
+        reason: "Funds are protected or paid, but no receiver is assigned.",
+      });
+    }
+
+    if (needsProofReview(request)) {
+      items.push({
+        priority: 60,
+        type: "Proof review",
+        request,
+        action: "Review receiver updates and decide what can be shared with the client.",
+        reason: "Receiver updates exist and need admin review before client-facing reporting.",
+      });
+    }
+
+    if (needsReleaseDecision(request)) {
+      items.push({
+        priority: 55,
+        type: "Release decision",
+        request,
+        action: "Review milestone proof, then approve release, partial release, refund, or dispute hold.",
+        reason: "One or more milestones are waiting for a payout/refund/dispute decision.",
+      });
+    }
+  });
+
+  return items.sort((first, second) => second.priority - first.priority).slice(0, 8);
+}
+
+function buildOpsAiPrompt(item) {
+  const request = item.request;
+  const currency = request.quote_currency || request.preferred_currency || "AUD";
+  const assignedPartner = getPartnerById(request.assigned_partner_id);
+  const receiverLine = assignedPartner
+    ? `${assignedPartner.full_name} (${assignedPartner.partner_code}) - seal ${receiverProvenance(assignedPartner).score}%`
+    : "Unassigned";
+
+  return [
+    "Swadakta Ops AI founder prompt",
+    `Request: ${request.request_code}`,
+    `Client: ${request.client_name}`,
+    `Action needed: ${item.type}`,
+    `Recommended next step: ${item.action}`,
+    `Reason: ${item.reason}`,
+    `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya`,
+    `Quote: ${request.quote_amount ? formatMoney(request.quote_amount, currency) : "not quoted"}`,
+    `Payment: ${paymentLabels[request.payment_status] || request.payment_status}; funds ${fundsStatusLabels[request.funds_status] || request.funds_status}`,
+    `Receiver: ${receiverLine}`,
+    `Value involved: ${jobValueBandLabels[request.job_value_band] || request.job_value_band || "not sure"}`,
+    `Funds plan: ${fundsProtectionLabels[request.funds_protection_preference] || request.funds_protection_preference || "quote first"}`,
+    `ID status: ${verificationStatusLabels[request.verification_status] || request.verification_status || "not set"}`,
+    "",
+    "Draft the admin-approved next action. Do not contact the client, assign a receiver, or release money unless the founder approves.",
+  ].join("\n");
+}
+
 function matchesActionFilter(request, selectedAction) {
   if (selectedAction === "all") {
     return true;
@@ -624,12 +817,14 @@ function matchesActionFilter(request, selectedAction) {
 
   const checks = {
     quote: needsQuoteOrPaymentLink,
+    funds: needsFundsPlanReview,
     overdue: isPaymentOverdue,
     assign: isReadyToAssign,
     proof: needsProofReview,
     release: needsReleaseDecision,
     id: needsIdVerification,
     margin: hasMarginRisk,
+    receiver_risk: hasReceiverProvenanceRisk,
   };
 
   return checks[selectedAction] ? checks[selectedAction](request) : true;
@@ -662,21 +857,25 @@ function renderFounderCommand() {
   const actionCounts = {
     all: requests.length,
     quote: requests.filter(needsQuoteOrPaymentLink).length,
+    funds: requests.filter(needsFundsPlanReview).length,
     overdue: requests.filter(isPaymentOverdue).length,
     assign: requests.filter(isReadyToAssign).length,
     proof: requests.filter(needsProofReview).length,
     release: requests.filter(needsReleaseDecision).length,
     id: requests.filter(needsIdVerification).length,
     margin: requests.filter(hasMarginRisk).length,
+    receiver_risk: requests.filter(hasReceiverProvenanceRisk).length,
   };
   const actionTotal =
     actionCounts.quote +
+    actionCounts.funds +
     actionCounts.overdue +
     actionCounts.assign +
     actionCounts.proof +
     actionCounts.release +
     actionCounts.id +
-    actionCounts.margin;
+    actionCounts.margin +
+    actionCounts.receiver_risk;
 
   const summaryCards = [
     ["Quoted revenue", formatMoney(totalRevenue, "AUD"), "Open quoted pipeline"],
@@ -689,13 +888,36 @@ function renderFounderCommand() {
   const actions = [
     ["all", "All jobs", "Full queue"],
     ["quote", "Quote/pay link", "Make client money ask"],
+    ["funds", "Funds plan", "Escrow or milestone guardrail"],
     ["overdue", "Overdue pay", "Chase payment"],
     ["assign", "Assign receiver", "Paid/protected, no receiver"],
     ["proof", "Review proof", "Receiver update waiting"],
     ["release", "Release decision", "Pay/refund/dispute milestone"],
     ["id", "ID check", "Verification not done"],
     ["margin", "Margin risk", "Below 30%"],
+    ["receiver_risk", "Seal risk", "Assigned receiver below 45%"],
   ];
+  const opsAiItems = buildOpsAiItems();
+  const opsAiList = opsAiItems
+    .map(
+      (item, index) => `
+        <article class="ops-ai-item">
+          <header>
+            <span class="request-code">${escapeHtml(item.type)}</span>
+            <strong>${escapeHtml(item.request.request_code)} - ${escapeHtml(item.request.client_name || "Client")}</strong>
+          </header>
+          <p>${escapeHtml(item.action)}</p>
+          <small>${escapeHtml(item.reason)}</small>
+          <div class="form-actions">
+            <button class="button button-secondary" type="button" data-copy-ops-ai="${index}">Copy founder prompt</button>
+            <button class="button button-secondary" type="button" data-run-ops-ai="${index}">Ask AI for draft</button>
+            <button class="button button-secondary" type="button" data-save-ops-ai="${index}">Save draft to notes</button>
+          </div>
+          <textarea class="ops-ai-output" rows="4" readonly placeholder="AI draft appears here after founder/admin asks."></textarea>
+        </article>
+      `,
+    )
+    .join("");
 
   founderCommand.innerHTML = `
     <div class="founder-command-header">
@@ -731,7 +953,84 @@ function renderFounderCommand() {
         )
         .join("")}
     </div>
+    <section class="ops-ai-panel" aria-label="Swadakta Ops AI">
+      <div class="founder-command-header">
+        <div>
+          <p class="eyebrow">Swadakta Ops AI</p>
+          <h2>Founder prompts that reduce manual load.</h2>
+        </div>
+        <span class="mode-badge">${escapeHtml(opsAiItems.length ? `${opsAiItems.length} prompts` : "Clear")}</span>
+      </div>
+      <p class="form-note">Hardwired triage drafts the next admin prompt. It does not contact clients, assign receivers, or release funds without founder approval.</p>
+      <div class="ops-ai-list">
+        ${opsAiList || `<p class="form-note">No urgent prompts right now. New requests, payment gaps, ID checks, proof reviews, and release decisions will appear here.</p>`}
+      </div>
+      <span class="copy-status" id="ops-ai-status" role="status"></span>
+    </section>
   `;
+  founderCommand.dataset.opsAiItems = JSON.stringify(
+    opsAiItems.map((item) => ({
+      requestId: item.request.id,
+      type: item.type,
+      requestCode: item.request.request_code,
+      prompt: buildOpsAiPrompt(item),
+      payload: {
+        role: "admin",
+        task: item.action,
+        context: {
+          type: item.type,
+          request_code: item.request.request_code,
+          client_name: item.request.client_name,
+          task_type: item.request.task_type,
+          kenya_location: item.request.kenya_location,
+          status: item.request.status,
+          payment_status: item.request.payment_status,
+          quote_amount: item.request.quote_amount,
+          quote_currency: item.request.quote_currency,
+          funds_status: item.request.funds_status,
+          job_value_band: item.request.job_value_band,
+          funds_protection_preference: item.request.funds_protection_preference,
+          verification_status: item.request.verification_status,
+          assigned_receiver: assignedPartnerLabel(item.request),
+          reason: item.reason,
+        },
+      },
+    })),
+  );
+}
+
+async function saveOpsAiDraftToNotes(item, draft) {
+  const request = requests.find(
+    (candidate) => candidate.id === item.requestId || candidate.request_code === item.requestCode,
+  );
+  const cleanDraft = String(draft || "").trim();
+
+  if (!request) {
+    throw new Error("Request not found for this AI draft.");
+  }
+
+  if (!cleanDraft) {
+    throw new Error("Ask AI for a draft first.");
+  }
+
+  const savedAt = new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
+  const existingNotes = String(request.operator_notes || "").trim();
+  const aiNote = [
+    `[AI ops note saved ${savedAt}]`,
+    `Queue: ${item.type}`,
+    `Request: ${item.requestCode}`,
+    cleanDraft,
+  ].join("\n");
+
+  await window.SwadaktaData.updateRequest(request.id, {
+    ...request,
+    operator_notes: existingNotes ? `${existingNotes}\n\n${aiNote}` : aiNote,
+  });
+
+  await loadRequests();
 }
 
 function getFilteredRequests() {
@@ -763,6 +1062,8 @@ function getFilteredRequests() {
       assignedPartnerLabel(request),
       servicePackageLabels[request.service_package] || request.service_package,
       paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
+      jobValueBandLabels[request.job_value_band] || request.job_value_band,
+      fundsProtectionLabels[request.funds_protection_preference] || request.funds_protection_preference,
       budgetRangeLabels[request.budget_range] || request.budget_range,
       proofPriorityLabels[request.proof_priority] || request.proof_priority,
       referralSourceLabels[request.referral_source] || request.referral_source,
@@ -900,6 +1201,24 @@ function servicePackageOptions(current) {
     .join("");
 }
 
+function jobValueBandOptions(current) {
+  return Object.entries(jobValueBandLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function fundsProtectionOptions(current) {
+  return Object.entries(fundsProtectionLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
 function partnerStatusOptions(current) {
   return Object.entries(partnerStatusLabels)
     .map(
@@ -927,6 +1246,146 @@ function identityStatusOptions(current) {
     .join("");
 }
 
+function clampScore(value) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) {
+    return 25;
+  }
+
+  return Math.max(0, Math.min(100, Math.round(number)));
+}
+
+function provenanceBand(score) {
+  if (score >= 90) {
+    return "green";
+  }
+  if (score >= 75) {
+    return "mint";
+  }
+  if (score >= 60) {
+    return "blue";
+  }
+  if (score >= 45) {
+    return "amber";
+  }
+  if (score >= 25) {
+    return "orange";
+  }
+  return "red";
+}
+
+function provenanceLabel(score) {
+  const labels = {
+    green: "Green",
+    mint: "Strong",
+    blue: "Building",
+    amber: "Watch",
+    orange: "Starter",
+    red: "Risk",
+  };
+
+  return labels[provenanceBand(score)];
+}
+
+function requestIdsForPartner(application) {
+  return new Set(
+    requests
+      .filter((request) => request.assigned_partner_id === application.id)
+      .map((request) => request.id),
+  );
+}
+
+function receiverProvenance(application) {
+  const assignedRequests = requests.filter((request) => request.assigned_partner_id === application.id);
+  const assignedIds = requestIdsForPartner(application);
+  const updates = fieldUpdates.filter((update) => update.partner_application_id === application.id);
+  const relatedMilestones = fundMilestones.filter((milestone) => assignedIds.has(milestone.service_request_id));
+  const completedJobs = assignedRequests.filter((request) => request.status === "completed").length;
+  const cancelledJobs = assignedRequests.filter((request) => request.status === "cancelled").length;
+  const completedUpdates = updates.filter((update) => update.field_status === "completed").length;
+  const blockedUpdates = updates.filter((update) => update.field_status === "blocked").length;
+  const adminEscalations = updates.filter((update) => update.field_status === "needs_admin").length;
+  const safetyIssues = updates.filter((update) => update.field_status === "safety_issue").length;
+  const disputedMilestones = relatedMilestones.filter((milestone) =>
+    ["disputed", "refund_pending", "refunded"].includes(milestone.release_status),
+  ).length;
+
+  const base = clampScore(application.provenance_score ?? 25);
+  const identityBonus = application.identity_verification_status === "verified" ? 20 : 0;
+  const vettedBonus = application.status === "vetted" ? 10 : 0;
+  const proofBonus = application.proof_standard_consent ? 5 : 0;
+  const completionBonus = Math.min(completedJobs * 5, 25);
+  const updateBonus = Math.min(completedUpdates * 3, 15);
+  const penalties =
+    cancelledJobs * 15 + blockedUpdates * 10 + adminEscalations * 8 + safetyIssues * 22 + disputedMilestones * 18;
+  const score = clampScore(base + identityBonus + vettedBonus + proofBonus + completionBonus + updateBonus - penalties);
+
+  return {
+    score,
+    base,
+    band: provenanceBand(score),
+    label: provenanceLabel(score),
+    completedJobs,
+    completedUpdates,
+    blockedUpdates,
+    adminEscalations,
+    safetyIssues,
+    disputedMilestones,
+    summary: [
+      `Base ${base}%`,
+      identityBonus ? "ID +20" : "ID pending",
+      vettedBonus ? "vetted +10" : "not vetted",
+      completedJobs ? `${completedJobs} completed job${completedJobs === 1 ? "" : "s"}` : "no completed jobs",
+      penalties ? `issues -${penalties}` : "clean issue record",
+    ].join(" / "),
+  };
+}
+
+function clientProvenance(profile) {
+  const profileEmail = String(profile.email || "").trim().toLowerCase();
+  const clientRequests = requests.filter(
+    (request) => String(request.email || "").trim().toLowerCase() === profileEmail && profileEmail,
+  );
+  const completedRequests = clientRequests.filter((request) => request.status === "completed").length;
+  const fundedRequests = clientRequests.filter((request) =>
+    ["deposit_paid", "paid"].includes(request.payment_status),
+  ).length;
+  const cancelledRequests = clientRequests.filter((request) => request.status === "cancelled").length;
+  const refundedRequests = clientRequests.filter((request) => request.payment_status === "refunded").length;
+  const disputedMilestones = fundMilestones.filter((milestone) => {
+    const request = requests.find((item) => item.id === milestone.service_request_id);
+    return (
+      request &&
+      String(request.email || "").trim().toLowerCase() === profileEmail &&
+      ["disputed", "refund_pending", "refunded"].includes(milestone.release_status)
+    );
+  }).length;
+  const identityBonus = profile.identity_verification_status === "verified" ? 20 : 0;
+  const profileBonus = profile.onboarding_status === "profile_complete" || profile.onboarding_status === "verified" ? 10 : 0;
+  const completionBonus = Math.min(completedRequests * 5, 20);
+  const fundedBonus = Math.min(fundedRequests * 5, 20);
+  const penalties = cancelledRequests * 8 + refundedRequests * 8 + disputedMilestones * 12;
+  const score = clampScore(25 + identityBonus + profileBonus + completionBonus + fundedBonus - penalties);
+
+  return {
+    score,
+    band: provenanceBand(score),
+    label: provenanceLabel(score),
+    summary: `${clientRequests.length} request${clientRequests.length === 1 ? "" : "s"} / ${fundedRequests} funded / ${completedRequests} completed`,
+  };
+}
+
+function renderProvenanceSeal(provenance, { subtle = false, title = "Provenance Seal" } = {}) {
+  return `
+    <div class="provenance-seal ${subtle ? "is-subtle" : ""} provenance-${escapeHtml(provenance.band)}" aria-label="${escapeHtml(title)} ${escapeHtml(provenance.score)} percent">
+      <span>${escapeHtml(title)}</span>
+      <strong>${escapeHtml(provenance.score)}%</strong>
+      <small>${escapeHtml(provenance.label)}</small>
+      <div class="provenance-bar"><i style="width:${escapeHtml(provenance.score)}%"></i></div>
+    </div>
+  `;
+}
+
 function isVerifiedReceiver(application) {
   return (
     application &&
@@ -948,8 +1407,9 @@ function formatPartnerLabel(application) {
     identityStatusLabels[application.identity_verification_status] ||
     application.identity_verification_status ||
     "Not started";
+  const provenance = receiverProvenance(application);
 
-  return `${application.full_name} (${application.partner_code}) - ${application.kenya_base || "Kenya"} - ${partnerStatusLabels[application.status] || application.status} - ID ${identityStatus} - ${categories}`;
+  return `${application.full_name} (${application.partner_code}) - Seal ${provenance.score}% - ${application.kenya_base || "Kenya"} - ${partnerStatusLabels[application.status] || application.status} - ID ${identityStatus} - ${categories}`;
 }
 
 function getPartnerById(id) {
@@ -964,6 +1424,7 @@ function assignedPartnerOptions(current) {
   const currentPartner = getPartnerById(current);
   const options = partnerApplications
     .filter((application) => isVerifiedReceiver(application) || application.id === current)
+    .sort((first, second) => receiverProvenance(second).score - receiverProvenance(first).score)
     .map(
       (application) =>
         `<option value="${escapeHtml(application.id)}" ${application.id === current ? "selected" : ""}>${escapeHtml(formatPartnerLabel(application))}</option>`,
@@ -1046,6 +1507,11 @@ function renderRequestCardV2(request) {
     servicePackageLabels[request.service_package] || request.service_package || "Help me choose the right package";
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
+  const jobValueBand = jobValueBandLabels[request.job_value_band] || request.job_value_band || "Not sure yet";
+  const fundsPreference =
+    fundsProtectionLabels[request.funds_protection_preference] ||
+    request.funds_protection_preference ||
+    "Quote first, then decide";
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
@@ -1083,6 +1549,8 @@ function renderRequestCardV2(request) {
         <div><dt>Receiver</dt><dd>${escapeHtml(assignedPartner)}</dd></div>
         <div><dt>Package</dt><dd>${escapeHtml(servicePackage)}</dd></div>
         <div><dt>Pay method</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
+        <div><dt>Value involved</dt><dd>${escapeHtml(jobValueBand)}</dd></div>
+        <div><dt>Funds plan</dt><dd>${escapeHtml(fundsPreference)}</dd></div>
         <div><dt>Budget</dt><dd>${escapeHtml(budgetRange)}</dd></div>
         <div><dt>Proof focus</dt><dd>${escapeHtml(proofPriority)}</dd></div>
         <div><dt>Lead source</dt><dd>${escapeHtml(referralSource)}</dd></div>
@@ -1102,6 +1570,10 @@ function renderRequestCardV2(request) {
       </dl>
 
       <p class="request-notes">${escapeHtml(request.notes)}</p>
+      <div class="verification-panel">
+        <span class="status-pill status-${escapeHtml(fundsGuardrailLevel(request))}">${escapeHtml(fundsGuardrailLevel(request) === "regulated_escrow" ? "Escrow review" : fundsGuardrailLevel(request) === "milestone_control" ? "Milestone control" : "Standard funds")}</span>
+        ${fundsGuardrailLines(request).map((line) => `<p>${escapeHtml(line)}</p>`).join("")}
+      </div>
       ${supportingLinks}
       ${renderFundMilestones(request)}
       ${renderFieldUpdates(request)}
@@ -1122,6 +1594,16 @@ function renderRequestCardV2(request) {
             Service package
             <select name="service_package">${servicePackageOptions(request.service_package || "quote_first")}</select>
           </label>
+          <label class="field-group">
+            Value involved
+            <select name="job_value_band">${jobValueBandOptions(request.job_value_band || "unsure")}</select>
+          </label>
+          <label class="field-group">
+            Funds preference
+            <select name="funds_protection_preference">${fundsProtectionOptions(request.funds_protection_preference || "quote_first")}</select>
+          </label>
+        </div>
+        <div class="field-row">
           <label class="field-group">
             Quote amount
             <input name="quote_amount" type="number" min="0" step="1" value="${escapeHtml(request.quote_amount || "")}" />
@@ -1263,6 +1745,7 @@ function renderPartnerApplication(application) {
     "Not started";
   const identityLink = safeHttpUrl(application.identity_verification_link);
   const identityReference = application.identity_verification_reference || "Not recorded";
+  const provenance = receiverProvenance(application);
 
   return `
     <article class="request-card partner-card" data-id="${escapeHtml(application.id)}">
@@ -1272,7 +1755,10 @@ function renderPartnerApplication(application) {
           <h2>${escapeHtml(application.full_name)}</h2>
           <p>${escapeHtml(application.kenya_base)} - ${escapeHtml(categories)}</p>
         </div>
-        <span class="status-pill status-${escapeHtml(application.status)}">${escapeHtml(partnerStatusLabels[application.status] || application.status)}</span>
+        <div class="header-stack">
+          <span class="status-pill status-${escapeHtml(application.status)}">${escapeHtml(partnerStatusLabels[application.status] || application.status)}</span>
+          ${renderProvenanceSeal(provenance)}
+        </div>
       </header>
 
       <dl class="request-details">
@@ -1287,6 +1773,8 @@ function renderPartnerApplication(application) {
         <div><dt>ID reference</dt><dd>${escapeHtml(identityReference)}</dd></div>
         <div><dt>ID verified</dt><dd>${application.identity_verified_at ? formatDate(application.identity_verified_at) : "Not verified"}</dd></div>
         <div><dt>Proof consent</dt><dd>${application.proof_standard_consent ? "Yes" : "No"}</dd></div>
+        <div><dt>Provenance</dt><dd>${escapeHtml(provenance.summary)}</dd></div>
+        <div><dt>Seal reviewed</dt><dd>${application.provenance_reviewed_at ? formatDate(application.provenance_reviewed_at) : "Not reviewed"}</dd></div>
         <div><dt>Applied</dt><dd>${formatDate(application.created_at)}</dd></div>
       </dl>
 
@@ -1298,6 +1786,12 @@ function renderPartnerApplication(application) {
             ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Open verification link</a>`
             : "<span>No verification link recorded yet.</span>"
         }
+      </div>
+
+      <div class="provenance-panel provenance-${escapeHtml(provenance.band)}">
+        <strong>Receiver provenance review</strong>
+        <p>${escapeHtml(provenance.summary)}</p>
+        <span>${escapeHtml(application.provenance_notes || "No manual provenance review notes yet.")}</span>
       </div>
 
       <p class="request-notes">${escapeHtml(application.notes || "No notes provided.")}</p>
@@ -1343,6 +1837,16 @@ function renderPartnerApplication(application) {
             <input name="identity_verification_notes" type="text" value="${escapeHtml(application.identity_verification_notes || "")}" placeholder="Document type, manual review, exception notes" />
           </label>
         </div>
+        <div class="field-row">
+          <label class="field-group">
+            Provenance base score
+            <input name="provenance_score" type="number" min="0" max="100" step="1" value="${escapeHtml(application.provenance_score ?? 25)}" />
+          </label>
+          <label class="field-group">
+            Provenance review notes
+            <input name="provenance_notes" type="text" value="${escapeHtml(application.provenance_notes || "")}" placeholder="Clean delivery, late proof, client complaint, safety concern..." />
+          </label>
+        </div>
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save partner</button>
           <span class="copy-status" role="status"></span>
@@ -1367,7 +1871,10 @@ function renderPartnerApplications() {
     return;
   }
 
-  partnerBoard.innerHTML = partnerApplications.map(renderPartnerApplication).join("");
+  partnerBoard.innerHTML = [...partnerApplications]
+    .sort((first, second) => receiverProvenance(second).score - receiverProvenance(first).score)
+    .map(renderPartnerApplication)
+    .join("");
 }
 
 function renderAccountProfileCard(profile) {
@@ -1381,6 +1888,7 @@ function renderAccountProfileCard(profile) {
     "Not started";
   const identityLink = safeHttpUrl(profile.identity_verification_link);
   const role = accountRoleLabels[profile.account_role] || profile.account_role || "Client";
+  const provenance = clientProvenance(profile);
 
   return `
     <article class="request-card account-card" data-user-id="${escapeHtml(profile.user_id)}">
@@ -1390,7 +1898,10 @@ function renderAccountProfileCard(profile) {
           <h2>${escapeHtml(profile.full_name || profile.email)}</h2>
           <p>${escapeHtml(profile.email)} - ${escapeHtml(profile.country || "Country not set")}</p>
         </div>
-        <span class="status-pill status-${escapeHtml(profile.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+        <div class="header-stack">
+          <span class="status-pill status-${escapeHtml(profile.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+          ${renderProvenanceSeal(provenance, { subtle: true, title: "Client Seal" })}
+        </div>
       </header>
 
       <dl class="request-details">
@@ -1401,6 +1912,7 @@ function renderAccountProfileCard(profile) {
         <div><dt>ID reference</dt><dd>${escapeHtml(profile.identity_verification_reference || "Not recorded")}</dd></div>
         <div><dt>ID verified</dt><dd>${profile.identity_verified_at ? formatDate(profile.identity_verified_at) : "Not verified"}</dd></div>
         <div><dt>Onboarding</dt><dd>${escapeHtml(profile.onboarding_status || "started")}</dd></div>
+        <div><dt>Client provenance</dt><dd>${escapeHtml(provenance.summary)}</dd></div>
         <div><dt>Updated</dt><dd>${formatDate(profile.updated_at)}</dd></div>
       </dl>
 
@@ -1585,6 +2097,9 @@ function partnerFormPayload(form) {
     identity_verification_reference: formData.get("identity_verification_reference"),
     identity_verified_at: identityStatus === "verified" ? verifiedAt || new Date().toISOString() : verifiedAt || null,
     identity_verification_notes: formData.get("identity_verification_notes"),
+    provenance_score: clampScore(formData.get("provenance_score") || 25),
+    provenance_notes: formData.get("provenance_notes"),
+    provenance_reviewed_at: new Date().toISOString(),
   };
 }
 
@@ -1689,6 +2204,8 @@ function formPayload(form) {
     status: formData.get("status"),
     payment_status: formData.get("payment_status"),
     service_package: formData.get("service_package"),
+    job_value_band: formData.get("job_value_band") || "unsure",
+    funds_protection_preference: formData.get("funds_protection_preference") || "quote_first",
     assigned_partner_id: formData.get("assigned_partner_id") || null,
     assigned_to: formData.get("assigned_to"),
     operator_notes: formData.get("operator_notes"),
@@ -1777,6 +2294,8 @@ function buildClientUpdate(request, form) {
   const quoteLine = payload.quote_amount ? `Quote: ${formatCurrency(payload.quote_amount, payload.quote_currency)}` : "Quote: Pending.";
   const paymentLine = payload.payment_link ? `Payment link: ${payload.payment_link}` : "Payment link: Not issued yet.";
   const dueLine = payload.payment_due_at ? `Payment due: ${payload.payment_due_at}` : "";
+  const valueLine = `Value involved: ${jobValueBandLabels[payload.job_value_band] || payload.job_value_band || "Not sure yet"}.`;
+  const fundsPlanLine = `Funds plan: ${fundsProtectionLabels[payload.funds_protection_preference] || payload.funds_protection_preference || "Quote first, then decide"}.`;
   const fundsLine = `Funds protection: ${fundsStatusLabels[payload.funds_status] || payload.funds_status}; protected amount ${formatMoney(payload.protected_amount, payload.quote_currency)}.`;
   const reportUrlLine = payload.client_report_url ? `Report link: ${payload.client_report_url}` : "";
   const proofLines = payload.proof_links.length ? [`Proof links:`, ...payload.proof_links.map((link) => `- ${link}`)] : [];
@@ -1788,6 +2307,8 @@ function buildClientUpdate(request, form) {
     quoteLine,
     paymentLine,
     dueLine,
+    valueLine,
+    fundsPlanLine,
     fundsLine,
     payload.client_report ? `Report: ${payload.client_report}` : "Report: Update pending.",
     reportUrlLine,
@@ -1812,6 +2333,11 @@ function buildQuoteMessage(request, form) {
     : "Payment link: Not issued yet. We will send the secure link after confirming the quote.";
   const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const valueBand = jobValueBandLabels[payload.job_value_band] || payload.job_value_band || "Not sure yet";
+  const fundsPreference =
+    fundsProtectionLabels[payload.funds_protection_preference] ||
+    payload.funds_protection_preference ||
+    "Quote first, then decide";
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "photos, receipts, and written update";
   const fundsLine =
     payload.protected_amount > 0
@@ -1828,11 +2354,13 @@ function buildQuoteMessage(request, form) {
     `Package: ${servicePackage}.`,
     `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya.`,
     `Preferred payment route: ${paymentMethod}.`,
+    `Value involved: ${valueBand}. Funds plan: ${fundsPreference}.`,
     dueLine,
     paymentLine,
     "",
     fundsLine,
     verificationLine,
+    ...fundsGuardrailLines({ ...request, ...payload }),
     ...buildMilestoneSummary(request),
     "",
     `Proof plan: ${proofPriority}. Report pack: ${reports}.`,
@@ -1857,6 +2385,11 @@ function buildOperatorBrief(request, form) {
   const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const assignedPartner = assignedPartnerLabel({ assigned_partner_id: payload.assigned_partner_id });
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
+  const valueBand = jobValueBandLabels[payload.job_value_band] || payload.job_value_band || "Not sure yet";
+  const fundsPreference =
+    fundsProtectionLabels[payload.funds_protection_preference] ||
+    payload.funds_protection_preference ||
+    "Quote first, then decide";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
   const milestoneSummary = getFundMilestonesForRequest(request)
@@ -1877,6 +2410,8 @@ function buildOperatorBrief(request, form) {
     `Local contact: ${localContact}`,
     `Client contact preference: ${request.contact_preference || "whatsapp"}`,
     `Preferred payment method: ${paymentMethod}`,
+    `Value involved: ${valueBand}`,
+    `Funds plan requested: ${fundsPreference}`,
     `Budget comfort: ${budgetRange}`,
     `Proof priority: ${proofPriority}`,
     `Lead source: ${referralSource}`,
@@ -1887,6 +2422,7 @@ function buildOperatorBrief(request, form) {
     `Quote: ${quoteLine}`,
     `Funds status: ${fundsStatusLabels[payload.funds_status] || payload.funds_status}; protected amount ${formatMoney(payload.protected_amount, payload.quote_currency)}; reference ${payload.payment_reference || "not set"}.`,
     `Release condition: ${payload.release_condition}`,
+    ...fundsGuardrailLines({ ...request, ...payload }),
     `ID verification: ${payload.identity_verification_required ? "required" : "not required"}; status ${verificationStatus}; reason ${payload.verification_reason || "not set"}.`,
     `Founder economics: ${founderMargin}; operator payout ${formatMoney(payload.operator_payout, payload.quote_currency)}; field costs ${formatMoney(payload.field_costs, payload.quote_currency)}; payment fees ${formatMoney(payload.payment_processing_fee, payload.quote_currency)}.`,
     "",
@@ -2071,14 +2607,71 @@ paymentFilter.addEventListener("change", renderRequests);
 sensitiveFilter.addEventListener("change", renderRequests);
 searchRequests.addEventListener("input", renderRequests);
 if (founderCommand) {
-  founderCommand.addEventListener("click", (event) => {
-    const button = event.target.closest(".command-filter");
-    if (!button) {
+  founderCommand.addEventListener("click", async (event) => {
+    const opsButton = event.target.closest("[data-copy-ops-ai]");
+    if (opsButton) {
+      const items = JSON.parse(founderCommand.dataset.opsAiItems || "[]");
+      const item = items[Number(opsButton.dataset.copyOpsAi)];
+      const statusElement = founderCommand.querySelector("#ops-ai-status") || opsButton;
+      if (item?.prompt) {
+        await copyText(item.prompt, statusElement);
+      }
       return;
     }
 
-    actionFilter = button.dataset.actionFilter || "all";
-    renderRequests();
+    const runButton = event.target.closest("[data-run-ops-ai]");
+    if (runButton) {
+      const items = JSON.parse(founderCommand.dataset.opsAiItems || "[]");
+      const item = items[Number(runButton.dataset.runOpsAi)];
+      const card = runButton.closest(".ops-ai-item");
+      const output = card.querySelector(".ops-ai-output");
+      const statusElement = founderCommand.querySelector("#ops-ai-status") || runButton;
+
+      if (!item?.payload || !output) {
+        return;
+      }
+
+      statusElement.textContent = "Asking AI...";
+      output.value = "";
+
+      try {
+        const result = await window.SwadaktaData.assist(item.payload);
+        output.value = result.data?.output || "No AI output returned.";
+        statusElement.textContent = "AI draft ready.";
+      } catch (error) {
+        statusElement.textContent = error.message || "AI draft failed.";
+      }
+      return;
+    }
+
+    const saveButton = event.target.closest("[data-save-ops-ai]");
+    if (saveButton) {
+      const items = JSON.parse(founderCommand.dataset.opsAiItems || "[]");
+      const item = items[Number(saveButton.dataset.saveOpsAi)];
+      const card = saveButton.closest(".ops-ai-item");
+      const output = card.querySelector(".ops-ai-output");
+      const statusElement = founderCommand.querySelector("#ops-ai-status") || saveButton;
+
+      if (!item || !output) {
+        return;
+      }
+
+      statusElement.textContent = "Saving AI note...";
+
+      try {
+        await saveOpsAiDraftToNotes(item, output.value);
+        statusElement.textContent = "AI note saved.";
+      } catch (error) {
+        statusElement.textContent = error.message || "AI note failed to save.";
+      }
+      return;
+    }
+
+    const button = event.target.closest(".command-filter");
+    if (button) {
+      actionFilter = button.dataset.actionFilter || "all";
+      renderRequests();
+    }
   });
 }
 

@@ -166,6 +166,8 @@
       sensitive_documents_expected: false,
       service_package: "quote_first",
       payment_method_preference: "discuss",
+      job_value_band: "unsure",
+      funds_protection_preference: "quote_first",
       budget_range: "unsure",
       proof_priority: "balanced",
       referral_source: "not_sure",
@@ -214,6 +216,8 @@
       preferred_currency: payload.preferred_currency,
       service_package: payload.service_package,
       payment_method_preference: payload.payment_method_preference,
+      job_value_band: payload.job_value_band,
+      funds_protection_preference: payload.funds_protection_preference,
       budget_range: payload.budget_range,
       proof_priority: payload.proof_priority,
       referral_source: payload.referral_source,
@@ -275,6 +279,9 @@
       identity_verification_reference: "",
       identity_verified_at: null,
       identity_verification_notes: "",
+      provenance_score: 25,
+      provenance_notes: "",
+      provenance_reviewed_at: null,
       notes: "",
       created_at: now,
       updated_at: now,
@@ -419,6 +426,8 @@
       verification_reason: updates.verification_reason,
       verified_at: updates.verified_at,
       service_package: updates.service_package,
+      job_value_band: updates.job_value_band,
+      funds_protection_preference: updates.funds_protection_preference,
       operator_payout: updates.operator_payout,
       field_costs: updates.field_costs,
       payment_processing_fee: updates.payment_processing_fee,
@@ -597,6 +606,9 @@
       identity_verification_reference: updates.identity_verification_reference,
       identity_verified_at: updates.identity_verified_at || null,
       identity_verification_notes: updates.identity_verification_notes,
+      provenance_score: updates.provenance_score,
+      provenance_notes: updates.provenance_notes,
+      provenance_reviewed_at: updates.provenance_reviewed_at || null,
     };
     const supabase = await getSupabase();
 
@@ -953,6 +965,24 @@
     return { data, mode: "supabase" };
   }
 
+  async function assist(payload) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: null, mode: "local" };
+    }
+
+    const { data, error } = await supabase.functions.invoke("swadakta-assistant", {
+      body: payload,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
     const emailRedirectTo = normalizeAuthRedirect(redirectTo);
@@ -1027,6 +1057,7 @@
     saveAccountProfile,
     listAccountProfiles,
     updateAccountIdentityVerification,
+    assist,
     signInAdmin,
     signInPortal,
     getSession,

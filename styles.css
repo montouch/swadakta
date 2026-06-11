@@ -1591,6 +1591,59 @@ output {
   box-shadow: inset 0 0 0 1px rgb(49 87 214 / 18%);
 }
 
+.assistant-panel,
+.ops-ai-panel {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(49 87 214 / 18%);
+  border-radius: var(--radius);
+  background: linear-gradient(135deg, #ffffff 0%, #eef3ff 100%);
+}
+
+.assistant-panel h3,
+.ops-ai-panel h2 {
+  margin: 0.1rem 0 0;
+  color: var(--deep);
+  line-height: 1.15;
+}
+
+.assistant-panel textarea {
+  min-height: 8rem;
+  resize: vertical;
+}
+
+.ops-ai-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.ops-ai-item {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 84%);
+}
+
+.ops-ai-item header {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.8rem;
+  align-items: start;
+}
+
+.ops-ai-item p,
+.ops-ai-item small {
+  margin: 0;
+}
+
+.ops-ai-output {
+  min-height: 7rem;
+  resize: vertical;
+}
+
 .admin-card,
 .empty-state {
   padding: 1.4rem;
@@ -1669,6 +1722,12 @@ output {
   border-bottom: 1px solid var(--line);
 }
 
+.header-stack {
+  display: grid;
+  gap: 0.55rem;
+  justify-items: end;
+}
+
 .request-card-header h2 {
   margin: 0.25rem 0;
   color: var(--deep);
@@ -1696,6 +1755,112 @@ output {
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.provenance-seal {
+  --seal-color: #d65a31;
+  --seal-bg: rgb(214 90 49 / 12%);
+  display: grid;
+  gap: 0.18rem;
+  min-width: 8.5rem;
+  padding: 0.65rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--seal-color) 28%, transparent);
+  border-radius: var(--radius);
+  background: var(--seal-bg);
+  color: var(--deep);
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 55%);
+}
+
+.provenance-seal span,
+.provenance-seal small {
+  color: color-mix(in srgb, var(--seal-color) 78%, #101c50);
+  font-size: 0.7rem;
+  font-weight: 950;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.provenance-seal strong {
+  color: var(--seal-color);
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.provenance-seal.is-subtle {
+  min-width: 7.25rem;
+  padding: 0.48rem 0.55rem;
+  opacity: 0.78;
+}
+
+.provenance-seal.is-subtle strong {
+  font-size: 1rem;
+}
+
+.provenance-bar {
+  overflow: hidden;
+  height: 0.28rem;
+  border-radius: 999px;
+  background: rgb(16 28 80 / 12%);
+}
+
+.provenance-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--seal-color);
+}
+
+.provenance-green {
+  --seal-color: #09835d;
+  --seal-bg: rgb(9 131 93 / 12%);
+}
+
+.provenance-mint {
+  --seal-color: #0b987d;
+  --seal-bg: rgb(11 152 125 / 12%);
+}
+
+.provenance-blue {
+  --seal-color: #3157d6;
+  --seal-bg: rgb(49 87 214 / 12%);
+}
+
+.provenance-amber {
+  --seal-color: #b98013;
+  --seal-bg: rgb(185 128 19 / 15%);
+}
+
+.provenance-orange {
+  --seal-color: #d65a31;
+  --seal-bg: rgb(214 90 49 / 13%);
+}
+
+.provenance-red {
+  --seal-color: #c73748;
+  --seal-bg: rgb(199 55 72 / 12%);
+}
+
+.provenance-panel {
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--seal-color) 26%, transparent);
+  border-radius: var(--radius);
+  background: var(--seal-bg);
+}
+
+.provenance-panel strong,
+.provenance-panel p,
+.provenance-panel span {
+  margin: 0;
+}
+
+.provenance-panel strong {
+  color: var(--seal-color);
+}
+
+.provenance-panel span {
+  color: var(--muted);
 }
 
 .status-new {
@@ -1995,6 +2160,16 @@ code {
   .admin-toolbar,
   .request-details {
     grid-template-columns: 1fr;
+  }
+
+  .request-card-header,
+  .header-stack {
+    display: grid;
+    justify-items: start;
+  }
+
+  .provenance-seal {
+    width: min(100%, 12rem);
   }
 
   .timeline span {

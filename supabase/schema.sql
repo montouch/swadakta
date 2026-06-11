@@ -47,6 +47,8 @@ create table if not exists public.service_requests (
   preferred_currency text not null default 'AUD',
   service_package text not null default 'quote_first',
   payment_method_preference text not null default 'discuss',
+  job_value_band text not null default 'unsure',
+  funds_protection_preference text not null default 'quote_first',
   budget_range text not null default 'unsure',
   proof_priority text not null default 'balanced',
   referral_source text not null default 'not_sure',
@@ -111,6 +113,9 @@ create table if not exists public.partner_applications (
   identity_verification_reference text,
   identity_verified_at timestamptz,
   identity_verification_notes text,
+  provenance_score integer not null default 25,
+  provenance_notes text,
+  provenance_reviewed_at timestamptz,
   notes text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -176,6 +181,8 @@ alter table public.service_requests add column if not exists sensitive_documents
 alter table public.service_requests add column if not exists preferred_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists service_package text not null default 'quote_first';
 alter table public.service_requests add column if not exists payment_method_preference text not null default 'discuss';
+alter table public.service_requests add column if not exists job_value_band text not null default 'unsure';
+alter table public.service_requests add column if not exists funds_protection_preference text not null default 'quote_first';
 alter table public.service_requests add column if not exists budget_range text not null default 'unsure';
 alter table public.service_requests add column if not exists proof_priority text not null default 'balanced';
 alter table public.service_requests add column if not exists referral_source text not null default 'not_sure';
@@ -210,6 +217,9 @@ alter table public.partner_applications add column if not exists identity_verifi
 alter table public.partner_applications add column if not exists identity_verification_reference text;
 alter table public.partner_applications add column if not exists identity_verified_at timestamptz;
 alter table public.partner_applications add column if not exists identity_verification_notes text;
+alter table public.partner_applications add column if not exists provenance_score integer not null default 25;
+alter table public.partner_applications add column if not exists provenance_notes text;
+alter table public.partner_applications add column if not exists provenance_reviewed_at timestamptz;
 
 update public.service_requests
 set client_base = australia_location
@@ -319,6 +329,20 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_payment_method_preference_check check (payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_job_value_band_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_job_value_band_check check (job_value_band in ('unsure', 'under_500', '500_2000', '2000_10000', '10000_plus'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_funds_protection_preference_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_funds_protection_preference_check check (funds_protection_preference in ('quote_first', 'deposit_milestones', 'regulated_escrow', 'not_sure'));
   end if;
 
   if not exists (
@@ -502,6 +526,13 @@ begin
         or identity_verification_link = ''
         or identity_verification_link ~* '^https?://'
       );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'partner_applications_provenance_score_check'
+  ) then
+    alter table public.partner_applications
+      add constraint partner_applications_provenance_score_check check (provenance_score between 0 and 100);
   end if;
 
   if not exists (
@@ -794,6 +825,8 @@ with check (
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
   and service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'monthly_retainer', 'business_ops')
   and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank')
+  and job_value_band in ('unsure', 'under_500', '500_2000', '2000_10000', '10000_plus')
+  and funds_protection_preference in ('quote_first', 'deposit_milestones', 'regulated_escrow', 'not_sure')
   and budget_range in ('unsure', 'under_100', '100_250', '250_500', '500_plus', 'retainer')
   and proof_priority in ('balanced', 'speed', 'detailed_media', 'receipts', 'debrief')
   and referral_source in ('not_sure', 'facebook_instagram', 'whatsapp_group', 'friend_referral', 'search', 'community_event', 'other')
@@ -949,6 +982,8 @@ grant insert (
   preferred_currency,
   service_package,
   payment_method_preference,
+  job_value_band,
+  funds_protection_preference,
   budget_range,
   proof_priority,
   referral_source,
@@ -977,6 +1012,8 @@ grant update (
   operator_notes,
   client_report,
   service_package,
+  job_value_band,
+  funds_protection_preference,
   quote_amount,
   quote_currency,
   payment_link,
@@ -1023,7 +1060,10 @@ grant update (
   identity_verification_link,
   identity_verification_reference,
   identity_verified_at,
-  identity_verification_notes
+  identity_verification_notes,
+  provenance_score,
+  provenance_notes,
+  provenance_reviewed_at
 ) on public.partner_applications to authenticated;
 grant select on public.admin_users to authenticated;
 grant select on public.field_updates to authenticated;
@@ -1070,6 +1110,8 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  job_value_band text,
+  funds_protection_preference text,
   funds_status text,
   protected_amount integer,
   release_condition text,
@@ -1093,6 +1135,8 @@ as $$
     sr.payment_status,
     sr.quote_amount,
     sr.quote_currency,
+    sr.job_value_band,
+    sr.funds_protection_preference,
     sr.funds_status,
     sr.protected_amount,
     sr.release_condition,
@@ -1147,6 +1191,8 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  job_value_band text,
+  funds_protection_preference text,
   funds_status text,
   protected_amount integer,
   release_condition text,
@@ -1179,6 +1225,8 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  job_value_band text,
+  funds_protection_preference text,
   funds_status text,
   protected_amount integer,
   release_condition text,
@@ -1204,6 +1252,8 @@ as $$
     sr.payment_status,
     sr.quote_amount,
     sr.quote_currency,
+    sr.job_value_band,
+    sr.funds_protection_preference,
     sr.funds_status,
     sr.protected_amount,
     sr.release_condition,
@@ -1256,6 +1306,8 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  job_value_band text,
+  funds_protection_preference text,
   funds_status text,
   protected_amount integer,
   release_condition text,
@@ -1382,6 +1434,9 @@ returns table (
   identity_verification_link text,
   identity_verification_reference text,
   identity_verified_at timestamptz,
+  provenance_score integer,
+  provenance_notes text,
+  provenance_reviewed_at timestamptz,
   updated_at timestamptz
 )
 language sql
@@ -1402,6 +1457,9 @@ as $$
     pa.identity_verification_link,
     pa.identity_verification_reference,
     pa.identity_verified_at,
+    pa.provenance_score,
+    pa.provenance_notes,
+    pa.provenance_reviewed_at,
     pa.updated_at
   from public.partner_applications pa
   where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(app_private.current_auth_email()))
@@ -1428,6 +1486,9 @@ returns table (
   identity_verification_link text,
   identity_verification_reference text,
   identity_verified_at timestamptz,
+  provenance_score integer,
+  provenance_notes text,
+  provenance_reviewed_at timestamptz,
   updated_at timestamptz
 )
 language sql

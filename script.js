@@ -14,6 +14,11 @@ const copyLaunch = document.querySelector("#copy-launch");
 const launchStatus = document.querySelector("#launch-status");
 const trackingForm = document.querySelector("#tracking-form");
 const trackingResult = document.querySelector("#tracking-result");
+const draftClientBrief = document.querySelector("#draft-client-brief");
+const useClientDraft = document.querySelector("#use-client-draft");
+const copyClientDraft = document.querySelector("#copy-client-draft");
+const clientAssistantDraft = document.querySelector("#client-assistant-draft");
+const clientAssistantStatus = document.querySelector("#client-assistant-status");
 
 const statusLabels = {
   new: "New",
@@ -95,6 +100,21 @@ const budgetRangeLabels = {
   "250_500": "AUD 250-500",
   "500_plus": "AUD 500+",
   retainer: "Monthly retainer",
+};
+
+const jobValueBandLabels = {
+  unsure: "Not sure yet",
+  under_500: "Under AUD 500",
+  "500_2000": "AUD 500-2,000",
+  "2000_10000": "AUD 2,000-10,000",
+  "10000_plus": "AUD 10,000+",
+};
+
+const fundsProtectionLabels = {
+  quote_first: "Quote first, then decide",
+  deposit_milestones: "Deposit plus staged milestones",
+  regulated_escrow: "Regulated escrow for high-value work",
+  not_sure: "Not sure, advise me",
 };
 
 const proofPriorityLabels = {
@@ -204,6 +224,8 @@ function buildBrief() {
   const preferredCurrency = document.querySelector("#preferred-currency").value;
   const servicePackage = document.querySelector("#service-package").value;
   const paymentMethodPreference = document.querySelector("#payment-method-preference").value;
+  const jobValueBand = document.querySelector("#job-value-band").value;
+  const fundsProtectionPreference = document.querySelector("#funds-protection-preference").value;
   const budgetRange = document.querySelector("#budget-range").value;
   const proofPriority = document.querySelector("#proof-priority").value;
   const referralSource = document.querySelector("#referral-source").value;
@@ -234,6 +256,8 @@ function buildBrief() {
     `Preferred quote currency: ${preferredCurrency}`,
     `Service package: ${servicePackageLabels[servicePackage] || servicePackage}`,
     `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
+    `Approx value involved: ${jobValueBandLabels[jobValueBand] || jobValueBand}`,
+    `Funds protection preference: ${fundsProtectionLabels[fundsProtectionPreference] || fundsProtectionPreference}`,
     `Budget comfort: ${budgetRangeLabels[budgetRange] || budgetRange}`,
     `Proof priority: ${proofPriorityLabels[proofPriority] || proofPriority}`,
     `Lead source: ${referralSourceLabels[referralSource] || referralSource}`,
@@ -277,6 +301,8 @@ function buildPayload() {
     preferred_currency: document.querySelector("#preferred-currency").value,
     service_package: document.querySelector("#service-package").value,
     payment_method_preference: document.querySelector("#payment-method-preference").value,
+    job_value_band: document.querySelector("#job-value-band").value,
+    funds_protection_preference: document.querySelector("#funds-protection-preference").value,
     budget_range: document.querySelector("#budget-range").value,
     proof_priority: document.querySelector("#proof-priority").value,
     referral_source: document.querySelector("#referral-source").value,
@@ -295,6 +321,35 @@ function buildPayload() {
     terms_accepted_at: termsAccepted ? acceptedAt : null,
     privacy_accepted_at: termsAccepted ? acceptedAt : null,
   };
+}
+
+function buildClientAssistantDraft() {
+  const task = taskType.options[taskType.selectedIndex].text;
+  const location = document.querySelector("#location").value.trim() || "the Kenya location I listed";
+  const deadline = document.querySelector("#deadline").value || "a flexible date";
+  const localContact = [document.querySelector("#local-contact-name").value.trim(), document.querySelector("#local-contact-phone").value.trim()]
+    .filter(Boolean)
+    .join(" / ");
+  const reports = getReportItems().join(", ") || "a written update";
+  const valueBand = jobValueBandLabels[document.querySelector("#job-value-band").value] || "Not sure yet";
+  const fundsPreference =
+    fundsProtectionLabels[document.querySelector("#funds-protection-preference").value] || "Quote first, then decide";
+  const sensitiveLine = document.querySelector("#sensitive-documents").checked
+    ? "This may involve sensitive documents, so please advise on ID verification and safe document handling before work starts."
+    : "I do not expect to send sensitive documents at this stage.";
+  const contactLine = localContact
+    ? `The Kenya-side contact is ${localContact}.`
+    : "I will confirm the Kenya-side contact if one is needed.";
+
+  return [
+    `I need Swadakta to help with ${task.toLowerCase()} in ${location}.`,
+    `My ideal deadline is ${deadline}, but please confirm what is realistic before quoting.`,
+    contactLine,
+    `I would like proof by ${reports}.`,
+    `Approximate value involved: ${valueBand}. Funds preference: ${fundsPreference}.`,
+    sensitiveLine,
+    "Please quote the work first, confirm the payment/protection route, and tell me what information is missing before anyone starts.",
+  ].join(" ");
 }
 
 function buildWhatsappLink(requestCode) {
@@ -407,6 +462,24 @@ form.addEventListener("submit", async (event) => {
   }
 });
 copyBrief.addEventListener("click", () => copyText(buildBrief(), briefStatus, "Brief copied."));
+if (draftClientBrief && clientAssistantDraft) {
+  draftClientBrief.addEventListener("click", () => {
+    clientAssistantDraft.value = buildClientAssistantDraft();
+    clientAssistantStatus.textContent = "Draft ready.";
+  });
+}
+if (useClientDraft && clientAssistantDraft) {
+  useClientDraft.addEventListener("click", () => {
+    const notes = document.querySelector("#notes");
+    notes.value = clientAssistantDraft.value || buildClientAssistantDraft();
+    clientAssistantStatus.textContent = "Draft added to notes.";
+  });
+}
+if (copyClientDraft && clientAssistantDraft) {
+  copyClientDraft.addEventListener("click", () =>
+    copyText(clientAssistantDraft.value || buildClientAssistantDraft(), clientAssistantStatus, "Draft copied."),
+  );
+}
 copyLaunch.addEventListener("click", () => {
   const launchCopy = document.querySelector("#launch-copy").textContent.trim().replace(/\s+/g, " ");
   copyText(launchCopy, launchStatus, "WhatsApp draft copied.");
@@ -470,6 +543,11 @@ function renderTrackingResult(request) {
   const fundsStatus = fundsStatusLabels[request.funds_status] || request.funds_status || "Not collected";
   const verificationStatus =
     verificationStatusLabels[request.verification_status] || request.verification_status || "Not required";
+  const valueBand = jobValueBandLabels[request.job_value_band] || request.job_value_band || "Not sure yet";
+  const fundsPreference =
+    fundsProtectionLabels[request.funds_protection_preference] ||
+    request.funds_protection_preference ||
+    "Quote first, then decide";
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
@@ -477,6 +555,8 @@ function renderTrackingResult(request) {
     <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
     <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
     <span>Quote: ${escapeHtml(formatTrackedMoney(request.quote_amount, request.quote_currency))}</span>
+    <span>Value involved: ${escapeHtml(valueBand)}</span>
+    <span>Funds plan: ${escapeHtml(fundsPreference)}</span>
     <span>Funds: ${escapeHtml(fundsStatus)}</span>
     <span>Protected amount: ${escapeHtml(formatTrackedAmount(request.protected_amount, request.quote_currency))}</span>
     ${request.identity_verification_required ? `<span>ID verification: ${escapeHtml(verificationStatus)}</span>` : ""}

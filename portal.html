@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=19" />
   </head>
   <body class="portal-body">
     <header class="site-header" aria-label="Portal navigation">
@@ -192,6 +192,20 @@
             <textarea id="partner-notes" name="notes" rows="4" placeholder="Past field work, errands, admin support, language strengths, reference names, or special skills." required></textarea>
           </label>
 
+          <section class="assistant-panel" aria-labelledby="receiver-assistant-title">
+            <div>
+              <p class="eyebrow">Receiver AI</p>
+              <h3 id="receiver-assistant-title">Profile draft</h3>
+            </div>
+            <textarea id="receiver-assistant-draft" rows="4" readonly placeholder="Draft a clearer receiver profile from your answers."></textarea>
+            <div class="form-actions">
+              <button class="button button-secondary" type="button" id="draft-receiver-profile">Draft profile</button>
+              <button class="button button-secondary" type="button" id="use-receiver-draft">Use in experience</button>
+              <button class="button button-secondary" type="button" id="copy-receiver-draft">Copy draft</button>
+              <span class="copy-status" id="receiver-assistant-status" role="status"></span>
+            </div>
+          </section>
+
           <fieldset class="field-group consent-group">
             <legend>Vetting consent</legend>
             <label>
@@ -245,7 +259,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=19"></script>
-    <script src="portal.js?v=10"></script>
+    <script src="app-data.js?v=21"></script>
+    <script src="portal.js?v=12"></script>
   </body>
 </html>

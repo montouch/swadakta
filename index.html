@@ -28,7 +28,7 @@
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="preload" href="assets/saas-burst.png" as="image" />
     <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=17" />
+    <link rel="stylesheet" href="styles.css?v=19" />
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
@@ -451,6 +451,28 @@
 
           <div class="field-row">
             <div class="field-group">
+              <label for="job-value-band">Approximate value involved</label>
+              <select id="job-value-band" name="jobValueBand">
+                <option value="unsure">Not sure yet</option>
+                <option value="under_500">Under AUD 500</option>
+                <option value="500_2000">AUD 500-2,000</option>
+                <option value="2000_10000">AUD 2,000-10,000</option>
+                <option value="10000_plus">AUD 10,000+</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="funds-protection-preference">Funds protection preference</label>
+              <select id="funds-protection-preference" name="fundsProtectionPreference">
+                <option value="quote_first">Quote first, then decide</option>
+                <option value="deposit_milestones">Deposit plus staged milestones</option>
+                <option value="regulated_escrow">Regulated escrow for high-value work</option>
+                <option value="not_sure">Not sure, advise me</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
               <label for="budget-range">Budget comfort</label>
               <select id="budget-range" name="budgetRange">
                 <option value="unsure">Not sure yet</option>
@@ -577,6 +599,20 @@
             <strong id="estimate-output">AUD 180</strong>
           </div>
           <p class="form-note">This is an AUD planning estimate. Final quote is confirmed after Swadakta checks travel, access, documents, urgency, and the client's preferred quote currency.</p>
+
+          <section class="assistant-panel" aria-labelledby="client-assistant-title">
+            <div>
+              <p class="eyebrow">Client AI</p>
+              <h3 id="client-assistant-title">Brief draft</h3>
+            </div>
+            <textarea id="client-assistant-draft" rows="4" readonly placeholder="Draft a clearer request from your current answers."></textarea>
+            <div class="form-actions">
+              <button class="button button-secondary" type="button" id="draft-client-brief">Draft brief</button>
+              <button class="button button-secondary" type="button" id="use-client-draft">Use in notes</button>
+              <button class="button button-secondary" type="button" id="copy-client-draft">Copy draft</button>
+              <span class="copy-status" id="client-assistant-status" role="status"></span>
+            </div>
+          </section>
 
           <label class="field-group" for="notes">
             Notes
@@ -709,7 +745,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=19"></script>
-    <script src="script.js?v=13"></script>
+    <script src="app-data.js?v=21"></script>
+    <script src="script.js?v=14"></script>
   </body>
 </html>
