@@ -56,7 +56,7 @@ Automation later:
 
 ## 4. Privacy and Compliance
 
-Swadakta handles names, contact details, task notes, Kenya local contacts, documents, receipts, photos, and report links. Treat the business as a privacy-sensitive operations desk from day one.
+Swadakta handles names, contact details, task notes, local contacts, documents, receipts, photos, and report links. Treat the business as a privacy-sensitive operations desk from day one.
 
 - Kenya's Office of the Data Protection Commissioner explains that personal data protection in Kenya is governed by the Data Protection Act, 2019: https://www.odpc.go.ke/wp-content/uploads/2024/02/PERSONAL-DATA-PROTECTION-HANDBOOK.pdf
 - The live site now includes practical launch drafts at `/privacy` and `/terms`.
