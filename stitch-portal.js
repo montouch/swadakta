@@ -156,6 +156,12 @@
     }
     if (accountHome) accountHome.hidden = false;
     renderAccountHome(profile, { email });
+    setVerificationEnabled(true);
+    setVerificationPill("Account open", "bg-primary-container/10 text-primary");
+    setVerificationStatus(
+      "Account is open. Verification is only required before paid posting, paid receiver work, or sensitive/high-value tasks.",
+      "text-primary",
+    );
 
     if (profileCard) {
       profileCard.hidden = false;
@@ -552,6 +558,7 @@
         const signInResult = await window.SwadaktaData.signInWithPassword(email, password);
         const signedInUserEmail = signInResult.user?.email || signInResult.session?.user?.email || email;
         signedInEmail = signedInUserEmail;
+        const signedInRenderVersion = nextAccountRenderVersion();
         setSignedInShell(signedInUserEmail, { account_role: accountRole });
         openAccountHome();
         window.SwadaktaData.saveAccountProfile({
@@ -560,12 +567,19 @@
           onboarding_status: "started",
         }).catch(() => {});
         setStatus("Signed in. Opening your account home.", "text-primary");
-        await showCurrentAccount({ autoOpen: true, fallbackEmail: signedInUserEmail, renderVersion: submitRenderVersion });
+        await showCurrentAccount({ autoOpen: true, fallbackEmail: signedInUserEmail, renderVersion: signedInRenderVersion });
         return;
       }
       if (shouldOpenWorkspace) {
+        const createdRenderVersion = nextAccountRenderVersion();
         setSignedInShell(email, { account_role: accountRole });
         openAccountHome();
+        await showCurrentAccount({
+          autoOpen: true,
+          fallbackEmail: email,
+          renderVersion: createdRenderVersion,
+        });
+        return;
       }
       await showCurrentAccount({
         autoOpen: shouldOpenWorkspace,
@@ -693,9 +707,14 @@
       }
 
       if (session?.user?.email) {
-        nextAccountRenderVersion();
+        const authRenderVersion = nextAccountRenderVersion();
         setSignedInShell(session.user.email, {});
         openAccountHome();
+        showCurrentAccount({
+          autoOpen: true,
+          fallbackEmail: session.user.email,
+          renderVersion: authRenderVersion,
+        }).catch(() => {});
       }
     }).catch(() => {});
   }
