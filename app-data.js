@@ -1028,6 +1028,51 @@
     return { data, mode: "stripe" };
   }
 
+  async function createPayPalOrder(request, updates = {}) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      throw new Error("PayPal order generation requires Supabase admin sign-in.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in as an admin before creating a PayPal order.");
+    }
+
+    const response = await fetch("/api/payments/paypal-order", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        request_code: request.request_code,
+        client_name: request.client_name,
+        email: request.email,
+        service_package: updates.service_package || request.service_package,
+        quote_amount: updates.quote_amount || request.quote_amount,
+        quote_currency: updates.quote_currency || request.quote_currency || request.preferred_currency,
+        funds_protection_preference:
+          updates.funds_protection_preference || request.funds_protection_preference,
+        job_value_band: updates.job_value_band || request.job_value_band,
+        payment_kind: "paypal_order",
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not create PayPal order.");
+    }
+
+    return { data, mode: "paypal" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
     const emailRedirectTo = normalizeAuthRedirect(redirectTo);
@@ -1104,6 +1149,7 @@
     updateAccountIdentityVerification,
     assist,
     createStripeCheckoutSession,
+    createPayPalOrder,
     signInAdmin,
     signInPortal,
     getSession,

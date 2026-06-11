@@ -119,8 +119,45 @@ Use PayPal invoices when the client prefers PayPal or when a formal invoice link
 - https://www.paypal.com/us/cshelp/article/how-do-i-create-and-send-an-invoice-help319
 - https://developer.paypal.com/docs/invoicing/
 - https://developer.paypal.com/docs/api/orders/v2/
+- https://developer.paypal.com/api/rest/authentication/
 
 In the admin desk, paste the invoice link into `Payment link` and mention PayPal in the client update.
+
+## PayPal Order Automation
+
+The admin app now includes a server-side PayPal order handoff at:
+
+- `POST /api/payments/paypal-order`
+
+The endpoint:
+
+- Requires a signed-in Supabase admin session.
+- Verifies the user exists in `admin_users`.
+- Exchanges `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` for a PayPal OAuth access token server-side.
+- Creates a PayPal Orders v2 order with `request_code` as `reference_id`, `custom_id`, and `invoice_id`.
+- Returns the PayPal approval URL to the admin card.
+- Sets the form fields to `Payment: Invoice sent`, `Funds: Payment link sent`, and provider reference.
+- Does not capture PayPal payment, mark money paid, assign receivers, or release funds.
+
+Required Vercel environment variables:
+
+- `PAYPAL_CLIENT_ID`: PayPal REST app client ID.
+- `PAYPAL_CLIENT_SECRET`: PayPal REST app client secret.
+
+Optional Vercel environment variables:
+
+- `PAYPAL_ENVIRONMENT`: `live` or `sandbox`; defaults to `live`.
+- `PAYPAL_BASE_URL`: explicit override for unusual testing environments.
+
+Admin workflow:
+
+1. Quote the request in admin with amount and currency.
+2. Click `Generate PayPal order`.
+3. Review the generated approval link and provider reference.
+4. Click `Save update`.
+5. Use `Copy quote` to send the client the approved payment message.
+
+PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Keep `KES` jobs on M-Pesa, bank transfer, Wise, or manual PayPal invoice until account/currency support is confirmed.
 
 ## Wise
 

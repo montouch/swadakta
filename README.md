@@ -33,6 +33,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Provider reference tracking for Stripe, PayPal, Wise, M-Pesa, bank, or escrow records
 - Admin-only Stripe Checkout session generation through a Vercel Function
 - Stripe webhook payment confirmation that updates request payment state without releasing funds
+- Admin-only PayPal order generation through a Vercel Function
 - ID verification gates for higher-value, sensitive-document, title, family-authority, or risky jobs
 - Required client permission, scope, terms, and privacy consent capture
 - Service package intent, contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture

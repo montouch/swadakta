@@ -1704,6 +1704,7 @@ function renderRequestCardV2(request) {
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save update</button>
           <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
+          <button class="button button-secondary create-paypal-order" type="button">Generate PayPal order</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
           <button class="button button-secondary copy-quote" type="button">Copy quote</button>
           <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
@@ -2290,22 +2291,12 @@ async function copyText(text, statusElement) {
   }, 2400);
 }
 
-async function generateStripeCheckout(request, form, statusElement) {
-  const payload = formPayload(form);
-
-  if (!payload.quote_amount) {
-    statusElement.textContent = "Add a quote amount before creating checkout.";
-    return;
-  }
-
-  statusElement.textContent = "Creating Stripe checkout...";
-
-  const result = await window.SwadaktaData.createStripeCheckoutSession(request, payload);
+function applyPaymentLinkResult(form, result) {
   const checkoutUrl = result.data?.url || "";
   const reference = result.data?.provider_reference || result.data?.id || "";
 
   if (!checkoutUrl) {
-    throw new Error("Stripe did not return a checkout URL.");
+    throw new Error("Payment provider did not return a checkout URL.");
   }
 
   const paymentLinkInput = form.querySelector('[name="payment_link"]');
@@ -2329,8 +2320,41 @@ async function generateStripeCheckout(request, form, statusElement) {
     paymentReferenceInput.value = reference;
   }
 
+  return checkoutUrl;
+}
+
+async function generateStripeCheckout(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before creating checkout.";
+    return;
+  }
+
+  statusElement.textContent = "Creating Stripe checkout...";
+
+  const result = await window.SwadaktaData.createStripeCheckoutSession(request, payload);
+  const checkoutUrl = applyPaymentLinkResult(form, result);
+
   await copyText(checkoutUrl, statusElement);
   statusElement.textContent = "Stripe checkout ready. Review and save.";
+}
+
+async function generatePayPalOrder(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before creating a PayPal order.";
+    return;
+  }
+
+  statusElement.textContent = "Creating PayPal order...";
+
+  const result = await window.SwadaktaData.createPayPalOrder(request, payload);
+  const checkoutUrl = applyPaymentLinkResult(form, result);
+
+  await copyText(checkoutUrl, statusElement);
+  statusElement.textContent = "PayPal order ready. Review and save.";
 }
 
 function buildClientUpdate(request, form) {
@@ -2636,6 +2660,25 @@ requestBoard.addEventListener("click", async (event) => {
       await generateStripeCheckout(request, form, statusElement);
     } catch (error) {
       statusElement.textContent = error.message || "Stripe checkout failed.";
+    }
+    return;
+  }
+
+  const paypalButton = event.target.closest(".create-paypal-order");
+  if (paypalButton) {
+    const form = paypalButton.closest(".request-update-form");
+    const card = paypalButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await generatePayPalOrder(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "PayPal order failed.";
     }
     return;
   }

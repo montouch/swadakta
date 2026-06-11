@@ -50,6 +50,7 @@ Start with quote-based payment links, then automate later.
 Automation later:
 
 - Configure `STRIPE_SECRET_KEY` and `PUBLIC_BASE_URL` in Vercel, then use the admin `Generate Stripe checkout` button for quoted `AUD`, `USD`, `GBP`, and `EUR` jobs.
+- Configure `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and optionally `PAYPAL_ENVIRONMENT`, then use the admin `Generate PayPal order` button when PayPal is the better client payment route.
 - Configure Stripe to send successful Checkout events to `https://swadakta.com/api/payments/stripe-webhook`, with `STRIPE_WEBHOOK_SECRET` and a server-only Supabase key stored in Vercel.
 - Store provider transaction IDs on the request record after payment confirmation.
 
