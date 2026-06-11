@@ -197,6 +197,36 @@
 </div>
 </div>
 </section>
+<section class="glass-panel rounded-3xl p-6 md:p-8 mb-8" id="brief-corridor-summary" hidden>
+<div class="flex flex-col gap-5">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-4xl">route</span>
+<div>
+<p class="font-label-md text-label-md text-primary uppercase tracking-[0.14em]">Selected corridor</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-corridor-route">Route pending</h2>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-corridor-copy">Confirm the route, logistics mode, and compliance checks before posting.</p>
+</div>
+</div>
+<div class="grid gap-3 md:grid-cols-3">
+<article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-secondary uppercase tracking-[0.12em]">Location</p>
+<strong class="block font-label-md text-on-surface mt-1" id="brief-corridor-location">Not set</strong>
+</article>
+<article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-secondary uppercase tracking-[0.12em]">Logistics</p>
+<strong class="block font-label-md text-on-surface mt-1" id="brief-corridor-logistics">Not set</strong>
+</article>
+<article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-secondary uppercase tracking-[0.12em]">Risk route</p>
+<strong class="block font-label-md text-on-surface mt-1" id="brief-corridor-risk">Standard</strong>
+</article>
+</div>
+<div>
+<p class="font-label-md text-label-md text-on-surface">Required checks</p>
+<ul class="mt-2 grid gap-2 text-sm text-on-surface-variant list-disc pl-5" id="brief-corridor-checks"></ul>
+</div>
+</div>
+</section>
 <form class="space-y-8" id="client-brief-form">
 <section class="glass-panel rounded-3xl p-8 md:p-10">
 <div class="flex items-center gap-3 mb-8">
@@ -372,5 +402,5 @@
 </div>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=38"></script>
-<script src="stitch-brief.js?v=3"></script>
+<script src="stitch-brief.js?v=4"></script>
 </body></html>

@@ -4,12 +4,47 @@
   const submitButton = document.querySelector("#brief-submit");
   const gateTitle = document.querySelector("#brief-gate-title");
   const gateCopy = document.querySelector("#brief-gate-copy");
+  const corridorSummary = document.querySelector("#brief-corridor-summary");
+  const corridorRoute = document.querySelector("#brief-corridor-route");
+  const corridorCopy = document.querySelector("#brief-corridor-copy");
+  const corridorLocation = document.querySelector("#brief-corridor-location");
+  const corridorLogistics = document.querySelector("#brief-corridor-logistics");
+  const corridorRisk = document.querySelector("#brief-corridor-risk");
+  const corridorChecks = document.querySelector("#brief-corridor-checks");
   const corridorStorageKey = "swadakta_corridor_context";
 
   if (!form || !window.SwadaktaData) return;
 
   let accountCanPost = false;
   let corridorContext = {};
+  const directionLabels = {
+    origin_to_destination: "From client country to work country",
+    destination_to_origin: "From work country back to client country",
+    two_way: "Both ways",
+    local_in_country: "Local work inside one country",
+    digital_global: "Digital / virtual only",
+  };
+  const logisticsLabels = {
+    not_needed: "No physical delivery",
+    local_delivery: "Local delivery or errand",
+    postal_courier: "Post or courier shipment",
+    pickup_hold: "Pickup and hold",
+    supplier_direct: "Supplier ships directly",
+    airport_handoff: "Airport or traveller handoff",
+    digital_only: "Digital/documents only",
+  };
+  const goodsLabels = {
+    none: "No physical goods",
+    general_goods: "General goods",
+    clothing_household: "Clothing or household items",
+    electronics: "Electronics or batteries",
+    cosmetics: "Cosmetics, perfume, or liquids",
+    food_plant_animal: "Food, plant, or animal product",
+    medicine_health: "Medicine or health product",
+    documents: "Documents or certificates",
+    valuable_items: "Valuable items or jewellery",
+    restricted_or_unsure: "Restricted or not sure",
+  };
 
   function value(selector) {
     return String(document.querySelector(selector)?.value || "").trim();
@@ -61,6 +96,48 @@
     if (node && value && !node.value) node.value = value;
   }
 
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character],
+    );
+  }
+
+  function labelFromMap(map, value, fallback = "Not set") {
+    return map[value] || formatStatus(value) || fallback;
+  }
+
+  function renderCorridorSummary() {
+    if (!corridorSummary) return;
+    const origin = corridorContext.origin_country || "";
+    const destination = corridorContext.destination_country || "";
+    const location = corridorContext.task_location || "";
+    const hasContext = Boolean(origin || destination || location);
+    corridorSummary.hidden = !hasContext;
+    if (!hasContext) return;
+
+    const route = [origin || "Origin not set", destination || "Destination not set"].join(" to ");
+    const logistics = labelFromMap(logisticsLabels, corridorContext.logistics_mode, "No physical delivery");
+    const goods = labelFromMap(goodsLabels, corridorContext.goods_category, "No physical goods");
+    const direction = labelFromMap(directionLabels, corridorContext.service_direction, "Corridor direction not set");
+    const risk = formatStatus(corridorContext.compliance_risk_level || "standard");
+    const checks = corridorRequiredChecks(corridorContext.goods_category || corridorContext.logistics_mode);
+
+    if (corridorRoute) corridorRoute.textContent = route;
+    if (corridorCopy) corridorCopy.textContent = `${direction}. ${goods}.`;
+    if (corridorLocation) corridorLocation.textContent = location || destination || "Not set";
+    if (corridorLogistics) corridorLogistics.textContent = logistics;
+    if (corridorRisk) corridorRisk.textContent = risk;
+    if (corridorChecks) {
+      corridorChecks.innerHTML = checks.map((check) => `<li>${escapeHtml(check)}</li>`).join("");
+    }
+  }
+
   function applyCorridorContext() {
     const params = new URLSearchParams(window.location.search);
     const paramContext = cleanContext({
@@ -94,6 +171,7 @@
     setValue("#brief-origin-country", corridorContext.origin_country);
     setValue("#brief-destination-country", corridorContext.destination_country);
     setValue("#brief-location", corridorContext.task_location);
+    renderCorridorSummary();
   }
 
   function cleanContext(context, hasAckParam) {
