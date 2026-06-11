@@ -34,6 +34,16 @@
   const returnTitle = document.querySelector("#tracking-return-title");
   const returnCopy = document.querySelector("#tracking-return-copy");
   const returnPortalLink = document.querySelector("#tracking-return-portal-link");
+  const controlPanel = document.querySelector("#tracking-job-control-panel");
+  const controlTitle = document.querySelector("#tracking-control-title");
+  const controlCopy = document.querySelector("#tracking-control-copy");
+  const controlOwner = document.querySelector("#tracking-control-owner");
+  const controlNext = document.querySelector("#tracking-control-next");
+  const controlAi = document.querySelector("#tracking-control-ai");
+  const controlStop = document.querySelector("#tracking-control-stop");
+  const controlPlace = document.querySelector("#tracking-control-place");
+  const controlPrimaryLink = document.querySelector("#tracking-control-primary-link");
+  const controlAiLink = document.querySelector("#tracking-control-ai-link");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -242,6 +252,226 @@
         method === "wise"
           ? "Wise stays hidden as a fallback rail because it adds manual reconciliation. AI can draft notes, but it cannot mark Wise funds paid or release milestones."
           : "AI can explain and draft updates, but it cannot mark money paid, assign a receiver, or release/refund funds.";
+    }
+  }
+
+  function requestHasProof(request = {}) {
+    return Boolean(
+      request.client_report ||
+        request.client_report_url ||
+        (Array.isArray(request.proof_links) && request.proof_links.length),
+    );
+  }
+
+  function extractPlaceIntelligence(request = {}) {
+    const notes = String(request.notes || request.logistics_notes || "");
+    if (!notes.includes("Place intelligence:") && !notes.includes("Weather now:")) return "";
+    const lines = notes
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter((line) =>
+        /^(Place intelligence|Weather now|Planning note|Receiver must still check)/i.test(line),
+      );
+    return lines.slice(0, 4).join(" ");
+  }
+
+  function workflowDecision(request = {}) {
+    const status = String(request.status || "new").toLowerCase();
+    const payment = String(request.payment_status || "unquoted").toLowerCase();
+    const funds = String(request.funds_status || "not_collected").toLowerCase();
+    const verification = String(request.verification_status || request.identity_verification_status || "required").toLowerCase();
+    const compliance = String(request.compliance_status || "").toLowerCase();
+    const hasQuote = numberValue(request.quote_amount) > 0;
+    const hasPaymentLink = Boolean(safeHttpUrl(request.payment_link));
+    const protectedFunds = protectedFundStates.has(funds) || payment === "paid";
+    const hasProof = requestHasProof(request);
+    const blockedCompliance = Boolean(request.admin_review_required) || ["needs_admin_review", "restricted", "permit_required", "prohibited", "needs_ai_review"].includes(compliance);
+
+    if (["cancelled", "rejected"].includes(status) || ["cancelled", "failed", "refunded"].includes(payment) || ["cancelled", "failed", "refunded"].includes(funds)) {
+      return {
+        owner: "Founder review",
+        ownerTone: "bg-error-container text-on-error-container",
+        title: "Exception or cancelled request",
+        copy: "Do not continue paid work until Swadakta resolves the payment, refund, or cancellation state.",
+        next: "Open an issue or wait for Swadakta to confirm the next written decision.",
+        ai: "AI can summarize the timeline and draft a calm client/receiver update.",
+        stop: "No new spending, receiver assignment, refund, or payout until provider evidence is reviewed.",
+        link: resolutionLink?.href || "resolution.html",
+        linkLabel: "Open issue",
+      };
+    }
+
+    if (blockedCompliance) {
+      return {
+        owner: "Rules check",
+        ownerTone: "bg-tertiary/10 text-tertiary",
+        title: "Rules or corridor review needed",
+        copy: "This job may involve restricted goods, sensitive documents, route uncertainty, or founder approval.",
+        next: "Use the job room to add missing facts, documents, item details, official references, and safety constraints.",
+        ai: "AI can organize the facts and produce a rules checklist, but it cannot clear restricted work.",
+        stop: "Do not buy, ship, pick up, or release funds until compliance is cleared.",
+        link: jobRoomLink?.href || "messages.html",
+        linkLabel: "Add facts",
+      };
+    }
+
+    if (!hasQuote) {
+      return {
+        owner: "Swadakta quote",
+        ownerTone: "bg-primary/10 text-primary",
+        title: "Quote and scope are being prepared",
+        copy: "The request exists, but the cost, payment rail, proof requirements, and receiver fit still need to be settled.",
+        next: "Keep the brief complete. Add photos, links, budget comfort, deadline, and proof expectations in the job room.",
+        ai: "AI can turn messy details into a clean operator brief and client-safe quote notes.",
+        stop: "Do not pay or assign a receiver until a quote and approved payment rail are recorded.",
+        link: jobRoomLink?.href || "messages.html",
+        linkLabel: "Open job room",
+      };
+    }
+
+    if (!protectedFunds) {
+      return {
+        owner: "Client action",
+        ownerTone: "bg-primary-container/10 text-primary",
+        title: "Payment evidence is the next gate",
+        copy: hasPaymentLink
+          ? "A payment route is available. Work should still wait for provider confirmation."
+          : "A quote exists, but payment instructions or provider evidence are not ready yet.",
+        next: hasPaymentLink
+          ? "Use only the secure payment link shown on this page, then return here for provider-confirmed status."
+          : "Wait for Swadakta to prepare Stripe, PayPal, M-Pesa, bank, or fallback instructions.",
+        ai: "AI can explain the rail and draft a payment-status message.",
+        stop: "Never send funds to an unrecorded personal account or release work based on screenshots alone.",
+        link: hasPaymentLink ? securePaymentHrefOrFallback(request) : paymentsLinkHref(),
+        linkLabel: hasPaymentLink ? "Open payment" : "Payment guide",
+      };
+    }
+
+    if (!["verified", "approved"].includes(verification)) {
+      return {
+        owner: "Verification",
+        ownerTone: "bg-amber-50 text-amber-700",
+        title: "Receiver or account verification must finish",
+        copy: "Funds may be protected, but paid work and sensitive tasks still require verified identity.",
+        next: "Complete the provider ID/selfie check or wait for Swadakta to assign a verified receiver.",
+        ai: "AI can explain what happens after verification is requested and draft a reminder.",
+        stop: "AI cannot approve identity, assign sensitive work, or override provider evidence.",
+        link: "verification.html?reason=receiver_work",
+        linkLabel: "Open verification",
+      };
+    }
+
+    if (!hasProof) {
+      return {
+        owner: "Receiver proof",
+        ownerTone: "bg-tertiary/10 text-tertiary",
+        title: "Work can move into proof collection",
+        copy: "The next useful action is receiver execution with photos, video, voice notes, receipts, or official references.",
+        next: "Use the job room to submit proof updates and keep communication tied to this request.",
+        ai: "AI can draft receiver instructions, proof questions, and client updates.",
+        stop: "No milestone payout until proof is reviewed against the agreed condition.",
+        link: jobRoomLink?.href || "messages.html",
+        linkLabel: "Open job room",
+      };
+    }
+
+    if (!["completed", "released"].includes(status) && funds !== "released") {
+      return {
+        owner: "Proof review",
+        ownerTone: "bg-primary/10 text-primary",
+        title: "Proof is ready for milestone review",
+        copy: "Client-safe proof is available. Swadakta should compare it to the release condition before any payout.",
+        next: "Review the report/proof links, request clarification if needed, or open an issue if something is wrong.",
+        ai: "AI can summarize proof and draft approval or clarification wording.",
+        stop: "AI cannot release funds, refund, or mark a milestone complete without protected decision evidence.",
+        link: mediaLinks?.querySelector("a")?.href || jobRoomLink?.href || "messages.html",
+        linkLabel: "Review proof",
+      };
+    }
+
+    return {
+      owner: "Complete",
+      ownerTone: "bg-emerald-50 text-emerald-700",
+      title: "Request is in the closeout stage",
+      copy: "Proof, payment, and release history stay available for records and future trust scoring.",
+      next: "Leave a review when available, save the report, and open an issue only if something needs correction.",
+      ai: "AI can summarize the completed job and prepare a repeat-job brief.",
+      stop: "Historical records should not be edited outside the approved correction flow.",
+      link: jobRoomLink?.href || "messages.html",
+      linkLabel: "Open record",
+    };
+  }
+
+  function securePaymentHrefOrFallback(request = {}) {
+    return safeHttpUrl(request.payment_link) || "#payment-state";
+  }
+
+  function paymentsLinkHref() {
+    return "payments.html";
+  }
+
+  function renderWorkflowControl(request = null) {
+    if (!controlPanel || !controlTitle) return;
+
+    if (!request) {
+      if (controlTitle) controlTitle.textContent = "Open a request to see the next safe step";
+      if (controlCopy) controlCopy.textContent = "Swadakta will separate what AI can draft, what a receiver can do, what the client should do, and what stays blocked until provider evidence or founder review.";
+      if (controlOwner) {
+        controlOwner.textContent = "Waiting for lookup";
+        controlOwner.className = "inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-surface-container-high text-on-surface-variant font-label-md";
+      }
+      if (controlNext) controlNext.textContent = "Enter the request code and original email or WhatsApp.";
+      if (controlAi) controlAi.textContent = "Explain status and draft updates.";
+      if (controlStop) controlStop.textContent = "No money release or ID approval by AI.";
+      if (controlPlace) controlPlace.textContent = "Location weather, official-alert reminders, and field risks appear when the brief includes place intelligence.";
+      if (controlPrimaryLink) {
+        controlPrimaryLink.href = "messages.html";
+        controlPrimaryLink.innerHTML = '<span class="material-symbols-outlined text-[20px] mr-2">forum</span>Open job room';
+      }
+      if (controlAiLink) controlAiLink.href = "assistant.html?context=tracking";
+      return;
+    }
+
+    const decision = workflowDecision(request);
+    const place = extractPlaceIntelligence(request);
+    if (controlTitle) controlTitle.textContent = decision.title;
+    if (controlCopy) controlCopy.textContent = decision.copy;
+    if (controlOwner) {
+      controlOwner.textContent = decision.owner;
+      controlOwner.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${decision.ownerTone}`.trim();
+    }
+    if (controlNext) controlNext.textContent = decision.next;
+    if (controlAi) controlAi.textContent = decision.ai;
+    if (controlStop) controlStop.textContent = decision.stop;
+    if (controlPlace) {
+      controlPlace.textContent =
+        place ||
+        `${request.task_location || request.kenya_location || request.destination_country || "Task location"}: confirm local access, weather, transport, opening hours, and official alerts before field work.`;
+    }
+    if (controlPrimaryLink) {
+      controlPrimaryLink.href = decision.link || "messages.html";
+      controlPrimaryLink.innerHTML = `<span class="material-symbols-outlined text-[20px] mr-2">${
+        decision.linkLabel === "Open payment" ? "lock" : decision.linkLabel === "Open issue" ? "gavel" : "forum"
+      }</span>${escapeHtml(decision.linkLabel || "Open job room")}`;
+    }
+    if (controlAiLink) {
+      const url = new URL("assistant.html", window.location.href);
+      url.searchParams.set("context", "tracking");
+      url.searchParams.set("task", "Explain this request status");
+      url.searchParams.set("links", "tracking,messages,payments,resolution,verification");
+      url.searchParams.set(
+        "prompt",
+        [
+          `Request ${request.request_code || codeInput.value.trim().toUpperCase()}`,
+          decision.title,
+          decision.next,
+          place,
+        ]
+          .filter(Boolean)
+          .join("\n")
+          .slice(0, 1600),
+      );
+      controlAiLink.href = `${url.pathname}${url.search}`;
     }
   }
 
@@ -558,6 +788,7 @@
       setPaymentLink("");
       renderPaymentRailPlan({});
       renderResolutionCases([], "No matching request found.");
+      renderWorkflowControl(null);
       return;
     }
 
@@ -595,6 +826,7 @@
     renderMilestones(request);
     renderProofChecklist(request);
     renderMediaLinks(request);
+    renderWorkflowControl(request);
     setResult(
       `Status: ${status}. Payment: ${payment}. ID verification: ${formatStatus(request.verification_status || "required")}.`,
       "text-primary",
