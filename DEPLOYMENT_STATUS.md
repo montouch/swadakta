@@ -6,38 +6,35 @@ Last checked: June 11, 2026
 
 - Vercel team found: `brownriley37-2646's projects`
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
-- Projects listed in that team: none
+- Project: `swadakta`
+- Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
+- Latest production deployment: `dpl_6pAJQhrByR2SAdF95sy6RmQ3Mehy`
+- Latest production commit: `b5d4ebb` (`Fix www host redirect pattern`)
+- Git integration is connected to `montouch/swadakta` on `main`; pushes deploy automatically.
 - Chrome is logged into Vercel for this team.
-- Vercel's normal GitHub import flow is waiting at **Continue with GitHub**, which starts GitHub/Vercel authorization before the repo can be imported.
 - Local `.vercel/project.json`: not present
 - `vercel` CLI on PATH: not present
-- Vercel connector deployment response: deployment requires `vercel deploy` from the project root or a Git integration that deploys on push.
+- Vercel connector can inspect deployments, but the local `vercel` CLI is still not installed.
 
 ## Domain
 
-- `swadakta.com` has been purchased in Cloudflare under `swadakta111@gmail.com`.
-- DNS is still pending because there is not yet a deployed Vercel project target.
-- After Vercel creates the project, add both `swadakta.com` and `www.swadakta.com` to the Vercel project, then copy the exact DNS records Vercel gives into Cloudflare.
+- `swadakta.com` is purchased in Cloudflare under `swadakta111@gmail.com`.
+- `swadakta.com`, `www.swadakta.com`, and `swadakta.vercel.app` are assigned to the Vercel project with valid configuration.
+- Cloudflare Domain Connect added the Vercel verification and DNS records:
+  - `_vercel` TXT verification for `swadakta.com`
+  - `_vercel` TXT verification for `www.swadakta.com`
+  - apex CNAME/flattened record to `f0cf7e5aed3dc57f.vercel-dns-017.com`
+  - `www` CNAME to `f0cf7e5aed3dc57f.vercel-dns-017.com`
+- `www.swadakta.com` redirects to `https://swadakta.com` through `vercel.json`.
 
-## Fastest Go-Live Path
+## Verified Production URLs
 
-1. In Vercel, click **Continue with GitHub** on the New Project screen.
-2. Authorize access to `montouch/swadakta` only, if GitHub offers repository-level selection.
-3. Import `montouch/swadakta` from the Git repository list.
-4. Use the repo root as the project root.
-5. Framework preset: Other/static.
-6. Build command: leave empty.
-7. Output directory: leave empty or use the project root, depending on Vercel's static-project prompt.
-8. Deploy `main`.
-9. Add both `swadakta.com` and `www.swadakta.com` to the Vercel project.
-10. Add the Vercel-provided DNS records in Cloudflare.
-11. Redirect `www.swadakta.com` to `swadakta.com`.
-12. Verify:
-    - `https://swadakta.com/`
-    - `https://swadakta.com/privacy`
-    - `https://swadakta.com/terms`
-    - `https://swadakta.com/sitemap.xml`
-    - `https://swadakta.com/.well-known/security.txt`
+- `https://swadakta.com/` returns `200 OK`
+- `https://www.swadakta.com/` returns `308 Permanent Redirect` to `https://swadakta.com/`
+- `https://www.swadakta.com/privacy` returns `308 Permanent Redirect` to `https://swadakta.com/privacy`
+- `https://swadakta.com/privacy` returns `200 OK`
+- `https://swadakta.com/.well-known/security.txt` returns `200 OK`
+- Production responses include CSP, HSTS, referrer, permissions, frame, and content-type hardening headers.
 
 ## CLI Path
 
@@ -50,8 +47,6 @@ vercel deploy --prod
 
 After linking, `.vercel/project.json` should exist locally but should not be committed.
 
-## Fallback Path
+## Fallback Notes
 
-If GitHub app authorization is not approved, create a manual Vercel deployment by uploading a clean static folder that contains only the public site files. This can get the domain live, but future updates will need manual redeploys until Git integration is connected. Avoid the Vercel **clone from URL** flow for this project because it attempts to create a duplicate Git repository instead of importing the existing `montouch/swadakta` repo.
-
-Cloudflare Pages is also ready as a fallback because the repo includes `_headers` and `_redirects`. Cloudflare Direct Upload can publish the static assets from the dashboard, then `swadakta.com` can be attached from the Pages project's **Custom domains** tab. Cloudflare's docs note that Direct Upload projects cannot be switched to Git integration later, so prefer Git import when automatic deployments are available.
+Cloudflare Pages remains a fallback because the repo includes `_headers` and `_redirects`, but Vercel is now the production host. Avoid the Vercel **clone from URL** flow for this project because it attempts to create a duplicate Git repository instead of importing the existing `montouch/swadakta` repo.

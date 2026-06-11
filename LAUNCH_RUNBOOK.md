@@ -5,18 +5,18 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 ## 1. Domain and Vercel
 
 - `swadakta.com` is purchased in Cloudflare under `swadakta111@gmail.com`.
-- Vercel is logged in, but project import is waiting on the **Continue with GitHub** authorization step.
-- In Vercel, open the Swadakta project, go to Settings, then Domains, and add `swadakta.com`.
-- Add `www.swadakta.com` as a second domain and redirect it to the apex domain.
-- Follow the DNS records Vercel shows for the registrar. Vercel's domain docs explain that the dashboard displays the required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
-- If Cloudflare remains the DNS provider, add the records in Cloudflare rather than Vercel DNS. Vercel's current quick reference lists an apex `A` record to `76.76.21.21` and a `www` CNAME to `cname.vercel-dns-0.com`, but still copy the exact values Vercel shows for the Swadakta project: https://vercel.com/docs/domains/set-up-custom-domain
+- Vercel project `swadakta` is live and connected to GitHub repo `montouch/swadakta`.
+- Vercel auto-deploys new pushes to `main`.
+- `swadakta.com` and `www.swadakta.com` are valid in Vercel.
+- `www.swadakta.com` redirects to the apex domain through `vercel.json`.
+- Cloudflare Domain Connect added the current Vercel DNS and verification records. If DNS is ever reset, follow the exact records Vercel shows in the project Domains screen. Vercel's docs explain that the dashboard displays required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
 - Remember Vercel does not provide email hosting. Add MX records through Google Workspace, Microsoft 365, Zoho, or another email host if you want addresses like `hello@swadakta.com`: https://vercel.com/docs/domains/managing-dns-records
-- If Vercel import remains blocked, Cloudflare Pages can direct-upload the static files and attach `swadakta.com`, but that Pages project cannot later switch to Git integration.
 - After DNS settles, verify:
   - `https://swadakta.com/`
   - `https://swadakta.com/privacy`
   - `https://swadakta.com/terms`
   - `https://swadakta.com/sitemap.xml`
+  - `https://swadakta.com/.well-known/security.txt`
 - See [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the latest local/Vercel project status.
 
 ## 2. Payments
