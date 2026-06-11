@@ -1,877 +1,334 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Swadakta Corridor Concierge</title>
-    <meta
-      name="description"
-      content="Swadakta is an AI-triaged corridor concierge for Africa, Australia, USA, Europe, and China errands, sourcing, logistics, family support, and business operations."
-    />
-    <meta name="theme-color" content="#05060f" />
-    <meta property="og:title" content="Swadakta Corridor Concierge" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://swadakta.com/" />
-    <meta
-      property="og:description"
-      content="Trusted corridor support for errands, sourcing, proof, payments, and logistics across Africa, Australia, USA, Europe, and China launch regions."
-    />
-    <meta property="og:image" content="https://swadakta.com/assets/diaspora-concierge-hero.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Swadakta Corridor Concierge" />
-    <meta
-      name="twitter:description"
-      content="AI-triaged corridor concierge support across Africa, Australia, USA, Europe, and China launch regions."
-    />
-    <meta name="twitter:image" content="https://swadakta.com/assets/diaspora-concierge-hero.png" />
-    <link rel="canonical" href="https://swadakta.com/" />
-    <link rel="sitemap" href="/sitemap.xml" />
-    <link rel="preload" href="assets/saas-burst.png" as="image" />
-    <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=27" />
-  </head>
-  <body class="public-site">
-    <header class="site-header" aria-label="Primary navigation">
-      <a class="brand" href="#top" aria-label="Swadakta Corridor Concierge home">
-        <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
-        <span>
-          <strong>Swadakta</strong>
-          <small>AI corridor desk</small>
-        </span>
-      </a>
-      <nav class="nav-links" aria-label="Page sections">
-        <a href="#services">Paths</a>
-        <a href="#workflow">Flow</a>
-        <a href="#trust">Trust</a>
-        <a href="#pricing">Money</a>
-        <a href="portal.html#account">Account</a>
-        <a href="#intake">Start</a>
-        <a href="#tracking">Track</a>
-      </nav>
-      <button class="ai-desk-trigger" type="button" data-ai-desk-open>AI Desk</button>
-      <a class="header-action" href="portal.html#account">Log in</a>
-    </header>
-
-    <main id="top">
-      <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-media" aria-hidden="true">
-          <div class="hero-dashboard">
-            <div class="product-window">
-              <div class="dashboard-bar">
-                <span></span>
-                <span></span>
-                <span></span>
-                <strong>Swadakta Ops</strong>
-              </div>
-              <div class="product-grid">
-                <aside class="product-sidebar">
-                  <strong>Desk</strong>
-                  <span class="sidebar-pill is-active">Brief</span>
-                  <span class="sidebar-pill">Verify</span>
-                  <span class="sidebar-pill">Pay</span>
-                  <span class="sidebar-pill">Proof</span>
-                </aside>
-                <div class="product-main">
-                  <div class="product-title">
-                    <span>
-                      <small>Live corridor brief</small>
-                      <strong>London to Kiambu</strong>
-                    </span>
-                    <em class="status-chip">AI ready</em>
-                  </div>
-                  <div class="mission-list">
-                    <span class="is-done">Route triaged <b>Done</b></span>
-                    <span class="is-active">Quote pending <b>Next</b></span>
-                    <span>Receiver matching <b>Vetting</b></span>
-                    <span>Proof pack <b>Queued</b></span>
-                  </div>
-                  <div class="product-card-row">
-                    <div class="product-mini-card">
-                      <small>Client mode</small>
-                      <strong>Protected request</strong>
-                    </div>
-                    <div class="product-mini-card">
-                      <small>Worker mode</small>
-                      <strong>ID verified</strong>
-                    </div>
-                  </div>
-                  <div class="proof-grid">
-                    <span>AI risk</span>
-                    <strong>Low</strong>
-                    <span>Milestone</span>
-                    <strong>2/4</strong>
-                  </div>
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Swadakta | Global Corridor Concierge</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&amp;family=Inter:wght@100..900&amp;family=Manrope:wght@100..900&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#131b2e",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed": "#e1e0ff",
+                        "surface": "#faf8ff",
+                        "tertiary-fixed": "#f0dbff",
+                        "background": "#faf8ff",
+                        "on-secondary-fixed": "#141d21",
+                        "surface-tint": "#494bd6",
+                        "surface-bright": "#faf8ff",
+                        "tertiary": "#8127cf",
+                        "secondary": "#576065",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container": "#eaedff",
+                        "tertiary-container": "#9c48ea",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c7c4d7",
+                        "on-primary": "#ffffff",
+                        "outline": "#767586",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "on-background": "#131b2e",
+                        "surface-variant": "#dae2fd",
+                        "inverse-surface": "#283044",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d2d9f4",
+                        "on-secondary-container": "#5d666b",
+                        "surface-container-high": "#e2e7ff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#3f484d",
+                        "on-primary-fixed": "#07006c",
+                        "surface-container-low": "#f2f3ff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#464554",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#bfc8ce",
+                        "primary-container": "#6063ee",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-fixed": "#dbe4ea",
+                        "secondary-container": "#dbe4ea",
+                        "primary": "#4648d4",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "inverse-primary": "#c0c1ff",
+                        "on-tertiary-fixed": "#2c0051"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "label-sm": ["Geist"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 20px 40px rgba(0,0,0,0.04);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.2);
+        }
+        .text-gradient {
+            background: linear-gradient(135deg, #4648d4 0%, #8127cf 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .floating-anim {
+            animation: floating 6s ease-in-out infinite;
+        }
+        @keyframes floating {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        body {
+            background: radial-gradient(circle at 10% 20%, rgba(225, 224, 255, 0.4) 0%, rgba(250, 248, 255, 1) 90%);
+        }
+    </style>
+</head>
+<body class="text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar Navigation Shell -->
+<header class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 bg-surface/70 backdrop-blur-3xl border-b border-white/20 shadow-sm">
+<div class="font-display-lg text-headline-sm font-extrabold text-primary">Swadakta</div>
+<nav class="hidden md:flex space-x-8 items-center">
+<a class="font-body-md text-primary border-b-2 border-primary transition-colors" href="portal.html">Account</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#how-it-works">How it works</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="brief.html">Pricing</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="#trust">Trust</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="mailto:swadakta111@gmail.com">AI Assistant</a>
+<a class="font-body-md text-on-surface-variant hover:text-primary transition-colors" href="portal.html">Sign in</a></nav>
+<a class="bg-primary text-on-primary px-6 py-2.5 rounded-full font-bold shadow-lg hover:scale-95 duration-200 ease-in-out transition-transform" href="portal.html">Create account</a>
+</header>
+<main class="relative pt-32 pb-section-gap">
+<!-- Hero Section -->
+<section class="max-w-container-max mx-auto px-margin-desktop flex flex-col lg:flex-row items-center gap-16">
+<div class="flex-1 space-y-8 z-10">
+<div class="inline-block px-4 py-1 rounded-full bg-primary-container/10 border border-primary-container/20 text-primary font-label-sm">
+                    Verified Global Logistics
                 </div>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="hero-overlay"></div>
-        <div class="hero-content">
-          <p class="eyebrow">Swadakta corridor desk</p>
-          <h1 id="hero-title">Swadakta corridor concierge.</h1>
-          <p class="hero-copy">
-            One clean account lets people outside or inside a country request trusted help, apply
-            for paid corridor work, upload proof, register a mobile backup, and move jobs through
-            quote, verification, payment, milestones, and reports.
-          </p>
-          <div class="hero-actions" aria-label="Primary actions">
-            <a class="button button-primary" href="portal.html#account">
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-              Create account
-            </a>
-            <a class="button button-secondary" href="#intake">Start brief</a>
-            <a class="button button-secondary" href="portal.html#partner">Apply for work</a>
-          </div>
-          <dl class="hero-proof" aria-label="Service highlights">
-            <div>
-              <dt>1</dt>
-              <dd>account for client and job-seeker modes</dd>
-            </div>
-            <div>
-              <dt>ID</dt>
-              <dd>verification before sensitive or paid work</dd>
-            </div>
-            <div>
-              <dt>AI</dt>
-              <dd>routine triage with founder exceptions</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
+<h1 class="font-display-lg text-display-lg leading-tight text-on-surface">
+                    One account for <span class="text-gradient">trusted help</span> and paid corridor work.
+                </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl">
+                    Request errands, sourcing, parcel handoffs, proof checks, family support, or business operations. Or get verified to receive paid corridor work.
+                </p>
+<div class="flex flex-wrap gap-4 pt-4">
+<a class="bg-primary text-white px-8 py-4 rounded-xl font-bold text-lg shadow-xl hover:scale-105 transition-transform inner-glow" href="portal.html">
+                        Create account
+                    </a>
+<a class="glass-card px-8 py-4 rounded-xl font-bold text-lg border border-outline-variant/30 hover:bg-white/90 transition-all duration-700 opacity-100 translate-y-0" href="brief.html">
+                        Start a brief
+                    </a>
+<a class="text-primary font-bold px-8 py-4 hover:underline transition-all" href="portal.html#work">
+                        Apply for work
+                    </a>
+<a class="text-on-surface-variant font-bold px-8 py-4 hover:text-primary transition-all" href="portal.html">Sign in</a></div>
+</div>
+<!-- Visual Component -->
+<div class="flex-1 relative w-full h-[600px] flex items-center justify-center">
+<!-- 3D Corridor Object Representation -->
+<div class="relative w-full h-full flex items-center justify-center">
+<div class="absolute inset-0 bg-gradient-to-tr from-primary/10 to-tertiary/10 blur-[100px] rounded-full"></div>
+<img alt="Abstract Corridor Object" class="w-[400px] h-[400px] object-contain floating-anim z-20" data-alt="A futuristic, abstract 3D crystalline corridor object floating in a pristine white space. The object is composed of translucent purple and deep blue glass textures with internal glowing light paths. The lighting is soft and professional, emphasizing the smooth, high-gloss finish of the material. Soft shadows and subtle lens flares create a sense of depth and luxury consistent with a premium tech brand." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBWXBqhCge7zMmFdHNNm_1GF7NZIyZnwCM4O13gVj0uJ_5B3eH1WpV2rEC3em580FwjGI6i67oXNDeSg80f-Quq7MOyBZGuLAnk_wlbDnzvWPboWtivpsgdBgCrhZjHhcwdXdWE5RZGNHlEX3_WX8rh7q-3v_uXwk2iZCp3Fb5ehOsF1NattfTjV7o8b0n-i7AXrw0E_OUCxY_wDyum0ZOU3UHa_L1n1nou6XqEfGycMKopj6qedgvgSszDcaZIDxTrxdl2Wks8NG3_">
+<!-- Glass Status Cards -->
+<div class="absolute top-12 right-12 glass-card p-4 rounded-2xl w-56 flex items-start gap-3 floating-anim [animation-delay:1s] z-30 transition-all duration-700 opacity-100 translate-y-0">
+<div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface">Parcel Handoff</p>
+<p class="text-[10px] text-on-surface-variant">Dubai International Corridor</p>
+<div class="mt-2 h-1 w-full bg-surface-container rounded-full overflow-hidden">
+<div class="h-full bg-primary w-full"></div>
+</div>
+</div>
+</div>
+<div class="absolute bottom-20 left-4 glass-card p-4 rounded-2xl w-60 flex items-start gap-3 floating-anim [animation-delay:2.5s] z-30 transition-all duration-700 opacity-100 translate-y-0">
+<div class="w-10 h-10 rounded-full bg-tertiary/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">person_search</span>
+</div>
+<div>
+<p class="font-label-sm text-on-surface">Sourcing Verified</p>
+<p class="text-[10px] text-on-surface-variant">Lagos Business Operations</p>
+<div class="mt-2 flex -space-x-2">
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-200"></div>
+<div class="w-6 h-6 rounded-full border-2 border-white bg-slate-300"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Feature Section: Three Paths -->
+<section class="max-w-container-max mx-auto px-margin-desktop mt-section-gap" id="how-it-works">
+<div class="text-center mb-16">
+<h2 class="font-display-lg text-headline-lg text-on-surface">Choose your mode</h2>
+<p class="text-on-surface-variant font-body-lg">Designed for the modern global traveler and operator.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter">
+<!-- Client Mode -->
+<div class="glass-card p-10 rounded-3xl group hover:bg-white/90 transition-all duration-300 hover:shadow-2xl duration-700 opacity-100 translate-y-0">
+<div class="w-16 h-16 rounded-2xl bg-primary-container/20 flex items-center justify-center text-primary mb-8 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+</div>
+<h3 class="font-display-lg text-headline-sm mb-4">Client Mode</h3>
+<p class="text-on-surface-variant font-body-md mb-8">Outsource your errands, local sourcing, and logistics to verified professionals in any corridor.</p>
+<ul class="space-y-3 mb-8">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check</span> Parcel pickup &amp; delivery
+                        </li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check</span> Proof of presence checks
+                        </li>
+</ul>
+<a class="block text-center w-full py-3 rounded-xl border border-primary text-primary font-bold hover:bg-primary hover:text-white transition-colors" href="brief.html">Start Requesting</a>
+</div>
+<!-- Job Seeker Mode -->
+<div class="glass-card p-10 rounded-3xl group hover:bg-white/90 transition-all duration-300 hover:shadow-2xl duration-700 opacity-100 translate-y-0">
+<div class="w-16 h-16 rounded-2xl bg-tertiary/10 flex items-center justify-center text-tertiary mb-8 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-4xl">work</span>
+</div>
+<h3 class="font-display-lg text-headline-sm mb-4">Job Seeker Mode</h3>
+<p class="text-on-surface-variant font-body-md mb-8">Get verified to fulfill corridor requests. Earn money by helping others while you travel or locally.</p>
+<ul class="space-y-3 mb-8">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-sm">check</span> Global payout system
+                        </li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-tertiary text-sm">check</span> Verification badge
+                        </li>
+</ul>
+<a class="block text-center w-full py-3 rounded-xl border border-tertiary text-tertiary font-bold hover:bg-tertiary hover:text-white transition-colors" href="portal.html#work">Find Work</a>
+</div>
+<!-- Both Mode -->
+<div class="glass-card p-10 rounded-3xl border-primary-container/40 group bg-primary-container/5 hover:bg-primary-container/10 transition-all duration-300 duration-700 opacity-100 translate-y-0">
+<div class="w-16 h-16 rounded-2xl bg-primary-container flex items-center justify-center text-on-primary-container mb-8 group-hover:rotate-12 transition-transform">
+<span class="material-symbols-outlined text-4xl">sync_alt</span>
+</div>
+<h3 class="font-display-lg text-headline-sm mb-4">Dual Mastery</h3>
+<p class="text-on-surface-variant font-body-md mb-8">Switch seamlessly between requesting help and earning on the corridor. The ultimate utility account.</p>
+<ul class="space-y-3 mb-8">
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check</span> Unified dashboard
+                        </li>
+<li class="flex items-center gap-2 text-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-primary text-sm">check</span> Reputation sync
+                        </li>
+</ul>
+<a class="block text-center w-full py-3 rounded-xl bg-primary text-white font-bold shadow-lg hover:shadow-xl transition-all" href="portal.html">Go Full Access</a>
+</div>
+</div>
+</section>
+<!-- Dynamic Experience Section -->
+<section class="max-w-container-max mx-auto px-margin-desktop mt-section-gap relative" id="trust">
+<div class="glass-card rounded-[48px] overflow-hidden p-16 flex flex-col lg:flex-row items-center gap-12 bg-white/40 transition-all duration-700 opacity-100 translate-y-0">
+<div class="lg:w-1/2">
+<h2 class="font-display-lg text-headline-lg mb-6 leading-tight">Trusted by corridor experts globally</h2>
+<div class="grid grid-cols-2 gap-8">
+<div>
+<span class="text-4xl font-extrabold text-primary">120+</span>
+<p class="text-on-surface-variant font-label-md mt-2">Active Corridors</p>
+</div>
+<div>
+<span class="text-4xl font-extrabold text-primary">15k</span>
+<p class="text-on-surface-variant font-label-md mt-2">Verified Agents</p>
+</div>
+<div>
+<span class="text-4xl font-extrabold text-primary">99%</span>
+<p class="text-on-surface-variant font-label-md mt-2">Success Rate</p>
+</div>
+<div>
+<span class="text-4xl font-extrabold text-primary">&lt;4h</span>
+<p class="text-on-surface-variant font-label-md mt-2">Avg. Response</p>
+</div>
+</div>
+</div>
+<div class="lg:w-1/2">
+<div class="relative rounded-3xl overflow-hidden aspect-video shadow-2xl">
+<img alt="Professional Workspace" class="w-full h-full object-cover" data-alt="A high-end, contemporary workspace with blurred silhouettes of professionals collaborating in a bright, glass-walled office overlooking a global cityscape. The image has a clean, airy feel with soft morning light, utilizing a cool color palette of whites, soft blues, and lavender. This visual should convey trust, global scale, and professional concierge services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-GEQ9c4WPNe3Fn0LECmxJlCmYK2czbPE5pz4615C5INdq8jNO-x9-GjjNBFL1DIoJUk-dA2YvdB5DzZMtZctxfqum1kqI2O-weTqRn3p8WD0yCIZXeDpDlFg4271e1hx2ZC12GC8Vr7OuItYbCS1RFbULGsFuqt_WH3KPs6EJBn7niqGY-7pjFMIz9aMpNXyPi0RXzIRWFtamQUAIN7SXIfCuirMpjOoWwSubcf40k7wAmnbRAXnwBdy0b8SxrkH3EEF_a24JI1Uz">
+<div class="absolute inset-0 bg-primary/20 mix-blend-overlay"></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer Navigation Shell -->
+<footer class="w-full py-12 bg-surface-container-lowest border-t border-outline-variant/30">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+<div class="space-y-4">
+<div class="font-display-lg text-headline-sm font-bold text-on-surface">Swadakta</div>
+<p class="font-label-sm text-on-surface-variant max-w-xs">
+                    &copy; 2026 Swadakta. Global Corridor Concierge. Your portal to trusted help across the globe.
+                </p>
+</div>
+<div class="flex flex-wrap gap-8">
+<div class="flex flex-col gap-3">
+<span class="font-label-sm text-primary uppercase tracking-widest">Platform</span>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-all" href="privacy.html">Privacy Policy</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-all" href="terms.html">Terms of Service</a>
+</div>
+<div class="flex flex-col gap-3">
+<span class="font-label-sm text-primary uppercase tracking-widest">Support</span>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-all" href="mailto:swadakta111@gmail.com">Help Center</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-all" href="mailto:swadakta111@gmail.com">Contact Us</a>
+</div>
+</div>
+</div>
+</footer>
+<script>
+        // Simple micro-interaction for cards on scroll
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('opacity-100', 'translate-y-0');
+                    entry.target.classList.remove('opacity-0', 'translate-y-10');
+                }
+            });
+        }, { threshold: 0.1 });
 
-      <section class="trust-strip" aria-label="Trust framework">
-        <span>One account</span>
-        <span>Client and worker modes</span>
-        <span>ID and mobile backup</span>
-        <span>Milestones and proof packs</span>
-      </section>
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.classList.add('transition-all', 'duration-700', 'opacity-0', 'translate-y-10');
+            observer.observe(card);
+        });
+    </script>
 
-      <section class="section section-intro" id="services" aria-labelledby="services-title">
-        <div class="section-heading">
-          <p class="eyebrow">The Offer</p>
-          <h2 id="services-title">Two service lines, one accountable platform.</h2>
-          <p>
-            Built for people sending money, goods, decisions, and trust across borders. Clients get
-            corridor execution with AI triage, proof standards, receiver accountability, and founder
-            review for legal, money, ID, dispute, safety, or unsupported-route risk.
-          </p>
-        </div>
-        <div class="service-tabs" data-tabs>
-          <div class="tab-list" role="tablist" aria-label="Service categories">
-            <button class="tab-button is-active" type="button" role="tab" aria-selected="true" data-tab="ground">
-              Ground errands
-            </button>
-            <button class="tab-button" type="button" role="tab" aria-selected="false" data-tab="virtual">
-              Virtual assistance
-            </button>
-          </div>
-          <div class="tab-panels">
-            <article class="service-panel is-active" role="tabpanel" data-panel="ground">
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M3 21h18M5 21V9l7-5 7 5v12M9 21v-6h6v6" />
-                </svg>
-                <h3>Property and construction tracking</h3>
-                <p>Site visits, contractor verification, photo/video progress reports, and issue escalation.</p>
-              </div>
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M7 3h7l4 4v14H7zM14 3v5h5M9 13h6M9 17h6" />
-                </svg>
-                <h3>Registry and compliance errands</h3>
-                <p>Title follow-ups, KRA tasks, NTSA errands, logbook collection, and document handling.</p>
-              </div>
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M20 12v7H4v-7M2 7h20v5H2zM12 22V7M12 7c0-2.5 4-2.5 4 0M12 7c0-2.5-4-2.5-4 0" />
-                </svg>
-                <h3>Family and delivery logistics</h3>
-                <p>Local shopping, elder support, gift deliveries, vendor coordination, and event errands.</p>
-              </div>
-            </article>
-            <article class="service-panel" role="tabpanel" data-panel="virtual" hidden>
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M4 5h16v10H4zM8 19h8M12 15v4" />
-                </svg>
-                <h3>Business operations desk</h3>
-                <p>Customer follow-ups, supplier coordination, invoice chasing, and routine admin support.</p>
-              </div>
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M21 21l-5-5M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15z" />
-                </svg>
-                <h3>Research and sourcing</h3>
-                <p>Supplier discovery, machinery quotes, local market checks, and investment due diligence.</p>
-              </div>
-              <div class="service-card">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                  <path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-3" />
-                </svg>
-                <h3>Bookkeeping support</h3>
-                <p>Receipt organization, weekly summaries, basic expense tracking, and report preparation.</p>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
 
-      <section class="section role-band" aria-labelledby="roles-title">
-        <div>
-          <p class="eyebrow">Divide and Conquer</p>
-          <h2 id="roles-title">One account, three simple paths.</h2>
-        </div>
-        <div class="role-grid">
-          <article class="role-card">
-            <span class="role-label">Client mode</span>
-            <h3>Get a job done across a supported corridor.</h3>
-            <p>
-              Diaspora clients submit briefs, receive quotes, pay through confirmed links, and track
-              job progress using client-safe updates.
-            </p>
-            <ul class="role-mini-list">
-              <li>Brief, quote, pay, track</li>
-              <li>Photos, receipts, written reports</li>
-            </ul>
-            <a class="role-link" href="portal.html#account">Create client account</a>
-          </article>
-          <article class="role-card">
-            <span class="role-label">Job seeker mode</span>
-            <h3>Get vetted for paid corridor work.</h3>
-            <p>
-              Local receivers, runners, and specialist partners apply for work categories, current operating base, coverage
-              areas, proof standards, and availability.
-            </p>
-            <ul class="role-mini-list">
-              <li>Mobile backup and ID check</li>
-              <li>Provenance score improves with delivery</li>
-            </ul>
-            <a class="role-link" href="portal.html#account">Create job-seeker account</a>
-          </article>
-          <article class="role-card">
-            <span class="role-label">Both mode</span>
-            <h3>AI runs routine flow; founder handles exceptions.</h3>
-            <p>
-              The same account can request jobs and receive jobs. The system triages route, logistics, ID, payment, and proof needs. Founder review is reserved
-              for compliance risk, high-value funds, disputes, blocked jobs, or unsupported lanes.
-            </p>
-            <ul class="role-mini-list">
-              <li>Switch roles without a second login</li>
-              <li>AI handles routine steps first</li>
-            </ul>
-            <a class="role-link" href="portal.html#account">Use both sides</a>
-          </article>
-        </div>
-      </section>
-
-      <section class="section trust-section" id="trust" aria-labelledby="trust-title">
-        <div class="section-heading">
-          <p class="eyebrow">Trust System</p>
-          <h2 id="trust-title">Built for proof, not promises.</h2>
-          <p>
-            Every request is handled with a clear brief, permission to act, receipts where available,
-            and a final report the client can keep for records.
-          </p>
-        </div>
-        <div class="assurance-grid">
-          <article class="assurance-card">
-            <span>01</span>
-            <h3>Permission first</h3>
-            <p>We confirm who can be contacted, what documents may be handled, and what outcome is expected before field work starts.</p>
-          </article>
-          <article class="assurance-card">
-            <span>02</span>
-            <h3>Proof pack</h3>
-            <p>Photos, short video, receipts, call notes, GPS/context details, and next-step recommendations are packaged per request.</p>
-          </article>
-          <article class="assurance-card">
-            <span>03</span>
-            <h3>Secure documents</h3>
-            <p>Sensitive files are requested only when needed, shared with the assigned operator, and referenced in the job notes.</p>
-          </article>
-          <article class="assurance-card">
-            <span>04</span>
-            <h3>Escalation path</h3>
-            <p>If a vendor, office, or relative blocks progress, the client receives a written issue summary and options.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section workflow" id="workflow" aria-labelledby="workflow-title">
-        <div class="section-heading">
-          <p class="eyebrow">Workflow</p>
-          <h2 id="workflow-title">Every request becomes a tracked mission.</h2>
-        </div>
-        <ol class="timeline">
-          <li>
-            <span>01</span>
-            <h3>Brief</h3>
-            <p>Capture the client goal, location, deadline, documents, and risk points.</p>
-          </li>
-          <li>
-            <span>02</span>
-            <h3>Verify</h3>
-            <p>Confirm contact details, office requirements, contractor claims, and access needs.</p>
-          </li>
-          <li>
-            <span>03</span>
-            <h3>Execute</h3>
-            <p>Visit, collect, coordinate, source, follow up, or manage the assigned local task.</p>
-          </li>
-          <li>
-            <span>04</span>
-            <h3>Report</h3>
-            <p>Deliver media, receipts, notes, next steps, and a plain-English recommendation.</p>
-          </li>
-        </ol>
-      </section>
-
-      <section class="section coverage" id="coverage" aria-labelledby="coverage-title">
-        <div class="coverage-copy">
-          <p class="eyebrow">Coverage</p>
-          <h2 id="coverage-title">Africa first, then corridor by corridor.</h2>
-          <p>
-            Kenya remains the fastest operational base, but the system is shaped for two-way
-            international work across Africa, Australia, USA, Europe, and China as verified
-            receivers and lawful logistics partners are added.
-          </p>
-        </div>
-        <div class="coverage-list" aria-label="Launch coverage areas">
-          <span>Kenya launch base</span>
-          <span>All Africa by route review</span>
-          <span>Australia lanes</span>
-          <span>USA lanes</span>
-          <span>Europe lanes</span>
-          <span>China sourcing</span>
-          <span>Digital global support</span>
-          <span>Restricted goods review</span>
-        </div>
-      </section>
-
-      <section class="section pricing" id="pricing" aria-labelledby="pricing-title">
-        <div class="section-heading">
-          <p class="eyebrow">Starter Pricing</p>
-          <h2 id="pricing-title">Simple entry points for testing demand.</h2>
-          <p>Launch pricing can be tuned after the first ten paid jobs. AUD is shown as the planning base, with final quotes available in the client's selected currency.</p>
-        </div>
-        <div class="pricing-grid">
-          <article class="price-card">
-            <p class="package">Quick Errand</p>
-            <h3>AUD 85+</h3>
-            <p>Single location task, receipt/photo confirmation, and same-week report.</p>
-          </article>
-          <article class="price-card featured">
-            <p class="package">Site Visit</p>
-            <h3>AUD 180+</h3>
-            <p>Construction/property inspection with short video, photos, call summary, and red flags.</p>
-          </article>
-          <article class="price-card">
-            <p class="package">Registry Run</p>
-            <h3>AUD 150+</h3>
-            <p>Document pickup, registry follow-up, NTSA, Ardhi House, KRA, or title-task coordination.</p>
-          </article>
-          <article class="price-card">
-            <p class="package">Family Support</p>
-            <h3>AUD 120+</h3>
-            <p>Shopping, parent support, gift delivery, local event coordination, or home-service checks.</p>
-          </article>
-          <article class="price-card">
-            <p class="package">Ops Retainer</p>
-            <h3>AUD 450/mo+</h3>
-            <p>Weekly admin, vendor coordination, family logistics, or business support.</p>
-          </article>
-          <article class="price-card">
-            <p class="package">Business Desk</p>
-            <h3>By quote</h3>
-            <p>Supplier sourcing, quote comparison, customer follow-up, bookkeeping support, and local ops.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section payments-section" aria-labelledby="payments-title">
-        <div class="section-heading">
-          <p class="eyebrow">Payments</p>
-          <h2 id="payments-title">Quote first, then pay through a secure link.</h2>
-          <p>
-            Because each job has different travel, access, and risk, Swadakta confirms the final
-            price before payment. Stripe, PayPal, M-Pesa, or bank-transfer links can be attached by the system or founder-approved payment flow.
-          </p>
-        </div>
-        <div class="payment-flow">
-          <article>
-            <strong>1</strong>
-            <h3>Submit brief</h3>
-            <p>Client explains the route, task location, deadline, logistics, goods category, and proof required.</p>
-          </article>
-          <article>
-            <strong>2</strong>
-            <h3>Receive quote</h3>
-            <p>AI prepares the price logic, deposit needs, payment method, and expected turnaround. Founder approval is used for exceptions.</p>
-          </article>
-          <article>
-            <strong>3</strong>
-            <h3>Pay by milestone</h3>
-            <p>Client pays by secure link, then tracks releases, proof, and reports using the request code.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section app-section" id="intake" aria-labelledby="intake-title">
-        <div class="intake-copy">
-          <p class="eyebrow">Client Intake</p>
-          <h2 id="intake-title">Build a first brief in under a minute.</h2>
-          <p>
-            Brief the corridor desk with the route, task location, proof requirements, payment
-            preference, and any physical-item logistics needed to estimate the work.
-          </p>
-        </div>
-
-        <form class="intake-panel" id="intake-form">
-          <div class="field-row">
-            <div class="field-group">
-              <label for="client-name">Client name</label>
-              <input id="client-name" name="clientName" type="text" autocomplete="name" required />
-            </div>
-            <div class="field-group">
-              <label for="whatsapp">WhatsApp</label>
-              <input id="whatsapp" name="whatsapp" type="tel" autocomplete="tel" required />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="email">Email</label>
-              <input id="email" name="email" type="email" autocomplete="email" />
-            </div>
-            <div class="field-group">
-              <label for="diaspora-location">Where are you based?</label>
-              <input id="diaspora-location" name="diasporaLocation" type="text" placeholder="City and country" autocomplete="address-level2" required />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="origin-country">Origin country/region</label>
-              <select id="origin-country" name="originCountry">
-                <option value="Australia">Australia</option>
-                <option value="Kenya">Kenya</option>
-                <option value="Africa">Africa, other country</option>
-                <option value="USA">USA</option>
-                <option value="Europe">Europe</option>
-                <option value="China">China</option>
-                <option value="Other">Other, needs founder review</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="destination-country">Destination country/region</label>
-              <select id="destination-country" name="destinationCountry">
-                <option value="Kenya">Kenya</option>
-                <option value="Australia">Australia</option>
-                <option value="Africa">Africa, other country</option>
-                <option value="USA">USA</option>
-                <option value="Europe">Europe</option>
-                <option value="China">China</option>
-                <option value="Other">Other, needs founder review</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="service-direction">Service direction</label>
-              <select id="service-direction" name="serviceDirection">
-                <option value="origin_to_destination">Origin to destination</option>
-                <option value="destination_to_origin">Destination to origin</option>
-                <option value="two_way">Two-way corridor</option>
-                <option value="local_in_country">Local in one country</option>
-                <option value="digital_global">Digital/global support</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="logistics-mode">Logistics need</label>
-              <select id="logistics-mode" name="logisticsMode">
-                <option value="not_needed">No physical delivery</option>
-                <option value="local_delivery">Local delivery or errand</option>
-                <option value="postal_courier">Post or courier shipment</option>
-                <option value="pickup_hold">Pickup and hold</option>
-                <option value="supplier_direct">Supplier ships directly</option>
-                <option value="airport_handoff">Airport/traveller handoff</option>
-                <option value="digital_only">Digital/documents only</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="deadline">Ideal deadline</label>
-              <input id="deadline" name="deadline" type="date" />
-            </div>
-            <div class="field-group">
-              <label for="preferred-currency">Preferred quote currency</label>
-              <select id="preferred-currency" name="preferredCurrency">
-                <option value="AUD">AUD</option>
-                <option value="USD">USD</option>
-                <option value="GBP">GBP</option>
-                <option value="EUR">EUR</option>
-                <option value="KES">KES</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label for="service-package">Service package</label>
-            <select id="service-package" name="servicePackage">
-              <option value="quote_first">Help me choose the right package</option>
-              <option value="quick_errand">Quick Errand - from AUD 85</option>
-              <option value="site_visit">Site Visit - from AUD 180</option>
-              <option value="registry_errand">Registry/Document Run - from AUD 150</option>
-              <option value="family_support">Family Support Run - from AUD 120</option>
-              <option value="shopping_sourcing">Shopping and sourcing - quoted per item</option>
-              <option value="monthly_retainer">Monthly Retainer - from AUD 450/mo</option>
-              <option value="business_ops">Business Ops Support - quoted monthly</option>
-            </select>
-          </div>
-
-          <div class="field-group">
-            <label for="payment-method-preference">Preferred payment method</label>
-            <select id="payment-method-preference" name="paymentMethodPreference">
-              <option value="discuss">Recommend after quote</option>
-              <option value="card">Card or Stripe link</option>
-              <option value="paypal">PayPal invoice or link</option>
-              <option value="mpesa">M-Pesa STK or Paybill</option>
-              <option value="bank">Bank transfer or manual receipt</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="job-value-band">Approximate value involved</label>
-              <select id="job-value-band" name="jobValueBand">
-                <option value="unsure">Not sure yet</option>
-                <option value="under_500">Under AUD 500</option>
-                <option value="500_2000">AUD 500-2,000</option>
-                <option value="2000_10000">AUD 2,000-10,000</option>
-                <option value="10000_plus">AUD 10,000+</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="funds-protection-preference">Funds protection preference</label>
-              <select id="funds-protection-preference" name="fundsProtectionPreference">
-                <option value="quote_first">Quote first, then decide</option>
-                <option value="deposit_milestones">Deposit plus staged milestones</option>
-                <option value="regulated_escrow">Regulated escrow for high-value work</option>
-                <option value="not_sure">Not sure, advise me</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="budget-range">Budget comfort</label>
-              <select id="budget-range" name="budgetRange">
-                <option value="unsure">Not sure yet</option>
-                <option value="under_100">Under AUD 100</option>
-                <option value="100_250">AUD 100-250</option>
-                <option value="250_500">AUD 250-500</option>
-                <option value="500_plus">AUD 500+</option>
-                <option value="retainer">Monthly retainer</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="proof-priority">Proof priority</label>
-              <select id="proof-priority" name="proofPriority">
-                <option value="balanced">Balanced proof pack</option>
-                <option value="speed">Fast confirmation</option>
-                <option value="detailed_media">Detailed photo/video</option>
-                <option value="receipts">Receipts and reference numbers</option>
-                <option value="debrief">Debrief call</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label for="task-type">Task type</label>
-            <select id="task-type" name="taskType">
-              <option value="quick">Quick errand</option>
-              <option value="shopping">Shopping or sourcing</option>
-              <option value="site">Property or site visit</option>
-              <option value="registry">Registry or legal errand</option>
-              <option value="virtual">Virtual assistant support</option>
-            </select>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="location">Task location</label>
-              <input id="location" name="location" type="text" placeholder="Nairobi, Lagos, Adelaide, Guangzhou, online..." autocomplete="address-level2" required />
-            </div>
-            <div class="field-group">
-              <label for="urgency">Urgency</label>
-              <select id="urgency" name="urgency">
-                <option value="standard">Standard</option>
-                <option value="priority">Priority</option>
-                <option value="same-day">Same day</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="local-contact-name">Task-side contact name</label>
-              <input id="local-contact-name" name="localContactName" type="text" placeholder="Optional" autocomplete="name" />
-            </div>
-            <div class="field-group">
-              <label for="local-contact-phone">Task-side contact phone</label>
-              <input id="local-contact-phone" name="localContactPhone" type="tel" placeholder="Optional" autocomplete="tel" />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="contact-preference">Preferred contact</label>
-              <select id="contact-preference" name="contactPreference">
-                <option value="whatsapp">WhatsApp</option>
-                <option value="email">Email</option>
-                <option value="either">Either</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="contact-window">Best contact window</label>
-              <input id="contact-window" name="contactWindow" type="text" placeholder="Evenings in my timezone, weekdays..." />
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label for="referral-source">How did you hear about us?</label>
-            <select id="referral-source" name="referralSource">
-              <option value="not_sure">Not sure</option>
-              <option value="facebook_instagram">Facebook or Instagram</option>
-              <option value="whatsapp_group">WhatsApp or community group</option>
-              <option value="friend_referral">Friend or referral</option>
-              <option value="search">Search</option>
-              <option value="community_event">Community event</option>
-              <option value="other">Other</option>
-            </select>
-          </div>
-
-          <label class="field-group" for="supporting-links">
-            Supporting links
-            <textarea id="supporting-links" name="supportingLinks" rows="3" placeholder="Optional: one Google Drive, product page, Kmart item, photo album, title, quote, or vendor link per line."></textarea>
-          </label>
-
-          <div class="field-group">
-            <label for="goods-category">Goods category</label>
-            <select id="goods-category" name="goodsCategory">
-              <option value="none">No physical goods</option>
-              <option value="general_goods">General goods</option>
-              <option value="clothing_household">Clothing or household items</option>
-              <option value="electronics">Electronics</option>
-              <option value="cosmetics">Cosmetics or personal care</option>
-              <option value="documents">Documents</option>
-              <option value="food_plant_animal">Food, plant, or animal product</option>
-              <option value="medicine_health">Medicine or health product</option>
-              <option value="valuable_items">Valuable items</option>
-              <option value="restricted_or_unsure">Restricted or not sure</option>
-            </select>
-          </div>
-
-          <label class="field-group" for="logistics-notes">
-            Logistics notes
-            <textarea id="logistics-notes" name="logisticsNotes" rows="3" placeholder="For physical items: item name, store, size/colour, quantity, recipient address, courier preference, packing needs, customs concerns, or pickup instructions."></textarea>
-          </label>
-
-          <aside class="safety-note" aria-label="Sensitive information guidance">
-            <strong>Before sending sensitive files</strong>
-            <ul>
-              <li>Share links only when they are needed to quote or complete the task.</li>
-              <li>Do not send card numbers, passwords, PINs, one-time codes, or original documents through this form.</li>
-              <li>Physical parcels may need customs forms, carrier checks, duties, taxes, storage charges, or prohibited-item review before shipment.</li>
-              <li>Use view-only links where possible and remove access after the job closes.</li>
-            </ul>
-          </aside>
-
-          <label class="single-check" for="compliance-acknowledged">
-            <input id="compliance-acknowledged" name="complianceAcknowledged" type="checkbox" required />
-            I understand Swadakta must check whether any item, document, payment, courier handoff, import, or export is legal before buying, sending, receiving, or releasing money.
-          </label>
-
-          <label class="single-check" for="sensitive-documents">
-            <input id="sensitive-documents" name="sensitiveDocumentsExpected" type="checkbox" />
-            This request may involve IDs, title documents, financial records, or other sensitive files.
-          </label>
-
-          <fieldset class="field-group checkbox-group">
-            <legend>Report pack</legend>
-            <label><input type="checkbox" name="report" value="photos" checked /> Photos</label>
-            <label><input type="checkbox" name="report" value="video" checked /> Short video</label>
-            <label><input type="checkbox" name="report" value="receipts" checked /> Receipts</label>
-            <label><input type="checkbox" name="report" value="call" /> Debrief call</label>
-          </fieldset>
-
-          <div class="field-group">
-            <label for="hours">Estimated hours</label>
-            <div class="range-line">
-              <input id="hours" name="hours" type="range" min="1" max="16" value="3" />
-              <output id="hours-output" for="hours">3 hrs</output>
-            </div>
-          </div>
-
-          <div class="estimate" aria-live="polite">
-            <span>AUD planning estimate</span>
-            <strong id="estimate-output">AUD 180</strong>
-          </div>
-          <p class="form-note">This is an AUD planning estimate. Final quote is confirmed after Swadakta checks travel, access, documents, urgency, and the client's preferred quote currency.</p>
-
-          <section class="assistant-panel" aria-labelledby="client-assistant-title">
-            <div>
-              <p class="eyebrow">Client AI</p>
-              <h3 id="client-assistant-title">Brief draft</h3>
-            </div>
-            <textarea id="client-assistant-draft" rows="4" readonly placeholder="Draft a clearer request from your current answers."></textarea>
-            <div class="form-actions">
-              <button class="button button-secondary" type="button" id="draft-client-brief">Draft brief</button>
-              <button class="button button-secondary" type="button" id="use-client-draft">Use in notes</button>
-              <button class="button button-secondary" type="button" id="copy-client-draft">Copy draft</button>
-              <span class="copy-status" id="client-assistant-status" role="status"></span>
-            </div>
-          </section>
-
-          <label class="field-group" for="notes">
-            Notes
-            <textarea id="notes" name="notes" rows="4" placeholder="Tell us what needs to happen, who is involved, what proof you need, and whether anything must be bought, posted, collected, or delivered." required></textarea>
-          </label>
-
-          <fieldset class="field-group consent-group">
-            <legend>Client permission</legend>
-            <label>
-              <input id="permission-contact" name="contactPermission" type="checkbox" required />
-              I have permission to ask Swadakta to contact any local person, vendor, office, or site contact I provide.
-            </label>
-            <label>
-              <input id="scope-acceptance" name="professionalBoundaryAccepted" type="checkbox" required />
-              I understand Swadakta coordinates, verifies, and reports; it does not replace licensed legal, survey, valuation, tax, or financial advice.
-            </label>
-            <label>
-              <input id="client-id-consent" name="clientIdConsent" type="checkbox" required />
-              I agree to identity verification before Swadakta starts paid work, releases milestones, or handles sensitive tasks.
-            </label>
-            <label>
-              <input id="terms-acceptance" name="termsAccepted" type="checkbox" required />
-              I agree to the <a href="terms.html" target="_blank" rel="noreferrer">Terms</a> and <a href="privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>.
-            </label>
-          </fieldset>
-
-          <div class="form-actions">
-            <button class="button button-primary" type="submit" id="submit-request">
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M5 12h14M13 6l6 6-6 6" />
-              </svg>
-              Submit request
-            </button>
-            <button class="button button-secondary" type="button" id="copy-brief">
-              <svg aria-hidden="true" viewBox="0 0 24 24">
-                <path d="M8 8h10v12H8zM6 16H4V4h10v2" />
-              </svg>
-              Copy brief
-            </button>
-          </div>
-          <div class="submission-status" id="submission-status" role="status" aria-live="polite"></div>
-          <span class="copy-status" id="brief-status" role="status"></span>
-        </form>
-      </section>
-
-      <section class="section launch" id="launch" aria-labelledby="launch-title">
-        <div>
-          <p class="eyebrow">Start In A Launch Region</p>
-          <h2 id="launch-title">Send one brief, get an AI-triaged corridor plan.</h2>
-        </div>
-        <div class="launch-grid">
-          <article class="launch-post">
-            <h3>WhatsApp message draft</h3>
-            <p id="launch-copy">
-              Hi Swadakta, I am based in [origin country] and need help with a task for [destination country].
-              The task is in [city/store/office/online], I need [errand/shopping/sourcing/document/family support/business follow-up],
-              and my ideal timeline is [date]. Please check the route, legal/shipping risk, price, and proof plan.
-            </p>
-            <button class="button button-secondary" type="button" id="copy-launch">Copy WhatsApp draft</button>
-            <span class="copy-status" id="launch-status" role="status"></span>
-          </article>
-          <ul class="launch-checklist" aria-label="Brief checklist">
-            <li>Your origin and destination countries</li>
-            <li>Task location, store, office, or local contact, if any</li>
-            <li>Task type, deadline, and urgency</li>
-            <li>Documents, access details, or vendor contacts</li>
-            <li>Photos, video, receipts, or call report needed</li>
-          </ul>
-        </div>
-      </section>
-
-      <section class="section tracking-section" id="tracking" aria-labelledby="tracking-title">
-        <div class="tracking-copy">
-          <p class="eyebrow">Request Tracking</p>
-          <h2 id="tracking-title">Check a request without chasing messages.</h2>
-          <p>
-            Enter the request code and the email or WhatsApp used on the brief. Public tracking only
-            shows client-safe status, payment, and report details.
-          </p>
-        </div>
-        <form class="tracking-panel" id="tracking-form">
-          <label class="field-group" for="tracking-code">
-            Request code
-            <input id="tracking-code" name="trackingCode" type="text" placeholder="SW-1234ABCD" autocomplete="off" required />
-          </label>
-          <label class="field-group" for="tracking-contact">
-            Email or WhatsApp
-            <input id="tracking-contact" name="trackingContact" type="text" placeholder="Used on the original brief" autocomplete="email" required />
-          </label>
-          <button class="button button-primary" type="submit">Check status</button>
-          <div class="tracking-result" id="tracking-result" role="status" aria-live="polite"></div>
-        </form>
-      </section>
-
-      <section class="section faq-section" aria-labelledby="faq-title">
-        <div class="section-heading">
-          <p class="eyebrow">Questions</p>
-          <h2 id="faq-title">What clients should know before sending a job.</h2>
-        </div>
-        <div class="faq-grid">
-          <article>
-            <h3>Do you replace lawyers or surveyors?</h3>
-            <p>No. Swadakta handles coordination, verification, errands, and reporting. Legal, valuation, and survey work should be handled by licensed professionals.</p>
-          </article>
-          <article>
-            <h3>Can you hold money for projects?</h3>
-            <p>Not by default. We can verify progress and coordinate payments, but client funds should move through agreed payment channels with clear receipts.</p>
-          </article>
-          <article>
-            <h3>Can you contact relatives or contractors?</h3>
-            <p>Yes, if the client gives permission and shares the correct contact details. Sensitive situations are handled carefully and documented.</p>
-          </article>
-          <article>
-            <h3>What happens if a task cannot be completed?</h3>
-            <p>The client receives the issue, evidence gathered, time spent, and recommended next steps before more work is approved.</p>
-          </article>
-        </div>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>Swadakta Corridor Concierge</p>
-      <nav aria-label="Footer links">
-        <a href="#tracking">Track request</a>
-        <a href="portal.html">Portal login</a>
-        <a href="admin.html">Admin</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-      </nav>
-    </footer>
-
-    <script src="app-config.js?v=4"></script>
-    <script src="app-data.js?v=35"></script>
-    <script src="script.js?v=18"></script>
-    <script src="ai-desk.js?v=1"></script>
-  </body>
-</html>
+</body></html>

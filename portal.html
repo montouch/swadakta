@@ -1,336 +1,277 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Swadakta Portal</title>
-    <meta
-      name="description"
-      content="Swadakta portal for corridor clients, vetted receiver partners, and founder exception operations."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=27" />
-  </head>
-  <body class="portal-body">
-    <header class="site-header" aria-label="Portal navigation">
-      <a class="brand" href="index.html" aria-label="Swadakta home">
-        <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
-        <span>
-          <strong>Swadakta</strong>
-          <small>Client + Receiver Portal</small>
-        </span>
-      </a>
-      <nav class="nav-links" aria-label="Portal sections">
-        <a href="#account">Account</a>
-        <a href="#client">Request help</a>
-        <a href="#partner">Get jobs</a>
-        <a href="#admin">Admin</a>
-        <a href="index.html#pricing">Pricing</a>
-      </nav>
-      <button class="ai-desk-trigger" type="button" data-ai-desk-open>AI Desk</button>
-      <a class="header-action" href="#account">Log in</a>
-    </header>
+<!DOCTYPE html>
 
-    <main class="portal-shell" id="top">
-      <section class="account-status-bar" id="account-status-bar" aria-live="polite">
-        <div>
-          <span class="request-code">Account</span>
-          <strong id="account-status-title">Not signed in</strong>
-          <small id="account-status-detail">Use one email account for client work, job seeking, or both.</small>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Swadakta Account</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=Geist:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#131b2e",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed": "#e1e0ff",
+                        "surface": "#faf8ff",
+                        "tertiary-fixed": "#f0dbff",
+                        "background": "#faf8ff",
+                        "on-secondary-fixed": "#141d21",
+                        "surface-tint": "#494bd6",
+                        "surface-bright": "#faf8ff",
+                        "tertiary": "#8127cf",
+                        "secondary": "#576065",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container": "#eaedff",
+                        "tertiary-container": "#9c48ea",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c7c4d7",
+                        "on-primary": "#ffffff",
+                        "outline": "#767586",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "on-background": "#131b2e",
+                        "surface-variant": "#dae2fd",
+                        "inverse-surface": "#283044",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d2d9f4",
+                        "on-secondary-container": "#5d666b",
+                        "surface-container-high": "#e2e7ff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#3f484d",
+                        "on-primary-fixed": "#07006c",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-container-low": "#f2f3ff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#464554",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#bfc8ce",
+                        "primary-container": "#6063ee",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-fixed": "#dbe4ea",
+                        "secondary-container": "#dbe4ea",
+                        "primary": "#4648d4",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "inverse-primary": "#c0c1ff",
+                        "on-tertiary-fixed": "#2c0051"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "label-sm": ["Geist"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.04);
+        }
+        .sunken-input {
+            background: rgba(218, 226, 253, 0.3);
+            border: 1px solid rgba(118, 117, 134, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .sunken-input:focus {
+            background: rgba(218, 226, 253, 0.5);
+            border-color: #4648d4;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .account-tile-radio:checked + label {
+            background: #F5F3FF;
+            border-color: #4648d4;
+            color: #4648d4;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
+<!-- Global Background Animation -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-container-lowest via-surface-container-low to-primary-fixed/20"></div>
+</div>
+<!-- Header (Suppressed Nav for Transactional Flow) -->
+<header class="w-full h-20 px-margin-desktop flex items-center justify-between z-50">
+<div class="font-display-lg text-headline-sm font-extrabold text-primary">
+            Swadakta
         </div>
-        <button class="button button-secondary" type="button" id="portal-sign-out" hidden>Sign out</button>
-      </section>
-
-      <section class="account-profile-card" id="account-profile-card" aria-live="polite" hidden></section>
-
-      <section class="portal-hero" aria-labelledby="portal-title">
-        <div>
-          <p class="eyebrow">Swadakta Account</p>
-          <h1 id="portal-title">Log in once. Get help or get work.</h1>
-          <p>
-            Sign in once, choose whether you are a client, a job seeker, or both, then Swadakta
-            shows the right next steps. If your country or operating base changes, verification
-            can be requested again before paid, sensitive, or location-specific work proceeds.
-          </p>
-        </div>
-        <div class="portal-visual-stack">
-          <div class="portal-preview-card" aria-label="Account dashboard preview">
-            <div class="portal-preview-topbar">
-              <span></span>
-              <span></span>
-              <span></span>
-              <strong>Account desk</strong>
-            </div>
-            <div class="portal-preview-grid">
-              <div>
-                <small>Account mode</small>
-                <strong>Client + job seeker</strong>
-              </div>
-              <div>
-                <small>Mobile backup</small>
-                <strong>Required on create</strong>
-              </div>
-              <div>
-                <small>ID status</small>
-                <strong>Queued before paid work</strong>
-              </div>
-              <div>
-                <small>Next action</small>
-                <strong>Finish profile</strong>
-              </div>
-            </div>
-          </div>
-          <div class="portal-choice-grid" aria-label="Swadakta portal choices">
-            <a class="portal-choice" href="#account">
-              <span>01</span>
-              <strong>Create or open account</strong>
-              <small>One login, then choose client, job seeker, or both.</small>
-            </a>
-            <a class="portal-choice" href="#client">
-              <span>02</span>
-              <strong>Request help</strong>
-              <small>Start a brief or track client jobs linked to your email.</small>
-            </a>
-            <a class="portal-choice" href="#partner">
-              <span>03</span>
-              <strong>Apply for work</strong>
-              <small>Get vetted, add coverage, then receive assigned jobs.</small>
-            </a>
-          </div>
-        </div>
-      </section>
-
-      <section class="section portal-section account-entry-section" id="account" aria-labelledby="account-entry-title">
-        <div class="tracking-copy">
-          <p class="eyebrow">Step 1</p>
-          <h2 id="account-entry-title">Create or open your Swadakta account.</h2>
-          <p>
-            Use one email and password. Your account can request work, apply for jobs, or do both.
-            When creating an account, add a mobile or WhatsApp backup number so Swadakta can reach
-            you for urgent proof, payment, delivery, or verification issues.
-          </p>
-          <ul class="account-mini-flow" aria-label="Account setup steps">
-            <li><strong>1</strong><span>Email and password</span></li>
-            <li><strong>2</strong><span>Mobile or WhatsApp backup</span></li>
-            <li><strong>3</strong><span>Client, job seeker, or both</span></li>
-            <li><strong>4</strong><span>ID verification when required</span></li>
-          </ul>
-        </div>
-        <form class="tracking-panel portal-login-form account-entry-form" id="client-login-form">
-          <div class="account-auth-toggle" role="radiogroup" aria-label="Account action">
-            <label>
-              <input type="radio" name="account-auth-mode" value="sign_in" checked />
-              Sign in
-            </label>
-            <label>
-              <input type="radio" name="account-auth-mode" value="create" />
-              Create account
-            </label>
-          </div>
-          <label class="field-group" for="client-login-email">
-            Email
-            <input id="client-login-email" name="clientEmail" type="email" placeholder="you@example.com" autocomplete="email" required />
-          </label>
-          <label class="field-group" for="client-login-password">
-            Password
-            <input id="client-login-password" name="clientPassword" type="password" placeholder="Your password" autocomplete="current-password" minlength="8" required />
-          </label>
-          <label class="field-group" id="account-backup-phone-group" for="account-backup-phone" hidden>
-            Mobile / WhatsApp backup
-            <input id="account-backup-phone" name="accountBackupPhone" type="tel" placeholder="+61 431 455 174" autocomplete="tel" disabled />
-          </label>
-          <label class="field-group" for="account-role-intent">
-            I want to use Swadakta as
-            <select id="account-role-intent" name="accountRole">
-              <option value="client">Client - get a job done</option>
-              <option value="receiver">Job seeker - get paid work</option>
-              <option value="both">Both - client and job seeker</option>
-            </select>
-          </label>
-          <button class="button button-primary" id="client-login-submit" type="submit">Sign in</button>
-          <button class="button button-secondary" id="account-google-sign-in" type="button">Continue with Google</button>
-          <button class="button button-ghost" id="account-password-reset" type="button">Forgot password?</button>
-          <span class="copy-status" id="client-login-status" role="status"></span>
-        </form>
-      </section>
-
-      <section class="section portal-section" id="client" aria-labelledby="client-portal-title">
-        <div class="tracking-copy">
-          <p class="eyebrow">Client Side</p>
-          <h2 id="client-portal-title">Request help or track a job.</h2>
-          <p>
-            After signing in above, client jobs linked to your email appear here. You can also
-            check a single request instantly with its request code and original email or WhatsApp.
-          </p>
-          <div class="portal-actions">
-            <a class="button button-primary" href="index.html#intake">Start a new brief</a>
-            <a class="button button-secondary" href="index.html#pricing">See packages</a>
-          </div>
-          <div class="account-panel" id="client-account-panel" aria-live="polite"></div>
-        </div>
-        <form class="tracking-panel" id="portal-tracking-form">
-          <label class="field-group" for="portal-tracking-code">
-            Request code
-            <input id="portal-tracking-code" name="trackingCode" type="text" placeholder="SW-1234ABCD" autocomplete="off" required />
-          </label>
-          <label class="field-group" for="portal-tracking-contact">
-            Email or WhatsApp
-            <input id="portal-tracking-contact" name="trackingContact" type="text" placeholder="Used on the original brief" autocomplete="email" required />
-          </label>
-          <button class="button button-primary" type="submit">Open client status</button>
-          <div class="tracking-result" id="portal-tracking-result" role="status" aria-live="polite"></div>
-        </form>
-      </section>
-
-      <section class="section portal-section" id="partner" aria-labelledby="partner-portal-title">
-        <div class="intake-copy">
-          <p class="eyebrow">Job Seeker Side</p>
-          <h2 id="partner-portal-title">Apply to get Swadakta jobs.</h2>
-          <p>
-            Use the same account above. Save your profile as Job seeker or Both, then apply for
-            coverage areas and work categories. Vetted workers can see assigned jobs and send field updates here.
-          </p>
-          <p class="form-note">Already signed in? Your job-seeker dashboard appears below after you save your account profile or submit an application.</p>
-          <div class="account-panel" id="partner-account-panel" aria-live="polite"></div>
-        </div>
-
-        <form class="intake-panel" id="partner-form">
-          <div class="field-row">
-            <div class="field-group">
-              <label for="partner-name">Full name</label>
-              <input id="partner-name" name="fullName" type="text" autocomplete="name" required />
-            </div>
-            <div class="field-group">
-              <label for="partner-whatsapp">WhatsApp</label>
-              <input id="partner-whatsapp" name="whatsapp" type="tel" autocomplete="tel" required />
-            </div>
-          </div>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="partner-email">Email</label>
-              <input id="partner-email" name="email" type="email" autocomplete="email" required />
-            </div>
-            <div class="field-group">
-              <label for="partner-base">Operating base</label>
-              <input id="partner-base" name="kenyaBase" type="text" placeholder="Town, county, state, or country where you operate" required />
-            </div>
-          </div>
-
-          <label class="field-group" for="partner-regions">
-            Coverage areas
-            <input id="partner-regions" name="serviceRegions" type="text" placeholder="Nairobi, Kiambu, Machakos..." required />
-          </label>
-
-          <fieldset class="field-group checkbox-group">
-            <legend>Work categories</legend>
-            <label><input type="checkbox" name="category" value="site_visits" /> Site visits</label>
-            <label><input type="checkbox" name="category" value="registry_errands" /> Registry/document errands</label>
-            <label><input type="checkbox" name="category" value="family_logistics" /> Family support</label>
-            <label><input type="checkbox" name="category" value="deliveries" /> Deliveries</label>
-            <label><input type="checkbox" name="category" value="sourcing" /> Supplier sourcing</label>
-            <label><input type="checkbox" name="category" value="virtual_ops" /> Virtual operations</label>
-          </fieldset>
-
-          <div class="field-row">
-            <div class="field-group">
-              <label for="partner-availability">Availability</label>
-              <select id="partner-availability" name="availability">
-                <option value="weekdays">Weekdays</option>
-                <option value="weekends">Weekends</option>
-                <option value="evenings">Evenings</option>
-                <option value="flexible">Flexible</option>
-                <option value="case_by_case">Case by case</option>
-              </select>
-            </div>
-            <div class="field-group">
-              <label for="partner-transport">Transport access</label>
-              <select id="partner-transport" name="transportAccess">
-                <option value="public_transport">Public transport</option>
-                <option value="motorbike">Motorbike</option>
-                <option value="car">Car</option>
-                <option value="ride_hailing">Ride hailing</option>
-                <option value="mixed">Mixed</option>
-              </select>
-            </div>
-          </div>
-
-          <label class="field-group" for="partner-notes">
-            Experience and references
-            <textarea id="partner-notes" name="notes" rows="4" placeholder="Past field work, errands, admin support, language strengths, reference names, or special skills." required></textarea>
-          </label>
-
-          <section class="assistant-panel" aria-labelledby="receiver-assistant-title">
-            <div>
-              <p class="eyebrow">Receiver AI</p>
-              <h3 id="receiver-assistant-title">Profile draft</h3>
-            </div>
-            <textarea id="receiver-assistant-draft" rows="4" readonly placeholder="Draft a clearer receiver profile from your answers."></textarea>
-            <div class="form-actions">
-              <button class="button button-secondary" type="button" id="draft-receiver-profile">Draft profile</button>
-              <button class="button button-secondary" type="button" id="use-receiver-draft">Use in experience</button>
-              <button class="button button-secondary" type="button" id="copy-receiver-draft">Copy draft</button>
-              <span class="copy-status" id="receiver-assistant-status" role="status"></span>
-            </div>
-          </section>
-
-          <fieldset class="field-group consent-group">
-            <legend>Vetting consent</legend>
-            <label>
-              <input id="partner-id-consent" name="idConsent" type="checkbox" required />
-              I agree to identity verification through Smile ID or another approved provider, plus reference and work-sample checks before receiving client jobs.
-            </label>
-            <label>
-              <input id="partner-proof-consent" name="proofConsent" type="checkbox" required />
-              I can provide clear proof of work, receipts, photos/video where allowed, and timely updates.
-            </label>
-          </fieldset>
-
-          <div class="form-actions">
-            <button class="button button-primary" type="submit" id="submit-partner">Apply to get jobs</button>
-          </div>
-          <div class="submission-status" id="partner-status" role="status" aria-live="polite"></div>
-        </form>
-      </section>
-
-      <section class="section portal-section" id="admin" aria-labelledby="admin-portal-title">
-        <div class="tracking-copy">
-          <p class="eyebrow">Admin Access</p>
-          <h2 id="admin-portal-title">Founder exception console.</h2>
-          <p>
-            Founder access is for approved operators only. This console reviews exceptions,
-            protected money, identity risk, receiver quality, unsupported lanes, and compliance.
-          </p>
-          <div class="portal-actions">
-            <a class="button button-secondary" href="admin.html">Open founder console</a>
-          </div>
-        </div>
-        <form class="tracking-panel" id="portal-admin-form">
-          <label class="field-group" for="portal-admin-email">
-            Admin email
-            <input id="portal-admin-email" name="adminEmail" type="email" value="swadakta111@gmail.com" autocomplete="email" required />
-          </label>
-          <button class="button button-primary" type="submit">Send admin sign-in email</button>
-          <div class="tracking-result" id="portal-admin-status" role="status" aria-live="polite"></div>
-        </form>
-      </section>
-    </main>
-
-    <footer class="site-footer">
-      <p>Swadakta Corridor Concierge</p>
-      <nav aria-label="Footer links">
-        <a href="index.html#intake">Start brief</a>
-        <a href="admin.html">Admin</a>
-        <a href="privacy.html">Privacy</a>
-        <a href="terms.html">Terms</a>
-      </nav>
-    </footer>
-
-    <script src="app-config.js?v=4"></script>
-    <script src="app-data.js?v=35"></script>
-    <script src="portal.js?v=22"></script>
-    <script src="ai-desk.js?v=1"></script>
-  </body>
-</html>
+<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 font-label-md" href="/">
+<span class="material-symbols-outlined text-[20px]">close</span>
+            Exit
+        </a>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center px-margin-mobile py-section-gap">
+<div class="w-full max-w-[480px] glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">
+<!-- Hero Header inside Panel -->
+<div class="text-center mb-10">
+<h1 class="font-display-lg text-headline-lg text-on-surface mb-2">Welcome back</h1>
+<p class="font-body-md text-on-surface-variant">One account for client work, paid corridor work, or both.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-6" id="client-login-form">
+<div class="grid grid-cols-2 gap-3 rounded-2xl bg-surface-container-lowest/60 p-1 border border-white/40" role="radiogroup" aria-label="Account action">
+<label class="cursor-pointer">
+<input checked class="peer hidden" name="account-auth-mode" type="radio" value="sign_in"/>
+<span class="block rounded-xl py-3 text-center font-label-md peer-checked:bg-primary peer-checked:text-white">Sign in</span>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="account-auth-mode" type="radio" value="create"/>
+<span class="block rounded-xl py-3 text-center font-label-md peer-checked:bg-primary peer-checked:text-white">Create account</span>
+</label>
+</div>
+<!-- Email Input Group -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="client-login-email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="client-login-email" name="clientEmail" placeholder="you@example.com" required="" type="email" autocomplete="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="client-login-password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="client-login-password" name="clientPassword" placeholder="At least 8 characters" required="" minlength="8" type="password" autocomplete="current-password"/>
+</div>
+</div>
+<div class="space-y-2" id="account-backup-phone-group" hidden>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-backup-phone">Mobile / WhatsApp backup</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">phone_iphone</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-backup-phone" name="accountBackupPhone" placeholder="+61 431 455 174" type="tel" autocomplete="tel" disabled/>
+</div>
+</div>
+<!-- Account Type Selector (Tiles) -->
+<div class="space-y-3">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Continue as</label>
+<div class="grid grid-cols-3 gap-3">
+<!-- Client Tile -->
+<div class="relative">
+<input checked="" class="peer hidden account-tile-radio" id="client" name="accountRole" type="radio" value="client"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="client">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">corporate_fare</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Client</span>
+</label>
+</div>
+<!-- Job Seeker Tile -->
+<div class="relative">
+<input class="peer hidden account-tile-radio" id="seeker" name="accountRole" type="radio" value="receiver"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="seeker">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">person_search</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Seeker</span>
+</label>
+</div>
+<!-- Both Tile -->
+<div class="relative">
+<input class="peer hidden account-tile-radio" id="both" name="accountRole" type="radio" value="both"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="both">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">sync_alt</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Both</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Trust Message -->
+<div class="flex items-start gap-3 p-4 rounded-xl bg-primary-container/5 border border-primary/10">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<p class="font-label-sm text-on-surface-variant leading-relaxed">
+                        Verification follows you. Roles can be changed, and every account keeps a mobile backup for urgent proof, payment, or delivery issues.
+                    </p>
+</div>
+<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="client-login-status" role="status"></p>
+<!-- Action Button -->
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="client-login-submit" type="submit">
+                    Sign in
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<button class="w-full h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="account-google-sign-in" type="button">Continue with Google</button>
+<button class="w-full text-primary font-label-md" id="account-password-reset" type="button">Forgot password?</button>
+<!-- Footer Links -->
+<div class="pt-4 text-center">
+<p class="font-body-md text-on-surface-variant text-[14px]">
+                        Need a task done now? <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="brief.html">Start a brief</a>
+</p>
+</div>
+</form>
+<section class="mt-8 hidden" id="account-profile-card" aria-live="polite"></section>
+<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3" id="account-next-actions" hidden>
+<a class="glass-panel rounded-2xl p-4 font-label-md text-primary" href="brief.html">Create a client brief</a>
+<a class="glass-panel rounded-2xl p-4 font-label-md text-tertiary" href="#work">Apply for paid work</a>
+</div>
+</div>
+</main>
+<section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="work">
+<div class="max-w-[760px] mx-auto glass-panel p-8 md:p-10 rounded-[2rem]">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
+<div>
+<h2 class="font-headline-lg text-headline-sm text-on-surface">Get verified for corridor jobs</h2>
+<p class="font-body-md text-on-surface-variant">Paid work requires identity checks, mobile backup, proof standards, and corridor coverage.</p>
+</div>
+</div>
+<a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="mailto:swadakta111@gmail.com?subject=Swadakta%20job%20seeker%20verification">Request verification</a>
+</div>
+</section>
+<!-- Simple Footer -->
+<footer class="w-full py-8 px-margin-desktop border-t border-outline-variant/10">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-label-sm text-on-surface-variant">&copy; 2026 Swadakta. Global Corridor Concierge.</span>
+<div class="flex gap-6">
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="privacy.html">Privacy Policy</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="terms.html">Terms of Service</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="mailto:swadakta111@gmail.com">Help Center</a>
+</div>
+</div>
+</footer>
+<script src="app-config.js?v=4"></script>
+<script src="app-data.js?v=36"></script>
+<script src="stitch-portal.js?v=1"></script>
+</body></html>

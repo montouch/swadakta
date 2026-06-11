@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Client Brief Flow | Swadakta</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Typography -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#131b2e",
+                    "on-primary-container": "#fffbff",
+                    "primary-fixed": "#e1e0ff",
+                    "surface": "#faf8ff",
+                    "tertiary-fixed": "#f0dbff",
+                    "background": "#faf8ff",
+                    "on-secondary-fixed": "#141d21",
+                    "surface-tint": "#494bd6",
+                    "surface-bright": "#faf8ff",
+                    "tertiary": "#8127cf",
+                    "secondary": "#576065",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "error": "#ba1a1a",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "surface-container": "#eaedff",
+                    "tertiary-container": "#9c48ea",
+                    "on-error-container": "#93000a",
+                    "outline-variant": "#c7c4d7",
+                    "on-primary": "#ffffff",
+                    "outline": "#767586",
+                    "tertiary-fixed-dim": "#ddb7ff",
+                    "on-background": "#131b2e",
+                    "surface-variant": "#dae2fd",
+                    "inverse-surface": "#283044",
+                    "on-secondary": "#ffffff",
+                    "surface-dim": "#d2d9f4",
+                    "on-secondary-container": "#5d666b",
+                    "surface-container-high": "#e2e7ff",
+                    "on-error": "#ffffff",
+                    "on-secondary-fixed-variant": "#3f484d",
+                    "on-primary-fixed": "#07006c",
+                    "surface-container-highest": "#dae2fd",
+                    "surface-container-low": "#f2f3ff",
+                    "on-tertiary-container": "#fffbff",
+                    "surface-container-lowest": "#ffffff",
+                    "on-surface-variant": "#464554",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#bfc8ce",
+                    "primary-container": "#6063ee",
+                    "inverse-on-surface": "#eef0ff",
+                    "secondary-fixed": "#dbe4ea",
+                    "secondary-container": "#dbe4ea",
+                    "primary": "#4648d4",
+                    "on-tertiary": "#ffffff",
+                    "on-tertiary-fixed-variant": "#6900b3",
+                    "inverse-primary": "#c0c1ff",
+                    "on-tertiary-fixed": "#2c0051"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "section-gap": "120px",
+                    "base": "8px",
+                    "margin-mobile": "16px",
+                    "margin-desktop": "48px",
+                    "gutter": "24px",
+                    "container-max": "1280px"
+            },
+            "fontFamily": {
+                    "display-lg": ["Manrope"],
+                    "label-md": ["Geist"],
+                    "body-lg": ["Inter"],
+                    "headline-sm": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "label-sm": ["Geist"],
+                    "display-lg-mobile": ["Manrope"],
+                    "body-md": ["Inter"]
+            },
+            "fontSize": {
+                    "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #faf8ff;
+            color: #131b2e;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.04);
+        }
+
+        .sunken-input {
+            background: rgba(218, 226, 253, 0.3);
+            border: 1px solid rgba(118, 117, 134, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .sunken-input:focus {
+            background: rgba(218, 226, 253, 0.5);
+            border-color: #4648d4;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .primary-glass-button {
+            background: linear-gradient(135deg, #4648d4 0%, #8127cf 100%);
+            box-shadow: 0 4px 15px rgba(70, 72, 212, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.3);
+            transition: transform 0.2s ease, opacity 0.2s ease;
+        }
+
+        .primary-glass-button:active {
+            transform: scale(0.98);
+        }
+
+        .mesh-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: radial-gradient(at 0% 0%, rgba(70, 72, 212, 0.1) 0px, transparent 50%),
+                        radial-gradient(at 100% 0%, rgba(129, 39, 207, 0.1) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(70, 72, 212, 0.05) 0px, transparent 50%),
+                        radial-gradient(at 0% 100%, rgba(129, 39, 207, 0.05) 0px, transparent 50%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="font-body-md text-body-md">
+<!-- Background Decorative Elements -->
+<div class="mesh-gradient"></div>
+<!-- TopNavBar -->
+<nav class="fixed top-0 w-full z-50 flex justify-between items-center px-margin-desktop h-20 bg-surface/70 backdrop-blur-3xl border-b border-white/20 shadow-sm">
+<div class="font-display-lg text-headline-sm font-extrabold text-primary">Swadakta</div>
+<div class="hidden md:flex items-center space-x-8">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="portal.html">Account</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="index.html#how-it-works">How it works</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md text-label-md" href="index.html#pricing">Pricing</a>
+<a class="text-primary border-b-2 border-primary font-label-md text-label-md" href="brief.html">Client Brief</a>
+</div>
+<a class="primary-glass-button px-6 py-2.5 rounded-full text-white font-bold text-label-md transition-all" href="portal.html">
+            Get Started
+        </a>
+</nav>
+<!-- Content Canvas -->
+<main class="pt-32 pb-section-gap px-margin-mobile md:px-0 flex justify-center">
+<div class="w-full max-w-2xl">
+<!-- Header Section -->
+<header class="text-center mb-16">
+<h1 class="font-display-lg text-headline-lg md:text-display-lg text-on-surface mb-4">Create Your Brief</h1>
+<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto">Provide the details of your global concierge request. Our network of verified experts will review and respond within 24 hours.</p>
+</header>
+<form class="space-y-8" id="client-brief-form">
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Client Contact</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-client-name">Full name</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-client-name" name="client_name" placeholder="Your name" required="" type="text" autocomplete="name"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-email">Email</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-email" name="email" placeholder="you@example.com" required="" type="email" autocomplete="email"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-whatsapp">Mobile / WhatsApp</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-whatsapp" name="whatsapp" placeholder="+61 431 455 174" required="" type="tel" autocomplete="tel"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-client-base">Your current base</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-client-base" name="client_base" placeholder="Adelaide, Australia" type="text"/>
+</div>
+</div>
+</section>
+<!-- Section 1: Task Core -->
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">map</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Route &amp; Context</h2>
+</div>
+<div class="grid grid-cols-1 gap-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-location">Task Location / Destination</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-location" name="task_location" placeholder="e.g., Nairobi, Kenya or London, UK" required="" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-service-type">Service Type</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-service-type" name="service_type">
+<option>Logistics &amp; Delivery</option>
+<option>Verification &amp; Inspection</option>
+<option>Market Research</option>
+<option>Legal &amp; Compliance Concierge</option>
+<option>Personal Shopping</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-origin-country">Origin country</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-origin-country" name="origin_country" placeholder="Australia" type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-destination-country">Destination country</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-destination-country" name="destination_country" placeholder="Kenya" type="text"/>
+</div>
+</div>
+</section>
+<!-- Section 2: Logistics & Documentation -->
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">inventory_2</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Goods &amp; Logistics</h2>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-items">Items Description</label>
+<textarea class="sunken-input w-full p-4 rounded-xl text-body-md resize-none" id="brief-items" name="items_description" placeholder="Provide weight, dimensions, and nature of goods..." rows="3"></textarea>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-files">Documents / Photos</label>
+<label class="border-2 border-dashed border-outline-variant/50 rounded-2xl p-8 flex flex-col items-center justify-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer group" for="brief-files">
+<input class="sr-only" id="brief-files" name="brief_files" type="file" multiple accept="image/*,application/pdf,video/*"/>
+<span class="material-symbols-outlined text-4xl text-outline mb-2 group-hover:text-primary transition-colors">cloud_upload</span>
+<p class="font-label-md text-label-md text-on-surface-variant">Drag and drop files or <span class="text-primary font-bold">browse</span></p>
+<p class="text-[10px] text-outline mt-1 uppercase tracking-wider">PDF, PNG, JPG (Max 25MB)</p>
+</label>
+</div>
+</div>
+</section>
+<!-- Section 3: Verification & Proof -->
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">verified</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Verification Details</h2>
+</div>
+<div class="space-y-6">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-proof">Proof Needed</label>
+<textarea class="sunken-input w-full p-4 rounded-xl text-body-md resize-none" id="brief-proof" name="proof_needed" placeholder="Explain what specific evidence you require (e.g., timestamped photos of seal, video of loading)..." rows="2"></textarea>
+</div>
+</div>
+</section>
+<!-- Section 4: Payments & Escrow -->
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="flex items-center gap-3 mb-8">
+<div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Financial Preferences</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-payment">Payment Preference</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-payment" name="payment_preference">
+<option>USD (Stripe / Bank)</option>
+<option>Crypto (USDT / USDC)</option>
+<option>Local Currency (Mobile Money)</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-escrow">Escrow Configuration</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-escrow" name="escrow_configuration">
+<option>100% On Completion</option>
+<option>50/50 Milestones</option>
+<option>Custom Release Plan</option>
+</select>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-primary-container/10 border border-primary-container/20 flex gap-4">
+<span class="material-symbols-outlined text-primary">info</span>
+<p class="text-label-sm font-label-md text-on-surface-variant leading-relaxed">
+                            All payments are held in Swadakta Escrow. Funds are only released to the agent once you verify the submitted proof of task completion.
+                        </p>
+</div>
+</section>
+<!-- Section 5: Submission -->
+<section class="space-y-6 pt-4">
+<div class="flex items-start gap-3 px-2">
+<div class="pt-1">
+<input class="w-5 h-5 rounded border-outline-variant text-primary focus:ring-primary" id="compliance" type="checkbox" required/>
+</div>
+<label class="text-label-sm font-label-md text-on-surface-variant cursor-pointer" for="compliance">
+                            I confirm that the details provided are accurate and comply with the <a class="text-primary underline" href="terms.html">Global Logistics Compliance Guidelines</a>. I understand that misrepresentation may lead to account suspension.
+                        </label>
+</div>
+<button class="primary-glass-button w-full h-16 rounded-2xl text-white font-bold text-headline-sm flex items-center justify-center gap-3 group" type="submit">
+                        Submit Brief
+                        <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
+</button>
+<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="brief-status" role="status"></p>
+</section>
+</form>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest py-12 border-t border-outline-variant/30">
+<div class="max-w-container-max mx-auto px-margin-desktop flex flex-col md:flex-row justify-between items-center gap-8">
+<div class="flex flex-col items-center md:items-start gap-2">
+<div class="font-display-lg text-headline-sm font-bold text-on-surface">Swadakta</div>
+<p class="font-label-sm text-label-sm text-secondary">&copy; 2026 Swadakta. Global Corridor Concierge.</p>
+</div>
+<div class="flex gap-8">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors underline decoration-2 underline-offset-4" href="privacy.html">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors underline decoration-2 underline-offset-4" href="terms.html">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors underline decoration-2 underline-offset-4" href="mailto:swadakta111@gmail.com">Help Center</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors underline decoration-2 underline-offset-4" href="mailto:swadakta111@gmail.com">Contact Us</a>
+</div>
+</div>
+</footer>
+<!-- Image for decorative context (hidden but for data-alt requirement) -->
+<div class="hidden">
+<img data-alt="A professional business setting featuring a sleek glass-walled office with a wide view of a modern metropolitan skyline at dusk. The interior is filled with soft, warm light-mode illumination, highlighting minimalist desks and high-end digital interfaces. A subtle purple and blue color palette dominates the atmosphere, creating a feeling of premium global connectivity and trust. The overall mood is sophisticated, airy, and technologically advanced, echoing the Swadakta brand identity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD9wg_7lU2G4k0umLf-RPY8Ns04_C3FNKZOTDsQ58Hb7ZTxZPtCKDv71vhH0Ab3KvxT9bcEnR1fOKDmJOqmgNjaWvaNTtFDAox66PonPwxEjAWtQ1VRpS0xhrCCjF7soczCbI2b9-IvYKCqFdy4E54FltaFhCzJ163jz-Cbz2C2Ri-9wqt5ubaosS24p_DWehHNixVTfo9BxJbRYqL4u2glIL2tSaqxdkjEf39JvT7AReK14tNF9XeWe74UHe7Qmop7-Dj_A-FwySU3"/>
+</div>
+<script src="app-config.js?v=4"></script>
+<script src="app-data.js?v=36"></script>
+<script src="stitch-brief.js?v=1"></script>
+</body></html>
