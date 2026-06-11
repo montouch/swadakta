@@ -5,6 +5,7 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 ## 1. Domain and Vercel
 
 - Buy or connect `swadakta.com`.
+- As of June 11, 2026, Vercel's domain checker showed `swadakta.com` available at `$11.25 USD` for 1 year. Recheck before purchase.
 - In Vercel, open the Swadakta project, go to Settings, then Domains, and add `swadakta.com`.
 - Add `www.swadakta.com` as a second domain and redirect it to the apex domain.
 - Follow the DNS records Vercel shows for the registrar. Vercel's domain docs explain that the dashboard displays the required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
@@ -14,6 +15,7 @@ This is the practical go-live checklist for turning the current MVP into a paid 
   - `https://swadakta.com/privacy`
   - `https://swadakta.com/terms`
   - `https://swadakta.com/sitemap.xml`
+- See [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the latest local/Vercel project status.
 
 ## 2. Payments
 

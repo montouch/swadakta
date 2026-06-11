@@ -34,4 +34,4 @@ Then open:
 
 ## Go live
 
-See [ACTUALIZATION.md](ACTUALIZATION.md) and [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
+See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
