@@ -35,7 +35,7 @@
     title.textContent = task;
     assignee.textContent = request.assigned_to
       ? `Assigned to: ${request.assigned_to}`
-      : "Assigned to: AI triage, human review when required";
+      : "AI triage first; human review only when risk or compliance requires it";
     setResult(`Status: ${status}. Payment: ${payment}. ID verification: ${formatStatus(request.verification_status || "required")}.`, "text-primary");
   }
 

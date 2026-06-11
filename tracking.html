@@ -147,18 +147,18 @@
 <!-- Header Section -->
 <div class="mb-12 flex flex-col md:flex-row justify-between items-end gap-6">
 <div>
-<span class="font-label-sm text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full" id="tracking-code-label">Case #SW-9921</span>
-<h1 class="font-display-lg text-headline-lg mt-2 text-on-surface" id="tracking-title">Global Asset Verification</h1>
-<p class="text-on-surface-variant font-body-md" id="tracking-assignee">Assigned to: Concierge Agent Elena V.</p>
+<span class="font-label-sm text-primary uppercase tracking-widest bg-primary/10 px-3 py-1 rounded-full" id="tracking-code-label">Enter request code</span>
+<h1 class="font-display-lg text-headline-lg mt-2 text-on-surface" id="tracking-title">Track a Swadakta request</h1>
+<p class="text-on-surface-variant font-body-md" id="tracking-assignee">Payment, proof, milestones, and receiver updates appear after lookup.</p>
 </div>
 <div class="flex gap-4">
 <button class="glass-panel px-6 py-3 rounded-xl font-label-md flex items-center gap-2 hover:bg-white transition-all">
 <span class="material-symbols-outlined text-[20px]">support_agent</span>
-                    Message Concierge
+                    Request update
                 </button>
 <button class="bg-primary text-white px-8 py-3 rounded-xl font-label-md shadow-xl hover:shadow-primary/20 transition-all flex items-center gap-2">
 <span class="material-symbols-outlined text-[20px]">verified</span>
-                    Release Milestone
+                    View payment status
 </button>
 </div>
 </div>
@@ -187,7 +187,7 @@
 </div>
 <div>
 <p class="font-label-md text-primary">Requested</p>
-<p class="text-xs text-on-surface-variant font-label-sm">Oct 12, 09:30 AM</p>
+<p class="text-xs text-on-surface-variant font-label-sm">After lookup</p>
 </div>
 </div>
 <div class="relative z-10 flex items-center md:flex-col gap-4 text-left md:text-center group">
@@ -195,8 +195,8 @@
 <span class="material-symbols-outlined fill-icon">verified</span>
 </div>
 <div>
-<p class="font-label-md text-primary">Verified</p>
-<p class="text-xs text-on-surface-variant font-label-sm">Oct 14, 02:15 PM</p>
+<p class="font-label-md text-primary">Payment checked</p>
+<p class="text-xs text-on-surface-variant font-label-sm">Provider reference</p>
 </div>
 </div>
 <div class="relative z-10 flex items-center md:flex-col gap-4 text-left md:text-center group">
@@ -204,8 +204,8 @@
 <span class="material-symbols-outlined">hourglass_top</span>
 </div>
 <div>
-<p class="font-label-md text-primary-container font-bold">In Progress</p>
-<p class="text-xs text-on-surface-variant font-label-sm">Current State</p>
+<p class="font-label-md text-primary-container font-bold">Proof in progress</p>
+<p class="text-xs text-on-surface-variant font-label-sm">Receiver updates</p>
 </div>
 </div>
 <div class="relative z-10 flex items-center md:flex-col gap-4 text-left md:text-center group opacity-50">
@@ -230,12 +230,12 @@
                     </h3>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 <div class="p-4 bg-surface-container-low rounded-2xl border border-white/40">
-<p class="font-label-sm text-secondary uppercase">Total Escrow</p>
-<p class="text-headline-sm font-bold text-on-surface">$12,450.00</p>
+<p class="font-label-sm text-secondary uppercase">Protected Amount</p>
+<p class="text-headline-sm font-bold text-on-surface">Shown after quote</p>
 </div>
 <div class="p-4 bg-surface-container-low rounded-2xl border border-white/40">
-<p class="font-label-sm text-secondary uppercase">Released to Date</p>
-<p class="text-headline-sm font-bold text-primary">$4,500.00</p>
+<p class="font-label-sm text-secondary uppercase">Released After Proof</p>
+<p class="text-headline-sm font-bold text-primary">Milestone review</p>
 </div>
 </div>
 <div class="mt-8 space-y-4">
@@ -244,23 +244,23 @@
 <div class="flex items-center justify-between p-4 bg-white/40 rounded-xl border border-white/20">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary fill-icon">check_circle</span>
-<span class="font-body-md">Initial Inspection &amp; Documentation</span>
+<span class="font-body-md">Brief accepted and quote prepared</span>
 </div>
-<span class="font-label-md text-primary">$2,250 - Released</span>
+<span class="font-label-md text-primary">Ready</span>
 </div>
 <div class="flex items-center justify-between p-4 bg-white/40 rounded-xl border border-white/20">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary fill-icon">check_circle</span>
-<span class="font-body-md">Legal Title Search</span>
+<span class="font-body-md">Provider payment reference confirmed</span>
 </div>
-<span class="font-label-md text-primary">$2,250 - Released</span>
+<span class="font-label-md text-primary">Required</span>
 </div>
 <div class="flex items-center justify-between p-4 bg-white rounded-xl border-2 border-primary/20 shadow-sm">
 <div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary-container animate-spin">refresh</span>
-<span class="font-body-md font-semibold">Physical Asset Appraisal</span>
+<span class="font-body-md font-semibold">Proof review before receiver payout</span>
 </div>
-<span class="font-label-md text-primary-container">$3,950 - Pending Release</span>
+<span class="font-label-md text-primary-container">Pending</span>
 </div>
 </div>
 </div>
@@ -278,8 +278,8 @@
 <span class="material-symbols-outlined text-primary fill-icon">verified_user</span>
 </div>
 <div>
-<p class="font-label-md">On-site GPS Verification</p>
-<p class="text-xs text-on-surface-variant">Confirmed within 5m accuracy</p>
+<p class="font-label-md">Location / presence proof</p>
+<p class="text-xs text-on-surface-variant">Photos, notes, timestamps, or provider evidence</p>
 </div>
 </div>
 <span class="material-symbols-outlined text-primary">done_all</span>
@@ -291,8 +291,8 @@
 <span class="material-symbols-outlined text-primary fill-icon">description</span>
 </div>
 <div>
-<p class="font-label-md">Tax Clearance Certificate</p>
-<p class="text-xs text-on-surface-variant">Authenticated via local authorities</p>
+<p class="font-label-md">Receipt and document trail</p>
+<p class="text-xs text-on-surface-variant">Uploaded files or official references where available</p>
 </div>
 </div>
 <span class="material-symbols-outlined text-primary">done_all</span>
@@ -304,8 +304,8 @@
 <span class="material-symbols-outlined text-outline">pending</span>
 </div>
 <div>
-<p class="font-label-md">3rd Party Structural Report</p>
-<p class="text-xs text-on-surface-variant">Awaiting external engineer upload</p>
+<p class="font-label-md">Milestone approval</p>
+<p class="text-xs text-on-surface-variant">Client-safe summary before any release action</p>
 </div>
 </div>
 <span class="material-symbols-outlined text-outline">schedule</span>
@@ -319,7 +319,7 @@
 <div class="glass-panel p-6 rounded-3xl">
 <h3 class="font-headline-sm mb-6 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">perm_media</span>
-                        Uploaded Media
+                        Media &amp; Reports
                     </h3>
 <div class="grid grid-cols-2 gap-4">
 <div class="relative aspect-square rounded-2xl overflow-hidden border border-white/40 shadow-inner group">
@@ -333,7 +333,7 @@
 <div class="relative aspect-square rounded-2xl overflow-hidden border border-white/40 shadow-inner group flex items-center justify-center bg-surface-container-high">
 <div class="text-center">
 <span class="material-symbols-outlined text-primary block mb-1">picture_as_pdf</span>
-<span class="text-[10px] font-bold uppercase tracking-tighter">Legal_Docs.pdf</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter">Proof_Pack.pdf</span>
 </div>
 </div>
 <button class="relative aspect-square rounded-2xl overflow-hidden border border-dashed border-outline-variant hover:bg-white/50 transition-colors flex flex-col items-center justify-center gap-2">
@@ -380,5 +380,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=38"></script>
-<script src="stitch-tracking.js?v=1"></script>
+<script src="stitch-tracking.js?v=2"></script>
 </body></html>
