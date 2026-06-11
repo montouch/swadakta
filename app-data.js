@@ -1165,11 +1165,17 @@
       onboarding_status: payload.onboarding_status || "profile_complete",
     });
 
-    const { data, error } = await supabase
-      .from("account_profiles")
-      .upsert(toAccountProfileDatabasePayload(profile), { onConflict: "user_id" })
-      .select("*")
-      .single();
+    const { data, error } = await supabase.rpc("save_account_profile", {
+      input_account_role: profile.account_role,
+      input_full_name: profile.full_name,
+      input_whatsapp: profile.whatsapp,
+      input_country: profile.country,
+      input_kenya_base: profile.kenya_base,
+      input_preferred_currency: profile.preferred_currency,
+      input_profile_notes: profile.profile_notes,
+      input_provider: profile.identity_verification_provider,
+      input_onboarding_status: profile.onboarding_status,
+    });
 
     if (error) {
       throw error;
@@ -1492,6 +1498,10 @@
                   detail: "Requests and profiles can be tested locally without server secrets.",
                   next: "Use the live Supabase-backed site for real payments, AI, ID, and admin readiness.",
                   missing: [],
+                  docs_url: "",
+                  copy_value: "",
+                  priority: 90,
+                  owner: "Founder/admin",
                 },
                 {
                   id: "payment_rails",
@@ -1500,10 +1510,29 @@
                   detail: "Stripe, PayPal, Wise, and M-Pesa require Vercel serverless functions and production env vars.",
                   next: "Sign in on swadakta.com/admin to view live payment readiness.",
                   missing: [],
+                  docs_url: "https://vercel.com/docs/environment-variables",
+                  copy_value: "https://swadakta.com/admin",
+                  priority: 20,
+                  owner: "Founder/Vercel admin",
                 },
               ],
             },
           ],
+          next_actions: [
+            {
+              id: "payment_rails",
+              category: "Local demo mode",
+              label: "Open live admin readiness",
+              status: "manual",
+              next: "Sign in on swadakta.com/admin to view production payment, AI, domain, and ID setup.",
+              missing: [],
+              docs_url: "https://vercel.com/docs/environment-variables",
+              copy_value: "https://swadakta.com/admin",
+              owner: "Founder/admin",
+              priority: 20,
+            },
+          ],
+          safe_copy_values: {},
           protected_actions: [
             "Local demo mode cannot confirm money, identity, receiver assignment, or provider callbacks.",
           ],

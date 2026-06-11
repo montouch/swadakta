@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Swadakta Verification</title>
+    <meta
+      name="description"
+      content="Request and track Swadakta account verification for client, receiver, and dual corridor accounts."
+    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Geist:wght@500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "primary": "#4648d4",
+              "primary-container": "#6063ee",
+              "secondary": "#576065",
+              "surface": "#faf8ff",
+              "surface-container-low": "#f2f3ff",
+              "surface-container": "#eaedff",
+              "tertiary": "#8127cf",
+              "outline-variant": "#c7c4d7",
+              "error": "#ba1a1a",
+              "error-container": "#ffdad6",
+              "on-error-container": "#93000a"
+            },
+            spacing: {
+              "section-gap": "96px",
+              "margin-mobile": "16px",
+              "margin-desktop": "48px",
+              "container-max": "1180px"
+            },
+            fontFamily: {
+              "display": ["Manrope"],
+              "label": ["Geist"],
+              "body": ["Inter"]
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.72);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.46);
+        box-shadow: 0 24px 70px rgba(70, 72, 212, 0.1);
+      }
+      .sunken-input {
+        background: rgba(218, 226, 253, 0.34);
+        border: 1px solid rgba(118, 117, 134, 0.14);
+      }
+      .sunken-input:focus {
+        background: rgba(218, 226, 253, 0.55);
+        border-color: #4648d4;
+        outline: none;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+      body {
+        background:
+          radial-gradient(circle at 15% 10%, rgba(96, 99, 238, 0.16), transparent 34%),
+          radial-gradient(circle at 85% 20%, rgba(129, 39, 207, 0.16), transparent 28%),
+          #faf8ff;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface">
+    <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="hidden md:flex items-center gap-7 text-sm font-label text-on-surface-variant">
+        <a class="hover:text-primary" href="portal.html">Account</a>
+        <a class="hover:text-primary" href="brief.html">Create brief</a>
+        <a class="hover:text-primary" href="tracking.html">Track request</a>
+        <a class="text-primary border-b-2 border-primary" href="verification.html">Verify ID</a>
+      </nav>
+      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-[0_16px_36px_rgba(70,72,212,0.22)]" href="portal.html">Sign in</a>
+    </header>
+
+    <main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-section-gap">
+      <section class="grid gap-8 lg:grid-cols-[1.05fr_0.95fr] items-start">
+        <div class="space-y-6">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/70 border border-outline-variant/40 px-4 py-2 text-primary font-label text-sm">
+            <span class="material-symbols-outlined text-[18px]">verified_user</span>
+            Account verification
+          </div>
+          <div>
+            <h1 class="font-display text-4xl md:text-6xl font-extrabold leading-tight">Verify once, use both sides of Swadakta.</h1>
+            <p class="mt-5 text-lg text-on-surface-variant max-w-2xl">
+              Clients and job seekers use the same account. Verification unlocks safer task posting, receiver work, sensitive errands, and higher-value milestones.
+            </p>
+          </div>
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8" id="verification-summary" aria-live="polite">
+            <div class="flex flex-col sm:flex-row gap-5 sm:items-center sm:justify-between">
+              <div class="flex items-center gap-4">
+                <span class="material-symbols-outlined text-primary text-4xl">hourglass_empty</span>
+                <div>
+                  <h2 class="font-display text-2xl font-bold">Checking account</h2>
+                  <p class="text-on-surface-variant" id="verification-summary-copy">Sign in to load your verification status.</p>
+                </div>
+              </div>
+              <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-error-container text-on-error-container font-label text-sm" id="verification-status-pill">Sign in required</span>
+            </div>
+            <div class="mt-6 flex flex-col sm:flex-row gap-3">
+              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-label font-bold" href="portal.html" id="verification-sign-in">Sign in to verify</a>
+              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/76 border border-outline-variant/50 text-primary font-label font-bold" href="#" id="verification-provider-link" hidden target="_blank" rel="noopener">Open provider check</a>
+            </div>
+          </div>
+        </div>
+
+        <aside class="glass-panel rounded-[2rem] p-6 md:p-8">
+          <h2 class="font-display text-2xl font-bold">How it works</h2>
+          <div class="mt-6 grid gap-4">
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-primary">1. Save your account details</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Name, mobile backup, current country, and corridor coverage.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-primary">2. Request verification</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Swadakta creates or attaches a provider link for Smile ID, Sumsub, Youverify, or manual review.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-primary">3. Complete the provider check</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Open the verification link from this page when it is available.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-primary">4. Status is confirmed</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Only Swadakta/admin or provider evidence can mark an account verified.</p>
+            </article>
+          </div>
+        </aside>
+      </section>
+
+      <section class="mt-10 glass-panel rounded-[2rem] p-6 md:p-8">
+        <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+          <div>
+            <h2 class="font-display text-3xl font-bold">Verification request</h2>
+            <p class="text-on-surface-variant mt-2">Use this for client verification, paid receiver work, or both.</p>
+          </div>
+          <span class="text-sm font-label text-on-surface-variant" id="verification-mode-label">Profile locked until sign-in</span>
+        </div>
+        <form class="grid grid-cols-1 md:grid-cols-2 gap-5" id="verification-form">
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Full legal name</span>
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-full-name" type="text" autocomplete="name" placeholder="Name on your ID" />
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Mobile / WhatsApp</span>
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-phone" type="tel" autocomplete="tel" placeholder="+61 431 455 174" />
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Current country</span>
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-country" type="text" autocomplete="country-name" placeholder="Australia" />
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Kenya / corridor base</span>
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-base" type="text" placeholder="Nairobi, Adelaide, Guangzhou..." />
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Working mode</span>
+            <select class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-role">
+              <option value="client">Client only</option>
+              <option value="receiver">Job seeker only</option>
+              <option value="both">Client and job seeker</option>
+            </select>
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Preferred currency</span>
+            <select class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-currency">
+              <option>AUD</option>
+              <option>KES</option>
+              <option>USD</option>
+              <option>GBP</option>
+              <option>EUR</option>
+              <option>CNY</option>
+            </select>
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Provider preference</span>
+            <select class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-provider">
+              <option value="smile_id">Smile ID</option>
+              <option value="sumsub">Sumsub</option>
+              <option value="youverify">Youverify</option>
+              <option value="manual">Manual review</option>
+            </select>
+          </label>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Reason</span>
+            <select class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-reason">
+              <option value="account_required">General account verification</option>
+              <option value="paid_work">Paid work access</option>
+              <option value="receiver_work">Receiver / field work</option>
+              <option value="sensitive_job">Sensitive task access</option>
+              <option value="high_value_job">High-value task access</option>
+            </select>
+          </label>
+          <label class="space-y-2 md:col-span-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">Corridor coverage / notes</span>
+            <textarea class="w-full p-4 rounded-xl sunken-input resize-none" id="verify-notes" rows="4" placeholder="Countries, cities, errands, sourcing, deliveries, admin work, or receiver jobs you can handle."></textarea>
+          </label>
+          <div class="md:col-span-2 flex flex-col sm:flex-row gap-3">
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-label font-bold" data-action="request" type="submit">Save and request verification</button>
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/76 border border-outline-variant/50 text-on-surface font-label font-bold" data-action="save" type="submit">Save profile only</button>
+          </div>
+          <p class="md:col-span-2 min-h-6 text-sm font-label text-on-surface-variant" id="verification-form-status" role="status"></p>
+        </form>
+      </section>
+
+      <section class="mt-10 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
+        <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+          <h2 class="font-display text-2xl font-bold">Request history</h2>
+          <div class="mt-5 grid gap-3" id="verification-request-list" aria-live="polite"></div>
+        </div>
+        <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+          <h2 class="font-display text-2xl font-bold">Provider plan</h2>
+          <div class="mt-5 grid gap-4">
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">Recommended route</strong>
+              <p class="mt-1 text-sm text-on-surface-variant" id="verification-route-copy">Enter your current country to see the recommended provider route.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">Expected checks</strong>
+              <ul class="mt-2 grid gap-2 text-sm text-on-surface-variant" id="verification-requirements-list">
+                <li>Government photo ID</li>
+                <li>Selfie or liveness check</li>
+                <li>Mobile backup for urgent issues</li>
+              </ul>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">Provider logic</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Smile ID for Africa-first coverage, Sumsub for wider global corridors, Youverify for selected African checks, and manual review where provider coverage or local law is uncertain.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=36"></script>
+    <script src="verification.js?v=1"></script>
+  </body>
+</html>

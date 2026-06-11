@@ -27,8 +27,9 @@
   }
 
   function accountRedirect() {
-    const hash = roleIntent() === "receiver" ? "#work" : "";
-    return new URL(`portal.html${hash}`, window.location.href).href;
+    const role = roleIntent();
+    const reason = role === "receiver" ? "receiver_work" : role === "both" ? "paid_work" : "account_required";
+    return new URL(`verification.html?reason=${encodeURIComponent(reason)}&role=${encodeURIComponent(role)}`, window.location.href).href;
   }
 
   function setStatus(message, tone = "") {
