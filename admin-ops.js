@@ -22,6 +22,7 @@
   const closedStatuses = new Set(["completed", "cancelled"]);
   const paidStatuses = new Set(["paid", "deposit_paid"]);
   const riskyCompliance = new Set(["needs_admin_review", "restricted", "permit_required", "prohibited"]);
+  const checkoutCurrencies = new Set(["AUD", "USD", "GBP", "EUR"]);
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
@@ -74,6 +75,57 @@
     } catch {
       return `${currency} ${value}`;
     }
+  }
+
+  function normalizeCurrency(value, fallback = "AUD") {
+    return String(value || fallback).trim().toUpperCase() || fallback;
+  }
+
+  function paymentRailLabel(rail) {
+    return {
+      stripe: "Stripe checkout",
+      paypal: "PayPal order",
+      mpesa: "M-Pesa STK",
+      wise: "Wise fallback",
+    }[rail] || formatStatus(rail);
+  }
+
+  function preferredPaymentRail(request) {
+    const preference = String(request.payment_method_preference || "").toLowerCase();
+    const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+
+    if (preference === "mpesa" || currency === "KES") return "mpesa";
+    if (preference === "paypal") return "paypal";
+    if (preference === "wise" || preference === "bank") return "wise";
+    if (checkoutCurrencies.has(currency)) return "stripe";
+    return "wise";
+  }
+
+  function paymentRailNote(request) {
+    const rail = preferredPaymentRail(request);
+    const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    if (!Number(request.quote_amount || 0)) {
+      return "Add a quote amount before creating any payment route.";
+    }
+    if (rail === "mpesa") {
+      return "Best fit for KES collection. Callback evidence must confirm payment before funds count as protected.";
+    }
+    if (rail === "paypal") {
+      return "Best fit when the client prefers PayPal approval. Capture/confirmation still controls paid status.";
+    }
+    if (rail === "wise") {
+      return "Fallback only after easier rails fail or are unsuitable. Reconcile receipt, sender, amount, date, and reference before marking paid.";
+    }
+    return `Best fit for ${currency} card checkout. Stripe webhook evidence still controls paid status.`;
+  }
+
+  function railEnabled(request, rail) {
+    const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    const hasQuote = Number(request.quote_amount || 0) > 0;
+    if (!hasQuote) return false;
+    if (rail === "stripe" || rail === "paypal") return checkoutCurrencies.has(currency);
+    if (rail === "mpesa") return currency === "KES";
+    return true;
   }
 
   function isOverdue(value) {
@@ -186,6 +238,52 @@
     ].join("\n");
   }
 
+  function paymentResultMessage(rail, result) {
+    const payload = result?.data || {};
+    const link = payload.url ? ` Link: ${payload.url}` : "";
+    const reference = payload.provider_reference || payload.checkout_request_id || payload.id || "";
+    return `${paymentRailLabel(rail)} prepared.${reference ? ` Reference: ${reference}.` : ""}${link} Provider confirmation is still required before funds are marked paid or released.`;
+  }
+
+  function renderPaymentRoutePanel(request) {
+    const preferredRail = preferredPaymentRail(request);
+    const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    const rails = ["stripe", "paypal", "mpesa", "wise"];
+    const buttons = rails
+      .map((rail) => {
+        const enabled = railEnabled(request, rail);
+        const preferred = rail === preferredRail;
+        const classes = enabled
+          ? preferred
+            ? "bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.18)]"
+            : "border border-outline-variant/50 bg-white/72 text-primary"
+          : "border border-outline-variant/40 bg-white/40 text-on-surface-variant opacity-60";
+        return `<button class="payment-route rounded-full px-4 py-2 font-label text-sm font-bold ${classes}" data-rail="${rail}" type="button" ${enabled ? "" : "disabled"}>${escapeHtml(paymentRailLabel(rail))}</button>`;
+      })
+      .join("");
+
+    return `
+      <section class="mt-5 rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+        <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div>
+            <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Payment route</p>
+            <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(paymentRailLabel(preferredRail))}</h3>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(paymentRailNote(request))}</p>
+            <p class="mt-2 text-xs text-on-surface-variant">Quote ${escapeHtml(formatMoney(request.quote_amount, currency))}. AI can draft payment wording, but it cannot mark funds paid, refund, release, or override provider evidence.</p>
+          </div>
+          <label class="grid gap-2 font-label text-sm text-on-surface-variant lg:min-w-[18rem]">
+            M-Pesa phone
+            <input class="payment-mpesa-phone glass-input h-11 rounded-2xl px-4 font-body text-on-surface" type="tel" value="${escapeHtml(request.local_contact_phone || request.whatsapp || "")}" placeholder="+2547..." />
+          </label>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          ${buttons}
+        </div>
+        <p class="payment-route-status mt-3 min-h-6 text-sm text-on-surface-variant" role="status"></p>
+      </section>
+    `;
+  }
+
   function renderRequest(request) {
     const flags = requestFlags(request);
     const requestMargin = margin(request);
@@ -206,7 +304,7 @@
       : `<span class="rounded-full bg-emerald-500/10 px-3 py-1 font-label text-xs text-emerald-700">Routine</span>`;
 
     return `
-      <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+      <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5" data-request-id="${escapeHtml(request.id)}">
         <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
           <div>
             <div class="flex flex-wrap items-center gap-2">
@@ -232,6 +330,7 @@
           <a class="rounded-full border border-outline-variant/50 bg-white/72 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" href="tracking.html">Open tracking</a>
           <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" href="assistant.html">Ask AI</a>
         </div>
+        ${renderPaymentRoutePanel(request)}
       </article>
     `;
   }
@@ -381,6 +480,70 @@
     }
   }
 
+  async function handlePaymentRoute(button) {
+    const article = button.closest("[data-request-id]");
+    const request = currentRequests.find((item) => item.id === article?.dataset.requestId);
+    const rail = button.dataset.rail || "";
+    const status = article?.querySelector(".payment-route-status");
+    const original = button.textContent;
+
+    if (!request || !rail) return;
+
+    button.disabled = true;
+    button.textContent = "Preparing...";
+    if (status) {
+      status.textContent = `Preparing ${paymentRailLabel(rail)}. This does not mark funds paid or release money.`;
+      status.className = "payment-route-status mt-3 min-h-6 text-sm text-primary";
+    }
+
+    try {
+      const updates = {
+        mpesa_phone: article.querySelector(".payment-mpesa-phone")?.value.trim() || "",
+      };
+      let result;
+
+      if (rail === "stripe") {
+        result = await data.createStripeCheckoutSession(request, updates);
+      } else if (rail === "paypal") {
+        result = await data.createPayPalOrder(request, updates);
+      } else if (rail === "mpesa") {
+        result = await data.createMpesaStkPush(request, updates);
+      } else if (rail === "wise") {
+        result = await data.createWisePaymentRequest(request, updates);
+      } else {
+        throw new Error("Unknown payment rail.");
+      }
+
+      const payload = result.data || {};
+      if (rail !== "mpesa") {
+        await data.updateRequest(request.id, {
+          payment_status: payload.payment_status || "invoice_sent",
+          funds_status: payload.funds_status || "payment_link_sent",
+          payment_link: payload.url || request.payment_link || "",
+          payment_reference: payload.provider_reference || payload.id || request.payment_reference || "",
+          release_notes:
+            payload.release_notes ||
+            `${paymentRailLabel(rail)} prepared. Provider confirmation is required before funds are marked paid or released.`,
+        });
+      }
+
+      const message = paymentResultMessage(rail, result);
+      setStatus(message, "text-primary");
+      if (status) status.textContent = message;
+      await loadOps();
+    } catch (error) {
+      const message = error.message || `Could not prepare ${paymentRailLabel(rail)}.`;
+      if (status) {
+        status.textContent = message;
+        status.className = "payment-route-status mt-3 min-h-6 text-sm text-on-error-container";
+      }
+      setStatus(message, "text-on-error-container");
+    } finally {
+      button.disabled = false;
+      button.textContent = original;
+    }
+  }
+
   loginForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = emailInput.value.trim();
@@ -418,6 +581,12 @@
   });
 
   document.addEventListener("click", async (event) => {
+    const paymentButton = event.target.closest(".payment-route");
+    if (paymentButton) {
+      await handlePaymentRoute(paymentButton);
+      return;
+    }
+
     const button = event.target.closest(".copy-request");
     if (!button) return;
     const request = currentRequests.find((item) => item.id === button.dataset.requestId);
