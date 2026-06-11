@@ -39,6 +39,7 @@ const requiredPages = [
   "/resolution",
   "/rules",
   "/admin-ops",
+  "/admin-verification",
 ];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
@@ -123,6 +124,13 @@ const requiredAdminOpsMarkers = [
   "renderResolutionCases",
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
+];
+const requiredAdminVerificationMarkers = [
+  "providerHandoffPack",
+  "copy-provider-pack",
+  "copy-user-message",
+  "Provider handoff pack",
+  "Provider docs",
 ];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
@@ -368,6 +376,13 @@ for (const marker of requiredAdminOpsMarkers) {
   }
 }
 
+const localAdminVerification = await readLocal("admin-verification.js");
+for (const marker of requiredAdminVerificationMarkers) {
+  if (!localAdminVerification.includes(marker)) {
+    fail(failures, `Local admin-verification.js is missing marker ${marker}`);
+  }
+}
+
 const envExample = await readLocal(".env.example");
 for (const key of requiredEnvExampleKeys) {
   if (!new RegExp(`^${key}=`, "m").test(envExample)) {
@@ -403,6 +418,9 @@ for (const page of requiredPages) {
   }
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=1")) {
     fail(failures, `${page} does not reference admin-ops.js?v=1`);
+  }
+  if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
+    fail(failures, `${page} does not reference admin-verification.js?v=2`);
   }
   if (page === "/verification" && !text.includes("verification.js?v=4")) {
     fail(failures, `${page} does not reference verification.js?v=4`);
@@ -449,6 +467,9 @@ for (const page of requiredPages) {
         fail(failures, `${page} is missing marker ${marker}`);
       }
     }
+  }
+  if (page === "/admin-verification" && !text.includes("Provider-led verification")) {
+    fail(failures, `${page} is missing provider-led verification heading`);
   }
 }
 
@@ -534,6 +555,21 @@ for (const marker of requiredAdminOpsMarkers) {
     fail(failures, `Production admin-ops.js is missing marker ${marker}`);
   } else {
     pass(`Production admin-ops.js contains ${marker}`);
+  }
+}
+
+const { response: adminVerificationResponse, text: adminVerificationText } = await fetchText("/admin-verification.js?v=2");
+if (adminVerificationResponse.status !== 200) {
+  fail(failures, `admin-verification.js?v=2 returned ${adminVerificationResponse.status}`);
+} else {
+  pass("admin-verification.js?v=2 returned 200");
+}
+
+for (const marker of requiredAdminVerificationMarkers) {
+  if (!adminVerificationText.includes(marker)) {
+    fail(failures, `Production admin-verification.js is missing marker ${marker}`);
+  } else {
+    pass(`Production admin-verification.js contains ${marker}`);
   }
 }
 

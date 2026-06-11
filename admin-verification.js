@@ -39,6 +39,12 @@
 
   const openStatuses = new Set(["requested", "link_sent", "submitted", "manual_review"]);
   const exceptionStatuses = new Set(["manual_review", "failed", "expired"]);
+  const providerDocs = {
+    smile_id: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
+    sumsub: "https://docs.sumsub.com/docs/verification-links",
+    youverify: "https://doc.youverify.co/know-your-customer-services-kyc",
+    manual: "IDENTITY_VERIFICATION.md",
+  };
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
@@ -186,6 +192,82 @@
     return `Hi ${nice(request.full_name, "there")}, Swadakta uses ID verification to keep both clients and job seekers safer. We will route you through ${provider}; keep your photo ID and mobile number ready.`;
   }
 
+  function providerChecklist(request) {
+    const provider = request.provider || suggestedProvider(request);
+    if (provider === "sumsub") {
+      return [
+        "Create or select the applicant in Sumsub.",
+        "Use the Swadakta request code as the External user ID.",
+        "Generate a verification link from the correct applicant level.",
+        "Paste the link here and mark status as Provider link sent.",
+        "After Sumsub returns the final status, record the provider reference before marking verified.",
+      ];
+    }
+    if (provider === "smile_id") {
+      return [
+        "Use Smile ID for eligible Africa-first identity checks.",
+        "Prepare country, ID type where known, selfie/liveness, and document capture.",
+        "Use the Swadakta request code as job_id or reference.",
+        "Record the Smile Job ID/reference here.",
+        "Only mark verified after provider result or callback evidence is approved.",
+      ];
+    }
+    if (provider === "youverify") {
+      return [
+        "Use Youverify for selected country-specific KYC checks such as Nigeria or Ghana.",
+        "Prepare name, country, mobile, ID type/number where required by the selected endpoint.",
+        "Use the Swadakta request code as the external reference.",
+        "Paste the provider reference or link here.",
+        "Only mark verified after the provider result is returned and stored.",
+      ];
+    }
+    return [
+      "Manual review should be an exception, not the default.",
+      "Try a provider route first unless coverage, law, documents, or fraud risk blocks it.",
+      "Record the exception reason in admin notes.",
+      "Keep paid posting, paid work, and sensitive tasks locked until evidence is enough.",
+    ];
+  }
+
+  function providerHandoffPack(request) {
+    const provider = request.provider || suggestedProvider(request);
+    return [
+      "Swadakta verification handoff",
+      `Request code: ${request.request_code || ""}`,
+      `External user ID: ${request.request_code || request.id || ""}`,
+      `Provider: ${providerLabels[provider] || provider}`,
+      `Reason: ${request.reason || "account_required"}`,
+      `Role: ${roleLabels[request.account_role] || request.account_role || "Client"}`,
+      `Full name: ${request.full_name || ""}`,
+      `Email: ${request.email || ""}`,
+      `Mobile / WhatsApp: ${request.whatsapp || ""}`,
+      `Country: ${request.country || ""}`,
+      `Base / operating city: ${request.kenya_base || ""}`,
+      `Notes: ${request.user_notes || request.admin_notes || ""}`,
+      "",
+      "Do not mark Swadakta verified until the provider result/reference is stored.",
+    ].join("\n");
+  }
+
+  function copyPayload(value, button) {
+    const text = String(value || "").trim();
+    if (!text) return;
+
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        const original = button.textContent;
+        button.textContent = "Copied";
+        window.setTimeout(() => {
+          button.textContent = original;
+        }, 1400);
+      })
+      .catch(() => {
+        const status = button.closest("[data-request-id]")?.querySelector(".request-status");
+        if (status) status.textContent = "Copy failed. Select the text manually.";
+      });
+  }
+
   function optionTags(options, selected) {
     return options
       .map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(label)}</option>`)
@@ -257,7 +339,19 @@
                 <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(aiBrief(request))}</p>
                 <div class="mt-4 rounded-2xl bg-surface-container-low/70 p-4">
                   <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Friendly message draft</p>
-                  <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(userMessageDraft(request))}</p>
+                  <p class="mt-2 text-sm leading-6 text-on-surface-variant" data-copy-source="user-message">${escapeHtml(userMessageDraft(request))}</p>
+                  <button class="copy-user-message mt-3 inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/60 bg-white/70 px-4 font-label text-sm font-bold text-primary" type="button">Copy message</button>
+                </div>
+                <div class="mt-4 rounded-2xl bg-white/70 p-4">
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Provider handoff pack</p>
+                    <a class="text-sm font-label text-primary underline" href="${escapeHtml(providerDocs[provider] || providerDocs.manual)}" target="_blank" rel="noopener">Provider docs</a>
+                  </div>
+                  <ul class="mt-3 list-disc space-y-1 pl-5 text-sm text-on-surface-variant">
+                    ${providerChecklist(request).map((step) => `<li>${escapeHtml(step)}</li>`).join("")}
+                  </ul>
+                  <pre class="mt-4 max-h-44 overflow-auto whitespace-pre-wrap rounded-2xl bg-surface-container-low/70 p-3 text-xs text-on-surface-variant" data-copy-source="provider-pack">${escapeHtml(providerHandoffPack(request))}</pre>
+                  <button class="copy-provider-pack mt-3 inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/60 bg-white/70 px-4 font-label text-sm font-bold text-primary" type="button">Copy provider pack</button>
                 </div>
               </section>
 
@@ -426,6 +520,20 @@
   });
 
   list?.addEventListener("click", async (event) => {
+    const copyMessageButton = event.target.closest(".copy-user-message");
+    if (copyMessageButton) {
+      const article = copyMessageButton.closest("[data-request-id]");
+      copyPayload(article?.querySelector('[data-copy-source="user-message"]')?.textContent || "", copyMessageButton);
+      return;
+    }
+
+    const copyProviderButton = event.target.closest(".copy-provider-pack");
+    if (copyProviderButton) {
+      const article = copyProviderButton.closest("[data-request-id]");
+      copyPayload(article?.querySelector('[data-copy-source="provider-pack"]')?.textContent || "", copyProviderButton);
+      return;
+    }
+
     const button = event.target.closest(".quick-state");
     if (!button) return;
     await saveRequest(button.closest("[data-request-id]"), { status: button.dataset.status });
