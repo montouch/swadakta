@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "3";
+  const DOCK_VERSION = "4";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
@@ -23,10 +23,12 @@
   };
   const safeActionMap = {
     navigate: "Open a Swadakta page or tool.",
+    open_visible_link: "Open a safe visible link on the current page.",
     focus_next_field: "Focus the next empty visible field.",
     focus_section: "Scroll to a matching section on this page.",
     apply_to_notes: "Place the last AI draft into an editable notes field.",
     open_full_ai: "Open the full Ask AI page with this page as context.",
+    explain_screen: "Explain the current screen and next safe step.",
   };
   const state = {
     open: false,
@@ -91,6 +93,44 @@
     return String(node?.innerText || node?.textContent || "").trim().replace(/\s+/g, " ");
   }
 
+  function normalizedText(value) {
+    return String(value || "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function actionTokens(value) {
+    const stopWords = new Set([
+      "a",
+      "an",
+      "and",
+      "at",
+      "best",
+      "button",
+      "click",
+      "for",
+      "go",
+      "here",
+      "in",
+      "me",
+      "on",
+      "open",
+      "place",
+      "please",
+      "show",
+      "take",
+      "the",
+      "this",
+      "to",
+      "tool",
+    ]);
+    return normalizedText(value)
+      .split(" ")
+      .filter((token) => token.length > 2 && !stopWords.has(token));
+  }
+
   function isVisible(node) {
     if (!node || node.closest("[hidden], [aria-hidden='true']")) return false;
     const rect = node.getBoundingClientRect();
@@ -124,13 +164,25 @@
 
   function safeFieldValue(node) {
     if (node.type === "password" || node.type === "hidden") return "";
+    if (node.type === "file") return node.files?.length ? `${node.files.length} file selected` : "";
     if (node.type === "checkbox" || node.type === "radio") return node.checked ? "checked" : "";
     return String(node.value || "").trim().slice(0, 160);
   }
 
+  function isEditableField(node) {
+    return (
+      isVisible(node) &&
+      !node.disabled &&
+      !node.readOnly &&
+      node.type !== "hidden" &&
+      node.type !== "password" &&
+      node.type !== "file"
+    );
+  }
+
   function collectVisibleFields() {
     return [...document.querySelectorAll("input, select, textarea")]
-      .filter((node) => isVisible(node) && !node.disabled && !node.readOnly && node.type !== "password")
+      .filter(isEditableField)
       .slice(0, 14)
       .map((node) => ({
         label: fieldLabel(node).slice(0, 80),
@@ -162,6 +214,94 @@
     };
   }
 
+  function visibleActionLabel(node) {
+    return (
+      visibleText(node) ||
+      node.getAttribute("aria-label") ||
+      node.getAttribute("title") ||
+      node.getAttribute("href") ||
+      ""
+    );
+  }
+
+  function sameSiteHref(node) {
+    const rawHref = node?.getAttribute?.("href") || "";
+    if (!rawHref || rawHref.startsWith("javascript:") || rawHref.startsWith("mailto:") || rawHref.startsWith("tel:")) {
+      return "";
+    }
+
+    try {
+      const url = new URL(rawHref, window.location.href);
+      if (!["http:", "https:"].includes(url.protocol)) return "";
+      if (url.origin !== window.location.origin) return "";
+      if (!location.pathname.includes("admin") && /^\/admin/i.test(url.pathname)) return "";
+      return url.href;
+    } catch {
+      return "";
+    }
+  }
+
+  function isProtectedActionText(label = "") {
+    return (
+      protectedIntentPattern.test(label) ||
+      /\b(admin|founder|ops|sign\s*out|logout|delete|remove|capture|webhook|callback|autopilot|submit|send|save|approve|reject|decline|assign|release|refund|paid|verified)\b/i.test(
+        label,
+      )
+    );
+  }
+
+  function tokenOverlapScore(prompt, label) {
+    const promptTokens = actionTokens(prompt);
+    const labelTokens = actionTokens(label);
+    if (!promptTokens.length || !labelTokens.length) return 0;
+
+    return labelTokens.reduce((score, token) => {
+      if (promptTokens.includes(token)) return score + 2;
+      if (promptTokens.some((promptToken) => promptToken.startsWith(token) || token.startsWith(promptToken))) return score + 1;
+      return score;
+    }, 0);
+  }
+
+  function findVisibleSafeLink(prompt) {
+    const candidates = [...document.querySelectorAll("a[href]")]
+      .filter((node) => isVisible(node) && !node.closest(`#${rootId}`))
+      .map((node) => {
+        const label = visibleActionLabel(node);
+        const href = sameSiteHref(node);
+        return {
+          node,
+          label,
+          href,
+          score: href && !isProtectedActionText(label) ? tokenOverlapScore(prompt, label) : 0,
+        };
+      })
+      .filter((candidate) => candidate.score > 0)
+      .sort((a, b) => b.score - a.score || a.label.length - b.label.length);
+
+    return candidates[0] || null;
+  }
+
+  function findVisibleSection(prompt) {
+    const sections = [...document.querySelectorAll("section[id], article[id], main[id], [data-section-label]")]
+      .filter((node) => isVisible(node) && !node.closest(`#${rootId}`))
+      .map((node) => {
+        const heading = [...node.querySelectorAll("h1, h2, h3")]
+          .filter(isVisible)
+          .map(visibleText)
+          .find(Boolean);
+        const label = node.getAttribute("data-section-label") || heading || humanizeFieldName(node.id);
+        return {
+          node,
+          label,
+          score: tokenOverlapScore(prompt, label),
+        };
+      })
+      .filter((section) => section.score > 0)
+      .sort((a, b) => b.score - a.score || a.label.length - b.label.length);
+
+    return sections[0] || null;
+  }
+
   function contextSummary(context) {
     const fields = context.visible_fields
       .filter((field) => field.required || !field.value)
@@ -178,7 +318,7 @@
     if (/find work|job seeker|receiver|apply|earn/.test(lower)) return ["find_work", "verification", "messages"];
     if (/pay|payment|money|mpesa|stripe|paypal|wise|escrow|milestone/.test(lower)) return ["payments", "trust", "tracking"];
     if (/message|chat|media|photo|voice|call|proof/.test(lower)) return ["messages", "tracking", "resolution"];
-    if (/issue|refund|dispute|delay|resolve|problem/.test(lower)) return ["resolution", "tracking", "messages"];
+    if (/issue|refund|dispute|delay|resolve|resolution|problem/.test(lower)) return ["resolution", "tracking", "messages"];
     if (/rule|restricted|customs|law|ship|postal|courier/.test(lower)) return ["rules", "trust", "post_job"];
     return ["home", "post_job", "find_work", "verification"];
   }
@@ -189,7 +329,7 @@
     if (/verify|identity|kyc|id\s+check/.test(lower)) return "verification";
     if (/payment|pay|money|mpesa|stripe|paypal|wise|escrow|milestone|price|pricing/.test(lower)) return "payments";
     if (/message|chat|media|photo|voice|call|proof|upload/.test(lower)) return "messages";
-    if (/issue|refund|dispute|delay|resolve|problem|case/.test(lower)) return "resolution";
+    if (/issue|refund|dispute|delay|resolve|resolution|problem|case/.test(lower)) return "resolution";
     if (/track|status|my\s+jobs|request\s+status|progress/.test(lower)) return "tracking";
     if (/rule|restricted|customs|law|ship|postal|courier|allowed/.test(lower)) return "rules";
     if (/trust|safety|provenance|score|seal/.test(lower)) return "trust";
@@ -228,6 +368,10 @@
       return { action: "focus_next_field", label: "Find next field" };
     }
 
+    if (/\b(explain|summarize|what\s+is\s+this|what\s+can\s+i\s+do|next\s+step)\b/i.test(text)) {
+      return { action: "explain_screen", label: "Explain screen" };
+    }
+
     if (/\b(apply|use|put|insert|place)\b.*\b(draft|answer|response|notes|field|box)\b/i.test(text)) {
       return { action: "apply_to_notes", label: "Use draft here" };
     }
@@ -244,6 +388,30 @@
         label: routeMap[routeKey]?.[0] || "Open tool",
         message: `Opening ${routeMap[routeKey]?.[0] || "the right Swadakta tool"} now.`,
       };
+    }
+
+    if (/\b(open|click|go\s+to|take\s+me|show\s+me)\b/i.test(text)) {
+      const safeLink = findVisibleSafeLink(text);
+      if (safeLink) {
+        return {
+          action: "open_visible_link",
+          href: safeLink.href,
+          label: safeLink.label,
+          message: `Opening ${safeLink.label} now.`,
+        };
+      }
+    }
+
+    if (/\b(show|scroll|take\s+me|go\s+to|find)\b/i.test(text)) {
+      const section = findVisibleSection(text);
+      if (section) {
+        return {
+          action: "focus_section",
+          node: section.node,
+          label: section.label,
+          message: `I moved the page to: ${section.label}.`,
+        };
+      }
     }
 
     return null;
@@ -307,6 +475,7 @@
       .join("");
     holder.innerHTML = `
       ${actionHtml}
+      <button class="sw-ai-action" type="button" data-sw-ai-action="explain_screen">Explain screen</button>
       <button class="sw-ai-action" type="button" data-sw-ai-action="focus_next_field">Find next field</button>
       <button class="sw-ai-action" type="button" data-sw-ai-action="apply_to_notes">Use draft here</button>
       <button class="sw-ai-action" type="button" data-sw-ai-action="open_full_ai">Open full chat</button>
@@ -328,7 +497,7 @@
 
   function focusNextField() {
     const field = [...document.querySelectorAll("input, select, textarea")].find(
-      (node) => isVisible(node) && !node.disabled && !node.readOnly && node.type !== "hidden" && node.type !== "password" && !safeFieldValue(node),
+      (node) => isEditableField(node) && !safeFieldValue(node),
     );
     if (!field) {
       addMessage("ai", "I do not see an empty editable field on this screen.");
@@ -379,11 +548,55 @@
     location.href = route[1];
   }
 
-  function performSafeAction(action, key) {
+  function explainScreen() {
+    const context = collectPageContext();
+    const missing = context.visible_fields
+      .filter((field) => !field.value)
+      .slice(0, 4)
+      .map((field) => field.label);
+    const actions = context.visible_actions.slice(0, 5).join(", ");
+    addMessage(
+      "ai",
+      [
+        `You are on ${context.main_heading || context.page}.`,
+        missing.length ? `Useful next fields: ${missing.join(", ")}.` : "I do not see an empty required field right now.",
+        actions ? `Visible actions include: ${actions}.` : "",
+        "I can open safe Swadakta links, focus fields, draft text, or open the full assistant. Protected money, identity, assignment, refund, and outbound-message decisions stay gated.",
+      ]
+        .filter(Boolean)
+        .join("\n\n"),
+    );
+    renderActions(routeKeysForText(`${context.main_heading} ${context.visible_actions.join(" ")}`));
+  }
+
+  function openVisibleLink(href, label = "that link") {
+    if (!href) {
+      addMessage("ai", "I could not find a safe in-app link to open from this screen.");
+      return;
+    }
+    addMessage("ai", `Opening ${label}.`);
+    location.href = href;
+  }
+
+  function focusSection(node, label = "that section") {
+    if (!node) {
+      addMessage("ai", "I could not find that section on this screen.");
+      return;
+    }
+    node.scrollIntoView({ behavior: "smooth", block: "start" });
+    if (!node.hasAttribute("tabindex")) node.setAttribute("tabindex", "-1");
+    window.setTimeout(() => node.focus({ preventScroll: true }), 280);
+    addMessage("ai", `I moved you to: ${label}.`);
+  }
+
+  function performSafeAction(action, key, options = {}) {
     if (action === "navigate") return navigateToKey(key);
+    if (action === "open_visible_link") return openVisibleLink(options.href, options.label);
     if (action === "focus_next_field") return focusNextField();
+    if (action === "focus_section") return focusSection(options.node, options.label);
     if (action === "apply_to_notes") return applyToNotes();
     if (action === "open_full_ai") return openFullAi();
+    if (action === "explain_screen") return explainScreen();
   }
 
   function performInferredIntent(intent) {
@@ -404,6 +617,17 @@
     if (intent.action === "open_full_ai") {
       addMessage("ai", "Opening the full Ask AI chat with this screen as context.");
       window.setTimeout(() => performSafeAction(intent.action, intent.key), 500);
+      return true;
+    }
+
+    if (intent.action === "open_visible_link") {
+      addMessage("ai", intent.message || `Opening ${intent.label || "that Swadakta link"} now.`);
+      window.setTimeout(() => performSafeAction(intent.action, intent.key, { href: intent.href, label: intent.label }), 500);
+      return true;
+    }
+
+    if (intent.action === "focus_section") {
+      focusSection(intent.node, intent.label);
       return true;
     }
 
@@ -484,6 +708,7 @@
           </div>
         </header>
         <div class="sw-ai-quick" aria-label="AI quick actions">
+          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Explain this screen and tell me the next safe step.">Explain</button>
           <button class="sw-ai-chip" type="button" data-sw-ai-prompt="What should I do next on this screen?">Next step</button>
           <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open the best place to post a job.">Post job</button>
           <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open the receiver work area.">Find work</button>
@@ -497,7 +722,7 @@
             <textarea class="sw-ai-input" id="sw-ai-input" rows="1" placeholder="Ask AI to guide, draft, focus, or open a tool..."></textarea>
             <button class="sw-ai-send" id="sw-ai-send" type="submit" aria-label="Ask AI">Send</button>
           </div>
-          <p class="sw-ai-note">${escapeHtml(protectedBoundary)} Try: open payments, find the next field, open messages.</p>
+          <p class="sw-ai-note">${escapeHtml(protectedBoundary)} Try: open payments, explain this screen, find the next field. Shortcut: Ctrl/Command + K.</p>
         </form>
       </aside>
       <button class="sw-ai-fab" type="button" aria-controls="${rootId}" aria-expanded="false">
@@ -573,6 +798,8 @@
     inferSafeIntent,
     performSafeAction,
     safeActionMap,
+    findVisibleSafeLink,
+    findVisibleSection,
     protectedBoundary,
     open: () => setOpen(true),
     close: () => setOpen(false),
