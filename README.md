@@ -26,7 +26,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`
-- Receiver/field partner application pipeline for people in Kenya who want jobs
+- Receiver/field partner application pipeline for people in supported countries who want jobs
 - Vetted receiver assignment from admin to client requests
 - Mandatory receiver ID verification before a corridor counterpart can be vetted or assigned
 - Mandatory client ID-verification consent on every new public request

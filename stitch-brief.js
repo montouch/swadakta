@@ -9,6 +9,7 @@
   if (!form || !window.SwadaktaData) return;
 
   let accountCanPost = false;
+  let corridorContext = {};
 
   function value(selector) {
     return String(document.querySelector(selector)?.value || "").trim();
@@ -16,18 +17,21 @@
 
   function paymentMethod(raw) {
     const value = raw.toLowerCase();
+    if (["card", "paypal", "mpesa", "bank", "discuss"].includes(value)) return value;
     if (value.includes("mobile")) return "mpesa";
+    if (value.includes("paypal")) return "paypal";
     if (value.includes("stripe") || value.includes("card")) return "card";
     if (value.includes("bank")) return "bank";
-    if (value.includes("crypto")) return "discuss";
     return "discuss";
   }
 
   function escrowPreference(raw) {
     const value = raw.toLowerCase();
+    if (["quote_first", "deposit_milestones", "regulated_escrow", "not_sure"].includes(value)) return value;
     if (value.includes("50") || value.includes("milestone") || value.includes("custom")) {
       return "deposit_milestones";
     }
+    if (value.includes("regulated") || value.includes("escrow")) return "regulated_escrow";
     return "quote_first";
   }
 
@@ -58,21 +62,66 @@
   }
 
   function applyCorridorContext() {
+    const params = new URLSearchParams(window.location.search);
+    const paramContext = cleanContext({
+      origin_country: params.get("origin") || "",
+      destination_country: params.get("destination") || "",
+      task_location: params.get("location") || "",
+      service_direction: params.get("direction") || "",
+      logistics_mode: params.get("logistics") || "",
+      goods_category: params.get("goods") || "",
+      compliance_status: params.get("compliance") || "",
+      compliance_risk_level: params.get("risk") || "",
+      compliance_acknowledged: params.get("ack") === "yes",
+      compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
+      required_checks: (params.get("checks") || "").split("|").filter(Boolean),
+    }, params.has("ack"));
+
     try {
-      const context = JSON.parse(localStorage.getItem(corridorStorageKey) || "{}");
-      setValue("#brief-origin-country", context.origin_country);
-      setValue("#brief-destination-country", context.destination_country);
-      setValue("#brief-location", context.task_location);
-      setValue("#brief-service-type", context.service_type);
-      setValue("#brief-proof", context.notes);
+      corridorContext = {
+        ...JSON.parse(localStorage.getItem(corridorStorageKey) || "{}"),
+        ...paramContext,
+      };
+      setValue("#brief-origin-country", corridorContext.origin_country);
+      setValue("#brief-destination-country", corridorContext.destination_country);
+      setValue("#brief-location", corridorContext.task_location);
+      setValue("#brief-service-type", corridorContext.service_type);
     } catch {
+      corridorContext = paramContext;
       localStorage.removeItem(corridorStorageKey);
     }
 
-    const params = new URLSearchParams(window.location.search);
-    setValue("#brief-origin-country", params.get("origin"));
-    setValue("#brief-destination-country", params.get("destination"));
-    setValue("#brief-location", params.get("location"));
+    setValue("#brief-origin-country", corridorContext.origin_country);
+    setValue("#brief-destination-country", corridorContext.destination_country);
+    setValue("#brief-location", corridorContext.task_location);
+  }
+
+  function cleanContext(context, hasAckParam) {
+    return Object.entries(context).reduce((cleaned, [key, value]) => {
+      if (Array.isArray(value)) {
+        if (value.length) cleaned[key] = value;
+        return cleaned;
+      }
+      if (key === "compliance_acknowledged") {
+        if (hasAckParam) cleaned[key] = value;
+        return cleaned;
+      }
+      if (value) cleaned[key] = value;
+      return cleaned;
+    }, {});
+  }
+
+  function uniqueList(values = []) {
+    return [...new Set(values.filter(Boolean))];
+  }
+
+  function corridorRequiredChecks(items) {
+    const checks = Array.isArray(corridorContext.required_checks) ? corridorContext.required_checks : [];
+    const fallback = ["ID verification before paid work"];
+    if (items || corridorContext.logistics_mode || corridorContext.goods_category) {
+      fallback.push("Compliance check before shipping, purchase, pickup, delivery, or restricted goods");
+    }
+    return uniqueList([...checks, ...fallback]);
   }
 
   async function refreshPostingGate() {
@@ -129,6 +178,10 @@
     const proof = value("#brief-proof");
     const items = value("#brief-items");
     const location = value("#brief-location");
+    const requiredChecks = corridorRequiredChecks(items);
+    const complianceFlags = Array.isArray(corridorContext.compliance_flags) ? corridorContext.compliance_flags : [];
+    const logisticsMode = corridorContext.logistics_mode || (items ? "postal_courier" : "not_needed");
+    const goodsCategory = corridorContext.goods_category || (items ? "general_goods" : "none");
 
     button.disabled = true;
     button.innerHTML = '<span class="material-symbols-outlined animate-spin">progress_activity</span> Creating request...';
@@ -143,19 +196,23 @@
         australia_location: value("#brief-client-base"),
         origin_country: value("#brief-origin-country"),
         destination_country: value("#brief-destination-country"),
+        service_direction: corridorContext.service_direction || "origin_to_destination",
         task_location: location,
         kenya_location: location,
         task_type: serviceType(selectedService),
         service_package: "quote_first",
         payment_method_preference: paymentMethod(value("#brief-payment")),
         funds_protection_preference: escrowPreference(value("#brief-escrow")),
-        logistics_mode: items ? "postal_courier" : "not_needed",
-        goods_category: items ? "general_goods" : "none",
+        logistics_mode: logisticsMode,
+        goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [selectedService, proof].filter(Boolean).join("\n\n"),
+        notes: [selectedService, proof, corridorContext.notes].filter(Boolean).join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
-        required_checks: ["ID verification before paid work", "Compliance check before shipping or restricted goods"],
-        compliance_acknowledged: document.querySelector("#compliance")?.checked || false,
+        required_checks: requiredChecks,
+        compliance_flags: complianceFlags,
+        compliance_status: corridorContext.compliance_status || (complianceFlags.length ? "needs_ai_review" : "not_applicable"),
+        compliance_risk_level: corridorContext.compliance_risk_level || "standard",
+        compliance_acknowledged: Boolean(document.querySelector("#compliance")?.checked || corridorContext.compliance_acknowledged),
         identity_verification_required: true,
         identity_verification_consent: true,
         contact_permission: true,

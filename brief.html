@@ -302,30 +302,33 @@
 <div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
 <span class="material-symbols-outlined">payments</span>
 </div>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">Financial Preferences</h2>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Payments &amp; Funds Protection</h2>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-payment">Payment Preference</label>
 <select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-payment" name="payment_preference">
-<option>USD (Stripe / Bank)</option>
-<option>Crypto (USDT / USDC)</option>
-<option>Local Currency (Mobile Money)</option>
+<option value="card">Card / Stripe link</option>
+<option value="paypal">PayPal order or invoice</option>
+<option value="bank">Bank transfer or local receipt</option>
+<option value="mpesa">M-Pesa / mobile money where available</option>
+<option value="discuss">Recommend after quote</option>
 </select>
 </div>
 <div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-escrow">Escrow Configuration</label>
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-escrow">Funds protection preference</label>
 <select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-escrow" name="escrow_configuration">
-<option>100% On Completion</option>
-<option>50/50 Milestones</option>
-<option>Custom Release Plan</option>
+<option value="quote_first">Quote first, then decide</option>
+<option value="deposit_milestones">Deposit plus staged milestones</option>
+<option value="regulated_escrow">Regulated escrow/payment provider for high-value work</option>
+<option value="not_sure">Not sure, advise me</option>
 </select>
 </div>
 </div>
 <div class="p-4 rounded-2xl bg-primary-container/10 border border-primary-container/20 flex gap-4">
 <span class="material-symbols-outlined text-primary">info</span>
 <p class="text-label-sm font-label-md text-on-surface-variant leading-relaxed">
-                            All payments are held in Swadakta Escrow. Funds are only released to the agent once you verify the submitted proof of task completion.
+                            Swadakta tracks provider-held, authorized, deposited, or milestone-controlled funds. High-value work must use a regulated escrow/payment provider or founder-approved milestone controls before any receiver payout.
                         </p>
 </div>
 </section>
@@ -369,5 +372,5 @@
 </div>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=38"></script>
-<script src="stitch-brief.js?v=2"></script>
+<script src="stitch-brief.js?v=3"></script>
 </body></html>
