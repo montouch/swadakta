@@ -90,7 +90,7 @@ Run a no-secret bundle check before demos or after Vercel deploys:
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
 ```
 
-Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The same check is available as a manual GitHub Action named `Production Health`.
+Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle and the account-home `stitch-portal.js` bundle so stale sign-in code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
 
 ## Go live
 

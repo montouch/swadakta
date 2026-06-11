@@ -23,6 +23,10 @@ const requiredAppDataMarkers = [
   "get_my_account_profile",
   "createMpesaStkPush",
 ];
+const requiredPortalMarkers = [
+  "setSignedInShell",
+  "Account is open. Verification is only required before paid posting",
+];
 
 async function readLocal(relativePath) {
   return readFile(path.join(root, relativePath), "utf8");
@@ -33,6 +37,17 @@ function findAppDataVersions(files) {
 
   for (const [file, content] of files) {
     const matches = [...content.matchAll(/app-data\.js\?v=(\d+)/g)].map((match) => match[1]);
+    if (matches.length) versions.set(file, matches);
+  }
+
+  return versions;
+}
+
+function findStitchPortalVersions(files) {
+  const versions = new Map();
+
+  for (const [file, content] of files) {
+    const matches = [...content.matchAll(/stitch-portal\.js\?v=(\d+)/g)].map((match) => match[1]);
     if (matches.length) versions.set(file, matches);
   }
 
@@ -76,6 +91,8 @@ const failures = [];
 const localHtml = await Promise.all(htmlFiles.map(async (file) => [file, await readLocal(file)]));
 const versions = findAppDataVersions(localHtml);
 const uniqueVersions = [...new Set([...versions.values()].flat())];
+const stitchPortalVersions = findStitchPortalVersions(localHtml);
+const uniqueStitchPortalVersions = [...new Set([...stitchPortalVersions.values()].flat())];
 
 if (uniqueVersions.length !== 1) {
   fail(failures, `Expected one app-data version across pages, found: ${uniqueVersions.join(", ") || "none"}`);
@@ -84,10 +101,27 @@ if (uniqueVersions.length !== 1) {
 }
 
 const expectedVersion = uniqueVersions[0];
+const expectedStitchPortalVersion = uniqueStitchPortalVersions[0];
 const localAppData = await readLocal("app-data.js");
 for (const marker of requiredAppDataMarkers) {
   if (!localAppData.includes(marker)) {
     fail(failures, `Local app-data.js is missing marker ${marker}`);
+  }
+}
+
+if (uniqueStitchPortalVersions.length !== 1) {
+  fail(
+    failures,
+    `Expected one stitch-portal version across pages, found: ${uniqueStitchPortalVersions.join(", ") || "none"}`,
+  );
+} else {
+  pass(`Local pages use stitch-portal.js?v=${expectedStitchPortalVersion}`);
+}
+
+const localStitchPortal = await readLocal("stitch-portal.js");
+for (const marker of requiredPortalMarkers) {
+  if (!localStitchPortal.includes(marker)) {
+    fail(failures, `Local stitch-portal.js is missing marker ${marker}`);
   }
 }
 
@@ -101,6 +135,9 @@ for (const page of requiredPages) {
   pass(`${urlPath} returned 200`);
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     fail(failures, `${page} does not reference app-data.js?v=${expectedVersion}`);
+  }
+  if (page === "/portal" && expectedStitchPortalVersion && !text.includes(`stitch-portal.js?v=${expectedStitchPortalVersion}`)) {
+    fail(failures, `${page} does not reference stitch-portal.js?v=${expectedStitchPortalVersion}`);
   }
 }
 
@@ -117,6 +154,23 @@ if (expectedVersion) {
       fail(failures, `Production app-data.js?v=${expectedVersion} is missing marker ${marker}`);
     } else {
       pass(`Production app-data.js contains ${marker}`);
+    }
+  }
+}
+
+if (expectedStitchPortalVersion) {
+  const { response, text } = await fetchText(`/stitch-portal.js?v=${expectedStitchPortalVersion}`);
+  if (response.status !== 200) {
+    fail(failures, `stitch-portal.js?v=${expectedStitchPortalVersion} returned ${response.status}`);
+  } else {
+    pass(`stitch-portal.js?v=${expectedStitchPortalVersion} returned 200`);
+  }
+
+  for (const marker of requiredPortalMarkers) {
+    if (!text.includes(marker)) {
+      fail(failures, `Production stitch-portal.js?v=${expectedStitchPortalVersion} is missing marker ${marker}`);
+    } else {
+      pass(`Production stitch-portal.js contains ${marker}`);
     }
   }
 }

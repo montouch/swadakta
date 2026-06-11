@@ -10,6 +10,8 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
+const EXPECTED_APP_DATA_REF = "app-data.js?v=41";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=10";
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -219,8 +221,9 @@ async function fetchPublic(path, options = {}) {
 }
 
 async function siteTrustItems() {
-  const [home, security, privacy, terms, robots, sitemap, adminReadiness] = await Promise.all([
+  const [home, portal, security, privacy, terms, robots, sitemap, adminReadiness] = await Promise.all([
     fetchPublic("/", { readText: false }),
+    fetchPublic("/portal"),
     fetchPublic("/.well-known/security.txt"),
     fetchPublic("/privacy"),
     fetchPublic("/terms"),
@@ -251,8 +254,29 @@ async function siteTrustItems() {
     sitemap.ok && /<urlset/i.test(sitemap.text) ? "" : "sitemap.xml",
   ].filter(Boolean);
   const adminNoindex = String(adminReadiness.headers.get("x-robots-tag") || "");
+  const portalBundleMissing = [
+    portal.ok && portal.text.includes(EXPECTED_APP_DATA_REF) ? "" : EXPECTED_APP_DATA_REF,
+    portal.ok && portal.text.includes(EXPECTED_PORTAL_SCRIPT_REF) ? "" : EXPECTED_PORTAL_SCRIPT_REF,
+  ].filter(Boolean);
 
   return [
+    item(
+      "account_portal_bundle",
+      "Account portal bundle",
+      portal.ok && portalBundleMissing.length === 0 ? "ready" : "warning",
+      portal.ok
+        ? "Live account portal was checked for the current account data and Stitch portal scripts."
+        : `Could not check live account portal: ${portal.error || portal.status}.`,
+      portalBundleMissing.length
+        ? "Redeploy or invalidate cache before showing sign-in/account flow to users."
+        : "Live account portal is serving the expected account home/sign-in bundle.",
+      portalBundleMissing,
+      {
+        copy_value: `${publicUrl() || "https://swadakta.com"}/portal`,
+        priority: 13,
+        owner: "Founder/Vercel admin",
+      },
+    ),
     item(
       "live_security_headers",
       "Live security headers",
