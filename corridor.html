@@ -126,20 +126,61 @@
         </div>
 
         <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-6" id="corridor-form">
+          <section class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4">
+            <div class="flex flex-col gap-3">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Launch lanes</p>
+                <p class="mt-1 text-sm text-on-surface-variant">Start with a common lane, then change any country, city, item, or direction.</p>
+              </div>
+              <div class="grid gap-2 sm:grid-cols-2">
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Australia" data-destination="Kenya" data-location="Nairobi or any Kenya town" data-direction="origin_to_destination" data-logistics="local_delivery" data-goods="general_goods">Australia to Kenya</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Kenya" data-destination="Australia" data-location="Adelaide, Sydney, Melbourne, or remote" data-direction="destination_to_origin" data-logistics="postal_courier" data-goods="general_goods">Kenya to Australia</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="United States" data-destination="Nigeria" data-location="Lagos, Abuja, or remote" data-direction="origin_to_destination" data-logistics="supplier_direct" data-goods="general_goods">USA to Africa</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="United Kingdom" data-destination="Ghana" data-location="Accra, Kumasi, or remote" data-direction="origin_to_destination" data-logistics="local_delivery" data-goods="general_goods">Europe to Africa</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="China" data-destination="Kenya" data-location="Guangzhou, Shenzhen, Nairobi, or remote" data-direction="origin_to_destination" data-logistics="supplier_direct" data-goods="general_goods">China to Africa</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Kenya" data-destination="Kenya" data-location="Nairobi, Mombasa, Kisumu, or remote" data-direction="local_in_country" data-logistics="local_delivery" data-goods="none">Local inside one country</button>
+              </div>
+            </div>
+          </section>
           <div class="grid gap-5 md:grid-cols-2">
             <label class="space-y-2">
               <span class="font-label text-sm text-on-surface-variant ml-1">Client country</span>
-              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-origin" name="origin_country" placeholder="Australia" required />
+              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-origin" name="origin_country" placeholder="Australia" list="corridor-country-options" required />
             </label>
             <label class="space-y-2">
               <span class="font-label text-sm text-on-surface-variant ml-1">Work / destination country</span>
-              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-destination" name="destination_country" placeholder="United Kingdom" required />
+              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-destination" name="destination_country" placeholder="United Kingdom" list="corridor-country-options" required />
             </label>
           </div>
+          <datalist id="corridor-country-options">
+            <option value="Australia"></option>
+            <option value="Kenya"></option>
+            <option value="Nigeria"></option>
+            <option value="Ghana"></option>
+            <option value="South Africa"></option>
+            <option value="Uganda"></option>
+            <option value="Tanzania"></option>
+            <option value="Rwanda"></option>
+            <option value="United States"></option>
+            <option value="United Kingdom"></option>
+            <option value="Germany"></option>
+            <option value="France"></option>
+            <option value="China"></option>
+          </datalist>
           <label class="space-y-2">
             <span class="font-label text-sm text-on-surface-variant ml-1">City, town, or online context</span>
             <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-location" name="task_location" placeholder="London, Lagos, Guangzhou, Adelaide, remote..." required />
           </label>
+          <section class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4" id="corridor-route-intelligence">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Route intelligence</p>
+                <h2 class="mt-1 font-display text-xl font-extrabold" id="corridor-route-title">Choose a route</h2>
+                <p class="mt-2 text-sm text-on-surface-variant" id="corridor-route-copy">Swadakta checks whether the lane is active, pilot, or founder-review before a paid brief moves forward.</p>
+              </div>
+              <span class="inline-flex min-h-10 items-center rounded-full bg-white/80 px-4 font-label text-sm text-on-surface-variant" id="corridor-route-pill">Pending</span>
+            </div>
+          </section>
           <div class="grid gap-5 md:grid-cols-2">
             <label class="space-y-2">
               <span class="font-label text-sm text-on-surface-variant ml-1">Direction</span>
@@ -227,6 +268,6 @@
       </section>
     </main>
 
-    <script src="corridor.js?v=2"></script>
+    <script src="corridor.js?v=3"></script>
   </body>
 </html>

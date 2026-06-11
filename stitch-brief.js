@@ -149,6 +149,10 @@
       goods_category: params.get("goods") || "",
       compliance_status: params.get("compliance") || "",
       compliance_risk_level: params.get("risk") || "",
+      route_status: params.get("route") || "",
+      automation_status: params.get("automation") || "",
+      admin_review_required: params.get("review") === "yes",
+      admin_review_reason: params.get("review_reason") || "",
       compliance_acknowledged: params.get("ack") === "yes",
       compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
       required_checks: (params.get("checks") || "").split("|").filter(Boolean),
@@ -288,6 +292,12 @@
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
+        route_status: corridorContext.route_status || "active",
+        automation_status:
+          corridorContext.automation_status ||
+          (corridorContext.route_status === "pilot" ? "admin_review" : corridorContext.route_status === "unsupported" ? "founder_approval" : "ai_triage"),
+        admin_review_required: Boolean(corridorContext.admin_review_required),
+        admin_review_reason: corridorContext.admin_review_reason || "",
         compliance_status: corridorContext.compliance_status || (complianceFlags.length ? "needs_ai_review" : "not_applicable"),
         compliance_risk_level: corridorContext.compliance_risk_level || "standard",
         compliance_acknowledged: Boolean(document.querySelector("#compliance")?.checked || corridorContext.compliance_acknowledged),

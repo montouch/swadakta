@@ -121,6 +121,17 @@ const requiredRulesMarkers = [
   "UPU international mail baseline",
   "postal or courier acceptance",
 ];
+const requiredCorridorMarkers = [
+  "Launch lanes",
+  "Route intelligence",
+  "corridor-preset",
+];
+const requiredCorridorScriptMarkers = [
+  "routeReadiness",
+  "supportedRegion",
+  "Pilot corridor - founder quote approval required",
+  "review_reason",
+];
 const requiredAdminOpsMarkers = [
   "requestFlags",
   "renderResolutionCases",
@@ -377,6 +388,19 @@ for (const marker of requiredRulesMarkers) {
   }
 }
 
+const localCorridorHtml = await readLocal("corridor.html");
+const localCorridorJs = await readLocal("corridor.js");
+for (const marker of requiredCorridorMarkers) {
+  if (!localCorridorHtml.includes(marker)) {
+    fail(failures, `Local corridor page is missing marker ${marker}`);
+  }
+}
+for (const marker of requiredCorridorScriptMarkers) {
+  if (!localCorridorJs.includes(marker)) {
+    fail(failures, `Local corridor.js is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -452,8 +476,15 @@ for (const page of requiredPages) {
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=2")) {
-    fail(failures, `${page} does not reference corridor.js?v=2`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=3")) {
+    fail(failures, `${page} does not reference corridor.js?v=3`);
+  }
+  if (page === "/corridor") {
+    for (const marker of requiredCorridorMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
   }
   if (page === "/trust") {
     for (const marker of requiredTrustMarkers) {
