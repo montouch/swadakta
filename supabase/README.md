@@ -2,6 +2,12 @@
 
 Run `schema.sql` in the Supabase SQL Editor.
 
+Current production project:
+
+- Project name: `swadakta`
+- Project ref: `srwkoulknropnwwyqslj`
+- API URL: `https://srwkoulknropnwwyqslj.supabase.co`
+
 The schema creates:
 
 - `service_requests`: public intake requests

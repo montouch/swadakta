@@ -74,29 +74,42 @@ create policy "Admins can read own admin profile"
 on public.admin_users
 for select
 to authenticated
-using (user_id = auth.uid());
+using (user_id = (select auth.uid()));
 
 drop policy if exists "Anyone can submit service requests" on public.service_requests;
 create policy "Anyone can submit service requests"
 on public.service_requests
 for insert
 to anon, authenticated
-with check (true);
+with check (
+  request_code like 'SW-%'
+  and length(request_code) between 6 and 24
+  and btrim(client_name) <> ''
+  and btrim(whatsapp) <> ''
+  and btrim(kenya_location) <> ''
+  and btrim(notes) <> ''
+  and task_type in ('quick', 'site', 'registry', 'virtual')
+  and urgency in ('standard', 'priority', 'same-day')
+  and hours_estimate between 1 and 80
+  and estimate_aud >= 0
+  and status = 'new'
+  and payment_status = 'unquoted'
+);
 
 drop policy if exists "Admins can read service requests" on public.service_requests;
 create policy "Admins can read service requests"
 on public.service_requests
 for select
 to authenticated
-using (app_private.is_admin());
+using ((select app_private.is_admin()));
 
 drop policy if exists "Admins can update service requests" on public.service_requests;
 create policy "Admins can update service requests"
 on public.service_requests
 for update
 to authenticated
-using (app_private.is_admin())
-with check (app_private.is_admin());
+using ((select app_private.is_admin()))
+with check ((select app_private.is_admin()));
 
 grant usage on schema public to anon, authenticated;
 grant usage on schema app_private to authenticated;
@@ -127,6 +140,14 @@ grant update (
   client_report
 ) on public.service_requests to authenticated;
 grant select on public.admin_users to authenticated;
+
+do $$
+begin
+  if to_regprocedure('public.rls_auto_enable()') is not null then
+    revoke execute on function public.rls_auto_enable() from anon, authenticated, public;
+  end if;
+end
+$$;
 
 -- After your first admin user signs in once, replace the UUID below with their
 -- auth.users.id value from Supabase Authentication > Users.

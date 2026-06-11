@@ -4,13 +4,26 @@ This turns the prototype into an operating MVP.
 
 ## 1. Create the backend
 
-1. Create a Supabase project.
-2. Open Supabase SQL Editor.
-3. Run `supabase/schema.sql`.
-4. In Supabase Authentication, enable email magic links.
-5. Submit one magic-link sign-in from `admin.html`.
-6. In Supabase Authentication > Users, copy that user's UUID.
-7. Run the admin insert shown at the bottom of `supabase/schema.sql`, replacing the placeholder UUID.
+Project created:
+
+- Supabase project: `swadakta`
+- Project ref: `srwkoulknropnwwyqslj`
+- API URL: `https://srwkoulknropnwwyqslj.supabase.co`
+
+Completed:
+
+- Supabase project created.
+- `supabase/schema.sql` applied as migrations.
+- Security advisors are clean.
+- Public client intake insert was verified with the publishable key.
+
+Admin activation still required:
+
+1. Open `admin.html`.
+2. Send a magic link to `swadakta111@gmail.com`.
+3. Open the magic link in the same browser.
+4. In Supabase Authentication > Users, copy that user's UUID.
+5. Run the admin insert shown at the bottom of `supabase/schema.sql`, replacing the placeholder UUID.
 
 Important: use the Supabase publishable key in the browser. Never put a secret/service-role key in `app-config.js`.
 
@@ -22,8 +35,8 @@ Edit `app-config.js`:
 window.SWADAKTA_CONFIG = {
   brandName: "Swadakta",
   adminEmail: "swadakta111@gmail.com",
-  supabaseUrl: "https://YOUR_PROJECT_REF.supabase.co",
-  supabasePublishableKey: "sb_publishable_...",
+  supabaseUrl: "https://srwkoulknropnwwyqslj.supabase.co",
+  supabasePublishableKey: "sb_publishable_braRDOvu_VbLc6PItbElmg_3hK-Zg51",
   whatsappNumber: "+61431455174",
   paymentLinks: {
     quick: "",
