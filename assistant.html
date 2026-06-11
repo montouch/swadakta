@@ -54,6 +54,42 @@
         <p class="text-on-surface-variant mt-4 max-w-2xl">
           The assistant can explain the flow, draft messages, improve briefs, predict blockers, and route you to verification, payments, or tracking. It cannot approve ID, release money, or assign jobs by itself.
         </p>
+        <section class="mt-8 rounded-3xl bg-white/62 border border-outline-variant/30 p-5" id="assistant-context-card">
+          <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Workflow-aware guide</p>
+              <h2 class="mt-1 font-display text-2xl font-extrabold" id="assistant-context-title">Start from where you are.</h2>
+              <p class="mt-2 text-sm text-on-surface-variant" id="assistant-context-copy">Choose a quick action or describe the job, payment, proof, verification, message, or blocker.</p>
+            </div>
+            <span class="inline-flex min-h-10 items-center rounded-full bg-primary/10 px-4 font-label text-sm text-primary" id="assistant-context-pill">Safe guidance</span>
+          </div>
+        </section>
+        <section class="mt-5 grid gap-3 sm:grid-cols-2" aria-label="AI quick actions">
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="Explain my next step" data-prompt="I need help choosing the next step from my Swadakta account. Explain where to go first and what is blocked until verification." data-links="portal,corridor,verification">
+            <strong class="font-label text-on-surface">What should I do next?</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">Account, corridor, verification, or tracking.</span>
+          </button>
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="Improve my paid brief" data-prompt="Improve this paid brief. Tell me what details are missing for a quote, proof plan, payment rail, lawful-goods check, and receiver assignment." data-links="corridor,brief,rules,payments">
+            <strong class="font-label text-on-surface">Improve a job brief</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">Route, proof, item rules, and quote readiness.</span>
+          </button>
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="What happens after verification is requested?" data-prompt="Explain what happens after I request ID verification, which provider route is likely, and what I can do before it is approved." data-links="verification,portal,trust">
+            <strong class="font-label text-on-surface">Verification help</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">Provider-led ID checks and unlocks.</span>
+          </button>
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="Draft a message for this job" data-prompt="Draft a friendly, clear job message. Keep it professional, ask for proof where needed, and do not promise payment release, refunds, ID approval, or receiver assignment." data-links="messages,tracking,resolution">
+            <strong class="font-label text-on-surface">Write a job message</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">Client, receiver, proof, or follow-up wording.</span>
+          </button>
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="Predict blockers" data-prompt="Predict likely blockers for this Swadakta job: ID, payment, route legality, restricted goods, proof, receiver availability, customs, timeline, and founder approval." data-links="rules,payments,trust">
+            <strong class="font-label text-on-surface">Predict blockers</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">What may stop the job before money moves.</span>
+          </button>
+          <button class="assistant-quick-action rounded-2xl border border-outline-variant/40 bg-white/76 p-4 text-left hover:border-primary" type="button" data-task="Resolve an issue" data-prompt="Help me open a Swadakta issue. Summarize what evidence is needed for proof, delay, payment, refund, receiver, restricted item, or safety problems." data-links="resolution,tracking,messages">
+            <strong class="font-label text-on-surface">Resolve an issue</strong>
+            <span class="mt-1 block text-sm text-on-surface-variant">Delay, proof, payment, refund, or safety concerns.</span>
+          </button>
+        </section>
         <div class="mt-8 grid gap-4">
           <select class="h-12 px-4 rounded-xl bg-white/70 border border-outline-variant/40" id="assistant-task">
             <option>Explain my next step</option>
@@ -66,11 +102,12 @@
           <textarea class="min-h-36 p-4 rounded-xl bg-white/70 border border-outline-variant/40 resize-none" id="assistant-prompt" placeholder="Ask Swadakta AI anything about your account, verification, paid job, receiver work, proof, payments, or messages."></textarea>
           <button class="h-12 rounded-full bg-primary text-white font-bold" id="assistant-run" type="button">Ask AI</button>
           <pre class="min-h-48 whitespace-pre-wrap rounded-2xl bg-white/70 border border-outline-variant/40 p-4 text-sm text-on-surface-variant" id="assistant-output">Ask a question to begin.</pre>
+          <div class="grid gap-2 sm:grid-cols-3" id="assistant-action-links" aria-label="Suggested next links"></div>
         </div>
       </section>
     </main>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=43"></script>
-    <script src="assistant.js?v=2"></script>
+    <script src="assistant.js?v=3"></script>
   </body>
 </html>

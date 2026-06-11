@@ -73,6 +73,9 @@ const requiredAssistantMarkers = [
   "applyQueryContext",
   "Resolve an issue",
   "Issue context loaded",
+  "assistant-quick-action",
+  "Workflow-aware guide",
+  "renderActionLinks",
 ];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
@@ -460,8 +463,8 @@ for (const page of requiredPages) {
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=8")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=8`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=2")) {
-    fail(failures, `${page} does not reference assistant.js?v=2`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=3")) {
+    fail(failures, `${page} does not reference assistant.js?v=3`);
   }
   if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
     fail(failures, `${page} does not reference resolution.js?v=2`);
@@ -612,11 +615,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=2");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=3");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=2 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=3 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=2 returned 200");
+  pass("assistant.js?v=3 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {
