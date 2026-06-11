@@ -13,6 +13,63 @@
   const riskyGoods = new Set(["food_plant_animal", "medicine_health", "cosmetics", "electronics", "valuable_items", "restricted_or_unsure"]);
   const highRiskGoods = new Set(["food_plant_animal", "medicine_health", "valuable_items", "restricted_or_unsure"]);
   const physicalModes = new Set(["local_delivery", "postal_courier", "pickup_hold", "supplier_direct", "airport_handoff"]);
+  const africaCountryOptions = [
+    "Algeria",
+    "Angola",
+    "Benin",
+    "Botswana",
+    "Burkina Faso",
+    "Burundi",
+    "Cabo Verde",
+    "Cameroon",
+    "Central African Republic",
+    "Chad",
+    "Comoros",
+    "Congo",
+    "Democratic Republic of Congo",
+    "Djibouti",
+    "Egypt",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Eswatini",
+    "Ethiopia",
+    "Gabon",
+    "Gambia",
+    "Ghana",
+    "Guinea",
+    "Guinea-Bissau",
+    "Ivory Coast",
+    "Kenya",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Madagascar",
+    "Malawi",
+    "Mali",
+    "Mauritania",
+    "Mauritius",
+    "Morocco",
+    "Mozambique",
+    "Namibia",
+    "Niger",
+    "Nigeria",
+    "Rwanda",
+    "Sahrawi Arab Democratic Republic",
+    "Sao Tome and Principe",
+    "Senegal",
+    "Seychelles",
+    "Sierra Leone",
+    "Somalia",
+    "South Africa",
+    "South Sudan",
+    "Sudan",
+    "Tanzania",
+    "Togo",
+    "Tunisia",
+    "Uganda",
+    "Zambia",
+    "Zimbabwe",
+  ];
   const africaCountries = new Set([
     "africa",
     "algeria",
@@ -23,11 +80,18 @@
     "burundi",
     "cameroon",
     "cape verde",
+    "cabo verde",
     "central african republic",
+    "central africa",
     "chad",
     "comoros",
     "congo",
+    "republic of congo",
+    "republic of the congo",
     "democratic republic of congo",
+    "democratic republic of the congo",
+    "dr congo",
+    "drc",
     "djibouti",
     "egypt",
     "equatorial guinea",
@@ -39,7 +103,11 @@
     "ghana",
     "guinea",
     "guinea-bissau",
+    "guinea bissau",
     "ivory coast",
+    "cote d ivoire",
+    "cote divoire",
+    "cote d'ivoire",
     "kenya",
     "lesotho",
     "liberia",
@@ -55,6 +123,12 @@
     "niger",
     "nigeria",
     "rwanda",
+    "sahrawi arab democratic republic",
+    "saharawi arab democratic republic",
+    "western sahara",
+    "sao tome and principe",
+    "sao tome principe",
+    "sao tome",
     "senegal",
     "seychelles",
     "sierra leone",
@@ -113,8 +187,23 @@
     renderRisk(triage);
   }
 
+  function ensureCountryOptions() {
+    const list = document.querySelector("#corridor-country-options");
+    if (!list) return;
+    const existing = new Set([...list.querySelectorAll("option")].map((option) => option.value));
+    const globalOptions = ["Australia", "United States", "United Kingdom", "Germany", "France", "China"];
+
+    [...africaCountryOptions, ...globalOptions].forEach((country) => {
+      if (existing.has(country)) return;
+      const option = document.createElement("option");
+      option.value = country;
+      list.append(option);
+      existing.add(country);
+    });
+  }
+
   function sameCountry(a, b) {
-    return a && b && a.toLowerCase() === b.toLowerCase();
+    return Boolean(a && b && normalizeCountry(a) === normalizeCountry(b));
   }
 
   function normalizeCountry(value) {
@@ -194,12 +283,34 @@
         route_status: "active",
         automation_status: "ai_triage",
         riskLevel: "standard",
-        title: "Local launch lane",
-        copy: "Local work inside a supported launch country can be triaged by AI, with ID, payment, proof, and receiver checks still enforced.",
+        title: originRegion === "Africa" ? "Active Africa in-country lane" : "Local launch lane",
+        copy:
+          originRegion === "Africa"
+            ? "In-country work inside any African country can be triaged by Swadakta, with local receiver coverage, ID, payment, proof, and safety checks still enforced."
+            : "Local work inside a supported launch country can be triaged by AI, with ID, payment, proof, and receiver checks still enforced.",
         pill: "Active",
         pillTone: "bg-emerald-100 text-emerald-700",
-        flags: ["Active local launch corridor"],
-        checks: ["Confirm local receiver coverage, address/permission, proof plan, and payment route before assignment"],
+        flags: [originRegion === "Africa" ? "Active Africa in-country corridor" : "Active local launch corridor"],
+        checks: ["Confirm local receiver coverage, address/permission, proof plan, payment route, and local safety before assignment"],
+        admin_review_required: false,
+        admin_review_reason: "",
+      };
+    }
+
+    if (originRegion === "Africa" && destinationRegion === "Africa") {
+      return {
+        route_status: "active",
+        automation_status: "ai_triage",
+        riskLevel: "standard",
+        title: "Active Africa-to-Africa lane",
+        copy: "Swadakta can intake work between African countries and inside African countries. Cross-border goods still need carrier, customs, tax/duty, and lawful-path checks before spending money or assigning work.",
+        pill: "Africa active",
+        pillTone: "bg-emerald-100 text-emerald-700",
+        flags: ["Active Africa-wide corridor"],
+        checks: [
+          "Confirm receiver coverage in both countries or the destination country before assignment",
+          "For cross-border goods, confirm carrier acceptance, customs, duties/taxes owner, restricted categories, and proof plan",
+        ],
         admin_review_required: false,
         admin_review_reason: "",
       };
@@ -432,5 +543,6 @@
     window.location.href = `brief.html?${params.toString()}`;
   });
 
+  ensureCountryOptions();
   restoreContext();
 })();

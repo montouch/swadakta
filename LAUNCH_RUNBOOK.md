@@ -114,7 +114,10 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Every saved account profile has an account-level ID verification status, link, reference, and admin notes.
 - Every new public client request requires client ID-verification consent.
 - Intake captures origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement.
-- Africa-Australia is the first active corridor; Africa-USA, Africa-Europe, and Africa-China are pilot lanes; non-Africa corridors require founder approval until coverage is proven.
+- Africa-wide intake is active for all African countries, including in-country work inside a single African country and Africa-to-Africa work between African countries.
+- Africa-Australia is active; Africa-USA, Africa-Europe, and Africa-China stay pilot lanes until receiver coverage, payment rail, legal/customs path, and proof standards are confirmed.
+- Non-Africa-to-non-Africa corridors require founder approval until coverage is proven.
+- Cross-border physical goods inside Africa still require carrier, customs, tax/duty, restricted-item, and proof checks before purchase, shipment, payment release, or receiver assignment.
 - Physical-item requests require legal/customs checks before buying, shipping, carrying, receiving, or releasing money.
 - Client and receiver portal sessions return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must complete ID verification before being marked `Vetted`.

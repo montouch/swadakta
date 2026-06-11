@@ -133,7 +133,7 @@
             <div class="flex flex-col gap-3">
               <div>
                 <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Launch lanes</p>
-                <p class="mt-1 text-sm text-on-surface-variant">Start with a common lane, then change any country, city, item, or direction.</p>
+                <p class="mt-1 text-sm text-on-surface-variant">Start with a common lane, then change any country, city, item, or direction. Africa-wide and in-country African work are active intake lanes.</p>
               </div>
               <div class="grid gap-2 sm:grid-cols-2">
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Australia" data-destination="Kenya" data-location="Nairobi or any Kenya town" data-direction="origin_to_destination" data-logistics="local_delivery" data-goods="general_goods">Australia to Kenya</button>
@@ -141,7 +141,8 @@
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="United States" data-destination="Nigeria" data-location="Lagos, Abuja, or remote" data-direction="origin_to_destination" data-logistics="supplier_direct" data-goods="general_goods">USA to Africa</button>
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="United Kingdom" data-destination="Ghana" data-location="Accra, Kumasi, or remote" data-direction="origin_to_destination" data-logistics="local_delivery" data-goods="general_goods">Europe to Africa</button>
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="China" data-destination="Kenya" data-location="Guangzhou, Shenzhen, Nairobi, or remote" data-direction="origin_to_destination" data-logistics="supplier_direct" data-goods="general_goods">China to Africa</button>
-                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Kenya" data-destination="Kenya" data-location="Nairobi, Mombasa, Kisumu, or remote" data-direction="local_in_country" data-logistics="local_delivery" data-goods="none">Local inside one country</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Nigeria" data-destination="Ghana" data-location="Lagos, Accra, border handoff, or remote" data-direction="two_way" data-logistics="postal_courier" data-goods="general_goods">Africa to Africa</button>
+                <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Tanzania" data-destination="Tanzania" data-location="Dar es Salaam, Arusha, Dodoma, or remote" data-direction="local_in_country" data-logistics="local_delivery" data-goods="none">In-country Africa</button>
               </div>
             </div>
           </section>
@@ -271,7 +272,7 @@
       </section>
     </main>
 
-    <script src="corridor.js?v=3"></script>
+    <script src="corridor.js?v=4"></script>
   <script src="assistant-dock.js?v=4"></script>
 </body>
 </html>

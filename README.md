@@ -19,6 +19,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Role-aware client and receiver onboarding checklists inside the portal
 - Account-level ID verification tracking for all clients, receivers, and mixed-role users
 - Global corridor intake for origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement
+- Africa-wide active intake for all African countries, including same-country in-country work and Africa-to-Africa work with customs/carrier checks for cross-border goods
 - Persisted route status, compliance flags, required checks, and proof requirements for each request
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
