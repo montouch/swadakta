@@ -27,6 +27,8 @@
         "/tracking.html",
         "/admin",
         "/admin.html",
+        "/admin-readiness",
+        "/admin-readiness.html",
         "/admin-verification",
         "/admin-verification.html",
       ]);

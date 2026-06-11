@@ -134,7 +134,18 @@ async function assertAdmin(authHeader) {
   return { id: userId, email: user.email || "" };
 }
 
-function item(id, label, status, detail, next, missing = []) {
+const DOCS = {
+  vercelEnv: "https://vercel.com/docs/environment-variables",
+  stripeCheckout: "https://docs.stripe.com/api/checkout/sessions",
+  stripeWebhooks: "https://docs.stripe.com/webhooks",
+  paypalOrders: "https://developer.paypal.com/docs/api/orders/v2/",
+  daraja: "https://developer.safaricom.co.ke/",
+  smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
+  smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
+  wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
+};
+
+function item(id, label, status, detail, next, missing = [], options = {}) {
   return {
     id,
     label,
@@ -142,7 +153,32 @@ function item(id, label, status, detail, next, missing = []) {
     detail,
     next,
     missing,
+    docs_url: options.docs_url || "",
+    copy_value: options.copy_value || "",
+    priority: Number.isFinite(options.priority) ? options.priority : 50,
+    owner: options.owner || "Founder/admin",
   };
+}
+
+function buildNextActions(categories) {
+  return categories
+    .flatMap((category) =>
+      (category.items || []).map((entry) => ({
+        category: category.label,
+        id: entry.id,
+        label: entry.label,
+        status: entry.status,
+        next: entry.next,
+        missing: entry.missing || [],
+        docs_url: entry.docs_url || "",
+        copy_value: entry.copy_value || "",
+        owner: entry.owner || "Founder/admin",
+        priority: entry.priority || 50,
+      })),
+    )
+    .filter((entry) => entry.status !== "ready")
+    .sort((a, b) => a.priority - b.priority || String(a.label).localeCompare(String(b.label)))
+    .slice(0, 8);
 }
 
 function readinessReport(user) {
@@ -165,6 +201,8 @@ function readinessReport(user) {
     "WISE_RECEIVE_DETAILS_URL",
   ]);
   const smileIdConfigured = hasEnv("SMILE_ID_API_KEY") && hasEnv("SMILE_ID_PARTNER_ID");
+  const stripeWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/stripe-webhook`;
+  const mpesaWebhookUrl = mpesaCallbackUrl();
 
   const categories = [
     {
@@ -177,6 +215,8 @@ function readinessReport(user) {
           publicUrl() === "https://swadakta.com" ? "ready" : "warning",
           `Callbacks and payment returns use ${publicHost()}.`,
           "Keep PUBLIC_BASE_URL or SWADAKTA_PUBLIC_BASE_URL pointed at https://swadakta.com.",
+          [],
+          { docs_url: DOCS.vercelEnv, priority: 8, owner: "Founder/Vercel admin" },
         ),
         item(
           "supabase_project",
@@ -185,6 +225,7 @@ function readinessReport(user) {
           `Auth and admin checks use ${supabaseHost()}.`,
           "Keep only the publishable key in browser config; service-role keys stay server-side.",
           [],
+          { priority: 10, owner: "Founder/Supabase admin" },
         ),
         item(
           "admin_guard",
@@ -192,6 +233,8 @@ function readinessReport(user) {
           "ready",
           `Readiness checked for ${user.email || user.id}.`,
           "API diagnostics require a Supabase session plus an admin_users row.",
+          [],
+          { priority: 12, owner: "Founder/Supabase admin" },
         ),
       ],
     },
@@ -206,14 +249,25 @@ function readinessReport(user) {
           "Admin can generate card checkout links for AUD, USD, GBP, and EUR when configured.",
           "Add STRIPE_SECRET_KEY in Vercel production env before using Stripe checkout.",
           missingEnv(["STRIPE_SECRET_KEY"]),
+          {
+            docs_url: DOCS.stripeCheckout,
+            priority: 20,
+            owner: "Founder/Stripe admin",
+          },
         ),
         item(
           "stripe_webhook",
           "Stripe webhook confirmation",
           stripeWebhookMissing.length || !serviceRoleConfigured ? "missing" : "ready",
           "Webhook can mark provider-confirmed Stripe payments without releasing receiver funds.",
-          "Set STRIPE_WEBHOOK_SECRET plus a server-only Supabase key for payment confirmation.",
+          `Set STRIPE_WEBHOOK_SECRET plus a server-only Supabase key for payment confirmation. Endpoint: ${stripeWebhookUrl}`,
           [...stripeWebhookMissing, ...(serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"])],
+          {
+            docs_url: DOCS.stripeWebhooks,
+            copy_value: stripeWebhookUrl,
+            priority: 22,
+            owner: "Founder/Stripe admin",
+          },
         ),
         item(
           "paypal_orders",
@@ -222,6 +276,11 @@ function readinessReport(user) {
           `PayPal API mode is ${paypalMode()}.`,
           "Add PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET, then test order creation and capture.",
           paypalMissing,
+          {
+            docs_url: DOCS.paypalOrders,
+            priority: 26,
+            owner: "Founder/PayPal admin",
+          },
         ),
         item(
           "mpesa_stk",
@@ -230,6 +289,12 @@ function readinessReport(user) {
           `Daraja mode is ${mpesaMode()}; callback is ${mpesaCallbackUrl()}.`,
           "Use sandbox until Safaricom business credentials, PayBill/Till, and callback approval are ready.",
           mpesaMissing,
+          {
+            docs_url: DOCS.daraja,
+            copy_value: mpesaWebhookUrl,
+            priority: 30,
+            owner: "Founder/Safaricom admin",
+          },
         ),
         item(
           "mpesa_callback",
@@ -240,6 +305,12 @@ function readinessReport(user) {
             : "Callback works, but a token is recommended so random callbacks cannot hit the endpoint.",
           "Set MPESA_CALLBACK_TOKEN and register the full callback URL with Safaricom.",
           serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"],
+          {
+            docs_url: DOCS.daraja,
+            copy_value: mpesaWebhookUrl,
+            priority: 31,
+            owner: "Founder/Safaricom admin",
+          },
         ),
         item(
           "wise_fallback",
@@ -248,6 +319,11 @@ function readinessReport(user) {
           "Wise stays hidden as an admin fallback after easier card, PayPal, M-Pesa, or bank routes fail.",
           "Add WISE_PAYMENT_LINK_URL, WISE_PAYMENT_REQUEST_URL, or WISE_RECEIVE_DETAILS_URL only for fallback work.",
           wiseConfigured ? [] : ["WISE_PAYMENT_LINK_URL"],
+          {
+            docs_url: DOCS.wiseBusiness,
+            priority: 60,
+            owner: "Founder/Wise admin",
+          },
         ),
       ],
     },
@@ -262,6 +338,11 @@ function readinessReport(user) {
           `Fallback model is ${process.env.OPENAI_MODEL || "gpt-5.5"}.`,
           "Set OPENAI_API_KEY in Vercel for founder/admin AI drafts when the Supabase Edge Function is unavailable.",
           hasEnv("OPENAI_API_KEY") ? [] : ["OPENAI_API_KEY"],
+          {
+            docs_url: DOCS.vercelEnv,
+            priority: 18,
+            owner: "Founder/Vercel admin",
+          },
         ),
         item(
           "supabase_edge_ai",
@@ -269,6 +350,8 @@ function readinessReport(user) {
           "manual",
           "Edge Function deployment and secrets are managed in Supabase, outside this Vercel environment.",
           "Keep the swadakta-assistant Edge Function deployed and set OPENAI_API_KEY as a Supabase secret.",
+          [],
+          { priority: 19, owner: "Founder/Supabase admin" },
         ),
         item(
           "manual_id_links",
@@ -276,6 +359,8 @@ function readinessReport(user) {
           "ready",
           "Admin can store provider, status, verification link, reference, verified time, and notes for every account and receiver.",
           "Use this while provider API sessions are not automated.",
+          [],
+          { docs_url: DOCS.smileIdWeb, priority: 36, owner: "Founder/admin" },
         ),
         item(
           "smile_id_api",
@@ -284,6 +369,11 @@ function readinessReport(user) {
           "Provider API session creation is planned; current workflow supports storing provider links manually.",
           "After Smile ID credentials are approved, add server-side session creation and webhook handling.",
           smileIdConfigured ? [] : ["SMILE_ID_API_KEY", "SMILE_ID_PARTNER_ID"],
+          {
+            docs_url: DOCS.smileIdDocument,
+            priority: 34,
+            owner: "Founder/Smile ID admin",
+          },
         ),
       ],
     },
@@ -307,6 +397,11 @@ function readinessReport(user) {
     },
     counts,
     categories,
+    next_actions: buildNextActions(categories),
+    safe_copy_values: {
+      stripe_webhook_url: stripeWebhookUrl,
+      mpesa_callback_url: mpesaWebhookUrl,
+    },
     protected_actions: [
       "Money release, refund, paid status, and milestone release stay founder/admin decisions.",
       "ID verification and receiver vetting stay founder/admin decisions until provider webhooks are fully integrated.",

@@ -12,6 +12,12 @@
 /admin.html
   X-Robots-Tag: noindex, nofollow
 
+/admin-readiness
+  X-Robots-Tag: noindex, nofollow
+
+/admin-readiness.html
+  X-Robots-Tag: noindex, nofollow
+
 /admin-verification
   X-Robots-Tag: noindex, nofollow
 
