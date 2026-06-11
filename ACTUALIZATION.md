@@ -18,6 +18,7 @@ Completed:
 - Public client intake insert was verified with the publishable key.
 - Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
 - Required client permission, scope, terms, and privacy consent fields were added to Supabase and enforced by RLS.
+- Contact preference, contact window, sensitive-document flag, and supporting-link fields were added to Supabase.
 
 Admin activation status:
 
@@ -67,6 +68,7 @@ Minimum production checklist:
 - Admin dashboard can see and update the request
 - Admin can add quote amount, payment link, report link, and proof links
 - Public intake requires client permission, scope, terms, and privacy consent
+- Public intake can capture supporting links and sensitive-document needs without asking for raw files
 - Client tracking can find a request by request code plus original email/WhatsApp
 - Privacy, terms, robots, sitemap, and security-contact files are live
 - Admin routes are blocked from search indexing
@@ -89,6 +91,7 @@ For every job, capture:
 
 - Client brief
 - Stored client consent status
+- Contact preference, contact window, and supporting links
 - Location and deadline
 - Agreed fee
 - Proof requirements

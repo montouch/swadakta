@@ -46,21 +46,24 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Before scaling, have a qualified professional review the privacy policy, terms, refund wording, and data-retention process.
 - Collect only the information needed for the job.
 - Ask permission before contacting relatives, vendors, contractors, officials, or local contacts.
+- Use the supporting-links field for Google Drive folders, photo albums, title packs, vendor quotes, or other client-provided references.
 - Keep sensitive documents out of WhatsApp where possible. Use secure links when file upload is added.
+- Treat requests marked as involving sensitive documents as higher-risk jobs that need tighter access control.
 - Delete or archive old proof packs on a defined schedule after accounting and dispute windows pass.
 
 ## 4. First Paid Job Workflow
 
 1. Client submits the public intake form.
 2. Admin confirms consent status is `Complete`.
-3. Admin reviews the request and confirms missing details by WhatsApp or email.
-4. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-5. Client pays through the agreed provider.
-6. Admin sets status to `paid` after confirmation.
-7. Kenya-side operator executes the task.
-8. Admin adds proof links, report URL, and final notes.
-9. Admin sets status to `completed`.
-10. Client tracks status with request code plus original email or WhatsApp.
+3. Admin reviews the request, supporting links, contact preference, and sensitive-document flag.
+4. Admin confirms missing details by WhatsApp or email.
+5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
+6. Client pays through the agreed provider.
+7. Admin sets status to `paid` after confirmation.
+8. Kenya-side operator executes the task.
+9. Admin adds proof links, report URL, and final notes.
+10. Admin sets status to `completed`.
+11. Client tracks status with request code plus original email or WhatsApp.
 
 ## 5. Launch Readiness Checklist
 

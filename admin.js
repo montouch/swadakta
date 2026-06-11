@@ -87,6 +87,25 @@ function formatConsentStatus(request) {
   return "Legacy or missing";
 }
 
+function renderSupportingLinks(request) {
+  const links = Array.isArray(request.supporting_links)
+    ? request.supporting_links.map((link) => String(link || "").trim()).filter(Boolean)
+    : [];
+
+  if (!links.length) {
+    return "";
+  }
+
+  const items = links
+    .map(
+      (link, index) =>
+        `<li><a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Supporting link ${index + 1}</a></li>`,
+    )
+    .join("");
+
+  return `<ul class="request-links">${items}</ul>`;
+}
+
 function getFilteredRequests() {
   const selectedStatus = statusFilter.value;
   const query = searchRequests.value.trim().toLowerCase();
@@ -208,6 +227,9 @@ function renderRequestCardV2(request) {
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
   const consentStatus = formatConsentStatus(request);
+  const contactPreference = request.contact_preference || "whatsapp";
+  const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
+  const supportingLinks = renderSupportingLinks(request);
 
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
@@ -227,6 +249,9 @@ function renderRequestCardV2(request) {
         <div><dt>Urgency</dt><dd>${escapeHtml(request.urgency)}</dd></div>
         <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
         <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
+        <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
+        <div><dt>Contact window</dt><dd>${escapeHtml(request.contact_window || "Not specified")}</dd></div>
+        <div><dt>Sensitive docs</dt><dd>${escapeHtml(sensitiveDocuments)}</dd></div>
         <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
         <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>
         <div><dt>Quote</dt><dd>${escapeHtml(formatCurrency(request.quote_amount, quoteCurrency))}</dd></div>
@@ -236,6 +261,7 @@ function renderRequestCardV2(request) {
       </dl>
 
       <p class="request-notes">${escapeHtml(request.notes)}</p>
+      ${supportingLinks}
 
       <form class="request-update-form">
         <div class="field-row">

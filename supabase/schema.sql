@@ -19,6 +19,10 @@ create table if not exists public.service_requests (
   deadline date,
   local_contact_name text,
   local_contact_phone text,
+  contact_preference text not null default 'whatsapp',
+  contact_window text,
+  supporting_links text[] not null default array[]::text[],
+  sensitive_documents_expected boolean not null default false,
   preferred_currency text not null default 'AUD',
   task_type text not null check (task_type in ('quick', 'site', 'registry', 'virtual')),
   kenya_location text not null,
@@ -50,6 +54,10 @@ alter table public.service_requests add column if not exists client_base text;
 alter table public.service_requests add column if not exists deadline date;
 alter table public.service_requests add column if not exists local_contact_name text;
 alter table public.service_requests add column if not exists local_contact_phone text;
+alter table public.service_requests add column if not exists contact_preference text not null default 'whatsapp';
+alter table public.service_requests add column if not exists contact_window text;
+alter table public.service_requests add column if not exists supporting_links text[] not null default array[]::text[];
+alter table public.service_requests add column if not exists sensitive_documents_expected boolean not null default false;
 alter table public.service_requests add column if not exists preferred_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists quote_amount integer;
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
@@ -73,6 +81,13 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_quote_amount_check check (quote_amount is null or quote_amount >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_contact_preference_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_contact_preference_check check (contact_preference in ('whatsapp', 'email', 'either'));
   end if;
 
   if not exists (
@@ -149,6 +164,8 @@ with check (
   and btrim(coalesce(client_base, australia_location, '')) <> ''
   and btrim(kenya_location) <> ''
   and btrim(notes) <> ''
+  and contact_preference in ('whatsapp', 'email', 'either')
+  and coalesce(array_length(supporting_links, 1), 0) <= 10
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
   and task_type in ('quick', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')
@@ -192,6 +209,10 @@ grant insert (
   deadline,
   local_contact_name,
   local_contact_phone,
+  contact_preference,
+  contact_window,
+  supporting_links,
+  sensitive_documents_expected,
   preferred_currency,
   task_type,
   kenya_location,

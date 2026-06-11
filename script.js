@@ -63,6 +63,15 @@ function getReportItems() {
   return Array.from(form.querySelectorAll('input[name="report"]:checked')).map((item) => item.value);
 }
 
+function getSupportingLinks() {
+  return document
+    .querySelector("#supporting-links")
+    .value.split(/\r?\n/)
+    .map((link) => link.trim())
+    .filter(Boolean)
+    .slice(0, 10);
+}
+
 function calculateEstimate() {
   const type = taskType.value;
   const selectedHours = Number(hours.value);
@@ -88,6 +97,10 @@ function buildBrief() {
   const location = document.querySelector("#location").value.trim() || "Not specified";
   const localContactName = document.querySelector("#local-contact-name").value.trim() || "Not provided";
   const localContactPhone = document.querySelector("#local-contact-phone").value.trim() || "Not provided";
+  const contactPreference = document.querySelector("#contact-preference").value;
+  const contactWindow = document.querySelector("#contact-window").value.trim() || "Not specified";
+  const supportingLinks = getSupportingLinks();
+  const sensitiveDocuments = document.querySelector("#sensitive-documents").checked ? "yes" : "no";
   const notes = document.querySelector("#notes").value.trim() || "No notes added.";
   const selectedTask = taskType.options[taskType.selectedIndex].text;
   const selectedUrgency = urgency.options[urgency.selectedIndex].text;
@@ -109,9 +122,13 @@ function buildBrief() {
     `Location: ${location}, Kenya`,
     `Ideal deadline: ${deadline}`,
     `Kenya contact: ${localContactName} (${localContactPhone})`,
+    `Preferred contact: ${contactPreference}`,
+    `Best contact window: ${contactWindow}`,
     `Urgency: ${selectedUrgency}`,
     `Estimated hours: ${hours.value}`,
     `Report pack: ${reports}`,
+    `Supporting links: ${supportingLinks.join(", ") || "None provided"}`,
+    `Sensitive documents expected: ${sensitiveDocuments}`,
     `Estimated fee: ${estimateOutput.textContent}`,
     `Permissions: ${permissions}`,
     `Notes: ${notes}`,
@@ -133,6 +150,10 @@ function buildPayload() {
     deadline: document.querySelector("#deadline").value || null,
     local_contact_name: document.querySelector("#local-contact-name").value.trim(),
     local_contact_phone: document.querySelector("#local-contact-phone").value.trim(),
+    contact_preference: document.querySelector("#contact-preference").value,
+    contact_window: document.querySelector("#contact-window").value.trim(),
+    supporting_links: getSupportingLinks(),
+    sensitive_documents_expected: document.querySelector("#sensitive-documents").checked,
     preferred_currency: document.querySelector("#preferred-currency").value,
     task_type: taskType.value,
     kenya_location: document.querySelector("#location").value.trim(),

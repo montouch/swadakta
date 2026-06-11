@@ -785,6 +785,27 @@ textarea {
   text-underline-offset: 0.2em;
 }
 
+.single-check {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.single-check input {
+  width: 1rem;
+  min-height: 1rem;
+  margin-top: 0.18rem;
+  accent-color: var(--blue);
+}
+
 .range-line {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -1404,6 +1425,25 @@ output {
   display: grid;
   gap: 0.9rem;
   padding-top: 0.2rem;
+}
+
+.request-links {
+  display: grid;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.request-links a {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  color: var(--blue);
+  font-weight: 900;
+  overflow-wrap: anywhere;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
 }
 
 code {
