@@ -9,10 +9,12 @@ const statusFilter = document.querySelector("#status-filter");
 const paymentFilter = document.querySelector("#payment-filter");
 const sensitiveFilter = document.querySelector("#sensitive-filter");
 const searchRequests = document.querySelector("#search-requests");
+const accountBoard = document.querySelector("#account-board");
 const partnerBoard = document.querySelector("#partner-board");
 const founderCommand = document.querySelector("#founder-command");
 
 let requests = [];
+let accountProfiles = [];
 let partnerApplications = [];
 let fieldUpdates = [];
 let fundMilestones = [];
@@ -120,6 +122,23 @@ const partnerStatusLabels = {
   rejected: "Rejected",
 };
 
+const identityProviderLabels = {
+  smile_id: "Smile ID",
+  sumsub: "Sumsub",
+  youverify: "Youverify",
+  manual: "Manual check",
+};
+
+const identityStatusLabels = {
+  not_started: "Not started",
+  link_sent: "Link sent",
+  submitted: "Submitted",
+  verified: "Verified",
+  failed: "Failed",
+  expired: "Expired",
+  manual_review: "Manual review",
+};
+
 const fieldUpdateStatusLabels = {
   progress: "Progress",
   blocked: "Blocked",
@@ -160,6 +179,12 @@ const partnerCategoryLabels = {
   deliveries: "Deliveries",
   sourcing: "Supplier sourcing",
   virtual_ops: "Virtual operations",
+};
+
+const accountRoleLabels = {
+  client: "Client",
+  receiver: "Receiver",
+  both: "Client and receiver",
 };
 
 function escapeHtml(value) {
@@ -257,6 +282,7 @@ function formatConsentStatus(request) {
   const hasConsent =
     request.contact_permission &&
     request.professional_boundary_accepted &&
+    request.identity_verification_consent &&
     request.terms_accepted_at &&
     request.privacy_accepted_at;
 
@@ -267,6 +293,7 @@ function formatConsentStatus(request) {
   if (
     request.contact_permission ||
     request.professional_boundary_accepted ||
+    request.identity_verification_consent ||
     request.terms_accepted_at ||
     request.privacy_accepted_at
   ) {
@@ -882,6 +909,33 @@ function partnerStatusOptions(current) {
     .join("");
 }
 
+function identityProviderOptions(current) {
+  return Object.entries(identityProviderLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function identityStatusOptions(current) {
+  return Object.entries(identityStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function isVerifiedReceiver(application) {
+  return (
+    application &&
+    application.status === "vetted" &&
+    application.id_verification_consent === true &&
+    application.identity_verification_status === "verified"
+  );
+}
+
 function formatPartnerLabel(application) {
   if (!application) {
     return "Unassigned";
@@ -890,8 +944,12 @@ function formatPartnerLabel(application) {
   const categories = Array.isArray(application.service_categories)
     ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
     : "No categories";
+  const identityStatus =
+    identityStatusLabels[application.identity_verification_status] ||
+    application.identity_verification_status ||
+    "Not started";
 
-  return `${application.full_name} (${application.partner_code}) - ${application.kenya_base || "Kenya"} - ${partnerStatusLabels[application.status] || application.status} - ${categories}`;
+  return `${application.full_name} (${application.partner_code}) - ${application.kenya_base || "Kenya"} - ${partnerStatusLabels[application.status] || application.status} - ID ${identityStatus} - ${categories}`;
 }
 
 function getPartnerById(id) {
@@ -905,7 +963,7 @@ function assignedPartnerLabel(request) {
 function assignedPartnerOptions(current) {
   const currentPartner = getPartnerById(current);
   const options = partnerApplications
-    .filter((application) => application.status === "vetted" || application.id === current)
+    .filter((application) => isVerifiedReceiver(application) || application.id === current)
     .map(
       (application) =>
         `<option value="${escapeHtml(application.id)}" ${application.id === current ? "selected" : ""}>${escapeHtml(formatPartnerLabel(application))}</option>`,
@@ -1037,6 +1095,7 @@ function renderRequestCardV2(request) {
         <div><dt>Funds</dt><dd>${escapeHtml(fundsStatus)}</dd></div>
         <div><dt>Protected</dt><dd>${escapeHtml(protectedAmount)}</dd></div>
         <div><dt>ID check</dt><dd>${escapeHtml(`${verificationRequired} - ${verificationStatus}`)}</dd></div>
+        <div><dt>ID consent</dt><dd>${request.identity_verification_consent ? "Yes" : "No"}</dd></div>
         <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
         <div><dt>Consent</dt><dd>${escapeHtml(consentStatus)}</dd></div>
         <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>
@@ -1194,6 +1253,16 @@ function renderPartnerApplication(application) {
   const categories = Array.isArray(application.service_categories)
     ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
     : "Not specified";
+  const identityProvider =
+    identityProviderLabels[application.identity_verification_provider] ||
+    application.identity_verification_provider ||
+    "Smile ID";
+  const identityStatus =
+    identityStatusLabels[application.identity_verification_status] ||
+    application.identity_verification_status ||
+    "Not started";
+  const identityLink = safeHttpUrl(application.identity_verification_link);
+  const identityReference = application.identity_verification_reference || "Not recorded";
 
   return `
     <article class="request-card partner-card" data-id="${escapeHtml(application.id)}">
@@ -1213,9 +1282,23 @@ function renderPartnerApplication(application) {
         <div><dt>Availability</dt><dd>${escapeHtml(application.availability || "Not specified")}</dd></div>
         <div><dt>Transport</dt><dd>${escapeHtml(application.transport_access || "Not specified")}</dd></div>
         <div><dt>ID consent</dt><dd>${application.id_verification_consent ? "Yes" : "No"}</dd></div>
+        <div><dt>ID provider</dt><dd>${escapeHtml(identityProvider)}</dd></div>
+        <div><dt>ID status</dt><dd>${escapeHtml(identityStatus)}</dd></div>
+        <div><dt>ID reference</dt><dd>${escapeHtml(identityReference)}</dd></div>
+        <div><dt>ID verified</dt><dd>${application.identity_verified_at ? formatDate(application.identity_verified_at) : "Not verified"}</dd></div>
         <div><dt>Proof consent</dt><dd>${application.proof_standard_consent ? "Yes" : "No"}</dd></div>
         <div><dt>Applied</dt><dd>${formatDate(application.created_at)}</dd></div>
       </dl>
+
+      <div class="verification-panel">
+        <span class="status-pill status-${escapeHtml(application.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+        <p>Every Kenya-side receiver must complete ID verification before Swadakta can mark them vetted or assign paid work.</p>
+        ${
+          identityLink
+            ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Open verification link</a>`
+            : "<span>No verification link recorded yet.</span>"
+        }
+      </div>
 
       <p class="request-notes">${escapeHtml(application.notes || "No notes provided.")}</p>
 
@@ -1228,6 +1311,36 @@ function renderPartnerApplication(application) {
           <label class="field-group">
             Internal notes
             <input name="internal_notes" type="text" value="${escapeHtml(application.internal_notes || "")}" placeholder="Checks, risk, next action" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            ID provider
+            <select name="identity_verification_provider">${identityProviderOptions(application.identity_verification_provider || "smile_id")}</select>
+          </label>
+          <label class="field-group">
+            ID status
+            <select name="identity_verification_status">${identityStatusOptions(application.identity_verification_status || "not_started")}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Verification link
+            <input name="identity_verification_link" type="url" value="${escapeHtml(application.identity_verification_link || "")}" placeholder="https://..." />
+          </label>
+          <label class="field-group">
+            Provider reference
+            <input name="identity_verification_reference" type="text" value="${escapeHtml(application.identity_verification_reference || "")}" placeholder="Smile ID job/reference" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Verified at
+            <input name="identity_verified_at" type="datetime-local" value="${escapeHtml(formatDateTimeInput(application.identity_verified_at))}" />
+          </label>
+          <label class="field-group">
+            Verification notes
+            <input name="identity_verification_notes" type="text" value="${escapeHtml(application.identity_verification_notes || "")}" placeholder="Document type, manual review, exception notes" />
           </label>
         </div>
         <div class="form-actions">
@@ -1255,6 +1368,137 @@ function renderPartnerApplications() {
   }
 
   partnerBoard.innerHTML = partnerApplications.map(renderPartnerApplication).join("");
+}
+
+function renderAccountProfileCard(profile) {
+  const identityProvider =
+    identityProviderLabels[profile.identity_verification_provider] ||
+    profile.identity_verification_provider ||
+    "Smile ID";
+  const identityStatus =
+    identityStatusLabels[profile.identity_verification_status] ||
+    profile.identity_verification_status ||
+    "Not started";
+  const identityLink = safeHttpUrl(profile.identity_verification_link);
+  const role = accountRoleLabels[profile.account_role] || profile.account_role || "Client";
+
+  return `
+    <article class="request-card account-card" data-user-id="${escapeHtml(profile.user_id)}">
+      <header class="request-card-header">
+        <div>
+          <span class="request-code">${escapeHtml(role)}</span>
+          <h2>${escapeHtml(profile.full_name || profile.email)}</h2>
+          <p>${escapeHtml(profile.email)} - ${escapeHtml(profile.country || "Country not set")}</p>
+        </div>
+        <span class="status-pill status-${escapeHtml(profile.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+      </header>
+
+      <dl class="request-details">
+        <div><dt>WhatsApp</dt><dd>${escapeHtml(profile.whatsapp || "Not provided")}</dd></div>
+        <div><dt>Kenya base</dt><dd>${escapeHtml(profile.kenya_base || "Not provided")}</dd></div>
+        <div><dt>Currency</dt><dd>${escapeHtml(profile.preferred_currency || "AUD")}</dd></div>
+        <div><dt>ID provider</dt><dd>${escapeHtml(identityProvider)}</dd></div>
+        <div><dt>ID reference</dt><dd>${escapeHtml(profile.identity_verification_reference || "Not recorded")}</dd></div>
+        <div><dt>ID verified</dt><dd>${profile.identity_verified_at ? formatDate(profile.identity_verified_at) : "Not verified"}</dd></div>
+        <div><dt>Onboarding</dt><dd>${escapeHtml(profile.onboarding_status || "started")}</dd></div>
+        <div><dt>Updated</dt><dd>${formatDate(profile.updated_at)}</dd></div>
+      </dl>
+
+      <div class="verification-panel">
+        <span class="status-pill status-${escapeHtml(profile.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+        <p>Every Swadakta user should verify ID before paid work, milestone releases, or sensitive tasks proceed.</p>
+        ${
+          identityLink
+            ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Open account verification link</a>`
+            : "<span>No account verification link recorded yet.</span>"
+        }
+      </div>
+
+      <p class="request-notes">${escapeHtml(profile.profile_notes || "No account notes provided.")}</p>
+
+      <form class="account-verification-form">
+        <div class="field-row">
+          <label class="field-group">
+            ID provider
+            <select name="identity_verification_provider">${identityProviderOptions(profile.identity_verification_provider || "smile_id")}</select>
+          </label>
+          <label class="field-group">
+            ID status
+            <select name="identity_verification_status">${identityStatusOptions(profile.identity_verification_status || "not_started")}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Verification link
+            <input name="identity_verification_link" type="url" value="${escapeHtml(profile.identity_verification_link || "")}" placeholder="https://..." />
+          </label>
+          <label class="field-group">
+            Provider reference
+            <input name="identity_verification_reference" type="text" value="${escapeHtml(profile.identity_verification_reference || "")}" placeholder="Provider job/reference" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Verified at
+            <input name="identity_verified_at" type="datetime-local" value="${escapeHtml(formatDateTimeInput(profile.identity_verified_at))}" />
+          </label>
+          <label class="field-group">
+            Verification notes
+            <input name="identity_verification_notes" type="text" value="${escapeHtml(profile.identity_verification_notes || "")}" placeholder="Document type, review outcome, exception notes" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">Save account ID</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </form>
+    </article>
+  `;
+}
+
+function renderAccountProfiles() {
+  if (!accountBoard) {
+    return;
+  }
+
+  if (!accountProfiles.length) {
+    accountBoard.innerHTML = `
+      <div class="empty-state">
+        <h2>No account profiles yet</h2>
+        <p>Signed-in clients and receivers appear here after saving a portal profile.</p>
+      </div>
+    `;
+    return;
+  }
+
+  accountBoard.innerHTML = accountProfiles.map(renderAccountProfileCard).join("");
+}
+
+async function loadAccountProfiles({ renderPanel = true } = {}) {
+  if (!accountBoard) {
+    return;
+  }
+
+  if (renderPanel) {
+    accountBoard.innerHTML = `<div class="empty-state"><h2>Loading account profiles...</h2></div>`;
+  }
+
+  try {
+    const result = await window.SwadaktaData.listAccountProfiles();
+    accountProfiles = result.data || [];
+    if (renderPanel) {
+      renderAccountProfiles();
+    }
+  } catch (error) {
+    if (renderPanel) {
+      accountBoard.innerHTML = `
+        <div class="empty-state is-error">
+          <h2>Could not load account profiles</h2>
+          <p>${escapeHtml(error.message || "Check account profile policies and admin access.")}</p>
+        </div>
+      `;
+    }
+  }
 }
 
 async function loadPartnerApplications({ renderPanel = true } = {}) {
@@ -1308,12 +1552,39 @@ function getPartnerApplicationByCard(card) {
   return partnerApplications.find((application) => application.id === card.dataset.id);
 }
 
+function getAccountProfileByCard(card) {
+  return accountProfiles.find((profile) => profile.user_id === card.dataset.userId);
+}
+
+function accountVerificationPayload(form) {
+  const formData = new FormData(form);
+  const identityStatus = formData.get("identity_verification_status");
+  const verifiedAt = formData.get("identity_verified_at");
+
+  return {
+    identity_verification_provider: formData.get("identity_verification_provider"),
+    identity_verification_status: identityStatus,
+    identity_verification_link: safeHttpUrl(formData.get("identity_verification_link")),
+    identity_verification_reference: formData.get("identity_verification_reference"),
+    identity_verified_at: identityStatus === "verified" ? verifiedAt || new Date().toISOString() : verifiedAt || null,
+    identity_verification_notes: formData.get("identity_verification_notes"),
+  };
+}
+
 function partnerFormPayload(form) {
   const formData = new FormData(form);
+  const identityStatus = formData.get("identity_verification_status");
+  const verifiedAt = formData.get("identity_verified_at");
 
   return {
     status: formData.get("status"),
     internal_notes: formData.get("internal_notes"),
+    identity_verification_provider: formData.get("identity_verification_provider"),
+    identity_verification_status: identityStatus,
+    identity_verification_link: safeHttpUrl(formData.get("identity_verification_link")),
+    identity_verification_reference: formData.get("identity_verification_reference"),
+    identity_verified_at: identityStatus === "verified" ? verifiedAt || new Date().toISOString() : verifiedAt || null,
+    identity_verification_notes: formData.get("identity_verification_notes"),
   };
 }
 
@@ -1342,6 +1613,13 @@ async function loadRequests() {
           </div>
         `;
       }
+      if (accountBoard) {
+        accountBoard.innerHTML = `
+          <div class="empty-state">
+            <h2>Sign in to view account verification</h2>
+          </div>
+        `;
+      }
       if (founderCommand) {
         founderCommand.innerHTML = `
           <div class="empty-state">
@@ -1352,6 +1630,7 @@ async function loadRequests() {
       }
       fieldUpdates = [];
       fundMilestones = [];
+      accountProfiles = [];
       return;
     }
 
@@ -1359,6 +1638,7 @@ async function loadRequests() {
     signOutButton.hidden = backendMode !== "supabase";
     const [requestResult] = await Promise.all([
       window.SwadaktaData.listRequests(),
+      loadAccountProfiles({ renderPanel: false }),
       loadPartnerApplications({ renderPanel: false }),
       loadFieldUpdates(),
       loadFundMilestones(),
@@ -1366,6 +1646,7 @@ async function loadRequests() {
     backendMode = requestResult.mode;
     requests = requestResult.data || [];
     renderRequests();
+    renderAccountProfiles();
     renderPartnerApplications();
   } catch (error) {
     requestBoard.innerHTML = `
@@ -1376,6 +1657,9 @@ async function loadRequests() {
     `;
     if (partnerBoard) {
       partnerBoard.innerHTML = "";
+    }
+    if (accountBoard) {
+      accountBoard.innerHTML = "";
     }
     if (founderCommand) {
       founderCommand.innerHTML = `
@@ -1635,7 +1919,7 @@ authForm.addEventListener("submit", async (event) => {
     const result = await window.SwadaktaData.signInAdmin(email);
     authStatus.textContent =
       result.mode === "supabase"
-        ? "Magic link sent. Open it in this browser to continue."
+        ? `Magic link sent. It will open ${new URL(result.redirectTo).origin}.`
         : "Demo mode does not require sign-in.";
     if (result.mode === "local") {
       await loadRequests();
@@ -1693,6 +1977,33 @@ requestBoard.addEventListener("submit", async (event) => {
   }
 });
 
+if (accountBoard) {
+  accountBoard.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.target.closest(".account-verification-form");
+    const card = event.target.closest(".account-card");
+    const statusElement = form.querySelector(".copy-status");
+    const profile = getAccountProfileByCard(card);
+
+    if (!profile) {
+      return;
+    }
+
+    statusElement.textContent = "Saving account ID...";
+
+    try {
+      await window.SwadaktaData.updateAccountIdentityVerification(
+        profile.user_id,
+        accountVerificationPayload(form),
+      );
+      statusElement.textContent = "Account ID saved.";
+      await loadAccountProfiles();
+    } catch (error) {
+      statusElement.textContent = error.message || "Could not save account ID.";
+    }
+  });
+}
+
 if (partnerBoard) {
   partnerBoard.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -1708,7 +2019,18 @@ if (partnerBoard) {
     statusElement.textContent = "Saving...";
 
     try {
-      await window.SwadaktaData.updatePartnerApplication(application.id, partnerFormPayload(form));
+      const payload = partnerFormPayload(form);
+      if (payload.status === "vetted" && !application.id_verification_consent) {
+        statusElement.textContent = "Receiver must consent to ID checks before vetting.";
+        return;
+      }
+
+      if (payload.status === "vetted" && payload.identity_verification_status !== "verified") {
+        statusElement.textContent = "Set ID status to Verified before marking receiver as vetted.";
+        return;
+      }
+
+      await window.SwadaktaData.updatePartnerApplication(application.id, payload);
       statusElement.textContent = "Saved.";
       await loadPartnerApplications();
       renderRequests();

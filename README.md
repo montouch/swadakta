@@ -9,6 +9,8 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Client and receiver magic-link portal access with sanitized account summaries
 - Email magic-link account creation/opening for clients, receivers, and admins
 - Portal account status and sign-out controls
+- Signed-in account profiles for role, name, WhatsApp, country/base, Kenya coverage, and preferred currency
+- Account-level ID verification tracking for all clients, receivers, and mixed-role users
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
 - Local demo persistence before backend setup
@@ -16,6 +18,8 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Admin operations dashboard at `admin.html`
 - Receiver/field partner application pipeline for people in Kenya who want jobs
 - Vetted receiver assignment from admin to client requests
+- Mandatory receiver ID verification before a Kenya-side counterpart can be vetted or assigned
+- Mandatory client ID-verification consent on every new public request
 - Admin receiver-update review trail per request before client report publishing
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
 - Copy-ready client updates and field operator briefs
@@ -56,3 +60,5 @@ Then open:
 See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
 
 See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, Wise, and bank-transfer launch workflow.
+
+See [IDENTITY_VERIFICATION.md](IDENTITY_VERIFICATION.md) for the Smile ID-first receiver verification workflow.

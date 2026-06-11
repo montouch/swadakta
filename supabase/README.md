@@ -12,8 +12,10 @@ The schema creates:
 
 - `service_requests`: public intake requests
 - `admin_users`: approved admin users
+- `account_profiles`: signed-in client/receiver profile records linked to Supabase Auth users, including account-level ID verification status
 - `field_updates`: receiver-submitted proof/update notes for assigned jobs
 - `fund_milestones`: admin-controlled funds-protection and staged release records
+- receiver ID verification fields on `partner_applications`, defaulting to Smile ID
 - Consent fields for local-contact permission, professional-scope acceptance, terms acceptance, and privacy acceptance
 - Contact preference, contact window, supporting links, and sensitive-document flags
 - RLS policies:
@@ -25,6 +27,16 @@ The schema creates:
 - Email magic-link account access:
   - Supabase Auth creates or opens an account from the client, receiver, or admin email form
   - client and receiver account summaries are matched by authenticated email
+  - account profile rows are matched by `auth.uid()` and protected with own-row RLS
+- Account verification gates:
+  - every saved account profile has provider/status/link/reference fields
+  - users can save ordinary profile fields but cannot self-mark ID verification as complete
+  - admins update account ID status through `update_account_identity_verification`
+  - new public service requests require client ID-verification consent and default to request verification status `required`
+- Receiver verification gates:
+  - a receiver cannot be marked `Vetted` unless ID consent is true and ID status is `verified`
+  - a service request cannot be assigned to a receiver unless that receiver is vetted and ID-verified
+  - receiver assigned-job functions only return work for vetted and ID-verified receivers
 - private helper functions under `app_private`
 
 Admin activation:

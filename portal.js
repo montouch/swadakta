@@ -13,6 +13,7 @@ const adminStatus = document.querySelector("#portal-admin-status");
 const accountStatusTitle = document.querySelector("#account-status-title");
 const accountStatusDetail = document.querySelector("#account-status-detail");
 const portalSignOut = document.querySelector("#portal-sign-out");
+const accountProfileCard = document.querySelector("#account-profile-card");
 
 const statusLabels = {
   new: "New",
@@ -94,6 +95,23 @@ const partnerStatusLabels = {
   rejected: "Rejected",
 };
 
+const identityProviderLabels = {
+  smile_id: "Smile ID",
+  sumsub: "Sumsub",
+  youverify: "Youverify",
+  manual: "Manual check",
+};
+
+const identityStatusLabels = {
+  not_started: "Not started",
+  link_sent: "Link sent",
+  submitted: "Submitted",
+  verified: "Verified",
+  failed: "Failed",
+  expired: "Expired",
+  manual_review: "Manual review",
+};
+
 const fieldStatusLabels = {
   progress: "Progress",
   blocked: "Blocked",
@@ -109,6 +127,20 @@ const partnerCategoryLabels = {
   deliveries: "Deliveries",
   sourcing: "Supplier sourcing",
   virtual_ops: "Virtual operations",
+};
+
+const accountRoleLabels = {
+  client: "Client - I need jobs done in Kenya",
+  receiver: "Receiver - I want jobs in Kenya",
+  both: "Both client and receiver",
+};
+
+const currencyLabels = {
+  AUD: "AUD",
+  USD: "USD",
+  GBP: "GBP",
+  EUR: "EUR",
+  KES: "KES",
 };
 
 function escapeHtml(value) {
@@ -141,6 +173,12 @@ function formatDate(value) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function optionList(labels, current) {
+  return Object.entries(labels)
+    .map(([value, label]) => `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`)
+    .join("");
 }
 
 function safeHttpUrl(value) {
@@ -268,6 +306,106 @@ function setAccountStatus({ email = "", mode = "supabase", clientCount = 0, rece
   portalSignOut.hidden = false;
 }
 
+function renderAccountProfile(email, profile) {
+  if (!accountProfileCard) {
+    return;
+  }
+
+  const current = profile || {};
+  const role = current.account_role || "client";
+  const currency = current.preferred_currency || "AUD";
+  const identityProvider =
+    identityProviderLabels[current.identity_verification_provider] ||
+    current.identity_verification_provider ||
+    "Smile ID";
+  const identityStatus =
+    identityStatusLabels[current.identity_verification_status] ||
+    current.identity_verification_status ||
+    "Not started";
+  const identityLink = safeHttpUrl(current.identity_verification_link);
+  accountProfileCard.hidden = false;
+  accountProfileCard.innerHTML = `
+    <div>
+      <p class="eyebrow">Account profile</p>
+      <h2>Save your Swadakta identity.</h2>
+      <p>This profile helps Swadakta match requests, receiver applications, and admin follow-up to the right person.</p>
+      <div class="verification-panel">
+        <span class="status-pill status-${escapeHtml(current.identity_verification_status || "not_started")}">${escapeHtml(identityStatus)}</span>
+        <p>Identity verification is required for every Swadakta account before paid or sensitive work starts.</p>
+        <span>Provider: ${escapeHtml(identityProvider)}</span>
+        ${
+          identityLink
+            ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Start ID verification</a>`
+            : "<span>Verification link pending.</span>"
+        }
+      </div>
+    </div>
+    <form class="account-profile-form" id="account-profile-form">
+      <div class="field-row">
+        <label class="field-group">
+          Email
+          <input type="email" value="${escapeHtml(email)}" disabled />
+        </label>
+        <label class="field-group">
+          Account type
+          <select name="account_role">${optionList(accountRoleLabels, role)}</select>
+        </label>
+        <label class="field-group">
+          Preferred currency
+          <select name="preferred_currency">${optionList(currencyLabels, currency)}</select>
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field-group">
+          Full name
+          <input name="full_name" type="text" value="${escapeHtml(current.full_name || "")}" autocomplete="name" />
+        </label>
+        <label class="field-group">
+          WhatsApp
+          <input name="whatsapp" type="tel" value="${escapeHtml(current.whatsapp || "")}" autocomplete="tel" />
+        </label>
+      </div>
+      <div class="field-row">
+        <label class="field-group">
+          Country or diaspora base
+          <input name="country" type="text" value="${escapeHtml(current.country || "")}" placeholder="Australia, UK, USA..." />
+        </label>
+        <label class="field-group">
+          Kenya base or coverage
+          <input name="kenya_base" type="text" value="${escapeHtml(current.kenya_base || "")}" placeholder="Nairobi, Kisumu, Mombasa..." />
+        </label>
+      </div>
+      <label class="field-group">
+        Notes for Swadakta
+        <textarea name="profile_notes" rows="3" placeholder="Family region, work categories, preferred contact window, or anything useful.">${escapeHtml(current.profile_notes || "")}</textarea>
+      </label>
+      <div class="form-actions">
+        <button class="button button-primary" type="submit">Save account profile</button>
+        <span class="copy-status" role="status"></span>
+      </div>
+    </form>
+  `;
+}
+
+function profilePayload(form) {
+  const formData = new FormData(form);
+  const fullName = String(formData.get("full_name") || "").trim();
+  const whatsapp = String(formData.get("whatsapp") || "").trim();
+  const country = String(formData.get("country") || "").trim();
+  const kenyaBase = String(formData.get("kenya_base") || "").trim();
+
+  return {
+    account_role: formData.get("account_role") || "client",
+    full_name: fullName,
+    whatsapp,
+    country,
+    kenya_base: kenyaBase,
+    preferred_currency: formData.get("preferred_currency") || "AUD",
+    profile_notes: String(formData.get("profile_notes") || "").trim(),
+    onboarding_status: fullName && (country || kenyaBase || whatsapp) ? "profile_complete" : "started",
+  };
+}
+
 function renderClientAccount(email, requests) {
   if (!clientAccountPanel) {
     return;
@@ -324,11 +462,31 @@ function renderPartnerAccount(email, applications, jobs = []) {
       const categories = Array.isArray(application.service_categories)
         ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
         : "Not specified";
+      const identityProvider =
+        identityProviderLabels[application.identity_verification_provider] ||
+        application.identity_verification_provider ||
+        "Smile ID";
+      const identityStatus =
+        identityStatusLabels[application.identity_verification_status] ||
+        application.identity_verification_status ||
+        "Not started";
+      const identityLink = safeHttpUrl(application.identity_verification_link);
+      const identityReference = application.identity_verification_reference
+        ? `Reference: ${application.identity_verification_reference}`
+        : "Reference pending";
       return `
         <article>
           <strong>${escapeHtml(application.partner_code)}</strong>
           <span>${escapeHtml(application.kenya_base || "Kenya")} - ${escapeHtml(categories)}</span>
           <span>Status: ${escapeHtml(partnerStatusLabels[application.status] || application.status)}.</span>
+          <span>ID verification: ${escapeHtml(identityStatus)} via ${escapeHtml(identityProvider)}.</span>
+          <span>${escapeHtml(identityReference)}</span>
+          ${application.identity_verified_at ? `<span>Verified: ${escapeHtml(formatDate(application.identity_verified_at))}</span>` : ""}
+          ${
+            identityLink
+              ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Start ID verification</a>`
+              : "<small>Swadakta will send the ID verification link before any paid job is assigned.</small>"
+          }
           <span>Coverage: ${escapeHtml(application.service_regions || "Not specified")}</span>
           <small>Updated ${escapeHtml(formatDate(application.updated_at))}</small>
         </article>
@@ -399,17 +557,23 @@ async function loadAccountPanels() {
 
     if (!email) {
       setAccountStatus({ mode: sessionResult.mode });
+      if (accountProfileCard) {
+        accountProfileCard.hidden = true;
+        accountProfileCard.innerHTML = "";
+      }
       return;
     }
 
-    const [clientResult, partnerResult, assignedJobsResult] = await Promise.all([
+    const [clientResult, partnerResult, assignedJobsResult, profileResult] = await Promise.all([
       window.SwadaktaData.listMyRequests(),
       window.SwadaktaData.listMyPartnerApplications(),
       window.SwadaktaData.listMyAssignedJobs(),
+      window.SwadaktaData.getAccountProfile(),
     ]);
 
     renderClientAccount(email, clientResult.data || []);
     renderPartnerAccount(email, partnerResult.data || [], assignedJobsResult.data || []);
+    renderAccountProfile(email, profileResult.data);
     setAccountStatus({
       email,
       mode: sessionResult.mode,
@@ -438,7 +602,7 @@ async function sendPortalMagicLink(email, hash, statusElement) {
   const result = await window.SwadaktaData.signInPortal(email, redirectTo);
   statusElement.textContent =
     result.mode === "supabase"
-      ? "Account link sent. Open it in this browser to create or open your account."
+      ? `Account link sent. It will open ${new URL(result.redirectTo).origin}.`
       : "Demo mode does not require sign-in.";
   if (result.mode === "local") {
     await loadAccountPanels();
@@ -482,8 +646,35 @@ if (portalSignOut) {
     if (partnerAccountPanel) {
       partnerAccountPanel.innerHTML = "";
     }
+    if (accountProfileCard) {
+      accountProfileCard.hidden = true;
+      accountProfileCard.innerHTML = "";
+    }
     setAccountStatus();
     portalSignOut.textContent = "Sign out";
+  });
+}
+
+if (accountProfileCard) {
+  accountProfileCard.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".account-profile-form");
+    if (!form) {
+      return;
+    }
+
+    event.preventDefault();
+    const statusElement = form.querySelector(".copy-status");
+    statusElement.textContent = "Saving profile...";
+
+    try {
+      const result = await window.SwadaktaData.saveAccountProfile(profilePayload(form));
+      statusElement.textContent = "Profile saved.";
+      const sessionResult = await window.SwadaktaData.getSession();
+      const email = sessionResult.session?.user?.email || result.data?.email || "";
+      renderAccountProfile(email, result.data);
+    } catch (error) {
+      statusElement.textContent = error.message || "Could not save profile.";
+    }
   });
 }
 
@@ -505,7 +696,7 @@ partnerForm.addEventListener("submit", async (event) => {
     partnerStatus.className = "submission-status is-success";
     partnerStatus.innerHTML = `
       <strong>Application submitted.</strong>
-      <span>Partner application ID: ${escapeHtml(result.data.partner_code)}. Swadakta will review before assigning any client work.</span>
+      <span>Partner application ID: ${escapeHtml(result.data.partner_code)}. Swadakta will review your profile and send ID verification before assigning any client work.</span>
     `;
     partnerForm.reset();
   } catch (error) {

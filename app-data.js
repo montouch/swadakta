@@ -3,6 +3,7 @@
   const PARTNER_STORAGE_KEY = "swadakta_partner_applications";
   const FIELD_UPDATE_STORAGE_KEY = "swadakta_field_updates";
   const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
+  const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
   let supabaseClientPromise = null;
 
   function config() {
@@ -12,6 +13,24 @@
   function isSupabaseConfigured() {
     const current = config();
     return Boolean(current.supabaseUrl && current.supabasePublishableKey);
+  }
+
+  function publicBaseUrl() {
+    return String(config().publicBaseUrl || window.location.origin || "").replace(/\/+$/, "");
+  }
+
+  function isLocalOrigin(url) {
+    return ["localhost", "127.0.0.1", "::1"].includes(url.hostname);
+  }
+
+  function normalizeAuthRedirect(redirectTo = window.location.href.split("#")[0]) {
+    const target = new URL(redirectTo, window.location.href);
+
+    if (isLocalOrigin(target) && publicBaseUrl()) {
+      return new URL(`${target.pathname}${target.search}${target.hash}`, publicBaseUrl()).href;
+    }
+
+    return target.href;
   }
 
   function createLocalCode() {
@@ -95,6 +114,18 @@
     localStorage.setItem(FUND_MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
   }
 
+  function readLocalAccountProfile() {
+    try {
+      return JSON.parse(localStorage.getItem(ACCOUNT_PROFILE_STORAGE_KEY) || "null");
+    } catch {
+      return null;
+    }
+  }
+
+  function writeLocalAccountProfile(profile) {
+    localStorage.setItem(ACCOUNT_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  }
+
   function normalizeRequest(payload) {
     const now = new Date().toISOString();
     return {
@@ -115,10 +146,11 @@
       release_condition: "Admin verifies proof and client-safe report before receiver payout.",
       payment_reference: "",
       release_notes: "",
-      identity_verification_required: false,
-      verification_status: "not_required",
+      identity_verification_required: true,
+      verification_status: "required",
       verification_reason: "",
       verified_at: null,
+      identity_verification_consent: false,
       operator_payout: 0,
       field_costs: 0,
       payment_processing_fee: 0,
@@ -192,6 +224,9 @@
       hours_estimate: payload.hours_estimate,
       estimate_aud: payload.estimate_aud,
       notes: payload.notes,
+      identity_verification_required: payload.identity_verification_required,
+      verification_status: payload.verification_status,
+      identity_verification_consent: payload.identity_verification_consent,
       contact_permission: payload.contact_permission,
       professional_boundary_accepted: payload.professional_boundary_accepted,
       terms_accepted_at: payload.terms_accepted_at,
@@ -234,6 +269,12 @@
       internal_notes: "",
       id_verification_consent: false,
       proof_standard_consent: false,
+      identity_verification_provider: "smile_id",
+      identity_verification_status: "not_started",
+      identity_verification_link: "",
+      identity_verification_reference: "",
+      identity_verified_at: null,
+      identity_verification_notes: "",
       notes: "",
       created_at: now,
       updated_at: now,
@@ -276,6 +317,45 @@
       created_at: now,
       updated_at: now,
       ...payload,
+    };
+  }
+
+  function normalizeAccountProfile(payload) {
+    const now = new Date().toISOString();
+    return {
+      user_id: payload.user_id,
+      email: payload.email,
+      account_role: payload.account_role || "client",
+      full_name: payload.full_name || "",
+      whatsapp: payload.whatsapp || "",
+      country: payload.country || "",
+      kenya_base: payload.kenya_base || "",
+      preferred_currency: payload.preferred_currency || "AUD",
+      profile_notes: payload.profile_notes || "",
+      onboarding_status: payload.onboarding_status || "started",
+      identity_verification_provider: payload.identity_verification_provider || "smile_id",
+      identity_verification_status: payload.identity_verification_status || "not_started",
+      identity_verification_link: payload.identity_verification_link || "",
+      identity_verification_reference: payload.identity_verification_reference || "",
+      identity_verified_at: payload.identity_verified_at || null,
+      identity_verification_notes: payload.identity_verification_notes || "",
+      created_at: payload.created_at || now,
+      updated_at: now,
+    };
+  }
+
+  function toAccountProfileDatabasePayload(profile) {
+    return {
+      user_id: profile.user_id,
+      email: profile.email,
+      account_role: profile.account_role,
+      full_name: profile.full_name,
+      whatsapp: profile.whatsapp,
+      country: profile.country,
+      kenya_base: profile.kenya_base,
+      preferred_currency: profile.preferred_currency,
+      profile_notes: profile.profile_notes,
+      onboarding_status: profile.onboarding_status,
     };
   }
 
@@ -511,6 +591,12 @@
     const updatePayload = {
       status: updates.status,
       internal_notes: updates.internal_notes,
+      identity_verification_provider: updates.identity_verification_provider,
+      identity_verification_status: updates.identity_verification_status,
+      identity_verification_link: updates.identity_verification_link,
+      identity_verification_reference: updates.identity_verification_reference,
+      identity_verified_at: updates.identity_verified_at || null,
+      identity_verification_notes: updates.identity_verification_notes,
     };
     const supabase = await getSupabase();
 
@@ -734,8 +820,142 @@
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
+  async function getAccountProfile() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalAccountProfile(), mode: "local" };
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const user = sessionData.session?.user;
+    if (!user) {
+      return { data: null, mode: "supabase" };
+    }
+
+    const { data, error, status } = await supabase
+      .from("account_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error && status !== 406) {
+      throw error;
+    }
+
+    return { data: data || null, mode: "supabase" };
+  }
+
+  async function saveAccountProfile(payload) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const current = readLocalAccountProfile() || {};
+      const profile = normalizeAccountProfile({
+        ...current,
+        ...payload,
+        user_id: current.user_id || "local-user",
+        email: current.email || payload.email || "demo@swadakta.local",
+      });
+      writeLocalAccountProfile(profile);
+      return { data: profile, mode: "local" };
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const user = sessionData.session?.user;
+    if (!user?.id || !user.email) {
+      throw new Error("Sign in before saving your account profile.");
+    }
+
+    const profile = normalizeAccountProfile({
+      ...payload,
+      user_id: user.id,
+      email: user.email,
+      onboarding_status: payload.onboarding_status || "profile_complete",
+    });
+
+    const { data, error } = await supabase
+      .from("account_profiles")
+      .upsert(toAccountProfileDatabasePayload(profile), { onConflict: "user_id" })
+      .select("*")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function listAccountProfiles() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const profile = readLocalAccountProfile();
+      return { data: profile ? [profile] : [], mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("account_profiles")
+      .select("*")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function updateAccountIdentityVerification(userId, updates) {
+    const supabase = await getSupabase();
+    const payload = {
+      identity_verification_provider: updates.identity_verification_provider,
+      identity_verification_status: updates.identity_verification_status,
+      identity_verification_link: updates.identity_verification_link,
+      identity_verification_reference: updates.identity_verification_reference,
+      identity_verified_at: updates.identity_verified_at || null,
+      identity_verification_notes: updates.identity_verification_notes,
+    };
+
+    if (!supabase) {
+      const current = readLocalAccountProfile();
+      if (!current || current.user_id !== userId) {
+        throw new Error("Account profile not found.");
+      }
+      const profile = normalizeAccountProfile({ ...current, ...payload });
+      writeLocalAccountProfile(profile);
+      return { data: profile, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("update_account_identity_verification", {
+      input_user_id: userId,
+      input_provider: payload.identity_verification_provider,
+      input_status: payload.identity_verification_status,
+      input_link: payload.identity_verification_link,
+      input_reference: payload.identity_verification_reference,
+      input_verified_at: payload.identity_verified_at,
+      input_notes: payload.identity_verification_notes,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
+    const emailRedirectTo = normalizeAuthRedirect(redirectTo);
 
     if (!supabase) {
       return { mode: "local" };
@@ -745,7 +965,7 @@
       email,
       options: {
         shouldCreateUser: true,
-        emailRedirectTo: redirectTo,
+        emailRedirectTo,
       },
     });
 
@@ -753,7 +973,7 @@
       throw error;
     }
 
-    return { mode: "supabase" };
+    return { mode: "supabase", redirectTo: emailRedirectTo };
   }
 
   async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
@@ -803,6 +1023,10 @@
     updateFundMilestone,
     submitAssignedJobUpdate,
     updatePartnerApplication,
+    getAccountProfile,
+    saveAccountProfile,
+    listAccountProfiles,
+    updateAccountIdentityVerification,
     signInAdmin,
     signInPortal,
     getSession,

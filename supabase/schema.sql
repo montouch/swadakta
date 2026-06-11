@@ -8,6 +8,27 @@ create table if not exists public.admin_users (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.account_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  email text not null,
+  account_role text not null default 'client',
+  full_name text,
+  whatsapp text,
+  country text,
+  kenya_base text,
+  preferred_currency text not null default 'AUD',
+  profile_notes text,
+  onboarding_status text not null default 'started',
+  identity_verification_provider text not null default 'smile_id',
+  identity_verification_status text not null default 'not_started',
+  identity_verification_link text,
+  identity_verification_reference text,
+  identity_verified_at timestamptz,
+  identity_verification_notes text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.service_requests (
   id uuid primary key default gen_random_uuid(),
   request_code text not null unique default ('SW-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
@@ -51,10 +72,11 @@ create table if not exists public.service_requests (
   release_condition text not null default 'Admin verifies proof and client-safe report before receiver payout.',
   payment_reference text,
   release_notes text,
-  identity_verification_required boolean not null default false,
-  verification_status text not null default 'not_required',
+  identity_verification_required boolean not null default true,
+  verification_status text not null default 'required',
   verification_reason text,
   verified_at timestamptz,
+  identity_verification_consent boolean not null default false,
   operator_payout integer not null default 0,
   field_costs integer not null default 0,
   payment_processing_fee integer not null default 0,
@@ -83,6 +105,12 @@ create table if not exists public.partner_applications (
   internal_notes text,
   id_verification_consent boolean not null default false,
   proof_standard_consent boolean not null default false,
+  identity_verification_provider text not null default 'smile_id',
+  identity_verification_status text not null default 'not_started',
+  identity_verification_link text,
+  identity_verification_reference text,
+  identity_verified_at timestamptz,
+  identity_verification_notes text,
   notes text not null,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -119,6 +147,24 @@ create table if not exists public.fund_milestones (
   updated_at timestamptz not null default now()
 );
 
+alter table public.account_profiles add column if not exists email text;
+alter table public.account_profiles add column if not exists account_role text not null default 'client';
+alter table public.account_profiles add column if not exists full_name text;
+alter table public.account_profiles add column if not exists whatsapp text;
+alter table public.account_profiles add column if not exists country text;
+alter table public.account_profiles add column if not exists kenya_base text;
+alter table public.account_profiles add column if not exists preferred_currency text not null default 'AUD';
+alter table public.account_profiles add column if not exists profile_notes text;
+alter table public.account_profiles add column if not exists onboarding_status text not null default 'started';
+alter table public.account_profiles add column if not exists identity_verification_provider text not null default 'smile_id';
+alter table public.account_profiles add column if not exists identity_verification_status text not null default 'not_started';
+alter table public.account_profiles add column if not exists identity_verification_link text;
+alter table public.account_profiles add column if not exists identity_verification_reference text;
+alter table public.account_profiles add column if not exists identity_verified_at timestamptz;
+alter table public.account_profiles add column if not exists identity_verification_notes text;
+alter table public.account_profiles add column if not exists created_at timestamptz not null default now();
+alter table public.account_profiles add column if not exists updated_at timestamptz not null default now();
+
 alter table public.service_requests add column if not exists client_base text;
 alter table public.service_requests add column if not exists deadline date;
 alter table public.service_requests add column if not exists local_contact_name text;
@@ -147,6 +193,7 @@ alter table public.service_requests add column if not exists identity_verificati
 alter table public.service_requests add column if not exists verification_status text not null default 'not_required';
 alter table public.service_requests add column if not exists verification_reason text;
 alter table public.service_requests add column if not exists verified_at timestamptz;
+alter table public.service_requests add column if not exists identity_verification_consent boolean not null default false;
 alter table public.service_requests add column if not exists operator_payout integer not null default 0;
 alter table public.service_requests add column if not exists field_costs integer not null default 0;
 alter table public.service_requests add column if not exists payment_processing_fee integer not null default 0;
@@ -157,12 +204,81 @@ alter table public.service_requests add column if not exists professional_bounda
 alter table public.service_requests add column if not exists terms_accepted_at timestamptz;
 alter table public.service_requests add column if not exists privacy_accepted_at timestamptz;
 
+alter table public.partner_applications add column if not exists identity_verification_provider text not null default 'smile_id';
+alter table public.partner_applications add column if not exists identity_verification_status text not null default 'not_started';
+alter table public.partner_applications add column if not exists identity_verification_link text;
+alter table public.partner_applications add column if not exists identity_verification_reference text;
+alter table public.partner_applications add column if not exists identity_verified_at timestamptz;
+alter table public.partner_applications add column if not exists identity_verification_notes text;
+
 update public.service_requests
 set client_base = australia_location
 where client_base is null and australia_location is not null;
 
+alter table public.service_requests alter column identity_verification_required set default true;
+alter table public.service_requests alter column verification_status set default 'required';
+
 do $$
 begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_email_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_email_check check (position('@' in email) > 1);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_account_role_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_account_role_check check (account_role in ('client', 'receiver', 'both'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_preferred_currency_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_onboarding_status_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_onboarding_status_check check (
+        onboarding_status in ('started', 'profile_complete', 'needs_review', 'verified')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_identity_provider_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_identity_provider_check check (
+        identity_verification_provider in ('smile_id', 'sumsub', 'youverify', 'manual')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_identity_status_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_identity_status_check check (
+        identity_verification_status in ('not_started', 'link_sent', 'submitted', 'verified', 'failed', 'expired', 'manual_review')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'account_profiles_identity_link_check'
+  ) then
+    alter table public.account_profiles
+      add constraint account_profiles_identity_link_check check (
+        identity_verification_link is null
+        or identity_verification_link = ''
+        or identity_verification_link ~* '^https?://'
+      );
+  end if;
+
   if not exists (
     select 1 from pg_constraint where conname = 'service_requests_quote_amount_check'
   ) then
@@ -360,6 +476,45 @@ begin
   end if;
 
   if not exists (
+    select 1 from pg_constraint where conname = 'partner_applications_identity_provider_check'
+  ) then
+    alter table public.partner_applications
+      add constraint partner_applications_identity_provider_check check (
+        identity_verification_provider in ('smile_id', 'sumsub', 'youverify', 'manual')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'partner_applications_identity_status_check'
+  ) then
+    alter table public.partner_applications
+      add constraint partner_applications_identity_status_check check (
+        identity_verification_status in ('not_started', 'link_sent', 'submitted', 'verified', 'failed', 'expired', 'manual_review')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'partner_applications_identity_link_check'
+  ) then
+    alter table public.partner_applications
+      add constraint partner_applications_identity_link_check check (
+        identity_verification_link is null
+        or identity_verification_link = ''
+        or identity_verification_link ~* '^https?://'
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'partner_applications_vetted_requires_verified_identity_check'
+  ) then
+    alter table public.partner_applications
+      add constraint partner_applications_vetted_requires_verified_identity_check check (
+        status <> 'vetted'
+        or (id_verification_consent is true and identity_verification_status = 'verified')
+      );
+  end if;
+
+  if not exists (
     select 1 from pg_constraint where conname = 'service_requests_assigned_partner_id_fkey'
   ) then
     alter table public.service_requests
@@ -475,6 +630,7 @@ create index if not exists service_requests_status_idx on public.service_request
 create index if not exists service_requests_created_at_idx on public.service_requests (created_at desc);
 create index if not exists service_requests_assigned_partner_id_idx on public.service_requests (assigned_partner_id);
 create index if not exists partner_applications_status_idx on public.partner_applications (status);
+create index if not exists partner_applications_identity_status_idx on public.partner_applications (identity_verification_status);
 create index if not exists partner_applications_created_at_idx on public.partner_applications (created_at desc);
 create index if not exists field_updates_service_request_id_idx on public.field_updates (service_request_id, created_at desc);
 create index if not exists field_updates_partner_application_id_idx on public.field_updates (partner_application_id, created_at desc);
@@ -495,6 +651,16 @@ as $$
   );
 $$;
 
+create or replace function app_private.current_auth_email()
+returns text
+language sql
+stable
+security invoker
+set search_path = public
+as $$
+  select coalesce((select auth.jwt()) ->> 'email', '');
+$$;
+
 create or replace function app_private.set_updated_at()
 returns trigger
 language plpgsql
@@ -507,11 +673,39 @@ begin
 end;
 $$;
 
+create or replace function app_private.ensure_assigned_partner_is_verified()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.assigned_partner_id is not null and not exists (
+    select 1
+    from public.partner_applications pa
+    where pa.id = new.assigned_partner_id
+      and pa.status = 'vetted'
+      and pa.id_verification_consent is true
+      and pa.identity_verification_status = 'verified'
+  ) then
+    raise exception 'Assigned receiver must be vetted with verified ID';
+  end if;
+
+  return new;
+end;
+$$;
+
 drop trigger if exists service_requests_set_updated_at on public.service_requests;
 create trigger service_requests_set_updated_at
 before update on public.service_requests
 for each row
 execute function app_private.set_updated_at();
+
+drop trigger if exists service_requests_assigned_partner_verified on public.service_requests;
+create trigger service_requests_assigned_partner_verified
+before insert or update of assigned_partner_id on public.service_requests
+for each row
+execute function app_private.ensure_assigned_partner_is_verified();
 
 drop trigger if exists partner_applications_set_updated_at on public.partner_applications;
 create trigger partner_applications_set_updated_at
@@ -525,7 +719,14 @@ before update on public.fund_milestones
 for each row
 execute function app_private.set_updated_at();
 
+drop trigger if exists account_profiles_set_updated_at on public.account_profiles;
+create trigger account_profiles_set_updated_at
+before update on public.account_profiles
+for each row
+execute function app_private.set_updated_at();
+
 alter table public.admin_users enable row level security;
+alter table public.account_profiles enable row level security;
 alter table public.service_requests enable row level security;
 alter table public.partner_applications enable row level security;
 alter table public.field_updates enable row level security;
@@ -537,6 +738,39 @@ on public.admin_users
 for select
 to authenticated
 using (user_id = (select auth.uid()));
+
+drop policy if exists "Users can read own account profile" on public.account_profiles;
+drop policy if exists "Admins can read account profiles" on public.account_profiles;
+drop policy if exists "Authenticated users can read permitted account profiles" on public.account_profiles;
+create policy "Authenticated users can read permitted account profiles"
+on public.account_profiles
+for select
+to authenticated
+using (
+  user_id = (select auth.uid())
+  or (select app_private.is_admin())
+);
+
+drop policy if exists "Users can create own account profile" on public.account_profiles;
+create policy "Users can create own account profile"
+on public.account_profiles
+for insert
+to authenticated
+with check (
+  user_id = (select auth.uid())
+  and lower(btrim(email)) = lower(btrim((select app_private.current_auth_email())))
+);
+
+drop policy if exists "Users can update own account profile" on public.account_profiles;
+create policy "Users can update own account profile"
+on public.account_profiles
+for update
+to authenticated
+using (user_id = (select auth.uid()))
+with check (
+  user_id = (select auth.uid())
+  and lower(btrim(email)) = lower(btrim((select app_private.current_auth_email())))
+);
 
 drop policy if exists "Anyone can submit service requests" on public.service_requests;
 create policy "Anyone can submit service requests"
@@ -569,6 +803,9 @@ with check (
   and estimate_aud >= 0
   and contact_permission = true
   and professional_boundary_accepted = true
+  and identity_verification_required = true
+  and verification_status = 'required'
+  and identity_verification_consent = true
   and terms_accepted_at is not null
   and privacy_accepted_at is not null
   and status = 'new'
@@ -660,11 +897,39 @@ grant usage on schema public to anon, authenticated;
 grant usage on schema app_private to anon, authenticated;
 revoke all on function app_private.is_admin() from public;
 grant execute on function app_private.is_admin() to authenticated;
+revoke all on function app_private.current_auth_email() from public;
+grant execute on function app_private.current_auth_email() to authenticated;
 
 revoke truncate, references, trigger on table public.service_requests from anon, authenticated;
 revoke truncate, references, trigger on table public.partner_applications from anon, authenticated;
 revoke insert, update, delete, truncate, references, trigger on table public.field_updates from anon, authenticated;
 revoke delete, truncate, references, trigger on table public.fund_milestones from anon, authenticated;
+revoke delete, truncate, references, trigger on table public.account_profiles from anon, authenticated;
+
+grant select on public.account_profiles to authenticated;
+grant insert (
+  user_id,
+  email,
+  account_role,
+  full_name,
+  whatsapp,
+  country,
+  kenya_base,
+  preferred_currency,
+  profile_notes,
+  onboarding_status
+) on public.account_profiles to authenticated;
+grant update (
+  email,
+  account_role,
+  full_name,
+  whatsapp,
+  country,
+  kenya_base,
+  preferred_currency,
+  profile_notes,
+  onboarding_status
+) on public.account_profiles to authenticated;
 
 grant insert (
   id,
@@ -696,6 +961,9 @@ grant insert (
   notes,
   contact_permission,
   professional_boundary_accepted,
+  identity_verification_required,
+  verification_status,
+  identity_verification_consent,
   terms_accepted_at,
   privacy_accepted_at
 ) on public.service_requests to anon, authenticated;
@@ -722,6 +990,7 @@ grant update (
   verification_status,
   verification_reason,
   verified_at,
+  identity_verification_consent,
   operator_payout,
   field_costs,
   payment_processing_fee,
@@ -748,7 +1017,13 @@ grant insert (
 grant select on public.partner_applications to authenticated;
 grant update (
   status,
-  internal_notes
+  internal_notes,
+  identity_verification_provider,
+  identity_verification_status,
+  identity_verification_link,
+  identity_verification_reference,
+  identity_verified_at,
+  identity_verification_notes
 ) on public.partner_applications to authenticated;
 grant select on public.admin_users to authenticated;
 grant select on public.field_updates to authenticated;
@@ -1004,6 +1279,95 @@ $$;
 revoke all on function public.list_my_service_requests() from public;
 grant execute on function public.list_my_service_requests() to authenticated;
 
+create or replace function app_private.update_account_identity_verification(
+  input_user_id uuid,
+  input_provider text,
+  input_status text,
+  input_link text default null,
+  input_reference text default null,
+  input_verified_at timestamptz default null,
+  input_notes text default null
+)
+returns public.account_profiles
+language plpgsql
+volatile
+security definer
+set search_path = public, app_private
+as $$
+declare
+  updated_profile public.account_profiles%rowtype;
+  clean_status text := lower(btrim(coalesce(input_status, '')));
+  clean_provider text := lower(btrim(coalesce(input_provider, '')));
+begin
+  if not app_private.is_admin() then
+    raise exception 'Admin access required';
+  end if;
+
+  if clean_provider not in ('smile_id', 'sumsub', 'youverify', 'manual') then
+    raise exception 'Invalid identity verification provider';
+  end if;
+
+  if clean_status not in ('not_started', 'link_sent', 'submitted', 'verified', 'failed', 'expired', 'manual_review') then
+    raise exception 'Invalid identity verification status';
+  end if;
+
+  update public.account_profiles
+  set
+    identity_verification_provider = clean_provider,
+    identity_verification_status = clean_status,
+    identity_verification_link = nullif(btrim(coalesce(input_link, '')), ''),
+    identity_verification_reference = nullif(btrim(coalesce(input_reference, '')), ''),
+    identity_verified_at = case
+      when clean_status = 'verified' then coalesce(input_verified_at, now())
+      else input_verified_at
+    end,
+    identity_verification_notes = nullif(btrim(coalesce(input_notes, '')), '')
+  where user_id = input_user_id
+  returning * into updated_profile;
+
+  if not found then
+    raise exception 'Account profile not found';
+  end if;
+
+  return updated_profile;
+end;
+$$;
+
+revoke all on function app_private.update_account_identity_verification(uuid, text, text, text, text, timestamptz, text) from public;
+revoke all on function app_private.update_account_identity_verification(uuid, text, text, text, text, timestamptz, text) from anon;
+grant execute on function app_private.update_account_identity_verification(uuid, text, text, text, text, timestamptz, text) to authenticated;
+
+create or replace function public.update_account_identity_verification(
+  input_user_id uuid,
+  input_provider text,
+  input_status text,
+  input_link text default null,
+  input_reference text default null,
+  input_verified_at timestamptz default null,
+  input_notes text default null
+)
+returns public.account_profiles
+language plpgsql
+volatile
+security invoker
+set search_path = public, app_private
+as $$
+begin
+  return app_private.update_account_identity_verification(
+    input_user_id,
+    input_provider,
+    input_status,
+    input_link,
+    input_reference,
+    input_verified_at,
+    input_notes
+  );
+end;
+$$;
+
+revoke all on function public.update_account_identity_verification(uuid, text, text, text, text, timestamptz, text) from public;
+grant execute on function public.update_account_identity_verification(uuid, text, text, text, text, timestamptz, text) to authenticated;
+
 create or replace function app_private.list_my_partner_applications()
 returns table (
   partner_code text,
@@ -1013,6 +1377,11 @@ returns table (
   availability text,
   transport_access text,
   status text,
+  identity_verification_provider text,
+  identity_verification_status text,
+  identity_verification_link text,
+  identity_verification_reference text,
+  identity_verified_at timestamptz,
   updated_at timestamptz
 )
 language sql
@@ -1028,9 +1397,14 @@ as $$
     pa.availability,
     pa.transport_access,
     pa.status,
+    pa.identity_verification_provider,
+    pa.identity_verification_status,
+    pa.identity_verification_link,
+    pa.identity_verification_reference,
+    pa.identity_verified_at,
     pa.updated_at
   from public.partner_applications pa
-  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(app_private.current_auth_email()))
     and btrim(coalesce(pa.email, '')) <> ''
   order by pa.created_at desc
   limit 50;
@@ -1049,6 +1423,11 @@ returns table (
   availability text,
   transport_access text,
   status text,
+  identity_verification_provider text,
+  identity_verification_status text,
+  identity_verification_link text,
+  identity_verification_reference text,
+  identity_verified_at timestamptz,
   updated_at timestamptz
 )
 language sql
@@ -1109,9 +1488,10 @@ as $$
     sr.updated_at
   from public.service_requests sr
   join public.partner_applications pa on pa.id = sr.assigned_partner_id
-  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(app_private.current_auth_email()))
     and btrim(coalesce(pa.email, '')) <> ''
     and pa.status = 'vetted'
+    and pa.identity_verification_status = 'verified'
     and sr.status in ('paid', 'in_progress', 'waiting_client', 'completed')
   order by sr.updated_at desc
   limit 50;
@@ -1192,9 +1572,10 @@ begin
   from public.service_requests sr
   join public.partner_applications pa on pa.id = sr.assigned_partner_id
   where upper(btrim(sr.request_code)) = upper(btrim(coalesce(input_request_code, '')))
-    and lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+    and lower(btrim(coalesce(pa.email, ''))) = lower(btrim(app_private.current_auth_email()))
     and btrim(coalesce(pa.email, '')) <> ''
     and pa.status = 'vetted'
+    and pa.identity_verification_status = 'verified'
     and sr.status in ('paid', 'in_progress', 'waiting_client', 'completed')
   limit 1;
 

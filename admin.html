@@ -7,7 +7,7 @@
     <meta name="description" content="Operations dashboard for Swadakta Diaspora Concierge service requests." />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#0f332c" />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body class="admin-body">
     <header class="admin-header">
@@ -131,6 +131,15 @@
 
       <section class="request-board" id="request-board" aria-live="polite"></section>
 
+      <section class="partner-admin-panel" aria-labelledby="account-admin-title">
+        <div>
+          <p class="eyebrow">Account Verification</p>
+          <h2 id="account-admin-title">All user identities</h2>
+          <p>Review client, receiver, and mixed-role accounts before paid or sensitive work proceeds.</p>
+        </div>
+        <section class="request-board partner-board" id="account-board" aria-live="polite"></section>
+      </section>
+
       <section class="partner-admin-panel" aria-labelledby="partner-admin-title">
         <div>
           <p class="eyebrow">Receiver Pipeline</p>
@@ -142,7 +151,7 @@
     </main>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=15"></script>
-    <script src="admin.js?v=17"></script>
+    <script src="app-data.js?v=19"></script>
+    <script src="admin.js?v=20"></script>
   </body>
 </html>

@@ -221,6 +221,7 @@ function buildBrief() {
   const permissions = [
     document.querySelector("#permission-contact").checked ? "local contact permission confirmed" : "local contact permission pending",
     document.querySelector("#scope-acceptance").checked ? "service scope accepted" : "service scope pending",
+    document.querySelector("#client-id-consent").checked ? "client ID verification consent confirmed" : "client ID verification consent pending",
     document.querySelector("#terms-acceptance").checked ? "terms and privacy accepted" : "terms and privacy pending",
   ].join(", ");
 
@@ -257,6 +258,7 @@ function buildPayload() {
   const acceptedAt = new Date().toISOString();
   const contactPermission = document.querySelector("#permission-contact").checked;
   const professionalBoundaryAccepted = document.querySelector("#scope-acceptance").checked;
+  const identityVerificationConsent = document.querySelector("#client-id-consent").checked;
   const termsAccepted = document.querySelector("#terms-acceptance").checked;
 
   return {
@@ -285,6 +287,9 @@ function buildPayload() {
     hours_estimate: Number(hours.value),
     estimate_aud: Number(estimateOutput.dataset.amount || calculateEstimate()),
     notes: document.querySelector("#notes").value.trim(),
+    identity_verification_required: true,
+    verification_status: "required",
+    identity_verification_consent: identityVerificationConsent,
     contact_permission: contactPermission,
     professional_boundary_accepted: professionalBoundaryAccepted,
     terms_accepted_at: termsAccepted ? acceptedAt : null,

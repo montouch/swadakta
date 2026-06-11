@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=15" />
+    <link rel="stylesheet" href="styles.css?v=17" />
   </head>
   <body class="portal-body">
     <header class="site-header" aria-label="Portal navigation">
@@ -40,6 +40,8 @@
         </div>
         <button class="button button-secondary" type="button" id="portal-sign-out" hidden>Sign out</button>
       </section>
+
+      <section class="account-profile-card" id="account-profile-card" aria-live="polite" hidden></section>
 
       <section class="portal-hero" aria-labelledby="portal-title">
         <div>
@@ -194,7 +196,7 @@
             <legend>Vetting consent</legend>
             <label>
               <input id="partner-id-consent" name="idConsent" type="checkbox" required />
-              I agree to identity, reference, and work-sample checks before receiving client jobs.
+              I agree to identity verification through Smile ID or another approved provider, plus reference and work-sample checks before receiving client jobs.
             </label>
             <label>
               <input id="partner-proof-consent" name="proofConsent" type="checkbox" required />
@@ -243,7 +245,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=15"></script>
-    <script src="portal.js?v=6"></script>
+    <script src="app-data.js?v=19"></script>
+    <script src="portal.js?v=10"></script>
   </body>
 </html>
