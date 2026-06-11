@@ -249,7 +249,9 @@ using ((select app_private.is_admin()))
 with check ((select app_private.is_admin()));
 
 grant usage on schema public to anon, authenticated;
-grant usage on schema app_private to anon, authenticated;
+revoke usage on schema app_private from anon;
+grant usage on schema app_private to authenticated;
+revoke all on function app_private.is_admin() from public;
 grant execute on function app_private.is_admin() to authenticated;
 
 grant insert (
@@ -340,7 +342,7 @@ as $$
 $$;
 
 revoke all on function app_private.track_service_request(text, text) from public;
-grant execute on function app_private.track_service_request(text, text) to anon, authenticated;
+revoke all on function app_private.track_service_request(text, text) from anon, authenticated;
 
 create or replace function public.track_service_request(
   lookup_code text,
@@ -360,7 +362,7 @@ returns table (
 )
 language sql
 stable
-security invoker
+security definer
 set search_path = public, app_private
 as $$
   select * from app_private.track_service_request(lookup_code, lookup_contact);
