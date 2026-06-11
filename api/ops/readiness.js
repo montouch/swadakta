@@ -147,6 +147,8 @@ const DOCS = {
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
   securityTxt: "https://www.rfc-editor.org/info/rfc9116/",
   vercelHeaders: "https://vercel.com/docs/headers",
+  supabaseApiSecurity: "https://supabase.com/docs/guides/api/securing-your-api",
+  supabaseRls: "https://supabase.com/docs/guides/database/postgres/row-level-security",
 };
 
 function item(id, label, status, detail, next, missing = [], options = {}) {
@@ -218,6 +220,112 @@ async function fetchPublic(path, options = {}) {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+async function fetchSupabaseRest(path, authHeader, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 4500);
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}${path}`, {
+      method: options.method || "GET",
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        authorization: authHeader,
+        accept: "application/json",
+        "content-type": "application/json",
+        ...(options.headers || {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+    const text = options.readText === false ? "" : await response.text().catch(() => "");
+    return {
+      ok: response.ok,
+      status: response.status,
+      text,
+      error: "",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      text: "",
+      error: error.name === "AbortError" ? "Timed out while checking Supabase." : error.message || "Supabase check failed.",
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function accountBackendItems(authHeader) {
+  const [profileRpc, verificationRpc, adminProfileRead] = await Promise.all([
+    fetchSupabaseRest("/rest/v1/rpc/get_my_account_profile", authHeader, {
+      method: "POST",
+      body: {},
+    }),
+    fetchSupabaseRest("/rest/v1/rpc/list_my_identity_verification_requests", authHeader, {
+      method: "POST",
+      body: {},
+    }),
+    fetchSupabaseRest("/rest/v1/account_profiles?select=user_id&limit=1", authHeader, {
+      readText: false,
+    }),
+  ]);
+
+  return [
+    item(
+      "account_profile_read_rpc",
+      "Account profile read RPC",
+      profileRpc.ok ? "ready" : "warning",
+      profileRpc.ok
+        ? "get_my_account_profile responded through Supabase REST for the signed-in admin session."
+        : `Profile RPC check returned ${profileRpc.status || profileRpc.error}.`,
+      profileRpc.ok
+        ? "Users can land in account home while profile details load through the safe RPC path."
+        : "Apply the get_my_account_profile RPC migration and grants before onboarding more users.",
+      profileRpc.ok ? [] : ["get_my_account_profile"],
+      {
+        docs_url: DOCS.supabaseApiSecurity,
+        priority: 11,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "identity_queue_read_rpc",
+      "Identity queue read RPC",
+      verificationRpc.ok ? "ready" : "warning",
+      verificationRpc.ok
+        ? "list_my_identity_verification_requests responded for the signed-in admin session."
+        : `Identity queue RPC check returned ${verificationRpc.status || verificationRpc.error}.`,
+      verificationRpc.ok
+        ? "Signed-in users can see verification request status without founder manual lookup."
+        : "Apply identity verification queue RPC migrations and grants before relying on provider-led verification.",
+      verificationRpc.ok ? [] : ["list_my_identity_verification_requests"],
+      {
+        docs_url: DOCS.supabaseRls,
+        priority: 15,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "admin_profile_read_policy",
+      "Admin account profile read policy",
+      adminProfileRead.ok ? "ready" : "warning",
+      adminProfileRead.ok
+        ? "The admin session can reach account_profiles through RLS without exposing profile rows in this report."
+        : `Account profile policy check returned ${adminProfileRead.status || adminProfileRead.error}.`,
+      adminProfileRead.ok
+        ? "Admin tools can inspect onboarding and verification status when needed."
+        : "Check account_profiles grants plus admin read RLS policy.",
+      adminProfileRead.ok ? [] : ["account_profiles select policy"],
+      {
+        docs_url: DOCS.supabaseApiSecurity,
+        priority: 16,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+  ];
 }
 
 async function siteTrustItems() {
@@ -355,7 +463,7 @@ async function siteTrustItems() {
   ];
 }
 
-async function readinessReport(user) {
+async function readinessReport(user, authHeader) {
   const serviceRoleConfigured = anyEnv([
     "SUPABASE_SERVICE_ROLE_KEY",
     "SUPABASE_SECRET_KEY",
@@ -416,6 +524,11 @@ async function readinessReport(user) {
       id: "public_trust",
       label: "Public trust and domain safety",
       items: await siteTrustItems(),
+    },
+    {
+      id: "account_onboarding",
+      label: "Account onboarding backend",
+      items: await accountBackendItems(authHeader),
     },
     {
       id: "payments",
@@ -603,7 +716,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const user = await assertAdmin(req.headers.authorization);
-    sendJson(res, 200, await readinessReport(user));
+    sendJson(res, 200, await readinessReport(user, req.headers.authorization));
   } catch (error) {
     sendJson(res, error.statusCode || 500, {
       error: error.message || "Could not load operations readiness.",

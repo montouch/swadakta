@@ -122,6 +122,12 @@ const requiredAdminOpsMarkers = [
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
 ];
+const requiredReadinessApiMarkers = [
+  "accountBackendItems",
+  "account_onboarding",
+  "get_my_account_profile",
+  "list_my_identity_verification_requests",
+];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
   "Disallow: /admin-ops",
@@ -293,6 +299,13 @@ const localAssistantHtml = await readLocal("assistant.html");
 for (const marker of requiredAssistantMarkers) {
   if (!localAssistant.includes(marker) && !localAssistantHtml.includes(marker)) {
     fail(failures, `Local assistant flow is missing marker ${marker}`);
+  }
+}
+
+const localReadinessApi = await readLocal("api/ops/readiness.js");
+for (const marker of requiredReadinessApiMarkers) {
+  if (!localReadinessApi.includes(marker)) {
+    fail(failures, `Local readiness API is missing marker ${marker}`);
   }
 }
 
