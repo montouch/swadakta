@@ -11,6 +11,16 @@
       ],
       "destination": "https://swadakta.com/$1",
       "permanent": true
+    },
+    {
+      "source": "/admin",
+      "destination": "/admin-readiness",
+      "permanent": false
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/admin-readiness",
+      "permanent": false
     }
   ],
   "headers": [

@@ -25,7 +25,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Subtle client seal for job-giving accounts based on ID, funded work, and completion history
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
-- Admin operations dashboard at `admin.html`
+- Admin operations entry at `admin.html` redirects to the authenticated launch readiness cockpit at `admin-readiness.html`
 - Receiver/field partner application pipeline for people in supported countries who want jobs
 - Vetted receiver assignment from admin to client requests
 - Mandatory receiver ID verification before a corridor counterpart can be vetted or assigned
@@ -80,7 +80,7 @@ Then open:
 
 - Client site: `http://localhost:4173`
 - Portal: `http://localhost:4173/portal.html`
-- Founder console: `http://localhost:4173/admin.html`
+- Founder console: `http://localhost:4173/admin.html` redirects to `http://localhost:4173/admin-readiness.html`
 
 ## Go live
 

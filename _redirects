@@ -1,5 +1,6 @@
 https://www.swadakta.com/* https://swadakta.com/:splat 301
-/admin /admin.html 200
+/admin /admin-readiness 302
+/admin.html /admin-readiness 302
 /admin-readiness /admin-readiness.html 200
 /admin-verification /admin-verification.html 200
 /assistant /assistant.html 200

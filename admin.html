@@ -1,513 +1,74 @@
-<!DOCTYPE html>
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta http-equiv="refresh" content="0; url=admin-readiness.html" />
+    <link rel="canonical" href="https://swadakta.com/admin-readiness" />
+    <title>Opening Swadakta Admin</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #131b2e;
+        background: #faf8ff;
+      }
 
-<html lang="en"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Swadakta | Admin Console</title>
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<script id="tailwind-config">
-        tailwind.config = {
-            darkMode: "class",
-            theme: {
-                extend: {
-                    "colors": {
-                        "on-surface": "#131b2e",
-                        "on-primary-container": "#fffbff",
-                        "primary-fixed": "#e1e0ff",
-                        "surface": "#faf8ff",
-                        "tertiary-fixed": "#f0dbff",
-                        "background": "#faf8ff",
-                        "on-secondary-fixed": "#141d21",
-                        "surface-tint": "#494bd6",
-                        "surface-bright": "#faf8ff",
-                        "tertiary": "#8127cf",
-                        "secondary": "#576065",
-                        "on-primary-fixed-variant": "#2f2ebe",
-                        "error": "#ba1a1a",
-                        "primary-fixed-dim": "#c0c1ff",
-                        "surface-container": "#eaedff",
-                        "tertiary-container": "#9c48ea",
-                        "on-error-container": "#93000a",
-                        "outline-variant": "#c7c4d7",
-                        "on-primary": "#ffffff",
-                        "outline": "#767586",
-                        "tertiary-fixed-dim": "#ddb7ff",
-                        "on-background": "#131b2e",
-                        "surface-variant": "#dae2fd",
-                        "inverse-surface": "#283044",
-                        "on-secondary": "#ffffff",
-                        "surface-dim": "#d2d9f4",
-                        "on-secondary-container": "#5d666b",
-                        "surface-container-high": "#e2e7ff",
-                        "on-error": "#ffffff",
-                        "on-secondary-fixed-variant": "#3f484d",
-                        "on-primary-fixed": "#07006c",
-                        "surface-container-highest": "#dae2fd",
-                        "surface-container-low": "#f2f3ff",
-                        "on-tertiary-container": "#fffbff",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface-variant": "#464554",
-                        "error-container": "#ffdad6",
-                        "secondary-fixed-dim": "#bfc8ce",
-                        "primary-container": "#6063ee",
-                        "inverse-on-surface": "#eef0ff",
-                        "secondary-fixed": "#dbe4ea",
-                        "secondary-container": "#dbe4ea",
-                        "primary": "#4648d4",
-                        "on-tertiary": "#ffffff",
-                        "on-tertiary-fixed-variant": "#6900b3",
-                        "inverse-primary": "#c0c1ff",
-                        "on-tertiary-fixed": "#2c0051"
-                    },
-                    "borderRadius": {
-                        "DEFAULT": "0.25rem",
-                        "lg": "0.5rem",
-                        "xl": "0.75rem",
-                        "full": "9999px"
-                    },
-                    "spacing": {
-                        "section-gap": "120px",
-                        "base": "8px",
-                        "margin-mobile": "16px",
-                        "margin-desktop": "48px",
-                        "gutter": "24px",
-                        "container-max": "1280px"
-                    },
-                    "fontFamily": {
-                        "display-lg": ["Manrope"],
-                        "label-md": ["Geist"],
-                        "body-lg": ["Inter"],
-                        "headline-sm": ["Manrope"],
-                        "headline-lg": ["Manrope"],
-                        "label-sm": ["Geist"],
-                        "display-lg-mobile": ["Manrope"],
-                        "body-md": ["Inter"]
-                    },
-                    "fontSize": {
-                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
-                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
-                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
-                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
-                    }
-                }
-            }
-        }
-    </script>
-<style>
-        body {
-            background: radial-gradient(circle at 0% 0%, #f2f3ff 0%, #faf8ff 50%, #eef0ff 100%);
-            min-height: 100vh;
-        }
-        .glass-panel {
-            backdrop-filter: blur(24px);
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-        }
-        .sunken-glass {
-            background: rgba(218, 226, 253, 0.3);
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .rim-light {
-            box-shadow: 0 0 0 1px rgba(255,255,255,0.4), 0 20px 40px rgba(0,0,0,0.04);
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #c7c4d7;
-            border-radius: 10px;
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
+      body {
+        min-height: 100vh;
+        margin: 0;
+        display: grid;
+        place-items: center;
+        background:
+          radial-gradient(circle at 12% 0%, rgb(96 99 238 / 18%), transparent 34%),
+          radial-gradient(circle at 88% 18%, rgb(129 39 207 / 14%), transparent 34%),
+          #faf8ff;
+      }
+
+      main {
+        width: min(90vw, 32rem);
+        padding: 2rem;
+        border: 1px solid rgb(255 255 255 / 62%);
+        border-radius: 1.5rem;
+        background: rgb(255 255 255 / 76%);
+        box-shadow: 0 24px 70px rgb(48 52 150 / 12%);
+        backdrop-filter: blur(24px);
+      }
+
+      p {
+        color: #464554;
+        line-height: 1.6;
+      }
+
+      a {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        margin-top: 0.75rem;
+        padding: 0 1.15rem;
+        border-radius: 999px;
+        background: #4648d4;
+        color: #fff;
+        font-weight: 800;
+        text-decoration: none;
+      }
     </style>
-</head>
-<body class="font-body-md text-on-surface">
-<!-- Global Background Shader -->
-<div class="fixed inset-0 -z-10 opacity-30">
-
-</div>
-<div class="flex min-h-screen">
-<!-- SideNavBar - JSON Command Execution -->
-<aside class="h-screen w-64 fixed left-0 top-0 bg-surface/80 backdrop-blur-2xl dark:bg-on-surface/80 border-r border-white/10 shadow-xl z-50 hidden lg:flex flex-col p-6 space-y-4">
-<div class="mb-8">
-<h1 class="font-display-lg text-headline-sm font-black text-primary">Swadakta</h1>
-<p class="font-label-sm text-label-sm text-secondary tracking-wider mt-1 uppercase">Admin Console</p>
-</div>
-<nav class="flex-1 space-y-1">
-<!-- Dashboard (Active) -->
-<a class="flex items-center gap-3 px-4 py-3 bg-primary-container/20 text-primary rounded-xl font-bold transition-transform active:scale-95" href="admin.html">
-<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
-<span class="font-body-md">Dashboard</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:translate-x-1 transition-all rounded-xl" href="brief.html">
-<span class="material-symbols-outlined" data-icon="work">work</span>
-<span class="font-body-md">Marketplace</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:translate-x-1 transition-all rounded-xl" href="tracking.html">
-<span class="material-symbols-outlined" data-icon="support_agent">support_agent</span>
-<span class="font-body-md">Concierge</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:translate-x-1 transition-all rounded-xl" href="admin-verification.html">
-<span class="material-symbols-outlined" data-icon="verified_user">verified_user</span>
-<span class="font-body-md">Verification</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-variant/50 hover:translate-x-1 transition-all rounded-xl" href="admin-readiness.html">
-<span class="material-symbols-outlined" data-icon="monitoring">monitoring</span>
-<span class="font-body-md">Readiness</span>
-</a>
-</nav>
-<div class="pt-6 border-t border-outline-variant/30 space-y-1">
-<div class="flex items-center gap-3 px-2 mb-4">
-<img alt="Founder Profile" class="w-10 h-10 rounded-full border-2 border-primary-container/30 object-cover" data-alt="A professional headshot of a modern tech founder with a friendly expression, wearing a tailored blazer in a bright, minimalist studio environment with soft, high-key lighting. The style is clean and high-end, matching a premium SaaS brand aesthetic with subtle purple and blue lens flares." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA-FwPciMWDkdsV10kje8fLDGVHwvaIk-m02OYuugZmYJl__jJZjwQtNOF8MDXMxynzFI37sHRICNdHaCsSshpgd36nLDjJp4nZ7mQJq7Bf975pRZjhCNNYK9NYlu5vATBc3yYHBUCqxsfSI1ju-mSQC_zcWpl789J8eNqHo-EYLQkK6UxVWVKxOgrAl2K32R_ZXhRjPfGhBvfDlAXOXsCzM3vpwr2uaQIz-E8OOOqUpeluOXRK_lkyFiSR8EWaMzLo1mazTMAjk-U0"/>
-<div>
-<p class="font-label-md text-on-surface font-bold">Admin Console</p>
-<p class="text-[10px] text-secondary uppercase font-bold tracking-tighter">Global Operations</p>
-</div>
-</div>
-<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-primary transition-colors" href="portal.html">
-<span class="material-symbols-outlined" data-icon="settings">settings</span>
-<span class="font-label-md">Settings</span>
-</a>
-<a class="flex items-center gap-3 px-4 py-2 text-on-surface-variant hover:text-error transition-colors" href="portal.html">
-<span class="material-symbols-outlined" data-icon="logout">logout</span>
-<span class="font-label-md">Logout</span>
-</a>
-</div>
-</aside>
-<!-- Main Canvas -->
-<main class="flex-1 ml-0 lg:ml-64 p-margin-mobile lg:p-margin-desktop space-y-8">
-<!-- Header Section -->
-<header class="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
-<div>
-<h2 class="font-display-lg text-headline-lg text-on-surface">Operational Queues</h2>
-<p class="font-body-md text-secondary max-w-2xl mt-2">Real-time management of verification exceptions, compliance risks, and legal disputes across the global corridor.</p>
-</div>
-<div class="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-<div class="px-4 py-2 rounded-full border border-error/20 bg-error/5 flex items-center gap-2">
-<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
-<span class="font-label-sm text-error">12 Critical Holds</span>
-</div>
-<a class="px-6 py-3 bg-primary text-white font-label-md rounded-xl shadow-lg hover:scale-[1.02] transition-transform active:scale-95 flex items-center gap-2" href="brief.html">
-<span class="material-symbols-outlined text-[20px]" data-icon="add">add</span>
-                        New Request
-                    </a>
-</div>
-</header>
-<!-- Operational Grid -->
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
-<!-- Column 1: Verification -->
-<section class="space-y-4">
-<div class="flex items-center justify-between px-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-primary" data-icon="verified">verified</span>
-<h3 class="font-headline-sm text-headline-sm">Verification</h3>
-</div>
-<span class="px-2 py-0.5 bg-surface-container rounded-full font-label-sm text-secondary">08</span>
-</div>
-<div class="space-y-4 h-[calc(100vh-340px)] overflow-y-auto custom-scrollbar pr-2">
-<!-- Card 1 -->
-<div class="glass-panel rim-light rounded-2xl p-5 hover:-translate-y-1 transition-all cursor-pointer group">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-secondary-container/50 text-secondary font-label-sm">ID Exception</span>
-<span class="text-[10px] text-secondary">2h ago</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Marcus Thorne</h4>
-<p class="font-body-md text-secondary text-sm line-clamp-2">Passport scan showing unusual UV reflection in top-right sector. Needs manual optical review.</p>
-<div class="mt-4 flex items-center justify-between">
-<div class="flex -space-x-2">
-<div class="w-6 h-6 rounded-full bg-primary-container flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">AI</div>
-<div class="w-6 h-6 rounded-full bg-tertiary-container flex items-center justify-center text-[10px] text-white font-bold border-2 border-white">MT</div>
-</div>
-<button class="text-primary font-label-md group-hover:underline">Review Details</button>
-</div>
-</div>
-<!-- Card 2 -->
-<div class="glass-panel rim-light rounded-2xl p-5 hover:-translate-y-1 transition-all cursor-pointer group">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-tertiary-fixed/30 text-tertiary font-label-sm">Receiver Vetting</span>
-<span class="text-[10px] text-secondary">4h ago</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Global Logistics Ltd.</h4>
-<p class="font-body-md text-secondary text-sm line-clamp-2">High volume receiver in Nigeria. Entity name mismatch with bank account string.</p>
-<div class="mt-4 flex items-center justify-between">
-<div class="flex items-center gap-1">
-<span class="material-symbols-outlined text-[14px] text-error" data-icon="warning">warning</span>
-<span class="font-label-sm text-error">Flagged</span>
-</div>
-<button class="text-primary font-label-md group-hover:underline">Vetting Console</button>
-</div>
-</div>
-<!-- Card 3 -->
-<div class="glass-panel rim-light rounded-2xl p-5 hover:-translate-y-1 transition-all cursor-pointer group opacity-80">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-secondary-container/50 text-secondary font-label-sm">ID Exception</span>
-<span class="text-[10px] text-secondary">6h ago</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Elena Rodriguez</h4>
-<p class="font-body-md text-secondary text-sm">Expired National ID provided for concierge service in Spain. Requesting secondary proof.</p>
-<div class="mt-4 flex items-center justify-between">
-<span class="font-label-sm text-secondary italic">Awaiting User</span>
-<button class="text-primary font-label-md group-hover:underline">View History</button>
-</div>
-</div>
-</div>
-</section>
-<!-- Column 2: Compliance -->
-<section class="space-y-4">
-<div class="flex items-center justify-between px-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-tertiary" data-icon="policy">policy</span>
-<h3 class="font-headline-sm text-headline-sm">Compliance</h3>
-</div>
-<span class="px-2 py-0.5 bg-surface-container rounded-full font-label-sm text-secondary">04</span>
-</div>
-<div class="space-y-4 h-[calc(100vh-340px)] overflow-y-auto custom-scrollbar pr-2">
-<!-- Risk Card -->
-<div class="glass-panel rim-light rounded-2xl p-5 border-l-4 border-error/50">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-error/10 text-error font-label-sm">Restricted Goods</span>
-<span class="material-symbols-outlined text-error" data-icon="priority_high">priority_high</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Consignment #9921-X</h4>
-<p class="font-body-md text-on-surface text-sm font-semibold mt-2">Hazardous Class 4 detection</p>
-<p class="font-body-md text-secondary text-sm mt-1">Manifest lists "Personal Electronics" but spectral scan suggests unshielded lithium-ion bulk packs.</p>
-<div class="sunken-glass rounded-xl p-3 mt-4">
-<div class="flex justify-between text-[11px] font-bold text-secondary uppercase mb-2">
-<span>AI Risk Score</span>
-<span class="text-error">94% High</span>
-</div>
-<div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
-<div class="bg-error w-[94%] h-full"></div>
-</div>
-</div>
-<div class="mt-4 flex gap-2">
-<button class="flex-1 py-2 bg-on-surface text-white rounded-lg font-label-sm">Freeze</button>
-<button class="flex-1 py-2 border border-outline-variant rounded-lg font-label-sm">Inspect</button>
-</div>
-</div>
-<!-- Proof Review -->
-<div class="glass-panel rim-light rounded-2xl p-5">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-surface-container text-secondary font-label-sm">Proof Review</span>
-<span class="text-[10px] text-secondary">1h ago</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Source of Funds</h4>
-<p class="font-body-md text-secondary text-sm">Escrow transaction #29938 ($45k). User uploaded property sale deed. Verify notary seal authenticity.</p>
-<div class="mt-4 flex items-center gap-3">
-<div class="w-12 h-12 rounded-lg bg-surface-container flex items-center justify-center">
-<span class="material-symbols-outlined text-secondary" data-icon="description">description</span>
-</div>
-<div>
-<p class="font-label-md">deed_final.pdf</p>
-<p class="text-[11px] text-secondary">2.4 MB • Scanned</p>
-</div>
-</div>
-</div>
-</div>
-</section>
-<!-- Column 3: Finance/Legal -->
-<section class="space-y-4">
-<div class="flex items-center justify-between px-2">
-<div class="flex items-center gap-2">
-<span class="material-symbols-outlined text-secondary" data-icon="account_balance">account_balance</span>
-<h3 class="font-headline-sm text-headline-sm">Finance &amp; Legal</h3>
-</div>
-<span class="px-2 py-0.5 bg-surface-container rounded-full font-label-sm text-secondary">06</span>
-</div>
-<div class="space-y-4 h-[calc(100vh-340px)] overflow-y-auto custom-scrollbar pr-2">
-<!-- Payment Hold -->
-<div class="glass-panel rim-light rounded-2xl p-5 border-l-4 border-primary/50">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm">Payment Hold</span>
-<span class="font-headline-sm text-body-lg text-primary">$12,400</span>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Z-Pay Gate Intersection</h4>
-<p class="font-body-md text-secondary text-sm mb-4">Intermediary bank holding funds for "Additional KYC of Ultimate Beneficiary."</p>
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-[16px] text-secondary" data-icon="schedule">schedule</span>
-<span class="font-label-sm text-secondary">48h SLA remaining</span>
-</div>
-<button class="w-full py-3 bg-surface-variant/30 hover:bg-surface-variant/50 text-on-surface font-label-md rounded-xl transition-colors">Open Finance Bridge</button>
-</div>
-<!-- Dispute -->
-<div class="glass-panel rim-light rounded-2xl p-5">
-<div class="flex justify-between items-start mb-3">
-<span class="px-3 py-1 rounded-full bg-error/10 text-error font-label-sm">Dispute</span>
-<div class="flex gap-1">
-<span class="material-symbols-outlined text-[18px] text-on-surface" data-icon="gavel">gavel</span>
-</div>
-</div>
-<h4 class="font-headline-sm text-body-lg mb-1">Contract Dispute #88</h4>
-<p class="font-body-md text-secondary text-sm">Provider claims delivery; User claims "Non-conforming items." Mediation required for release.</p>
-<div class="mt-4 p-3 bg-surface-container/30 rounded-xl flex items-center justify-between">
-<span class="font-label-sm">Concierge Assigned</span>
-<span class="font-label-md font-bold">Sarah J.</span>
-</div>
-</div>
-</div>
-</section>
-</div>
-<!-- AI Assistant Panel (Bento Bottom Area) -->
-<section class="grid grid-cols-1 lg:grid-cols-4 gap-gutter mt-8">
-<div class="lg:col-span-3 glass-panel rim-light rounded-3xl p-6 overflow-hidden relative">
-<!-- Background AI Glow -->
-<div class="absolute -right-20 -top-20 w-64 h-64 bg-tertiary/10 blur-[80px] rounded-full"></div>
-<div class="flex items-center gap-4 mb-6">
-<div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-tertiary to-primary flex items-center justify-center text-white shadow-lg">
-<span class="material-symbols-outlined" data-icon="psychology">psychology</span>
-</div>
-<div>
-<h3 class="font-headline-lg text-headline-sm">AI Triage Hub</h3>
-<p class="font-body-md text-secondary text-sm">Automated analysis of active operational bottlenecks.</p>
-</div>
-</div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<div class="space-y-4">
-<div class="flex items-center gap-2 font-label-md text-on-surface">
-<span class="material-symbols-outlined text-tertiary text-[20px]" data-icon="auto_awesome">auto_awesome</span>
-                                Automated Summary
-                            </div>
-<div class="sunken-glass p-4 rounded-2xl">
-<p class="text-sm text-secondary leading-relaxed">
-<strong class="text-on-surface">Current Trend:</strong> 24% spike in Nigerian ID exceptions. AI suggests updating the "OCR Tolerance" for Lagos-issued passports due to recent watermark change.
-                                </p>
-</div>
-</div>
-<div class="space-y-4">
-<div class="flex items-center gap-2 font-label-md text-on-surface">
-<span class="material-symbols-outlined text-primary text-[20px]" data-icon="drafts">drafts</span>
-                                Draft Responses
-                            </div>
-<div class="sunken-glass p-4 rounded-2xl">
-<p class="text-[11px] text-secondary italic mb-2">Suggested for Dispute #88:</p>
-<p class="text-sm text-on-surface line-clamp-3">"We have received your claim regarding consignment #88. Based on our tracking logs..."</p>
-<button class="mt-2 text-primary font-bold text-[12px] uppercase tracking-wider">Use Draft</button>
-</div>
-</div>
-<div class="space-y-4">
-<div class="flex items-center gap-2 font-label-md text-on-surface">
-<span class="material-symbols-outlined text-secondary text-[20px]" data-icon="checklist">checklist</span>
-                                Action Checklist
-                            </div>
-<ul class="space-y-2">
-<li class="flex items-center gap-2 text-sm text-secondary">
-<span class="material-symbols-outlined text-[16px] text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                                    Sanctions Check Clear
-                                </li>
-<li class="flex items-center gap-2 text-sm text-secondary">
-<span class="material-symbols-outlined text-[16px] text-primary" data-icon="check_circle" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-                                    Address Verified
-                                </li>
-<li class="flex items-center gap-2 text-sm text-on-surface font-semibold">
-<span class="material-symbols-outlined text-[16px]" data-icon="radio_button_unchecked">radio_button_unchecked</span>
-                                    Manual ID Match (Pending)
-                                </li>
-</ul>
-</div>
-</div>
-</div>
-<div class="glass-panel rim-light rounded-3xl p-6 flex flex-col justify-between border-tertiary/20">
-<div>
-<div class="flex items-center gap-2 mb-4">
-<span class="material-symbols-outlined text-tertiary" data-icon="security">security</span>
-<h4 class="font-label-md text-on-surface font-bold">System Guardrails</h4>
-</div>
-<div class="p-4 bg-tertiary/5 rounded-2xl border border-tertiary/10">
-<div class="flex gap-2 items-start text-tertiary mb-3">
-<span class="material-symbols-outlined text-[20px]" data-icon="info">info</span>
-<p class="font-label-sm font-bold leading-tight uppercase">AI Constraints</p>
-</div>
-<p class="text-sm text-secondary italic">"AI cannot release funds or finalize legal commitments. Human verification required for all transactions &gt; $1,000."</p>
-</div>
-</div>
-<div class="mt-4">
-<p class="text-[10px] text-secondary uppercase font-bold tracking-widest mb-2">Live Node Status</p>
-<div class="flex items-center gap-2">
-<div class="flex-1 h-1 bg-primary rounded-full"></div>
-<div class="flex-1 h-1 bg-primary rounded-full"></div>
-<div class="flex-1 h-1 bg-primary/20 rounded-full"></div>
-<span class="text-[10px] font-bold text-primary">68%</span>
-</div>
-</div>
-</div>
-</section>
-</main>
-</div>
-<!-- Modal Backdrop (Hidden) -->
-<div class="fixed inset-0 bg-on-surface/40 backdrop-blur-md z-[60] hidden opacity-0 transition-opacity duration-300" id="modal-backdrop">
-<div class="flex items-center justify-center min-h-screen p-6">
-<div class="glass-panel max-w-2xl w-full rounded-3xl p-8 shadow-2xl translate-y-12 transition-transform duration-300" id="modal-content">
-<div class="flex justify-between items-center mb-6">
-<h2 class="font-headline-lg text-headline-sm">Verify Consignment #9921-X</h2>
-<button class="w-10 h-10 rounded-full hover:bg-surface-container flex items-center justify-center transition-colors" onclick="closeModal()">
-<span class="material-symbols-outlined" data-icon="close">close</span>
-</button>
-</div>
-<div class="space-y-6">
-<div class="aspect-video w-full rounded-2xl overflow-hidden sunken-glass flex items-center justify-center">
-<img alt="Spectral scan of a shipping pallet" class="w-full h-full object-cover mix-blend-overlay" data-alt="A high-tech spectral X-ray scan of a logistics pallet filled with various rectangular boxes. The scan displays heat-map colors ranging from deep blue to intense orange and red, highlighting internal components like wires and dense metallic masses. The style is industrial, crisp, and high-contrast, fitting for a sophisticated compliance surveillance interface." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg4rtHlcl24YubmB7v0CQ64gVir5x59o0QbR9bjIUiuObIgK-6vIl7gXFMduWFgjsark1bAebMLIhVPwotRQ0xk7Lb9c5tpJp7THGiRM0b9oXm1DuVD7F6oYKWM2xY4kQBEeibFlHSY6R1PuRgLEaUB1iUUImQ8UWhrp0W5kDanUuFR-n7Jdk7GvDr5FSRL2REO2QMhOt_PP0uBFZNCsHM49jlM2equwBDJute7VZa7hrYRpj0cZHCAoxLKvpTj9xMqcY4HuBqKtYc"/>
-</div>
-<div class="grid grid-cols-2 gap-4">
-<div class="p-4 rounded-2xl bg-surface-container/50">
-<p class="text-[10px] text-secondary font-bold uppercase mb-1">Origin Node</p>
-<p class="font-body-md font-bold">Shenzhen Terminal 4</p>
-</div>
-<div class="p-4 rounded-2xl bg-surface-container/50">
-<p class="text-[10px] text-secondary font-bold uppercase mb-1">Dest. Corridor</p>
-<p class="font-body-md font-bold">Berlin West Hub</p>
-</div>
-</div>
-<div class="flex gap-4">
-<button class="flex-1 py-4 bg-error text-white font-headline-sm rounded-2xl shadow-lg hover:brightness-110">Reject Shipment</button>
-<button class="flex-1 py-4 border-2 border-primary text-primary font-headline-sm rounded-2xl hover:bg-primary/5">Request Photos</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-<!-- Scripts for Micro-interactions -->
-<script>
-        function openModal() {
-            const backdrop = document.getElementById('modal-backdrop');
-            const content = document.getElementById('modal-content');
-            backdrop.classList.remove('hidden');
-            setTimeout(() => {
-                backdrop.classList.add('opacity-100');
-                content.classList.remove('translate-y-12');
-                content.classList.add('translate-y-0');
-            }, 10);
-        }
-
-        function closeModal() {
-            const backdrop = document.getElementById('modal-backdrop');
-            const content = document.getElementById('modal-content');
-            backdrop.classList.remove('opacity-100');
-            content.classList.remove('translate-y-0');
-            content.classList.add('translate-y-12');
-            setTimeout(() => {
-                backdrop.classList.add('hidden');
-            }, 300);
-        }
-
-        // Add event listeners to cards for demo
-        document.querySelectorAll('.glass-panel').forEach(card => {
-            card.addEventListener('click', () => {
-                if (card.querySelector('h4')?.textContent.includes('9921-X')) {
-                    openModal();
-                }
-            });
-        });
+    <script>
+      window.location.replace("admin-readiness.html");
     </script>
-</body></html>
+  </head>
+  <body>
+    <main>
+      <strong>Swadakta Admin</strong>
+      <h1>Opening the protected launch cockpit.</h1>
+      <p>
+        Admin work now starts from the authenticated readiness desk for payments,
+        identity checks, AI setup, and protected launch operations.
+      </p>
+      <a href="admin-readiness.html">Open admin readiness</a>
+    </main>
+  </body>
+</html>
