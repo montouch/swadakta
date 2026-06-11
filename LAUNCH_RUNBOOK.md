@@ -9,6 +9,7 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 - In Vercel, open the Swadakta project, go to Settings, then Domains, and add `swadakta.com`.
 - Add `www.swadakta.com` as a second domain and redirect it to the apex domain.
 - Follow the DNS records Vercel shows for the registrar. Vercel's domain docs explain that the dashboard displays the required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
+- If Cloudflare remains the DNS provider, add the records in Cloudflare rather than Vercel DNS. Vercel's current quick reference lists an apex `A` record to `76.76.21.21` and a `www` CNAME to `cname.vercel-dns-0.com`, but still copy the exact values Vercel shows for the Swadakta project: https://vercel.com/docs/domains/set-up-custom-domain
 - Remember Vercel does not provide email hosting. Add MX records through Google Workspace, Microsoft 365, Zoho, or another email host if you want addresses like `hello@swadakta.com`: https://vercel.com/docs/domains/managing-dns-records
 - If Vercel import remains blocked, Cloudflare Pages can direct-upload the static files and attach `swadakta.com`, but that Pages project cannot later switch to Git integration.
 - After DNS settles, verify:
