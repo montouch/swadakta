@@ -67,6 +67,8 @@ The endpoint:
 Required Vercel environment variables:
 
 - `STRIPE_SECRET_KEY`: Stripe secret key for the active Stripe account.
+- `STRIPE_WEBHOOK_SECRET`: Stripe endpoint signing secret for `/api/payments/stripe-webhook`.
+- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`: server-only Supabase key used by the webhook to update request records.
 - `PUBLIC_BASE_URL`: `https://swadakta.com`.
 
 Optional Vercel environment variables:
@@ -84,10 +86,31 @@ Admin workflow:
 
 Stripe Checkout is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Use PayPal, Wise, bank, or manual M-Pesa references for other currencies until the Stripe account/currency support is confirmed.
 
-Webhook automation is still a later step. Stripe's webhook docs require raw-body signature verification, so do not mark payments paid automatically until a verified webhook endpoint is deployed and tested:
+Webhook automation endpoint:
+
+- `POST /api/payments/stripe-webhook`
+
+The webhook:
+
+- Verifies the Stripe signature using the raw body and `STRIPE_WEBHOOK_SECRET`.
+- Handles `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+- Reads `request_code` from Checkout metadata/client reference.
+- Sets `payment_status` to `paid`.
+- Sets `funds_status` to `deposit_confirmed`.
+- Sets `protected_amount` from Stripe `amount_total`.
+- Stores the Checkout Session/PaymentIntent reference.
+- Adds a release note saying founder proof review is still required.
+- Does not release funds, assign receivers, or mark milestones released.
+
+Stripe's webhook docs require raw-body signature verification:
 
 - https://docs.stripe.com/webhooks
 - https://docs.stripe.com/webhooks/signature
+
+Supabase server keys must never go into browser JavaScript. Supabase documents service-role/secret keys as server-side only and warns that they bypass Row Level Security:
+
+- https://supabase.com/docs/guides/getting-started/api-keys
+- https://supabase.com/docs/guides/functions/secrets
 
 ## PayPal
 
