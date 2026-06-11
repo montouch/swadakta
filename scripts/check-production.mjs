@@ -14,9 +14,11 @@ const htmlFiles = [
   "assistant.html",
   "auth.html",
   "brief.html",
+  "corridor.html",
   "messages.html",
   "payments.html",
   "portal.html",
+  "rules.html",
   "trust.html",
   "tracking.html",
   "verification.html",
@@ -27,11 +29,13 @@ const requiredPages = [
   "/portal",
   "/auth",
   "/brief",
+  "/corridor",
   "/tracking",
   "/messages",
   "/verification",
   "/trust",
   "/payments",
+  "/rules",
   "/admin-ops",
 ];
 const requiredAppDataMarkers = [
@@ -75,6 +79,13 @@ const requiredPaymentsMarkers = [
   "Founder margin is built into each quote",
   "Wise stays hidden as fallback",
   "Swadakta is not currently a licensed escrow provider",
+];
+const requiredRulesMarkers = [
+  "Item & Corridor Rules",
+  "Restricted goods cannot be cleared by AI",
+  "Batteries, perfume, medicines, food, plants, valuables, and documents",
+  "UPU international mail baseline",
+  "postal or courier acceptance",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -276,6 +287,13 @@ for (const marker of requiredPaymentsMarkers) {
   }
 }
 
+const localRulesHtml = await readLocal("rules.html");
+for (const marker of requiredRulesMarkers) {
+  if (!localRulesHtml.includes(marker)) {
+    fail(failures, `Local rules page is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -306,7 +324,9 @@ for (const page of requiredPages) {
 
   pass(`${urlPath} returned 200`);
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
-    fail(failures, `${page} does not reference app-data.js?v=${expectedVersion}`);
+    if (!["/corridor"].includes(page)) {
+      fail(failures, `${page} does not reference app-data.js?v=${expectedVersion}`);
+    }
   }
   if (page === "/portal" && expectedStitchPortalVersion && !text.includes(`stitch-portal.js?v=${expectedStitchPortalVersion}`)) {
     fail(failures, `${page} does not reference stitch-portal.js?v=${expectedStitchPortalVersion}`);
@@ -326,6 +346,9 @@ for (const page of requiredPages) {
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
   }
+  if (page === "/corridor" && !text.includes("corridor.js?v=2")) {
+    fail(failures, `${page} does not reference corridor.js?v=2`);
+  }
   if (page === "/trust") {
     for (const marker of requiredTrustMarkers) {
       if (!text.includes(marker)) {
@@ -335,6 +358,13 @@ for (const page of requiredPages) {
   }
   if (page === "/payments") {
     for (const marker of requiredPaymentsMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
+  }
+  if (page === "/rules") {
+    for (const marker of requiredRulesMarkers) {
       if (!text.includes(marker)) {
         fail(failures, `${page} is missing marker ${marker}`);
       }

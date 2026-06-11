@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Item & Corridor Rules | Swadakta</title>
+    <meta
+      name="description"
+      content="Swadakta item and corridor pre-check for postal, courier, customs, restricted goods, sensitive documents, batteries, medicines, food, valuables, and lawful route review."
+    />
+    <link rel="canonical" href="https://swadakta.com/rules" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=Geist:wght@500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+      rel="stylesheet"
+    />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "outline-variant": "#c7c4d7",
+              "primary": "#4648d4",
+              "primary-container": "#6063ee",
+              "surface": "#faf8ff",
+              "surface-container-low": "#f2f3ff",
+              "surface-container-lowest": "#ffffff",
+              "tertiary": "#8127cf",
+              "error": "#ba1a1a",
+              "error-container": "#ffdad6",
+              "on-error-container": "#93000a"
+            },
+            fontFamily: {
+              display: ["Manrope"],
+              body: ["Inter"],
+              label: ["Geist"]
+            },
+            spacing: {
+              "margin-mobile": "16px",
+              "margin-desktop": "48px",
+              "container-max": "1180px"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background:
+          radial-gradient(circle at 10% 0%, rgba(96, 99, 238, 0.16), transparent 32%),
+          radial-gradient(circle at 92% 18%, rgba(129, 39, 207, 0.12), transparent 30%),
+          #faf8ff;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.75);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
+      }
+      .glass-input {
+        background: rgba(242, 243, 255, 0.72);
+        border: 1px solid rgba(118, 117, 134, 0.2);
+      }
+      .glass-input:focus {
+        border-color: #4648d4;
+        box-shadow: 0 0 0 3px rgba(70, 72, 212, 0.14);
+        outline: none;
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface antialiased">
+    <header class="sticky top-0 z-50 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/76 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="hidden md:flex items-center gap-7 text-sm font-label">
+        <a class="text-on-surface-variant hover:text-primary" href="portal.html">Account</a>
+        <a class="text-on-surface-variant hover:text-primary" href="corridor.html">Corridors</a>
+        <a class="text-primary border-b-2 border-primary" href="rules.html">Rules</a>
+        <a class="text-on-surface-variant hover:text-primary" href="payments.html">Payments</a>
+        <a class="text-on-surface-variant hover:text-primary" href="trust.html">Trust</a>
+      </nav>
+      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-lg" href="corridor.html">
+        Choose corridor
+      </a>
+    </header>
+
+    <main>
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
+        <div class="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Item & Corridor Rules</p>
+            <h1 class="mt-4 font-display text-4xl md:text-6xl font-extrabold leading-tight">
+              Check the route before anyone buys, ships, or pays.
+            </h1>
+            <p class="mt-5 max-w-2xl text-lg text-on-surface-variant">
+              Swadakta can help across countries, but postal services, couriers, airlines, customs, and local law decide what can move. This page gives a quick pre-check before the paid brief.
+            </p>
+            <div class="mt-7 flex flex-wrap gap-3">
+              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="#checker">Run item check</a>
+              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" href="trust.html">Trust rules</a>
+            </div>
+          </div>
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <div class="flex items-start gap-4">
+              <span class="material-symbols-outlined text-primary text-4xl">rule</span>
+              <div>
+                <h2 class="font-display text-3xl font-extrabold">Restricted goods cannot be cleared by AI.</h2>
+                <p class="mt-3 text-on-surface-variant">
+                  AI can flag risk and prepare questions, but it cannot approve prohibited goods, customs declarations, medicines, batteries, valuables, weapons, controlled documents, or legal uncertainty. The job pauses until a safe route is proven.
+                </p>
+              </div>
+            </div>
+            <div class="mt-6 grid gap-3 sm:grid-cols-2">
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/35 p-4">
+                <strong class="font-display text-lg">Account first</strong>
+                <p class="mt-1 text-sm text-on-surface-variant">Anyone can create an account before verification.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/35 p-4">
+                <strong class="font-display text-lg">Payment later</strong>
+                <p class="mt-1 text-sm text-on-surface-variant">No payment collection before route, scope, and proof are clear.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/35 p-4">
+                <strong class="font-display text-lg">Provider proof</strong>
+                <p class="mt-1 text-sm text-on-surface-variant">Use carrier, postal, customs, or payment evidence.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/35 p-4">
+                <strong class="font-display text-lg">Founder exception</strong>
+                <p class="mt-1 text-sm text-on-surface-variant">Unsafe or unclear work escalates before receiver assignment.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="border-y border-outline-variant/30 bg-white/45">
+        <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-12 grid gap-6 md:grid-cols-4">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">1. Country pair</p>
+            <h2 class="mt-2 font-display text-2xl font-bold">Origin and destination.</h2>
+            <p class="mt-3 text-on-surface-variant">A lawful item in one country can still be restricted in another or during transit.</p>
+          </div>
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">2. Carrier</p>
+            <h2 class="mt-2 font-display text-2xl font-bold">Postal or courier acceptance.</h2>
+            <p class="mt-3 text-on-surface-variant">Carriers can refuse items even when customs might allow them with conditions.</p>
+          </div>
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">3. Declaration</p>
+            <h2 class="mt-2 font-display text-2xl font-bold">Value, contents, and purpose.</h2>
+            <p class="mt-3 text-on-surface-variant">False descriptions, missing permits, or hidden contents block the job.</p>
+          </div>
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">4. Proof</p>
+            <h2 class="mt-2 font-display text-2xl font-bold">Receipts and handoff record.</h2>
+            <p class="mt-3 text-on-surface-variant">The job needs client-safe media, receipts, labels, or refusal proof before release.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20" id="checker">
+        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Pre-check</p>
+            <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Batteries, perfume, medicines, food, plants, valuables, and documents need extra care.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              This checker is a routing tool, not legal advice. It helps Swadakta decide whether to proceed to a normal quote, ask for more information, use a specialist carrier, or refuse the request.
+            </p>
+            <div class="mt-6 rounded-3xl bg-primary/10 border border-primary/20 p-5">
+              <p class="font-label text-sm text-primary">UPU international mail baseline</p>
+              <p class="mt-2 text-sm text-on-surface-variant">International mail has global dangerous-goods and prohibited-item rules, and each country or carrier can add stricter rules.</p>
+            </div>
+          </div>
+          <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="rules-checker-form">
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2 font-label text-sm">
+                Origin country
+                <input class="glass-input h-12 rounded-2xl px-4 font-body" id="rules-origin" placeholder="Australia" />
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Destination country
+                <input class="glass-input h-12 rounded-2xl px-4 font-body" id="rules-destination" placeholder="Kenya, USA, China..." />
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Item or task type
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="rules-item-type">
+                  <option value="general">General household or retail goods</option>
+                  <option value="documents">Documents, certificates, titles, or IDs</option>
+                  <option value="electronics">Electronics or lithium batteries</option>
+                  <option value="perfume_liquids">Perfume, cosmetics, aerosols, or liquids</option>
+                  <option value="food_plant_animal">Food, plants, seeds, wood, leather, or animal-origin goods</option>
+                  <option value="medicine_health">Medicine, supplements, medical, or health products</option>
+                  <option value="valuable_cash_jewellery">Cash, jewellery, precious metals, or valuables</option>
+                  <option value="weapons_hazardous">Weapons, hazardous, combustible, or controlled goods</option>
+                  <option value="unknown">Not sure or mixed items</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Movement mode
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="rules-mode">
+                  <option value="local_errand">Local errand or pickup</option>
+                  <option value="post">Postal service</option>
+                  <option value="courier">Courier or freight</option>
+                  <option value="traveller">Traveller or airport handoff</option>
+                  <option value="digital">Digital only</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Approximate value band
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="rules-value-band">
+                  <option value="low">Under AUD 250</option>
+                  <option value="medium">AUD 250-1,000</option>
+                  <option value="high">AUD 1,000-5,000</option>
+                  <option value="sensitive">High-value, title, family authority, or not sure</option>
+                </select>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+                <input class="mt-1" id="rules-cross-border" type="checkbox" checked />
+                <span>This crosses a national border or uses an international carrier.</span>
+              </label>
+            </div>
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold shadow-lg" type="submit">
+              Check route
+            </button>
+            <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5" id="rules-result" aria-live="polite">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Likely status</p>
+              <h3 class="mt-2 font-display text-3xl font-extrabold">Standard route check</h3>
+              <p class="mt-2 text-on-surface-variant">General goods still need accurate description, value, route, receipt, and delivery proof before payment or assignment.</p>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section class="bg-surface-container-low/70">
+        <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
+          <div class="max-w-3xl">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Official reference points</p>
+            <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Swadakta checks official rules before risky work.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              Different countries and carriers apply different rules. These references help frame the first check, but the actual job still needs route-specific confirmation.
+            </p>
+          </div>
+          <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="https://www.upu.int/en/universal-postal-union/outreach-campaigns/dangerous-goods" target="_blank" rel="noopener">
+              <span class="material-symbols-outlined text-primary text-3xl">mail</span>
+              <h3 class="mt-3 font-display text-lg font-bold">UPU dangerous goods</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">Global postal baseline for dangerous goods and prohibited mail.</p>
+            </a>
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="https://www.iata.org/en/programs/cargo/dgr/lithium-batteries/" target="_blank" rel="noopener">
+              <span class="material-symbols-outlined text-primary text-3xl">battery_charging_full</span>
+              <h3 class="mt-3 font-display text-lg font-bold">IATA batteries</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">Air transport rules for lithium and other batteries.</p>
+            </a>
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="https://auspost.com.au/sending/guidelines/dangerous-prohibited-items" target="_blank" rel="noopener">
+              <span class="material-symbols-outlined text-primary text-3xl">inventory</span>
+              <h3 class="mt-3 font-display text-lg font-bold">Australia Post</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">Prohibited and restricted items, packaging, and dangerous-goods guidance.</p>
+            </a>
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="https://www.usps.com/international/shipping-restrictions.htm" target="_blank" rel="noopener">
+              <span class="material-symbols-outlined text-primary text-3xl">public</span>
+              <h3 class="mt-3 font-display text-lg font-bold">USPS international</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">International mailing prohibitions, restrictions, and HAZMAT examples.</p>
+            </a>
+          </div>
+          <div class="mt-4 grid gap-4 md:grid-cols-2">
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="https://www.dhl.com/discover/en-us/ship-with-dhl/start-shipping/restricted-commodities" target="_blank" rel="noopener">
+              <span class="material-symbols-outlined text-primary text-3xl">local_shipping</span>
+              <h3 class="mt-3 font-display text-lg font-bold">DHL restricted commodities</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">Carrier-side examples of restricted, prohibited, valuable, and hazardous commodities.</p>
+            </a>
+            <a class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5 hover:border-primary transition-colors" href="trust.html">
+              <span class="material-symbols-outlined text-primary text-3xl">policy</span>
+              <h3 class="mt-3 font-display text-lg font-bold">Swadakta trust rules</h3>
+              <p class="mt-2 text-sm text-on-surface-variant">ID gates, payment boundaries, proof standards, and lawful-corridor escalation.</p>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
+        <div class="grid gap-8 lg:grid-cols-2">
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Proceed normally</p>
+            <h2 class="mt-3 font-display text-3xl font-extrabold">Low-risk local or digital work.</h2>
+            <ul class="mt-6 grid gap-3 text-on-surface-variant">
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Local errands with no controlled item or personal safety risk.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Digital research, sourcing, calls, admin work, or basic verification.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>General goods with clear receipt, normal value, and accepted carrier route.</span></li>
+            </ul>
+          </div>
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Pause or refuse</p>
+            <h2 class="mt-3 font-display text-3xl font-extrabold">Unsafe, illegal, or unclear work.</h2>
+            <ul class="mt-6 grid gap-3 text-on-surface-variant">
+              <li class="flex gap-3"><span class="material-symbols-outlined text-error">block</span><span>Hazardous, combustible, weapon-like, counterfeit, narcotic, or undeclared goods.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-error">block</span><span>Medicine, food, plant, animal-origin, or biosecurity-sensitive items without a lawful route.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-error">block</span><span>High-value or sensitive documents without ID, permission, milestone, and provider evidence.</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-16 md:pb-24">
+        <div class="glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Ready to create a job?</p>
+            <h2 class="mt-2 font-display text-3xl font-extrabold">Choose the corridor, then let the brief capture proof and payment details.</h2>
+            <p class="mt-3 text-on-surface-variant max-w-3xl">
+              The paid brief records the route, item, value, photos, payment preference, required checks, and compliance acknowledgement. Posting still waits for verified account status.
+            </p>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Choose corridor</a>
+            <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" href="payments.html">Payment guide</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="border-t border-outline-variant/30 bg-white/62">
+      <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-10 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+        <p class="text-sm text-on-surface-variant">&copy; 2026 Swadakta. Global Corridor Concierge.</p>
+        <div class="flex flex-wrap gap-5 text-sm font-label">
+          <a class="text-primary" href="rules.html">Rules</a>
+          <a class="text-on-surface-variant hover:text-primary" href="payments.html">Payments</a>
+          <a class="text-on-surface-variant hover:text-primary" href="trust.html">Trust & Safety</a>
+          <a class="text-on-surface-variant hover:text-primary" href="privacy.html">Privacy</a>
+          <a class="text-on-surface-variant hover:text-primary" href="terms.html">Terms</a>
+        </div>
+      </div>
+    </footer>
+    <script>
+      const form = document.querySelector("#rules-checker-form");
+      const result = document.querySelector("#rules-result");
+
+      const itemPolicies = {
+        general: {
+          level: "standard",
+          title: "Standard route check",
+          copy: "General goods can usually move only after accurate description, value, route, receipt, and delivery proof are clear.",
+          checks: ["Confirm item description and value", "Use carrier-accepted packaging", "Keep receipt and handoff proof"],
+        },
+        documents: {
+          level: "review",
+          title: "Sensitive document route",
+          copy: "Documents, certificates, IDs, titles, and authority letters need identity, permission, and privacy checks before handling.",
+          checks: ["Verify account identity", "Confirm legal permission to handle the document", "Avoid exposing unnecessary personal data"],
+        },
+        electronics: {
+          level: "review",
+          title: "Battery and electronics review",
+          copy: "Electronics can contain lithium batteries or data risk. Check IATA, postal, courier, and destination restrictions before shipping.",
+          checks: ["Confirm battery type and watt-hour rating", "Check airline or carrier acceptance", "Protect data and serial-number proof"],
+        },
+        perfume_liquids: {
+          level: "review",
+          title: "Liquid or aerosol review",
+          copy: "Perfume, aerosols, nail polish, cosmetics, and liquids can be restricted or treated as dangerous goods.",
+          checks: ["Confirm ingredients and volume", "Check postal or courier acceptance", "Use compliant packaging only"],
+        },
+        food_plant_animal: {
+          level: "blocked",
+          title: "Biosecurity hold",
+          copy: "Food, plants, seeds, wood, leather, and animal-origin goods often require permits, declarations, or refusal.",
+          checks: ["Check origin and destination biosecurity rules", "Confirm permits or certificates", "Do not buy or ship before approval"],
+        },
+        medicine_health: {
+          level: "blocked",
+          title: "Medicine and health-product hold",
+          copy: "Medicines, supplements, medical products, and controlled health items require legal and customs checks before Swadakta touches them.",
+          checks: ["Confirm prescription or permit requirements", "Check import/export law", "Escalate to founder/admin before quote"],
+        },
+        valuable_cash_jewellery: {
+          level: "blocked",
+          title: "Valuable-item hold",
+          copy: "Cash, jewellery, precious metals, and high-value items need insured, lawful, provider-backed routes or refusal.",
+          checks: ["Avoid informal handoffs", "Use insured or regulated provider rails", "Require ID, proof, and milestone controls"],
+        },
+        weapons_hazardous: {
+          level: "refuse",
+          title: "Do not proceed",
+          copy: "Weapons, hazardous, combustible, narcotic, counterfeit, or undeclared goods are refused unless a lawful specialist provider route is proven before Swadakta involvement.",
+          checks: ["Do not quote", "Do not assign receiver", "Do not collect payment"],
+        },
+        unknown: {
+          level: "blocked",
+          title: "Unknown item hold",
+          copy: "Mixed or unclear items stay paused until every item is described, valued, photographed, and checked against carrier and customs rules.",
+          checks: ["Ask for photos and receipts", "List each item separately", "Founder/admin review before quote"],
+        },
+      };
+
+      function tone(level) {
+        if (level === "standard") return "bg-emerald-500/10 text-emerald-700";
+        if (level === "review") return "bg-amber-400/20 text-amber-800";
+        if (level === "refuse") return "bg-error-container text-on-error-container";
+        return "bg-primary/10 text-primary";
+      }
+
+      function label(level) {
+        return {
+          standard: "Standard",
+          review: "Needs review",
+          blocked: "Founder hold",
+          refuse: "Refuse or specialist-only",
+        }[level] || "Review";
+      }
+
+      function routeExtras(policy, mode, valueBand, crossBorder) {
+        const checks = [...policy.checks];
+        let level = policy.level;
+
+        if (crossBorder) {
+          checks.push("Check origin, destination, transit, customs, tax, and import restrictions");
+          if (level === "standard") level = "review";
+        }
+        if (mode === "post") {
+          checks.push("Check postal prohibitions and destination-specific postal rules");
+        }
+        if (mode === "courier") {
+          checks.push("Check courier commodity acceptance and paperwork");
+        }
+        if (mode === "traveller") {
+          checks.push("Confirm baggage, declaration, and personal carriage limits");
+          if (level === "standard") level = "review";
+        }
+        if (valueBand === "high" || valueBand === "sensitive") {
+          checks.push("Use ID verification, provider evidence, and milestone controls before release");
+          if (level === "standard" || level === "review") level = "blocked";
+        }
+
+        return { level, checks: [...new Set(checks)] };
+      }
+
+      form?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const origin = document.querySelector("#rules-origin").value.trim() || "Origin";
+        const destination = document.querySelector("#rules-destination").value.trim() || "destination";
+        const itemType = document.querySelector("#rules-item-type").value;
+        const mode = document.querySelector("#rules-mode").value;
+        const valueBand = document.querySelector("#rules-value-band").value;
+        const crossBorder = document.querySelector("#rules-cross-border").checked;
+        const policy = itemPolicies[itemType] || itemPolicies.unknown;
+        const route = routeExtras(policy, mode, valueBand, crossBorder);
+        const routeLabel = crossBorder ? `${origin} to ${destination}` : `${origin} local`;
+
+        result.innerHTML = `
+          <div class="flex flex-wrap items-center gap-2">
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${routeLabel}</p>
+            <span class="rounded-full px-3 py-1 font-label text-xs ${tone(route.level)}">${label(route.level)}</span>
+          </div>
+          <h3 class="mt-2 font-display text-3xl font-extrabold">${policy.title}</h3>
+          <p class="mt-2 text-on-surface-variant">${policy.copy}</p>
+          <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">
+            ${route.checks.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">check_circle</span><span>${item}</span></li>`).join("")}
+          </ul>
+          <div class="mt-5 flex flex-wrap gap-3">
+            <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Use in corridor</a>
+            <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" href="trust.html">Review trust rules</a>
+          </div>
+        `;
+      });
+    </script>
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=41"></script>
+  </body>
+</html>
