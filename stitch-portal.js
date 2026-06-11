@@ -511,16 +511,18 @@
           "text-primary",
         );
       } else {
-        await window.SwadaktaData.signInWithPassword(email, password);
-        setSignedInShell(email, { account_role: accountRole });
+        const signInResult = await window.SwadaktaData.signInWithPassword(email, password);
+        const signedInUserEmail = signInResult.user?.email || signInResult.session?.user?.email || email;
+        signedInEmail = signedInUserEmail;
+        setSignedInShell(signedInUserEmail, { account_role: accountRole });
         openAccountHome();
         window.SwadaktaData.saveAccountProfile({
-            email,
+            email: signedInUserEmail,
             account_role: accountRole,
             onboarding_status: "started",
           }).catch(() => {});
         setStatus("Signed in. Your Swadakta account is ready.", "text-primary");
-        window.location.replace(accountHomeUrl());
+        await showCurrentAccount({ autoOpen: true });
         return;
       }
       if (shouldOpenWorkspace) {
