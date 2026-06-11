@@ -65,6 +65,7 @@ AI/autopilot:
    - Active lane can proceed through AI triage.
    - Pilot lane needs founder review before quoting or assignment.
    - Unsupported lane needs founder approval or polite decline.
+   - The result is stored as a route status, compliance flag list, required checks list, and proof requirements list.
 3. App classifies goods/logistics:
    - Digital-only and no-goods tasks can proceed through normal proof and ID rules.
    - Physical goods, courier/post, airport handoff, valuables, documents, food/plant/animal products, medicine/health products, cosmetics, or unsure items trigger compliance review.
@@ -76,6 +77,17 @@ AI/autopilot:
 5. Receiver is assigned only after ID and vetting gates pass.
 6. Receiver submits proof links and updates.
 7. AI can summarize the proof, but founder or authorized operator approves client-facing reports, milestone releases, disputes, and refunds.
+
+## Stored Checklist Fields
+
+Every request should carry these operational fields:
+
+- `route_status`: active, pilot, unsupported, or blocked.
+- `compliance_flags`: short risk labels such as physical item, restricted item risk, high-value job, or sensitive documents.
+- `required_checks`: concrete checks that must be completed before quote, assignment, purchase, shipping, milestone release, or completion.
+- `proof_requirements`: the exact proof the receiver/operator must capture for the client and for milestone release.
+
+These fields are client-safe enough to show in tracking and receiver portals, while founder-only details such as margin, internal notes, payout decisions, and dispute judgment stay in the founder console.
 
 ## Legal And Shipping Rules
 

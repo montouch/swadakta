@@ -89,9 +89,17 @@ const milestoneStatusLabels = {
 
 const taskLabels = {
   quick: "Quick errand",
+  shopping: "Shopping or sourcing",
   site: "Property or site visit",
   registry: "Registry or legal errand",
   virtual: "Virtual assistant support",
+};
+
+const routeStatusLabels = {
+  active: "Active lane",
+  pilot: "Pilot lane",
+  unsupported: "Founder approval lane",
+  blocked: "Blocked",
 };
 
 const servicePackageLabels = {
@@ -100,6 +108,7 @@ const servicePackageLabels = {
   site_visit: "Site Visit",
   registry_errand: "Registry/Document Run",
   family_support: "Family Support Run",
+  shopping_sourcing: "Shopping and sourcing",
   monthly_retainer: "Monthly Retainer",
   business_ops: "Business Ops Support",
 };
@@ -431,10 +440,15 @@ function buildReceiverProfileDraft() {
 function buildReceiverUpdateDraft(form, job) {
   const status = form.querySelector('[name="field_status"]').value;
   const statusLabel = fieldStatusLabels[status] || status;
-  const proofNeeded = Array.isArray(job.report_pack) && job.report_pack.length ? job.report_pack.join(", ") : "basic proof";
+  const proofNeeded = Array.isArray(job.proof_requirements) && job.proof_requirements.length
+    ? job.proof_requirements.join("; ")
+    : Array.isArray(job.report_pack) && job.report_pack.length
+      ? job.report_pack.join(", ")
+      : "basic proof";
+  const taskLocation = job.task_location || job.kenya_location || "the assigned location";
   return [
     `${statusLabel} update for ${job.request_code}:`,
-    `I worked on ${servicePackageLabels[job.service_package] || job.service_package || "the assigned task"} in ${job.kenya_location || "Kenya"}.`,
+    `I worked on ${servicePackageLabels[job.service_package] || job.service_package || "the assigned task"} in ${taskLocation}.`,
     `Proof expected: ${proofNeeded}.`,
     "Current progress:",
     "Blockers or references:",
@@ -445,14 +459,20 @@ function buildReceiverUpdateDraft(form, job) {
 function compactRequestForGuide(request) {
   return {
     request_code: request.request_code,
+    origin_country: request.origin_country,
+    destination_country: request.destination_country,
+    route_status: request.route_status,
     service_package: request.service_package,
     task_type: request.task_type,
+    task_location: request.task_location || request.kenya_location,
     kenya_location: request.kenya_location,
     status: request.status,
     payment_status: request.payment_status,
     funds_status: request.funds_status,
     quote_currency: request.quote_currency,
     quote_amount: request.quote_amount,
+    required_checks: request.required_checks,
+    proof_requirements: request.proof_requirements,
     verification_status: request.verification_status,
     updated_at: request.updated_at,
   };
@@ -556,6 +576,20 @@ function renderMilestones(request) {
   `;
 }
 
+function renderChecklist(title, items) {
+  const list = Array.isArray(items) ? items.map((item) => String(item || "").trim()).filter(Boolean) : [];
+  if (!list.length) {
+    return "";
+  }
+
+  return `
+    <div class="tracking-checklist">
+      <strong>${escapeHtml(title)}</strong>
+      <ul>${list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
 function selectedPartnerCategories() {
   return Array.from(partnerForm.querySelectorAll('input[name="category"]:checked')).map((item) => item.value);
 }
@@ -581,10 +615,14 @@ function renderTrackingResult(request) {
     fundsProtectionLabels[request.funds_protection_preference] ||
     request.funds_protection_preference ||
     "Quote first, then decide";
+  const route = [request.origin_country, request.destination_country].filter(Boolean).join(" to ");
+  const routeStatus = routeStatusLabels[request.route_status] || request.route_status || "";
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
     <strong>${escapeHtml(request.request_code)}</strong>
+    ${route ? `<span>Route: ${escapeHtml(route)}</span>` : ""}
+    ${routeStatus ? `<span>Route status: ${escapeHtml(routeStatus)}</span>` : ""}
     <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
     <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
     <span>Quote: ${escapeHtml(formatCurrency(request.quote_amount, request.quote_currency))}</span>
@@ -593,6 +631,8 @@ function renderTrackingResult(request) {
     <span>Funds: ${escapeHtml(fundsStatus)}</span>
     <span>Protected amount: ${escapeHtml(formatAmount(request.protected_amount, request.quote_currency))}</span>
     ${request.identity_verification_required ? `<span>ID verification: ${escapeHtml(verificationStatus)}</span>` : ""}
+    ${renderChecklist("Required checks", request.required_checks)}
+    ${renderChecklist("Proof requirements", request.proof_requirements)}
     ${request.release_condition ? `<p>${escapeHtml(request.release_condition)}</p>` : ""}
     ${renderMilestones(request)}
     ${paymentLink ? `<p><a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">Open payment link</a></p>` : ""}
@@ -890,14 +930,20 @@ function renderPartnerAccount(email, applications, jobs = []) {
         : [];
       const proofLinks = Array.isArray(job.proof_links) ? job.proof_links.map(safeHttpUrl).filter(Boolean) : [];
       const localContact = [job.local_contact_name, job.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
+      const route = [job.origin_country, job.destination_country].filter(Boolean).join(" to ");
+      const taskLocation = job.task_location || job.kenya_location || "the task location";
+      const routeStatus = routeStatusLabels[job.route_status] || job.route_status || "";
 
       return `
         <article>
           <strong>${escapeHtml(job.request_code)}</strong>
-          <span>${escapeHtml(servicePackageLabels[job.service_package] || job.service_package || "Quote-first service")} - ${escapeHtml(taskLabels[job.task_type] || job.task_type || "Task")} in ${escapeHtml(job.kenya_location || "Kenya")}</span>
+          <span>${escapeHtml(servicePackageLabels[job.service_package] || job.service_package || "Quote-first service")} - ${escapeHtml(taskLabels[job.task_type] || job.task_type || "Task")} in ${escapeHtml(taskLocation)}</span>
+          ${route ? `<span>Route: ${escapeHtml(route)}${routeStatus ? ` (${escapeHtml(routeStatus)})` : ""}</span>` : ""}
           <span>Status: ${escapeHtml(statusLabels[job.status] || job.status)}. Urgency: ${escapeHtml(job.urgency || "standard")}.</span>
           <span>Deadline: ${escapeHtml(job.deadline || "Flexible")}. Local contact: ${escapeHtml(localContact)}.</span>
           <span>Proof needed: ${escapeHtml(Array.isArray(job.report_pack) && job.report_pack.length ? job.report_pack.join(", ") : "Basic update")}.</span>
+          ${renderChecklist("Required checks", job.required_checks)}
+          ${renderChecklist("Proof requirements", job.proof_requirements)}
           ${
             job.client_review_score
               ? `<span>Client review: ${escapeHtml(job.client_review_score)}/5${job.client_review_note ? ` - ${escapeHtml(job.client_review_note)}` : ""}</span>`

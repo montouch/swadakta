@@ -1206,6 +1206,40 @@ output {
   margin: 0.4rem 0 0;
 }
 
+.tracking-checklist,
+.request-checklist {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+  padding: 0.78rem;
+  border: 1px solid rgb(49 87 214 / 18%);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 78%);
+}
+
+.tracking-checklist strong,
+.request-checklist strong {
+  color: var(--deep);
+  font-size: 0.82rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.tracking-checklist ul,
+.request-checklist ul {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0;
+  padding-left: 1.05rem;
+}
+
+.tracking-checklist li,
+.request-checklist li {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
 .tracking-result.is-success {
   border-color: rgb(11 152 125 / 32%);
   background: rgb(11 152 125 / 8%);

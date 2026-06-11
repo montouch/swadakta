@@ -12,6 +12,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Signed-in account profiles for role, name, WhatsApp, country/base, service coverage, and preferred currency
 - Account-level ID verification tracking for all clients, receivers, and mixed-role users
 - Global corridor intake for origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement
+- Persisted route status, compliance flags, required checks, and proof requirements for each request
 - Receiver portal assigned-job view for vetted partners
 - Receiver field-update submissions with proof links for assigned jobs
 - Client post-completion reviews that feed receiver provenance scoring
@@ -44,6 +45,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
 - Founder-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, cross-border compliance, and external messages
 - Autopilot route classification for active lanes, pilot lanes, unsupported corridors, physical-item logistics, and founder escalation
+- Client and receiver portals show client-safe required checks and proof requirements so delivery expectations are visible
 - ID verification gates for higher-value, sensitive-document, title, family-authority, or risky jobs
 - Required client permission, scope, terms, and privacy consent capture
 - Service package intent, contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture

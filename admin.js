@@ -98,6 +98,13 @@ const serviceDirectionLabels = {
   digital_global: "Digital/global support",
 };
 
+const routeStatusLabels = {
+  active: "Active lane",
+  pilot: "Pilot lane",
+  unsupported: "Founder approval lane",
+  blocked: "Blocked",
+};
+
 const logisticsModeLabels = {
   not_needed: "No physical delivery",
   local_delivery: "Local delivery or errand",
@@ -729,6 +736,16 @@ function needsIdVerification(request) {
   );
 }
 
+function needsComplianceReview(request) {
+  return (
+    !isClosedRequest(request) &&
+    (request.admin_review_required ||
+      ["pilot", "unsupported", "blocked"].includes(request.route_status) ||
+      ["needs_admin_review", "restricted", "permit_required", "prohibited"].includes(request.compliance_status) ||
+      ["high", "blocked"].includes(request.compliance_risk_level))
+  );
+}
+
 function hasMarginRisk(request) {
   const margin = calculateFounderMargin(request);
   return margin.revenue > 0 && margin.percent < 30 && request.status !== "cancelled";
@@ -774,6 +791,20 @@ function buildOpsAiItems() {
         request,
         action: "Send or review identity verification before paid or sensitive work proceeds.",
         reason: `Current ID status is ${verificationStatusLabels[request.verification_status] || request.verification_status || "not set"}.`,
+      });
+    }
+
+    if (needsComplianceReview(request)) {
+      items.push({
+        priority: 78,
+        type: "Compliance gate",
+        request,
+        action: "Review corridor legality, item/shipping rules, required checks, and proof plan before quote, assignment, purchase, or release.",
+        reason: [
+          routeStatusLabels[request.route_status] || request.route_status || "Route status not set",
+          complianceStatusLabels[request.compliance_status] || request.compliance_status || "Compliance not set",
+          request.admin_review_reason || "Founder review flag is active.",
+        ].join(" - "),
       });
     }
 
@@ -861,11 +892,15 @@ function buildOpsAiPrompt(item) {
     `Recommended next step: ${item.action}`,
     `Reason: ${item.reason}`,
     `Route: ${route}`,
+    `Route status: ${routeStatusLabels[request.route_status] || request.route_status || "Active lane"}`,
     `Direction: ${serviceDirectionLabels[request.service_direction] || request.service_direction || "Origin to destination"}`,
     `Task: ${taskLabels[request.task_type] || request.task_type} in ${taskLocation}`,
     `Logistics: ${logisticsModeLabels[request.logistics_mode] || request.logistics_mode || "No physical delivery"}`,
     `Goods: ${goodsCategoryLabels[request.goods_category] || request.goods_category || "No physical goods"}`,
     `Compliance: ${complianceStatusLabels[request.compliance_status] || request.compliance_status || "Needs AI review"}; risk ${complianceRiskLabels[request.compliance_risk_level] || request.compliance_risk_level || "standard"}`,
+    `Compliance flags: ${normalizeChecklist(request.compliance_flags).join("; ") || "None"}`,
+    `Required checks: ${normalizeChecklist(request.required_checks).join("; ") || "None"}`,
+    `Proof requirements: ${normalizeChecklist(request.proof_requirements).join("; ") || "Standard proof"}`,
     `Automation: ${automationStatusLabels[request.automation_status] || request.automation_status || "AI triage"}`,
     `Founder review reason: ${request.admin_review_reason || "None"}`,
     `Quote: ${request.quote_amount ? formatMoney(request.quote_amount, currency) : "not quoted"}`,
@@ -892,6 +927,7 @@ function matchesActionFilter(request, selectedAction) {
     proof: needsProofReview,
     release: needsReleaseDecision,
     id: needsIdVerification,
+    compliance: needsComplianceReview,
     margin: hasMarginRisk,
     receiver_risk: hasReceiverProvenanceRisk,
   };
@@ -932,6 +968,7 @@ function renderFounderCommand() {
     proof: requests.filter(needsProofReview).length,
     release: requests.filter(needsReleaseDecision).length,
     id: requests.filter(needsIdVerification).length,
+    compliance: requests.filter(needsComplianceReview).length,
     margin: requests.filter(hasMarginRisk).length,
     receiver_risk: requests.filter(hasReceiverProvenanceRisk).length,
   };
@@ -943,6 +980,7 @@ function renderFounderCommand() {
     actionCounts.proof +
     actionCounts.release +
     actionCounts.id +
+    actionCounts.compliance +
     actionCounts.margin +
     actionCounts.receiver_risk;
 
@@ -963,6 +1001,7 @@ function renderFounderCommand() {
     ["proof", "Review proof", "Receiver update waiting"],
     ["release", "Release decision", "Pay/refund/dispute milestone"],
     ["id", "ID check", "Verification not done"],
+    ["compliance", "Compliance", "Route or legal gate"],
     ["margin", "Margin risk", "Below 30%"],
     ["receiver_risk", "Seal risk", "Assigned receiver below 45%"],
   ];
@@ -1053,11 +1092,15 @@ function renderFounderCommand() {
           origin_country: item.request.origin_country,
           destination_country: item.request.destination_country,
           service_direction: item.request.service_direction,
+          route_status: item.request.route_status,
           task_type: item.request.task_type,
           task_location: item.request.task_location || item.request.kenya_location,
           kenya_location: item.request.kenya_location,
           logistics_mode: item.request.logistics_mode,
           goods_category: item.request.goods_category,
+          compliance_flags: item.request.compliance_flags,
+          required_checks: item.request.required_checks,
+          proof_requirements: item.request.proof_requirements,
           compliance_status: item.request.compliance_status,
           compliance_risk_level: item.request.compliance_risk_level,
           automation_status: item.request.automation_status,
@@ -1135,6 +1178,7 @@ function getFilteredRequests() {
       request.origin_country,
       request.destination_country,
       serviceDirectionLabels[request.service_direction] || request.service_direction,
+      routeStatusLabels[request.route_status] || request.route_status,
       request.task_location,
       request.kenya_location,
       request.client_base,
@@ -1148,6 +1192,9 @@ function getFilteredRequests() {
       complianceStatusLabels[request.compliance_status] || request.compliance_status,
       complianceRiskLabels[request.compliance_risk_level] || request.compliance_risk_level,
       automationStatusLabels[request.automation_status] || request.automation_status,
+      normalizeChecklist(request.compliance_flags).join(" "),
+      normalizeChecklist(request.required_checks).join(" "),
+      normalizeChecklist(request.proof_requirements).join(" "),
       request.admin_review_reason,
       request.logistics_notes,
       assignedPartnerLabel(request),
@@ -1294,6 +1341,15 @@ function servicePackageOptions(current) {
 
 function serviceDirectionOptions(current) {
   return Object.entries(serviceDirectionLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function routeStatusOptions(current) {
+  return Object.entries(routeStatusLabels)
     .map(
       ([value, label]) =>
         `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
@@ -1604,6 +1660,37 @@ function assignedPartnerOptions(current) {
   return `<option value="">Unassigned</option>${fallback}${options}`;
 }
 
+function normalizeChecklist(items) {
+  return Array.isArray(items) ? items.map((item) => String(item || "").trim()).filter(Boolean) : [];
+}
+
+function checklistTextareaValue(items) {
+  return normalizeChecklist(items).join("\n");
+}
+
+function parseChecklist(value) {
+  return Array.from(new Set(
+    String(value || "")
+      .split(/\n/)
+      .map((item) => item.trim())
+      .filter(Boolean),
+  )).slice(0, 20);
+}
+
+function renderChecklistBlock(title, items) {
+  const list = normalizeChecklist(items);
+  if (!list.length) {
+    return "";
+  }
+
+  return `
+    <div class="request-checklist">
+      <strong>${escapeHtml(title)}</strong>
+      <ul>${list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
 function renderRequestCard(request) {
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
   const taskLocation = request.task_location || request.kenya_location || "Not specified";
@@ -1672,6 +1759,7 @@ function renderRequestCardV2(request) {
   const taskLocation = request.task_location || request.kenya_location || "Not specified";
   const serviceDirection =
     serviceDirectionLabels[request.service_direction] || request.service_direction || "Origin to destination";
+  const routeStatus = routeStatusLabels[request.route_status] || request.route_status || "Active lane";
   const logisticsMode = logisticsModeLabels[request.logistics_mode] || request.logistics_mode || "No physical delivery";
   const goodsCategory = goodsCategoryLabels[request.goods_category] || request.goods_category || "No physical goods";
   const complianceStatus =
@@ -1726,6 +1814,7 @@ function renderRequestCardV2(request) {
         <div><dt>Client base</dt><dd>${escapeHtml(clientBase)}</dd></div>
         <div><dt>Corridor</dt><dd>${escapeHtml(`${originCountry} -> ${destinationCountry}`)}</dd></div>
         <div><dt>Direction</dt><dd>${escapeHtml(serviceDirection)}</dd></div>
+        <div><dt>Route status</dt><dd>${escapeHtml(routeStatus)}</dd></div>
         <div><dt>Task location</dt><dd>${escapeHtml(taskLocation)}</dd></div>
         <div><dt>Logistics</dt><dd>${escapeHtml(logisticsMode)}</dd></div>
         <div><dt>Goods</dt><dd>${escapeHtml(goodsCategory)}</dd></div>
@@ -1761,6 +1850,9 @@ function renderRequestCardV2(request) {
 
       <p class="request-notes">${escapeHtml(request.notes)}</p>
       ${request.logistics_notes ? `<p class="request-notes"><strong>Logistics:</strong> ${escapeHtml(request.logistics_notes)}</p>` : ""}
+      ${renderChecklistBlock("Compliance flags", request.compliance_flags)}
+      ${renderChecklistBlock("Required checks", request.required_checks)}
+      ${renderChecklistBlock("Proof requirements", request.proof_requirements)}
       ${
         request.admin_review_required || request.admin_review_reason
           ? `<p class="request-notes"><strong>Founder review:</strong> ${escapeHtml(request.admin_review_reason || "Required by automation state.")}</p>`
@@ -1801,6 +1893,10 @@ function renderRequestCardV2(request) {
         </div>
         <div class="field-row">
           <label class="field-group">
+            Route status
+            <select name="route_status">${routeStatusOptions(request.route_status || "active")}</select>
+          </label>
+          <label class="field-group">
             Logistics
             <select name="logistics_mode">${logisticsModeOptions(request.logistics_mode || "not_needed")}</select>
           </label>
@@ -1830,6 +1926,20 @@ function renderRequestCardV2(request) {
         <label class="field-group">
           Logistics/compliance notes
           <textarea name="logistics_notes" rows="3">${escapeHtml(request.logistics_notes || "")}</textarea>
+        </label>
+        <div class="field-row">
+          <label class="field-group">
+            Compliance flags
+            <textarea name="compliance_flags" rows="3" placeholder="One flag per line">${escapeHtml(checklistTextareaValue(request.compliance_flags))}</textarea>
+          </label>
+          <label class="field-group">
+            Required checks
+            <textarea name="required_checks" rows="3" placeholder="One required check per line">${escapeHtml(checklistTextareaValue(request.required_checks))}</textarea>
+          </label>
+        </div>
+        <label class="field-group">
+          Proof requirements
+          <textarea name="proof_requirements" rows="3" placeholder="One proof requirement per line">${escapeHtml(checklistTextareaValue(request.proof_requirements))}</textarea>
         </label>
         <label class="field-group">
           Founder review reason
@@ -2464,6 +2574,10 @@ function formPayload(form) {
     logistics_mode: formData.get("logistics_mode") || "not_needed",
     goods_category: formData.get("goods_category") || "none",
     logistics_notes: formData.get("logistics_notes") || "",
+    route_status: formData.get("route_status") || "active",
+    compliance_flags: parseChecklist(formData.get("compliance_flags")),
+    required_checks: parseChecklist(formData.get("required_checks")),
+    proof_requirements: parseChecklist(formData.get("proof_requirements")),
     compliance_acknowledged: true,
     compliance_status: formData.get("compliance_status") || "needs_ai_review",
     compliance_risk_level: formData.get("compliance_risk_level") || "standard",
@@ -2732,6 +2846,12 @@ function buildClientUpdate(request, form) {
   const fundsLine = `Funds protection: ${fundsStatusLabels[payload.funds_status] || payload.funds_status}; protected amount ${formatMoney(payload.protected_amount, payload.quote_currency)}.`;
   const reportUrlLine = payload.client_report_url ? `Report link: ${payload.client_report_url}` : "";
   const proofLines = payload.proof_links.length ? [`Proof links:`, ...payload.proof_links.map((link) => `- ${link}`)] : [];
+  const requiredCheckLines = payload.required_checks.length
+    ? ["Required checks before execution/release:", ...payload.required_checks.map((item) => `- ${item}`)]
+    : [];
+  const proofRequirementLines = payload.proof_requirements.length
+    ? ["Proof requirements:", ...payload.proof_requirements.map((item) => `- ${item}`)]
+    : [];
 
   return [
     `Swadakta update for ${request.request_code}`,
@@ -2745,9 +2865,11 @@ function buildClientUpdate(request, form) {
     fundsLine,
     payload.client_report ? `Report: ${payload.client_report}` : "Report: Update pending.",
     reportUrlLine,
+    ...requiredCheckLines,
+    ...proofRequirementLines,
     ...buildMilestoneSummary(request),
     ...proofLines,
-    "Thank you for trusting Swadakta Diaspora Concierge.",
+    "Thank you for trusting Swadakta Corridor Concierge.",
   ]
     .filter(Boolean)
     .join("\n");
@@ -2791,6 +2913,12 @@ function buildQuoteMessage(request, form) {
   const verificationLine = payload.identity_verification_required
     ? "ID verification may be required before release or sensitive work starts."
     : "ID verification may be requested for higher-risk, high-value, title/document, or authority-sensitive jobs.";
+  const requiredCheckLines = payload.required_checks.length
+    ? ["Required checks before execution:", ...payload.required_checks.map((item) => `- ${item}`)]
+    : [];
+  const proofRequirementLines = payload.proof_requirements.length
+    ? ["Proof requirements:", ...payload.proof_requirements.map((item) => `- ${item}`)]
+    : [];
 
   return [
     `Hi ${request.client_name || "there"},`,
@@ -2807,10 +2935,12 @@ function buildQuoteMessage(request, form) {
     "",
     fundsLine,
     verificationLine,
+    ...requiredCheckLines,
     ...fundsGuardrailLines({ ...request, ...payload }),
     ...buildMilestoneSummary(request),
     "",
     `Proof plan: ${proofPriority}. Report pack: ${reports}.`,
+    ...proofRequirementLines,
     "Please pay only through the link above or another channel confirmed by Swadakta. Do not send card numbers, PINs, passwords, or one-time codes by WhatsApp, email, or the intake form.",
     "The quote covers the approved brief only. Any extra travel, document fees, vendor costs, or scope changes will be confirmed before extra work starts.",
     "Terms: https://swadakta.com/terms",
@@ -2860,11 +2990,18 @@ function buildOperatorBrief(request, form) {
     .map((milestone) => `- ${renderClientMilestoneLine(milestone)}; provider ${milestoneProviderLabels[milestone.provider] || milestone.provider}; trigger: ${milestone.release_trigger}`)
     .join("\n");
   const verificationStatus = verificationStatusLabels[payload.verification_status] || payload.verification_status || "Not required";
+  const requiredCheckLines = payload.required_checks.length
+    ? payload.required_checks.map((item) => `- ${item}`).join("\n")
+    : "No additional route checks recorded.";
+  const proofRequirementLines = payload.proof_requirements.length
+    ? payload.proof_requirements.map((item) => `- ${item}`).join("\n")
+    : "Use the standard report pack and receipt/reference trail.";
 
   return [
     `Swadakta operator brief: ${request.request_code}`,
     `Client: ${request.client_name}`,
     `Route: ${route}`,
+    `Route status: ${routeStatusLabels[payload.route_status] || payload.route_status || "Active lane"}`,
     `Task: ${taskLabels[request.task_type] || request.task_type}`,
     `Task location: ${taskLocation}`,
     `Logistics: ${logisticsMode}`,
@@ -2898,6 +3035,12 @@ function buildOperatorBrief(request, form) {
     "Milestone ledger:",
     milestoneSummary || "No milestones set yet.",
     "",
+    "Required route/compliance checks:",
+    requiredCheckLines,
+    "",
+    "Proof requirements:",
+    proofRequirementLines,
+    "",
     "Client notes:",
     request.notes || "No notes provided.",
     "",
@@ -2907,7 +3050,7 @@ function buildOperatorBrief(request, form) {
     "Field checklist:",
     "- Confirm arrival/access before starting.",
     "- Capture timestamped photos or short video where allowed.",
-    "- Keep receipts, queue tickets, names, and reference numbers.",
+    "- Keep receipts, queue tickets, names, tracking numbers, and reference numbers.",
     "- Record blockers, red flags, and next-step recommendations.",
     "- Do not handle extra money, documents, or instructions outside the approved brief without admin confirmation.",
     "",

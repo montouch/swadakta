@@ -92,6 +92,13 @@ const serviceDirectionLabels = {
   digital_global: "Digital/global support",
 };
 
+const routeStatusLabels = {
+  active: "Active lane",
+  pilot: "Pilot lane",
+  unsupported: "Founder approval lane",
+  blocked: "Blocked",
+};
+
 const logisticsModeLabels = {
   not_needed: "No physical delivery",
   local_delivery: "Local delivery or errand",
@@ -282,6 +289,14 @@ function buildBrief() {
   const selectedTask = taskType.options[taskType.selectedIndex].text;
   const selectedUrgency = urgency.options[urgency.selectedIndex].text;
   const reports = getReportItems().join(", ") || "basic written update";
+  const triage = complianceTriage({
+    logisticsMode,
+    goodsCategory,
+    sensitiveDocuments: document.querySelector("#sensitive-documents").checked,
+    jobValueBand,
+    originCountry,
+    destinationCountry,
+  });
   const permissions = [
     document.querySelector("#permission-contact").checked ? "local contact permission confirmed" : "local contact permission pending",
     document.querySelector("#scope-acceptance").checked ? "service scope accepted" : "service scope pending",
@@ -298,8 +313,12 @@ function buildBrief() {
     `Origin: ${originCountry}`,
     `Destination: ${destinationCountry}`,
     `Direction: ${serviceDirectionLabels[serviceDirection] || serviceDirection}`,
+    `Route status: ${routeStatusLabels[triage.route_status] || triage.route_status}`,
     `Logistics: ${logisticsModeLabels[logisticsMode] || logisticsMode}`,
     `Goods category: ${goodsCategoryLabels[goodsCategory] || goodsCategory}`,
+    `Compliance flags: ${triage.compliance_flags.join("; ") || "None"}`,
+    `Required checks: ${triage.required_checks.join("; ") || "Standard intake checks"}`,
+    `Proof requirements: ${triage.proof_requirements.join("; ") || "Standard proof pack"}`,
     `Preferred quote currency: ${preferredCurrency}`,
     `Service package: ${servicePackageLabels[servicePackage] || servicePackage}`,
     `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
@@ -405,6 +424,7 @@ function corridorStatus(originCountry, destinationCountry) {
 
   if (!originRegion || !destinationRegion || originRegion === "Founder review" || destinationRegion === "Founder review") {
     return {
+      route_status: "unsupported",
       automation_status: "founder_approval",
       admin_review_required: true,
       admin_review_reason: "Route is outside the launch regions and needs founder approval.",
@@ -416,6 +436,7 @@ function corridorStatus(originCountry, destinationCountry) {
 
   if (involvesAfrica && involvesAustralia) {
     return {
+      route_status: "active",
       automation_status: "ai_triage",
       admin_review_required: false,
       admin_review_reason: "",
@@ -424,6 +445,7 @@ function corridorStatus(originCountry, destinationCountry) {
 
   if (involvesAfrica && ["USA", "Europe", "China"].includes(originRegion === "Africa" ? destinationRegion : originRegion)) {
     return {
+      route_status: "pilot",
       automation_status: "admin_review",
       admin_review_required: true,
       admin_review_reason: "Pilot corridor: AI can triage, but founder approval is required before quoting or assigning.",
@@ -431,9 +453,90 @@ function corridorStatus(originCountry, destinationCountry) {
   }
 
   return {
+    route_status: "unsupported",
     automation_status: "founder_approval",
     admin_review_required: true,
     admin_review_reason: "Non-Africa corridor requested; keep in founder review until the lane is activated.",
+  };
+}
+
+function uniqueChecklist(items) {
+  return Array.from(new Set(items.map((item) => String(item || "").trim()).filter(Boolean))).slice(0, 20);
+}
+
+function buildOperationalChecklist({
+  route,
+  logisticsMode,
+  goodsCategory,
+  sensitiveDocuments,
+  jobValueBand,
+  taskTypeValue,
+  reportItems,
+}) {
+  const flags = [];
+  const requiredChecks = [];
+  const proofRequirements = [];
+  const physical = !["not_needed", "digital_only"].includes(logisticsMode) || goodsCategory !== "none";
+  const riskyGoods = ["food_plant_animal", "medicine_health", "cosmetics", "valuable_items", "restricted_or_unsure"];
+
+  if (route.route_status === "active") {
+    flags.push("Active launch corridor");
+  } else if (route.route_status === "pilot") {
+    flags.push("Pilot corridor - founder quote approval required");
+    requiredChecks.push("Founder confirms receiver coverage, payment route, and legal path before quote or assignment.");
+  } else {
+    flags.push("Unsupported corridor - founder approval required");
+    requiredChecks.push("Founder approves whether Swadakta can support this lane before any quote, purchase, or assignment.");
+  }
+
+  requiredChecks.push("Confirm client ID status before paid, high-value, or sensitive work starts.");
+  requiredChecks.push("Confirm provider payment reference before assigning any receiver or releasing any milestone.");
+  requiredChecks.push("Confirm receiver is vetted, ID-verified, and matched to the route/category before assignment.");
+
+  if (physical) {
+    flags.push("Physical item or handoff involved");
+    requiredChecks.push("Check origin/export and destination/import rules before buying, posting, carrying, or receiving the item.");
+    requiredChecks.push("Confirm courier/postal method, recipient details, declared value, duties/taxes owner, and tracking plan.");
+    proofRequirements.push("Pre-handoff item photos, purchase receipt, courier/postal tracking, and delivery confirmation.");
+  }
+
+  if (riskyGoods.includes(goodsCategory)) {
+    flags.push("Restricted or regulated item risk");
+    requiredChecks.push("Founder checks whether permits, customs clearance, carrier restrictions, or a refusal are required.");
+    proofRequirements.push("Compliance decision note, receipt/reference, and carrier/customs evidence where legally allowed.");
+  }
+
+  if (sensitiveDocuments) {
+    flags.push("Sensitive documents expected");
+    requiredChecks.push("Use secure links and minimum necessary access for documents; avoid raw document exchange by WhatsApp.");
+    proofRequirements.push("Document chain-of-custody note and redacted proof where possible.");
+  }
+
+  if (["2000_10000", "10000_plus"].includes(jobValueBand)) {
+    flags.push("High-value job");
+    requiredChecks.push("Founder reviews payment protection, milestone release plan, refund/dispute path, and margin before start.");
+  }
+
+  if (taskTypeValue === "site") {
+    proofRequirements.push("Timestamped photos/video, location summary, contractor/contact notes, and visible progress markers.");
+  } else if (taskTypeValue === "registry") {
+    proofRequirements.push("Office/reference number, receipt where available, submitted/picked-up document status, and next-step note.");
+  } else if (taskTypeValue === "shopping") {
+    proofRequirements.push("Quote comparison or store link, purchase receipt, item condition photos, and handoff/delivery confirmation.");
+  } else if (taskTypeValue === "virtual") {
+    proofRequirements.push("Work log, deliverable link or summary, open questions, and next action.");
+  } else {
+    proofRequirements.push("Timestamped update, receipt/reference where applicable, and short completion summary.");
+  }
+
+  if (Array.isArray(reportItems) && reportItems.length) {
+    proofRequirements.push(`Client requested report pack: ${reportItems.join(", ")}.`);
+  }
+
+  return {
+    compliance_flags: uniqueChecklist(flags),
+    required_checks: uniqueChecklist(requiredChecks),
+    proof_requirements: uniqueChecklist(proofRequirements),
   };
 }
 
@@ -441,10 +544,20 @@ function complianceTriage({ logisticsMode, goodsCategory, sensitiveDocuments, jo
   const riskyGoods = ["food_plant_animal", "medicine_health", "cosmetics", "valuable_items", "restricted_or_unsure"];
   const physical = !["not_needed", "digital_only"].includes(logisticsMode) || goodsCategory !== "none";
   const route = corridorStatus(originCountry, destinationCountry);
+  const checklist = buildOperationalChecklist({
+    route,
+    logisticsMode,
+    goodsCategory,
+    sensitiveDocuments,
+    jobValueBand,
+    taskTypeValue: taskType.value,
+    reportItems: getReportItems(),
+  });
 
   if (riskyGoods.includes(goodsCategory)) {
     return {
       ...route,
+      ...checklist,
       compliance_status: "needs_admin_review",
       compliance_risk_level: "high",
       automation_status: "founder_approval",
@@ -456,6 +569,7 @@ function complianceTriage({ logisticsMode, goodsCategory, sensitiveDocuments, jo
   if (physical || sensitiveDocuments || ["2000_10000", "10000_plus"].includes(jobValueBand)) {
     return {
       ...route,
+      ...checklist,
       compliance_status: "needs_ai_review",
       compliance_risk_level: "medium",
       admin_review_required: route.admin_review_required,
@@ -464,6 +578,7 @@ function complianceTriage({ logisticsMode, goodsCategory, sensitiveDocuments, jo
 
   return {
     ...route,
+    ...checklist,
     compliance_status: "not_applicable",
     compliance_risk_level: "standard",
     automation_status: route.admin_review_required ? route.automation_status : "self_service",
@@ -505,6 +620,10 @@ function buildPayload() {
     logistics_mode: logisticsMode,
     goods_category: goodsCategory,
     logistics_notes: document.querySelector("#logistics-notes").value.trim(),
+    route_status: triage.route_status,
+    compliance_flags: triage.compliance_flags,
+    required_checks: triage.required_checks,
+    proof_requirements: triage.proof_requirements,
     compliance_acknowledged: document.querySelector("#compliance-acknowledged").checked,
     compliance_status: triage.compliance_status,
     compliance_risk_level: triage.compliance_risk_level,
@@ -757,6 +876,20 @@ function renderTrackedMilestones(request) {
   `;
 }
 
+function renderTrackedList(title, items) {
+  const list = Array.isArray(items) ? items.map((item) => String(item || "").trim()).filter(Boolean) : [];
+  if (!list.length) {
+    return "";
+  }
+
+  return `
+    <div class="tracking-checklist">
+      <strong>${escapeHtml(title)}</strong>
+      <ul>${list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
+    </div>
+  `;
+}
+
 function renderTrackingResult(request) {
   const safePaymentLink = safeHttpUrl(request.payment_link);
   const safeReportLink = safeHttpUrl(request.client_report_url);
@@ -780,10 +913,14 @@ function renderTrackingResult(request) {
     fundsProtectionLabels[request.funds_protection_preference] ||
     request.funds_protection_preference ||
     "Quote first, then decide";
+  const route = [request.origin_country, request.destination_country].filter(Boolean).join(" to ");
+  const routeStatus = routeStatusLabels[request.route_status] || request.route_status || "";
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
     <strong>${escapeHtml(request.request_code)}</strong>
+    ${route ? `<span>Route: ${escapeHtml(route)}</span>` : ""}
+    ${routeStatus ? `<span>Route status: ${escapeHtml(routeStatus)}</span>` : ""}
     <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
     <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
     <span>Quote: ${escapeHtml(formatTrackedMoney(request.quote_amount, request.quote_currency))}</span>
@@ -792,6 +929,8 @@ function renderTrackingResult(request) {
     <span>Funds: ${escapeHtml(fundsStatus)}</span>
     <span>Protected amount: ${escapeHtml(formatTrackedAmount(request.protected_amount, request.quote_currency))}</span>
     ${request.identity_verification_required ? `<span>ID verification: ${escapeHtml(verificationStatus)}</span>` : ""}
+    ${renderTrackedList("Required checks", request.required_checks)}
+    ${renderTrackedList("Proof requirements", request.proof_requirements)}
     ${request.release_condition ? `<p>${escapeHtml(request.release_condition)}</p>` : ""}
     ${renderTrackedMilestones(request)}
     ${request.client_report ? `<p>${escapeHtml(request.client_report)}</p>` : `<p>Client report will appear here after the Kenya desk updates the job.</p>`}

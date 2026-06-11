@@ -44,6 +44,10 @@ create table if not exists public.service_requests (
   logistics_mode text not null default 'not_needed',
   goods_category text not null default 'none',
   logistics_notes text,
+  route_status text not null default 'active',
+  compliance_flags text[] not null default array[]::text[],
+  required_checks text[] not null default array[]::text[],
+  proof_requirements text[] not null default array[]::text[],
   compliance_acknowledged boolean not null default false,
   compliance_status text not null default 'needs_ai_review',
   compliance_risk_level text not null default 'standard',
@@ -194,6 +198,10 @@ alter table public.service_requests add column if not exists task_location text;
 alter table public.service_requests add column if not exists logistics_mode text not null default 'not_needed';
 alter table public.service_requests add column if not exists goods_category text not null default 'none';
 alter table public.service_requests add column if not exists logistics_notes text;
+alter table public.service_requests add column if not exists route_status text not null default 'active';
+alter table public.service_requests add column if not exists compliance_flags text[] not null default array[]::text[];
+alter table public.service_requests add column if not exists required_checks text[] not null default array[]::text[];
+alter table public.service_requests add column if not exists proof_requirements text[] not null default array[]::text[];
 alter table public.service_requests add column if not exists compliance_acknowledged boolean not null default false;
 alter table public.service_requests add column if not exists compliance_status text not null default 'needs_ai_review';
 alter table public.service_requests add column if not exists compliance_risk_level text not null default 'standard';
@@ -336,6 +344,24 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_service_direction_check check (service_direction in ('origin_to_destination', 'destination_to_origin', 'two_way', 'local_in_country', 'digital_global'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_route_status_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_route_status_check check (route_status in ('active', 'pilot', 'unsupported', 'blocked'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_compliance_arrays_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_compliance_arrays_check check (
+        coalesce(array_length(compliance_flags, 1), 0) <= 20
+        and coalesce(array_length(required_checks, 1), 0) <= 20
+        and coalesce(array_length(proof_requirements, 1), 0) <= 20
+      );
   end if;
 
   if not exists (
@@ -913,8 +939,12 @@ with check (
   and btrim(coalesce(task_location, kenya_location, '')) <> ''
   and btrim(notes) <> ''
   and service_direction in ('origin_to_destination', 'destination_to_origin', 'two_way', 'local_in_country', 'digital_global')
+  and route_status in ('active', 'pilot', 'unsupported', 'blocked')
   and logistics_mode in ('not_needed', 'local_delivery', 'postal_courier', 'pickup_hold', 'supplier_direct', 'airport_handoff', 'digital_only')
   and goods_category in ('none', 'general_goods', 'clothing_household', 'electronics', 'cosmetics', 'food_plant_animal', 'medicine_health', 'documents', 'valuable_items', 'restricted_or_unsure')
+  and coalesce(array_length(compliance_flags, 1), 0) <= 20
+  and coalesce(array_length(required_checks, 1), 0) <= 20
+  and coalesce(array_length(proof_requirements, 1), 0) <= 20
   and compliance_acknowledged = true
   and compliance_status in ('not_applicable', 'needs_ai_review', 'needs_admin_review', 'cleared', 'restricted', 'permit_required', 'prohibited')
   and compliance_risk_level in ('standard', 'medium', 'high', 'blocked')
@@ -1082,6 +1112,10 @@ grant insert (
   logistics_mode,
   goods_category,
   logistics_notes,
+  route_status,
+  compliance_flags,
+  required_checks,
+  proof_requirements,
   compliance_acknowledged,
   compliance_status,
   compliance_risk_level,
@@ -1134,6 +1168,10 @@ grant update (
   logistics_mode,
   goods_category,
   logistics_notes,
+  route_status,
+  compliance_flags,
+  required_checks,
+  proof_requirements,
   compliance_acknowledged,
   compliance_status,
   compliance_risk_level,
@@ -1238,6 +1276,18 @@ create or replace function app_private.track_service_request(
 )
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  compliance_status text,
+  compliance_risk_level text,
+  automation_status text,
+  required_checks text[],
+  proof_requirements text[],
   status text,
   payment_status text,
   quote_amount integer,
@@ -1266,6 +1316,18 @@ set search_path = public
 as $$
   select
     sr.request_code,
+    sr.origin_country,
+    sr.destination_country,
+    sr.service_direction,
+    coalesce(sr.task_location, sr.kenya_location) as task_location,
+    sr.route_status,
+    sr.logistics_mode,
+    sr.goods_category,
+    sr.compliance_status,
+    sr.compliance_risk_level,
+    sr.automation_status,
+    sr.required_checks,
+    sr.proof_requirements,
     sr.status,
     sr.payment_status,
     sr.quote_amount,
@@ -1325,6 +1387,18 @@ create or replace function public.track_service_request(
 )
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  compliance_status text,
+  compliance_risk_level text,
+  automation_status text,
+  required_checks text[],
+  proof_requirements text[],
   status text,
   payment_status text,
   quote_amount integer,
@@ -1360,6 +1434,18 @@ grant execute on function public.track_service_request(text, text) to anon, auth
 create or replace function app_private.list_my_service_requests()
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  compliance_status text,
+  compliance_risk_level text,
+  automation_status text,
+  required_checks text[],
+  proof_requirements text[],
   service_package text,
   kenya_location text,
   status text,
@@ -1390,6 +1476,18 @@ set search_path = public
 as $$
   select
     sr.request_code,
+    sr.origin_country,
+    sr.destination_country,
+    sr.service_direction,
+    coalesce(sr.task_location, sr.kenya_location) as task_location,
+    sr.route_status,
+    sr.logistics_mode,
+    sr.goods_category,
+    sr.compliance_status,
+    sr.compliance_risk_level,
+    sr.automation_status,
+    sr.required_checks,
+    sr.proof_requirements,
     sr.service_package,
     sr.kenya_location,
     sr.status,
@@ -1447,6 +1545,18 @@ grant execute on function app_private.list_my_service_requests() to authenticate
 create or replace function public.list_my_service_requests()
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  compliance_status text,
+  compliance_risk_level text,
+  automation_status text,
+  required_checks text[],
+  proof_requirements text[],
   service_package text,
   kenya_location text,
   status text,
@@ -1746,6 +1856,15 @@ grant execute on function public.list_my_partner_applications() to authenticated
 create or replace function app_private.list_my_assigned_jobs()
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  required_checks text[],
+  proof_requirements text[],
   service_package text,
   task_type text,
   kenya_location text,
@@ -1774,6 +1893,15 @@ set search_path = public
 as $$
   select
     sr.request_code,
+    sr.origin_country,
+    sr.destination_country,
+    sr.service_direction,
+    coalesce(sr.task_location, sr.kenya_location) as task_location,
+    sr.route_status,
+    sr.logistics_mode,
+    sr.goods_category,
+    sr.required_checks,
+    sr.proof_requirements,
     sr.service_package,
     sr.task_type,
     sr.kenya_location,
@@ -1812,6 +1940,15 @@ grant execute on function app_private.list_my_assigned_jobs() to authenticated;
 create or replace function public.list_my_assigned_jobs()
 returns table (
   request_code text,
+  origin_country text,
+  destination_country text,
+  service_direction text,
+  task_location text,
+  route_status text,
+  logistics_mode text,
+  goods_category text,
+  required_checks text[],
+  proof_requirements text[],
   service_package text,
   task_type text,
   kenya_location text,
