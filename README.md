@@ -92,6 +92,10 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 
 Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle and the account-home `stitch-portal.js` bundle so stale sign-in code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
 
+## Environment setup
+
+Use `.env.example` as the no-secret checklist for Vercel production variables. Real values belong in Vercel Project Settings or an ignored local env file such as `.env.local`; never commit provider secrets, API keys, service-role keys, or webhook tokens.
+
 ## Go live
 
 See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, founder console, Vercel, payments, domain, corridor, and pilot launch checklist.

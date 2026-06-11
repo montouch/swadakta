@@ -27,6 +27,30 @@ const requiredPortalMarkers = [
   "setSignedInShell",
   "Account is open. Verification is only required before paid posting",
 ];
+const requiredEnvExampleKeys = [
+  "PUBLIC_BASE_URL",
+  "SUPABASE_URL",
+  "SUPABASE_PUBLISHABLE_KEY",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "OPENAI_API_KEY",
+  "OPENAI_MODEL",
+  "STRIPE_SECRET_KEY",
+  "STRIPE_WEBHOOK_SECRET",
+  "PAYPAL_ENVIRONMENT",
+  "PAYPAL_CLIENT_ID",
+  "PAYPAL_CLIENT_SECRET",
+  "MPESA_ENVIRONMENT",
+  "MPESA_CONSUMER_KEY",
+  "MPESA_CONSUMER_SECRET",
+  "MPESA_SHORTCODE",
+  "MPESA_PASSKEY",
+  "MPESA_CALLBACK_TOKEN",
+  "WISE_PAYMENT_LINK_URL",
+  "WISE_PAYMENT_REQUEST_URL",
+  "WISE_RECEIVE_DETAILS_URL",
+  "SMILE_ID_API_KEY",
+  "SMILE_ID_PARTNER_ID",
+];
 
 async function readLocal(relativePath) {
   return readFile(path.join(root, relativePath), "utf8");
@@ -122,6 +146,13 @@ const localStitchPortal = await readLocal("stitch-portal.js");
 for (const marker of requiredPortalMarkers) {
   if (!localStitchPortal.includes(marker)) {
     fail(failures, `Local stitch-portal.js is missing marker ${marker}`);
+  }
+}
+
+const envExample = await readLocal(".env.example");
+for (const key of requiredEnvExampleKeys) {
+  if (!new RegExp(`^${key}=`, "m").test(envExample)) {
+    fail(failures, `.env.example is missing ${key}`);
   }
 }
 
