@@ -139,6 +139,20 @@ The endpoint:
 - Sets the form fields to `Payment: Invoice sent`, `Funds: Payment link sent`, and provider reference.
 - Does not capture PayPal payment, mark money paid, assign receivers, or release funds.
 
+PayPal capture endpoint:
+
+- `POST /api/payments/paypal-capture`
+
+The capture endpoint:
+
+- Requires a signed-in Supabase admin session.
+- Captures an approved PayPal order using the order ID stored in `Payment/provider ref`.
+- Updates the Swadakta request record to `Payment: Paid` and `Funds: Deposit confirmed`.
+- Stores the PayPal order/capture reference.
+- Sets `Protected amount` from the captured amount.
+- Adds a release note saying founder proof review is still required.
+- Does not release funds, assign receivers, or mark milestones released.
+
 Required Vercel environment variables:
 
 - `PAYPAL_CLIENT_ID`: PayPal REST app client ID.
@@ -156,6 +170,8 @@ Admin workflow:
 3. Review the generated approval link and provider reference.
 4. Click `Save update`.
 5. Use `Copy quote` to send the client the approved payment message.
+6. After the client approves/pays through PayPal, click `Capture PayPal order`.
+7. Confirm the request now shows paid/protected funds before assigning or continuing work.
 
 PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Keep `KES` jobs on M-Pesa, bank transfer, Wise, or manual PayPal invoice until account/currency support is confirmed.
 

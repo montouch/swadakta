@@ -1705,6 +1705,7 @@ function renderRequestCardV2(request) {
           <button class="button button-primary" type="submit">Save update</button>
           <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
           <button class="button button-secondary create-paypal-order" type="button">Generate PayPal order</button>
+          <button class="button button-secondary capture-paypal-order" type="button">Capture PayPal order</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
           <button class="button button-secondary copy-quote" type="button">Copy quote</button>
           <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
@@ -2357,6 +2358,51 @@ async function generatePayPalOrder(request, form, statusElement) {
   statusElement.textContent = "PayPal order ready. Review and save.";
 }
 
+function applyPaymentCaptureResult(form, result) {
+  const paymentStatusSelect = form.querySelector('[name="payment_status"]');
+  const fundsStatusSelect = form.querySelector('[name="funds_status"]');
+  const protectedAmountInput = form.querySelector('[name="protected_amount"]');
+  const paymentReferenceInput = form.querySelector('[name="payment_reference"]');
+  const releaseNotesInput = form.querySelector('[name="release_notes"]');
+
+  if (paymentStatusSelect) {
+    paymentStatusSelect.value = result.data?.payment_status || "paid";
+  }
+
+  if (fundsStatusSelect) {
+    fundsStatusSelect.value = result.data?.funds_status || "deposit_confirmed";
+  }
+
+  if (protectedAmountInput && result.data?.protected_amount !== undefined) {
+    protectedAmountInput.value = result.data.protected_amount;
+  }
+
+  if (paymentReferenceInput && result.data?.provider_reference) {
+    paymentReferenceInput.value = result.data.provider_reference;
+  }
+
+  if (releaseNotesInput) {
+    releaseNotesInput.value =
+      "PayPal capture confirmed. Founder/admin must still review milestone proof before any receiver release.";
+  }
+}
+
+async function capturePayPalOrder(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.payment_reference) {
+    statusElement.textContent = "Record the PayPal order ID/reference before capture.";
+    return;
+  }
+
+  statusElement.textContent = "Capturing PayPal order...";
+
+  const result = await window.SwadaktaData.capturePayPalOrder(request, payload);
+  applyPaymentCaptureResult(form, result);
+  statusElement.textContent = "PayPal captured and request updated.";
+  await loadRequests();
+}
+
 function buildClientUpdate(request, form) {
   const payload = formPayload(form);
   const quoteLine = payload.quote_amount ? `Quote: ${formatCurrency(payload.quote_amount, payload.quote_currency)}` : "Quote: Pending.";
@@ -2679,6 +2725,25 @@ requestBoard.addEventListener("click", async (event) => {
       await generatePayPalOrder(request, form, statusElement);
     } catch (error) {
       statusElement.textContent = error.message || "PayPal order failed.";
+    }
+    return;
+  }
+
+  const paypalCaptureButton = event.target.closest(".capture-paypal-order");
+  if (paypalCaptureButton) {
+    const form = paypalCaptureButton.closest(".request-update-form");
+    const card = paypalCaptureButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await capturePayPalOrder(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "PayPal capture failed.";
     }
     return;
   }

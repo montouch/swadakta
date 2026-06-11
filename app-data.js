@@ -1073,6 +1073,43 @@
     return { data, mode: "paypal" };
   }
 
+  async function capturePayPalOrder(request, updates = {}) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      throw new Error("PayPal capture requires Supabase admin sign-in.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in as an admin before capturing a PayPal order.");
+    }
+
+    const response = await fetch("/api/payments/paypal-capture", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        request_code: request.request_code,
+        paypal_order_id: updates.payment_reference || request.payment_reference,
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not capture PayPal order.");
+    }
+
+    return { data, mode: "paypal" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
     const emailRedirectTo = normalizeAuthRedirect(redirectTo);
@@ -1150,6 +1187,7 @@
     assist,
     createStripeCheckoutSession,
     createPayPalOrder,
+    capturePayPalOrder,
     signInAdmin,
     signInPortal,
     getSession,
