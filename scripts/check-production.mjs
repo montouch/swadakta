@@ -8,6 +8,7 @@ const cacheBust = Date.now();
 const localBaseHosts = new Set(["localhost", "127.0.0.1", "::1"]);
 
 const htmlFiles = [
+  "admin.html",
   "admin-ops.html",
   "admin-readiness.html",
   "admin-verification.html",
@@ -15,11 +16,14 @@ const htmlFiles = [
   "auth.html",
   "brief.html",
   "corridor.html",
+  "index.html",
   "messages.html",
   "payments.html",
   "portal.html",
+  "privacy.html",
   "resolution.html",
   "rules.html",
+  "terms.html",
   "trust.html",
   "tracking.html",
   "verification.html",
@@ -86,6 +90,13 @@ const requiredAssistantMarkers = [
   "Workflow-aware guide",
   "renderActionLinks",
   "renderConversation",
+];
+const requiredDockMarkers = [
+  "swadakta-ai-dock",
+  "collectPageContext",
+  "safeActionMap",
+  "performSafeAction",
+  "Protected actions stay gated",
 ];
 const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
 const requiredBriefHtmlMarkers = ["brief-freeform", "Ask AI to organize", "brief-place-intelligence", "brief-place-checks"];
@@ -361,6 +372,17 @@ for (const marker of requiredAssistantMarkers) {
     fail(failures, `Local assistant flow is missing marker ${marker}`);
   }
 }
+const localAssistantDock = await readLocal("assistant-dock.js");
+for (const marker of requiredDockMarkers) {
+  if (!localAssistantDock.includes(marker)) {
+    fail(failures, `Local assistant dock is missing marker ${marker}`);
+  }
+}
+for (const [file, content] of localHtml) {
+  if (!content.includes("assistant-dock.js?v=2")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=2`);
+  }
+}
 const localAiPreferences = await readLocal("ai-preferences.js");
 for (const marker of requiredAiPreferenceMarkers) {
   if (!localAiPreferences.includes(marker)) {
@@ -498,6 +520,9 @@ for (const page of requiredPages) {
     if (!text.includes(marker)) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
+  }
+  if (!text.includes("assistant-dock.js?v=2")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=2`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -723,6 +748,21 @@ for (const marker of requiredAssistantMarkers) {
     fail(failures, `Production assistant.js is missing marker ${marker}`);
   } else {
     pass(`Production assistant.js contains ${marker}`);
+  }
+}
+
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=2");
+if (assistantDockResponse.status !== 200) {
+  fail(failures, `assistant-dock.js?v=2 returned ${assistantDockResponse.status}`);
+} else {
+  pass("assistant-dock.js?v=2 returned 200");
+}
+
+for (const marker of requiredDockMarkers) {
+  if (!assistantDockText.includes(marker)) {
+    fail(failures, `Production assistant-dock.js is missing marker ${marker}`);
+  } else {
+    pass(`Production assistant-dock.js contains ${marker}`);
   }
 }
 
