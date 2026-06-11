@@ -537,6 +537,45 @@
     };
   }
 
+  function cleanEmail(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function paidPostingStatus(profile) {
+    return String(profile?.identity_verification_status || "not_started").trim().toLowerCase();
+  }
+
+  async function assertPaidPostingAllowed(payload) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return;
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const signedInEmail = cleanEmail(sessionData.session?.user?.email);
+    if (!signedInEmail) {
+      throw new Error("Sign in before posting paid work. You can keep drafting, but paid jobs require an account.");
+    }
+
+    const requestEmail = cleanEmail(payload.email);
+    if (requestEmail && requestEmail !== signedInEmail) {
+      throw new Error("Use the email on your signed-in Swadakta account before posting paid work.");
+    }
+
+    const profileResult = await getAccountProfile();
+    const profile = profileResult.data || {};
+    if (paidPostingStatus(profile) !== "verified") {
+      throw new Error(
+        `Verify your identity before posting paid work. Current status: ${formatStatus(paidPostingStatus(profile))}.`,
+      );
+    }
+  }
+
   async function createRequest(payload) {
     const normalized = normalizeRequest(payload);
     const supabase = await getSupabase();
@@ -546,6 +585,8 @@
       writeLocalRequests(requests);
       return { data: normalized, mode: "local" };
     }
+
+    await assertPaidPostingAllowed(normalized);
 
     const { error } = await supabase.from("service_requests").insert(toDatabasePayload(normalized));
 

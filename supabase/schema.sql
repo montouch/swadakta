@@ -811,6 +811,25 @@ as $$
   select coalesce((select auth.jwt()) ->> 'email', '');
 $$;
 
+create or replace function app_private.can_submit_paid_service_request(input_email text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public, app_private
+as $$
+  select
+    auth.uid() is not null
+    and lower(btrim(coalesce(input_email, ''))) = lower(btrim(app_private.current_auth_email()))
+    and exists (
+      select 1
+      from public.account_profiles profile
+      where profile.user_id = auth.uid()
+        and lower(btrim(profile.email)) = lower(btrim(app_private.current_auth_email()))
+        and profile.identity_verification_status = 'verified'
+    );
+$$;
+
 create or replace function app_private.save_account_profile(
   input_account_role text default 'client',
   input_full_name text default '',
@@ -1138,13 +1157,15 @@ with check (
 );
 
 drop policy if exists "Anyone can submit service requests" on public.service_requests;
-create policy "Anyone can submit service requests"
+drop policy if exists "Verified accounts can submit service requests" on public.service_requests;
+create policy "Verified accounts can submit service requests"
 on public.service_requests
 for insert
-to anon, authenticated
+to authenticated
 with check (
   request_code like 'SW-%'
   and length(request_code) between 6 and 24
+  and (select app_private.can_submit_paid_service_request(email))
   and btrim(client_name) <> ''
   and btrim(whatsapp) <> ''
   and btrim(coalesce(client_base, australia_location, '')) <> ''
@@ -1292,7 +1313,11 @@ grant execute on function app_private.get_my_account_profile() to authenticated;
 revoke all on function public.get_my_account_profile() from public;
 revoke all on function public.get_my_account_profile() from anon;
 grant execute on function public.get_my_account_profile() to authenticated;
+revoke all on function app_private.can_submit_paid_service_request(text) from public;
+revoke all on function app_private.can_submit_paid_service_request(text) from anon;
+grant execute on function app_private.can_submit_paid_service_request(text) to authenticated;
 
+revoke insert on public.service_requests from anon;
 revoke truncate, references, trigger on table public.service_requests from anon, authenticated;
 revoke truncate, references, trigger on table public.partner_applications from anon, authenticated;
 revoke insert, update, delete, truncate, references, trigger on table public.field_updates from anon, authenticated;
@@ -1380,7 +1405,7 @@ grant insert (
   identity_verification_consent,
   terms_accepted_at,
   privacy_accepted_at
-) on public.service_requests to anon, authenticated;
+) on public.service_requests to authenticated;
 
 grant select on public.service_requests to authenticated;
 grant update (
