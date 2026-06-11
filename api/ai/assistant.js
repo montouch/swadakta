@@ -21,6 +21,13 @@ const ROLE_POLICIES = {
     label: "Receiver guidance",
   },
 };
+const MAX_JSON_BODY_BYTES = 64 * 1024;
+
+function httpError(message, statusCode) {
+  const error = new Error(message);
+  error.statusCode = statusCode;
+  return error;
+}
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -29,22 +36,48 @@ function sendJson(res, status, body) {
   res.end(JSON.stringify(body));
 }
 
+function parseJson(raw) {
+  try {
+    return raw ? JSON.parse(raw) : {};
+  } catch {
+    throw httpError("Request body must be valid JSON.", 400);
+  }
+}
+
 async function readJsonBody(req) {
+  const contentLength = Number(req.headers?.["content-length"] || 0);
+  if (contentLength > MAX_JSON_BODY_BYTES) {
+    throw httpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+  }
+
   if (req.body && typeof req.body === "object") {
+    const estimated = Buffer.byteLength(JSON.stringify(req.body), "utf8");
+    if (estimated > MAX_JSON_BODY_BYTES) {
+      throw httpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+    }
     return req.body;
   }
 
   if (req.body && typeof req.body === "string") {
-    return JSON.parse(req.body);
+    if (Buffer.byteLength(req.body, "utf8") > MAX_JSON_BODY_BYTES) {
+      throw httpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+    }
+    return parseJson(req.body);
   }
 
   const chunks = [];
+  let totalBytes = 0;
   for await (const chunk of req) {
-    chunks.push(Buffer.from(chunk));
+    const buffer = Buffer.from(chunk);
+    totalBytes += buffer.length;
+    if (totalBytes > MAX_JSON_BODY_BYTES) {
+      throw httpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+    }
+    chunks.push(buffer);
   }
 
   const raw = Buffer.concat(chunks).toString("utf8");
-  return raw ? JSON.parse(raw) : {};
+  return parseJson(raw);
 }
 
 function safeRole(value) {
