@@ -40,12 +40,20 @@
   const accountHomeGatePosting = document.querySelector("#account-home-gate-posting");
   const accountHomeGateWork = document.querySelector("#account-home-gate-work");
   const accountHomeGateSensitive = document.querySelector("#account-home-gate-sensitive");
+  const accountSetupProgress = document.querySelector("#account-setup-progress");
+  const accountSetupProfile = document.querySelector("#account-setup-profile");
+  const accountSetupVerification = document.querySelector("#account-setup-verification");
+  const accountSetupClient = document.querySelector("#account-setup-client");
+  const accountSetupReceiver = document.querySelector("#account-setup-receiver");
+  const accountSetupNext = document.querySelector("#account-setup-next");
   const receiverApplicationForm = document.querySelector("#receiver-application-form");
   const receiverApplicationStatus = document.querySelector("#receiver-application-status");
   const receiverApplicationList = document.querySelector("#receiver-application-list");
   const receiverApplicationSummary = document.querySelector("#receiver-application-summary");
   const receiverProfileForm = document.querySelector("#receiver-profile-form");
   const receiverProfilePhotoInput = document.querySelector("#receiver-profile-photo");
+  const receiverProofSampleInput = document.querySelector("#receiver-profile-proof-sample");
+  const receiverProofSampleName = document.querySelector("#receiver-proof-sample-name");
   const receiverProfilePreview = document.querySelector("#receiver-profile-preview");
   const receiverProfileStatus = document.querySelector("#receiver-profile-status");
   const receiverProfileStrength = document.querySelector("#receiver-profile-strength");
@@ -575,6 +583,93 @@
     element.className = `block font-label-md mt-1 ${tone}`.trim();
   }
 
+  function setupCardState(card, state = "idle", copy = "") {
+    if (!card) return;
+    const tones = {
+      done: "rounded-2xl bg-emerald-50/80 border border-emerald-200 p-4",
+      active: "rounded-2xl bg-primary-container/10 border border-primary/20 p-4",
+      blocked: "rounded-2xl bg-amber-50/80 border border-amber-200 p-4",
+      idle: "rounded-2xl bg-white/66 border border-outline-variant/30 p-4",
+    };
+    card.className = tones[state] || tones.idle;
+    const copyNode = card.querySelector("[data-setup-copy]");
+    if (copyNode && copy) copyNode.textContent = copy;
+  }
+
+  function renderAccountSetupChecklist(profile = {}, context = {}) {
+    const verifications = context.verifications || [];
+    const applications = context.applications || [];
+    const requests = context.requests || [];
+    const latestRequest = latestVerificationRequest(verifications);
+    const verified = accountIsVerified(profile, latestRequest);
+    const hasProfile = Boolean(profile.full_name && (profile.whatsapp || phoneInput?.value) && profile.country);
+    const receiverSetup = readReceiverProfileSetup();
+    const hasReceiverProfile = Boolean(receiverSetup.headline && receiverSetup.location && (receiverSetup.photo_data_url || receiverSetup.proof_tools));
+    const hasApplication = applications.length > 0;
+    const hasClientTrail = requests.length > 0;
+    const readyCount = [hasProfile, verified, hasClientTrail, hasReceiverProfile || hasApplication].filter(Boolean).length;
+    const progress = Math.max(25, Math.round((readyCount / 4) * 100));
+
+    if (accountSetupProgress) {
+      accountSetupProgress.textContent = `${progress}% setup ready`;
+      accountSetupProgress.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        progress >= 80
+          ? "bg-emerald-50 text-emerald-700"
+          : progress >= 50
+            ? "bg-primary-container/10 text-primary"
+            : "bg-amber-50 text-amber-700"
+      }`.trim();
+    }
+
+    setupCardState(
+      accountSetupProfile,
+      hasProfile ? "done" : "active",
+      hasProfile ? "Profile basics saved." : "Add legal name, mobile, current country, and corridor base.",
+    );
+    setupCardState(
+      accountSetupVerification,
+      verified ? "done" : latestRequest ? "active" : "idle",
+      verified
+        ? "Provider evidence is recorded."
+        : latestRequest?.provider_link
+          ? "Open the provider link to finish ID, document, and selfie checks."
+          : latestRequest
+            ? "Verification is queued; wait for provider evidence."
+            : "Provider ID, document, selfie, and liveness checks unlock paid actions.",
+    );
+    setupCardState(
+      accountSetupClient,
+      hasClientTrail ? "done" : verified ? "active" : "idle",
+      hasClientTrail
+        ? "Client job history has started."
+        : "Choose a corridor, upload media, define proof, and keep funds milestone-ready.",
+    );
+    setupCardState(
+      accountSetupReceiver,
+      hasApplication || hasReceiverProfile ? "done" : verified ? "active" : "idle",
+      hasApplication
+        ? "Receiver application saved."
+        : hasReceiverProfile
+          ? "Receiver profile is taking shape."
+          : "Build a real work profile with face photo, base, proof tools, and coverage.",
+    );
+
+    if (!accountSetupNext) return;
+    if (!hasProfile) {
+      accountSetupNext.textContent = "Next: save legal name, mobile, current country, and corridor base.";
+    } else if (!verified) {
+      accountSetupNext.textContent = latestRequest?.provider_link
+        ? "Next: open the provider check and finish ID, document, and selfie/liveness steps."
+        : "Next: request provider verification before paid posting, paid receiver work, or sensitive tasks.";
+    } else if (!hasClientTrail && !hasReceiverProfile && !hasApplication) {
+      accountSetupNext.textContent = "Next: choose whether to give a job, find jobs, or do both from this same account.";
+    } else if (!hasReceiverProfile && !hasApplication) {
+      accountSetupNext.textContent = "Next: add a real receiver profile if you want to be matched to work.";
+    } else {
+      accountSetupNext.textContent = "Next: keep proof, payment, corridor rules, and receiver availability current for each job.";
+    }
+  }
+
   function renderAccountHomeVerification(profile = {}, requests = []) {
     const request = latestVerificationRequest(requests);
     const status = verificationDisplayStatus(profile, request);
@@ -689,10 +784,40 @@
       setup.location ? `Receiver current base: ${setup.location}` : "",
       setup.languages ? `Languages: ${setup.languages}` : "",
       setup.proof_tools ? `Proof tools: ${setup.proof_tools}` : "",
+      setup.proof_sample_name ? `Proof sample attached locally: ${setup.proof_sample_name}` : "",
       setup.bio ? `Receiver work bio: ${setup.bio}` : "",
       "Receiver profile photo must match provider ID/selfie verification before paid public trust signals unlock.",
+      "Current base changes should trigger provider or Swadakta safety re-check before assignment.",
     ].filter(Boolean);
     return lines.join("\n");
+  }
+
+  function receiverProfileScore(profile = {}, setup = {}) {
+    const name = field("#receiver-full-name")?.value.trim() || profile.full_name || signedInEmail;
+    const verified = profile.identity_verification_status === "verified";
+    let score = 25;
+    if (name) score += 5;
+    if (setup.headline) score += 10;
+    if (setup.location) score += 10;
+    if (setup.bio) score += 10;
+    if (setup.languages) score += 5;
+    if (setup.proof_tools) score += 5;
+    if (setup.photo_data_url) score += 10;
+    if (setup.proof_sample_name) score += 5;
+    if (verified) score += 30;
+    return Math.min(100, score);
+  }
+
+  function receiverProvenanceTone(score) {
+    if (score >= 80) return "bg-emerald-50 text-emerald-700";
+    if (score >= 55) return "bg-primary-container/10 text-primary";
+    return "bg-amber-50 text-amber-700";
+  }
+
+  function baseChangedFromVerifiedProfile(profile = {}, setup = {}) {
+    const verifiedBase = String(profile.kenya_base || profile.country || "").trim().toLowerCase();
+    const currentBase = String(setup.location || "").trim().toLowerCase();
+    return Boolean(verifiedBase && currentBase && verifiedBase !== currentBase);
   }
 
   function fillReceiverProfileSetup(profile = {}) {
@@ -708,6 +833,9 @@
     if (bio && !bio.value) bio.value = setup.bio || "";
     if (languages && !languages.value) languages.value = setup.languages || "";
     if (proofTools && !proofTools.value) proofTools.value = setup.proof_tools || "Photos, video, voice notes, receipts";
+    if (receiverProofSampleName && setup.proof_sample_name) {
+      receiverProofSampleName.textContent = `${setup.proof_sample_name} saved locally. Secure upload and review comes before public trust use.`;
+    }
     renderReceiverProfileSetup(profile);
   }
 
@@ -716,8 +844,8 @@
     const setup = { ...readReceiverProfileSetup(), ...receiverProfileSetupFromForm() };
     const name = field("#receiver-full-name")?.value.trim() || profile.full_name || signedInEmail || "Your public profile";
     const verified = profile.identity_verification_status === "verified";
-    const hasCoreProfile = Boolean(setup.headline && setup.location && setup.bio);
-    const score = verified ? 55 : hasCoreProfile ? 35 : 25;
+    const score = receiverProfileScore(profile, setup);
+    const baseChanged = baseChangedFromVerifiedProfile(profile, setup);
 
     renderReceiverProfileAvatar(receiverProfilePreview, setup, { ...profile, full_name: name });
     renderReceiverProfileAvatar(receiverPublicPhoto, setup, { ...profile, full_name: name });
@@ -728,15 +856,15 @@
     if (receiverPublicProof) receiverPublicProof.textContent = setup.proof_tools || "Photos, video, receipts";
     if (receiverPublicAbout) receiverPublicAbout.textContent = setup.bio || "Save a short work bio so clients can understand your reliability before assignment.";
     if (receiverPublicVerification) {
-      receiverPublicVerification.textContent = verified
-        ? "ID/selfie verification recorded. Job-specific gates still apply."
-        : "ID/selfie verification required before paid jobs";
+      receiverPublicVerification.textContent = baseChanged
+        ? "Base change check needed before paid assignment"
+        : verified
+          ? "ID/selfie verification recorded. Job-specific gates still apply."
+          : "ID/selfie verification required before paid jobs";
     }
     if (receiverProfileStrength) {
-      receiverProfileStrength.textContent = `${score}% ${verified ? "verified" : "starter"} provenance`;
-      receiverProfileStrength.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
-        verified ? "bg-emerald-50 text-emerald-700" : hasCoreProfile ? "bg-primary-container/10 text-primary" : "bg-amber-50 text-amber-700"
-      }`.trim();
+      receiverProfileStrength.textContent = `${score}% ${score >= 80 ? "high-trust" : verified ? "verified" : "starter"} provenance`;
+      receiverProfileStrength.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${receiverProvenanceTone(score)}`.trim();
     }
   }
 
@@ -744,6 +872,7 @@
     event?.preventDefault();
     const setup = writeReceiverProfileSetup(receiverProfileSetupFromForm());
     renderReceiverProfileSetup({});
+    renderAccountSetupChecklist({});
     setReceiverProfileStatus("Profile setup saved. Verification is still required before paid receiver work unlocks.", "text-primary");
 
     if (!signedInEmail) return;
@@ -783,6 +912,29 @@
       setReceiverProfileStatus("Photo preview saved locally. It must match ID/selfie verification before clients rely on it.", "text-primary");
     });
     reader.readAsDataURL(file);
+  }
+
+  function handleReceiverProofSample(file) {
+    if (!file) return;
+    const allowedTypes = ["image/", "video/", "application/pdf"];
+    if (!allowedTypes.some((type) => file.type.startsWith(type) || file.type === type)) {
+      setReceiverProfileStatus("Choose an image, video, or PDF proof sample.", "text-error");
+      return;
+    }
+    if (file.size > 8 * 1024 * 1024) {
+      setReceiverProfileStatus("Use a smaller sample for now. Secure storage will handle larger proof later.", "text-error");
+      return;
+    }
+    writeReceiverProfileSetup({
+      proof_sample_name: file.name,
+      proof_sample_type: file.type,
+      proof_sample_size: file.size,
+    });
+    if (receiverProofSampleName) {
+      receiverProofSampleName.textContent = `${file.name} saved locally. It will need secure upload and review before clients rely on it.`;
+    }
+    renderReceiverProfileSetup({});
+    setReceiverProfileStatus("Proof sample noted locally. Real provenance rises only after reviewed work and verified identity.", "text-primary");
   }
 
   function populateReceiverApplication(profile = {}) {
@@ -933,6 +1085,7 @@
 
     if (accountHomeEmail) accountHomeEmail.textContent = displayEmail;
     renderAccountHomeVerification(profile, []);
+    renderAccountSetupChecklist(profile);
 
     if (accountHomeNextCopy) {
       accountHomeNextCopy.textContent = verified
@@ -971,6 +1124,7 @@
     }
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
     renderAccountHomeVerification(profile, verifications);
+    renderAccountSetupChecklist(profile, { requests, jobs, verifications, applications });
     if (accountHomeNextCopy) {
       const latestRequest = latestVerificationRequest(verifications);
       const verified = accountIsVerified(profile, latestRequest);
@@ -1331,6 +1485,10 @@
 
   receiverProfilePhotoInput?.addEventListener("change", () => {
     handleReceiverProfilePhoto(receiverProfilePhotoInput.files?.[0]);
+  });
+
+  receiverProofSampleInput?.addEventListener("change", () => {
+    handleReceiverProofSample(receiverProofSampleInput.files?.[0]);
   });
 
   if (receiverApplicationForm) {

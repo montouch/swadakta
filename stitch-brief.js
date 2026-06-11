@@ -17,6 +17,7 @@
   const placeCopy = document.querySelector("#brief-place-copy");
   const placeWeather = document.querySelector("#brief-place-weather");
   const placeRisk = document.querySelector("#brief-place-risk");
+  const placeChecks = document.querySelector("#brief-place-checks");
   const placeAlertLink = document.querySelector("#brief-place-alert-link");
   const placeUpdated = document.querySelector("#brief-place-updated");
   const placeRefreshButton = document.querySelector("#brief-place-refresh");
@@ -153,6 +154,17 @@
     return notes;
   }
 
+  function placeOperationalChecks({ temperature, wind, precipitationChance, weatherCode } = {}) {
+    const checks = ["Confirm access, opening hours, route, and receiver safety before assignment."];
+    if (Number(precipitationChance) >= 60 || [61, 63, 65, 80, 81, 82, 95, 96, 99].includes(Number(weatherCode))) {
+      checks.push("Ask for waterproof proof, backup timing, and safer transport if the job is outdoors.");
+    }
+    if (Number(wind) >= 35) checks.push("Avoid exposed roof, loading, drone, or road-risk proof unless the receiver confirms it is safe.");
+    if (Number(temperature) >= 32) checks.push("Plan heat-safe timing, water, shade, and realistic travel windows.");
+    if (Number(temperature) <= 5) checks.push("Confirm cold-weather travel, site access, and phone battery before dispatch.");
+    return checks;
+  }
+
   function renderPlaceIntelligence(data = null, state = "ready") {
     if (!placePanel) return;
     const query = placeSearchQuery();
@@ -163,6 +175,7 @@
       if (placeCopy) placeCopy.textContent = "Weather and alert guidance is useful for site visits, shopping, pickup, delivery, and outdoor proof. Digital-only work can skip this.";
       if (placeWeather) placeWeather.textContent = "Not needed yet";
       if (placeRisk) placeRisk.textContent = "No field note yet";
+      if (placeChecks) placeChecks.textContent = "Access, hours, route, and safety";
       if (placeAlertLink) {
         placeAlertLink.href = "rules.html";
         placeAlertLink.textContent = "Check item rules";
@@ -177,6 +190,7 @@
       if (placeTitle) placeTitle.textContent = `Checking ${query}`;
       if (placeWeather) placeWeather.textContent = "Loading forecast...";
       if (placeRisk) placeRisk.textContent = "Checking field conditions";
+      if (placeChecks) placeChecks.textContent = "Preparing local checks...";
       if (placeUpdated) placeUpdated.textContent = "Using Open-Meteo geocoding and forecast data.";
       return;
     }
@@ -186,6 +200,7 @@
       if (placeCopy) placeCopy.textContent = "Forecast could not be loaded yet. Keep the job flexible and confirm local conditions before assigning receiver work.";
       if (placeWeather) placeWeather.textContent = "Forecast unavailable";
       if (placeRisk) placeRisk.textContent = "Manual local check needed";
+      if (placeChecks) placeChecks.textContent = "Ask receiver to confirm access, hours, route, phone signal, and safety.";
       if (placeAlertLink) {
         placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${query} official weather alerts`)}`;
         placeAlertLink.textContent = "Search official alerts";
@@ -206,11 +221,18 @@
       precipitationChance: rain,
       weatherCode: data.weatherCode,
     });
+    const checks = placeOperationalChecks({
+      temperature: temp,
+      wind,
+      precipitationChance: rain,
+      weatherCode: data.weatherCode,
+    });
 
     if (placeTitle) placeTitle.textContent = `${data.name}, ${data.country}`;
     if (placeCopy) placeCopy.textContent = "Use this as a rough field brief before assigning work. The receiver still confirms access, safety, and official local alerts.";
     if (placeWeather) placeWeather.textContent = `${Math.round(temp)}C, ${weather}, ${Math.round(wind)} km/h wind`;
     if (placeRisk) placeRisk.textContent = `${rain || 0}% rain risk. ${notes[0]}`;
+    if (placeChecks) placeChecks.textContent = checks[0];
     if (placeAlertLink) {
       placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${data.name} ${data.country} official alerts weather travel`)}`;
       placeAlertLink.textContent = "Search official alerts";
@@ -230,10 +252,17 @@
       precipitationChance: placeIntelligence.precipitationChance,
       weatherCode: placeIntelligence.weatherCode,
     });
+    const checks = placeOperationalChecks({
+      temperature: placeIntelligence.temperature,
+      wind: placeIntelligence.wind,
+      precipitationChance: placeIntelligence.precipitationChance,
+      weatherCode: placeIntelligence.weatherCode,
+    });
     return [
       `Place intelligence: ${placeIntelligence.name}, ${placeIntelligence.country}`,
       `Weather now: ${Math.round(Number(placeIntelligence.temperature))}C, ${weatherCodeLabel(placeIntelligence.weatherCode)}, ${Math.round(Number(placeIntelligence.wind))} km/h wind, ${Number(placeIntelligence.precipitationChance) || 0}% daily rain probability.`,
       `Planning note: ${notes.join(" ")}`,
+      `Local checks: ${checks.join(" ")}`,
       "Receiver must still check official local alerts, access, opening hours, and safety before field work.",
     ].join("\n");
   }

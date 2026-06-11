@@ -312,6 +312,17 @@
               <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Planning range</p>
               <h3 class="mt-2 font-display text-3xl font-extrabold">AUD 85-130</h3>
               <p class="mt-2 text-on-surface-variant">Recommended rail: card checkout or PayPal. Protected decisions still wait for the final brief.</p>
+              <div class="mt-5 grid gap-3 md:grid-cols-2">
+                <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Receiver payout reserve</p>
+                  <strong class="mt-1 block text-lg">AUD 40-60</strong>
+                </div>
+                <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Swadakta margin range</p>
+                  <strong class="mt-1 block text-lg text-primary">AUD 20-40</strong>
+                </div>
+              </div>
+              <p class="mt-4 text-xs text-on-surface-variant">Planning only: field costs, provider fees, refunds, taxes, disputes, and regulated escrow can change the final economics.</p>
             </div>
           </form>
         </div>
@@ -447,6 +458,32 @@
         return "card checkout or PayPal";
       }
 
+      function moneyRange(first, second, currency) {
+        const low = Math.min(first, second);
+        const high = Math.max(first, second);
+        return `${money(low, currency)}-${money(high, currency)}`;
+      }
+
+      function quoteBreakdown(low, high, currency, sensitive, logistics) {
+        const receiverLow = low * 0.42;
+        const receiverHigh = high * 0.5;
+        const fieldReserveLow = low * (logistics ? 0.16 : 0.08);
+        const fieldReserveHigh = high * (logistics ? 0.22 : 0.12);
+        const providerFeeLow = low * (currency === "KES" ? 0.015 : 0.035);
+        const providerFeeHigh = high * (currency === "KES" ? 0.025 : 0.045);
+        const riskReserveLow = sensitive ? low * 0.08 : 0;
+        const riskReserveHigh = sensitive ? high * 0.14 : 0;
+        const marginLow = Math.max(0, low - receiverLow - fieldReserveLow - providerFeeLow - riskReserveLow);
+        const marginHigh = Math.max(0, high - receiverHigh - fieldReserveHigh - providerFeeHigh - riskReserveHigh);
+        return {
+          receiver: moneyRange(receiverLow, receiverHigh, currency),
+          field: moneyRange(fieldReserveLow, fieldReserveHigh, currency),
+          provider: moneyRange(providerFeeLow, providerFeeHigh, currency),
+          margin: moneyRange(marginLow, marginHigh, currency),
+          risk: sensitive ? moneyRange(riskReserveLow, riskReserveHigh, currency) : "",
+        };
+      }
+
       form?.addEventListener("submit", (event) => {
         event.preventDefault();
         const jobType = document.querySelector("#estimator-job-type").value;
@@ -467,6 +504,7 @@
         const low = aud * currencyRates[currency];
         const high = low * (jobType === "retainer" ? 1.35 : 1.55);
         const rail = railFor(currency, sensitive, logistics);
+        const breakdown = quoteBreakdown(low, high, currency, sensitive, logistics);
         const flags = [
           logistics ? "include lawful-goods or postal check" : "",
           sensitive ? "requires ID and protected decision review" : "",
@@ -477,6 +515,33 @@
           <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${labels[jobType] || "Swadakta job"}</p>
           <h3 class="mt-2 font-display text-3xl font-extrabold">${money(low, currency)}-${money(high, currency)}</h3>
           <p class="mt-2 text-on-surface-variant">Recommended rail: ${rail}. Final quote still needs corridor, scope, proof, and compliance review.</p>
+          <div class="mt-5 grid gap-3 md:grid-cols-2">
+            <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Receiver payout reserve</p>
+              <strong class="mt-1 block text-lg">${breakdown.receiver}</strong>
+            </div>
+            <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Field cost reserve</p>
+              <strong class="mt-1 block text-lg">${breakdown.field}</strong>
+            </div>
+            <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Provider fee estimate</p>
+              <strong class="mt-1 block text-lg">${breakdown.provider}</strong>
+            </div>
+            <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Swadakta margin range</p>
+              <strong class="mt-1 block text-lg text-primary">${breakdown.margin}</strong>
+            </div>
+            ${
+              breakdown.risk
+                ? `<div class="rounded-2xl bg-white/80 border border-outline-variant/30 p-4 md:col-span-2">
+                    <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Sensitive-work risk reserve</p>
+                    <strong class="mt-1 block text-lg">${breakdown.risk}</strong>
+                  </div>`
+                : ""
+            }
+          </div>
+          <p class="mt-4 text-xs text-on-surface-variant">Founder planning only: final quote can change with route, field costs, payment fees, refunds, taxes, disputes, or regulated escrow requirements.</p>
           ${
             flags.length
               ? `<ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">${flags.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">priority_high</span><span>${item}</span></li>`).join("")}</ul>`

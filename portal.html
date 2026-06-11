@@ -327,6 +327,55 @@
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="account-home-verification-pill">Checking verification</span>
 </div>
 </header>
+<section class="glass-panel rounded-[1.5rem] p-5" id="account-setup-checklist" aria-live="polite">
+<div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Account setup</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Get ready to give jobs or receive jobs</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Your account opens first. Paid posting, paid receiver work, sensitive jobs, and high-value milestones unlock only after profile, payment, corridor, and provider ID checks are ready.</p>
+</div>
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-setup-progress">Setup started</span>
+</div>
+<div class="mt-5 grid gap-3 md:grid-cols-4">
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-profile">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">badge</span>
+<div>
+<p class="font-label-md text-on-surface">Profile</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" data-setup-copy>Add legal name, mobile, country, and corridor base.</p>
+</div>
+</div>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-verification">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<div>
+<p class="font-label-md text-on-surface">Verification</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" data-setup-copy>Provider ID, document, selfie, and liveness checks unlock paid actions.</p>
+</div>
+</div>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-client">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">assignment_add</span>
+<div>
+<p class="font-label-md text-on-surface">Give jobs</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" data-setup-copy>Choose corridor, upload media, define proof, and keep funds milestone-ready.</p>
+</div>
+</div>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-receiver">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">engineering</span>
+<div>
+<p class="font-label-md text-on-surface">Get jobs</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" data-setup-copy>Build a real work profile with face photo, base, proof tools, and coverage.</p>
+</div>
+</div>
+</article>
+</div>
+<p class="mt-4 font-label-md text-on-surface-variant" id="account-setup-next">Next: save your profile details, then verify when you are ready to transact.</p>
+</section>
 <section class="grid gap-4 md:grid-cols-3" aria-label="Main actions">
 <a class="glass-panel rounded-[1.5rem] p-5 hover:bg-white/90 transition-colors" href="corridor.html">
 <span class="material-symbols-outlined text-primary text-4xl">add_circle</span>
@@ -361,6 +410,14 @@
 <span>
 <span class="block font-label-md text-on-surface">Add a clear face photo</span>
 <span class="block font-body-md text-on-surface-variant text-sm mt-1">Use a current picture that can match your ID/selfie verification. This preview stays local until proper storage is connected.</span>
+</span>
+</label>
+<label class="md:col-span-2 rounded-[1.5rem] bg-white/60 border border-outline-variant/30 p-4 flex flex-col gap-4 sm:flex-row sm:items-center cursor-pointer" for="receiver-profile-proof-sample">
+<input class="sr-only" id="receiver-profile-proof-sample" type="file" accept="image/*,video/*,application/pdf"/>
+<span class="material-symbols-outlined flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-tertiary/10 text-tertiary">fact_check</span>
+<span>
+<span class="block font-label-md text-on-surface">Add one proof sample</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1" id="receiver-proof-sample-name">Optional: a redacted receipt, inspection photo, short video, or report sample. It stays local until secure storage is connected.</span>
 </span>
 </label>
 <div class="space-y-2">
@@ -406,6 +463,15 @@
 <div class="mt-5 rounded-2xl bg-primary-container/10 p-4">
 <p class="font-label-md text-primary" id="receiver-public-verification">ID/selfie verification required before paid jobs</p>
 <p class="font-body-md text-on-surface-variant text-sm mt-1">Clients see a subtle trust signal. Swadakta keeps the stronger provenance score for matching, payouts, and risk controls.</p>
+</div>
+<div class="mt-4 rounded-2xl bg-white/70 border border-outline-variant/30 p-4">
+<p class="font-label-md text-on-surface">Authenticity checks</p>
+<ul class="mt-3 space-y-2 font-body-md text-sm text-on-surface-variant" id="receiver-authenticity-list">
+<li>Face photo must match provider selfie/liveness verification.</li>
+<li>Legal name and current base must stay consistent with account verification.</li>
+<li>Base changes can trigger a fresh provider or Swadakta safety check before assignment.</li>
+<li>Proof samples and reviews raise provenance only after real jobs are checked.</li>
+</ul>
 </div>
 </article>
 </div>
@@ -692,7 +758,7 @@
 <footer class="w-full py-8 px-margin-desktop border-t border-outline-variant/10">
 <div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
 <span class="font-label-sm text-on-surface-variant">&copy; 2026 Swadakta. Global Corridor Concierge.</span>
-<div class="flex gap-6">
+<div class="flex flex-wrap justify-center gap-4 md:gap-6">
 <a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="payments.html">Payments</a>
 <a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="trust.html">Trust &amp; Safety</a>
 <a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="privacy.html">Privacy Policy</a>
@@ -704,5 +770,5 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=43"></script>
 <script src="ai-preferences.js?v=1"></script>
-<script src="stitch-portal.js?v=23"></script>
+<script src="stitch-portal.js?v=24"></script>
 </body></html>

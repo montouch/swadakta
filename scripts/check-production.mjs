@@ -64,6 +64,9 @@ const requiredPortalMarkers = [
   "receiverApplicationPayload",
   "renderReceiverApplications",
   "saveReceiverProfileSetup",
+  "renderAccountSetupChecklist",
+  "receiverProfileScore",
+  "Base change check needed",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
@@ -80,8 +83,8 @@ const requiredAssistantMarkers = [
   "renderConversation",
 ];
 const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
-const requiredBriefHtmlMarkers = ["brief-freeform", "Ask AI to organize", "brief-place-intelligence"];
-const requiredBriefScriptMarkers = ["brief-ai-organize", "loadPlaceIntelligence"];
+const requiredBriefHtmlMarkers = ["brief-freeform", "Ask AI to organize", "brief-place-intelligence", "brief-place-checks"];
+const requiredBriefScriptMarkers = ["brief-ai-organize", "loadPlaceIntelligence", "placeOperationalChecks"];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
   "Wise stays hidden as a fallback rail",
@@ -121,6 +124,7 @@ const requiredPaymentsMarkers = [
   "Payments & Pricing",
   "Estimate a launch quote",
   "Founder margin is built into each quote",
+  "Swadakta margin range",
   "Wise stays hidden as fallback",
   "Swadakta is not currently a licensed escrow provider",
 ];
@@ -493,8 +497,8 @@ for (const page of requiredPages) {
   if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
     fail(failures, `${page} does not reference ai-preferences.js?v=1`);
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=7")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=7`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=8")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=8`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -720,11 +724,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=7");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=8");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=7 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=8 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=7 returned 200");
+  pass("stitch-brief.js?v=8 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {
