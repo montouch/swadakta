@@ -143,6 +143,8 @@ const DOCS = {
   smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
   smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
+  securityTxt: "https://www.rfc-editor.org/info/rfc9116/",
+  vercelHeaders: "https://vercel.com/docs/headers",
 };
 
 function item(id, label, status, detail, next, missing = [], options = {}) {
@@ -181,7 +183,155 @@ function buildNextActions(categories) {
     .slice(0, 8);
 }
 
-function readinessReport(user) {
+async function fetchPublic(path, options = {}) {
+  const base = publicUrl();
+  if (!base) {
+    return { ok: false, status: 0, text: "", headers: new Headers(), error: "PUBLIC_BASE_URL is not a valid URL." };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 3500);
+  try {
+    const response = await fetch(`${base}${path}`, {
+      method: options.method || "GET",
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    const text = options.readText === false ? "" : await response.text().catch(() => "");
+    return {
+      ok: response.ok,
+      status: response.status,
+      text,
+      headers: response.headers,
+      error: "",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      text: "",
+      headers: new Headers(),
+      error: error.name === "AbortError" ? "Timed out while checking public URL." : error.message || "Public URL check failed.",
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function siteTrustItems() {
+  const [home, security, privacy, terms, robots, sitemap, adminReadiness] = await Promise.all([
+    fetchPublic("/", { readText: false }),
+    fetchPublic("/.well-known/security.txt"),
+    fetchPublic("/privacy"),
+    fetchPublic("/terms"),
+    fetchPublic("/robots.txt"),
+    fetchPublic("/sitemap.xml"),
+    fetchPublic("/admin-readiness", { readText: false }),
+  ]);
+
+  const requiredSecurityHeaders = [
+    "content-security-policy",
+    "strict-transport-security",
+    "x-content-type-options",
+    "referrer-policy",
+    "permissions-policy",
+  ];
+  const missingSecurityHeaders = requiredSecurityHeaders.filter((header) => !home.headers.get(header));
+  const legalMissing = [
+    privacy.ok && /Global Corridor Concierge/i.test(privacy.text) ? "" : "privacy",
+    terms.ok && /Global Corridor Concierge/i.test(terms.text) ? "" : "terms",
+  ].filter(Boolean);
+  const securityTxtMissing = [
+    security.ok && /Contact:\s*mailto:/i.test(security.text) ? "" : "Contact",
+    security.ok && /Canonical:\s*https:\/\/swadakta\.com\/\.well-known\/security\.txt/i.test(security.text) ? "" : "Canonical",
+    security.ok && /Expires:/i.test(security.text) ? "" : "Expires",
+  ].filter(Boolean);
+  const publicFilesMissing = [
+    robots.ok ? "" : "robots.txt",
+    sitemap.ok && /<urlset/i.test(sitemap.text) ? "" : "sitemap.xml",
+  ].filter(Boolean);
+  const adminNoindex = String(adminReadiness.headers.get("x-robots-tag") || "");
+
+  return [
+    item(
+      "live_security_headers",
+      "Live security headers",
+      home.ok && missingSecurityHeaders.length === 0 ? "ready" : "warning",
+      home.ok
+        ? "Public homepage responds and was checked for CSP, HSTS, nosniff, referrer policy, and permissions policy."
+        : `Could not check public homepage: ${home.error || home.status}.`,
+      missingSecurityHeaders.length
+        ? "Keep Vercel security headers active for the public domain before paid traffic."
+        : "Security headers are present on the public domain.",
+      missingSecurityHeaders,
+      {
+        docs_url: DOCS.vercelHeaders,
+        priority: 14,
+        owner: "Founder/Vercel admin",
+      },
+    ),
+    item(
+      "security_txt",
+      "Security contact file",
+      securityTxtMissing.length ? "warning" : "ready",
+      security.ok
+        ? "security.txt is reachable at the well-known URL and exposes vulnerability-reporting contact metadata."
+        : `security.txt check failed: ${security.error || security.status}.`,
+      "Keep Contact, Canonical, and Expires current so researchers know how to report issues safely.",
+      securityTxtMissing,
+      {
+        docs_url: DOCS.securityTxt,
+        copy_value: `${publicUrl() || "https://swadakta.com"}/.well-known/security.txt`,
+        priority: 16,
+        owner: "Founder/security contact",
+      },
+    ),
+    item(
+      "legal_trust_pages",
+      "Terms and privacy pages",
+      legalMissing.length ? "warning" : "ready",
+      "Public trust pages should describe the global corridor model, identity checks, provider-held payments, restricted goods, and privacy boundaries.",
+      legalMissing.length
+        ? "Publish updated global Terms and Privacy before wider launch."
+        : "Terms and Privacy are reachable and use global corridor language.",
+      legalMissing,
+      {
+        priority: 17,
+        owner: "Founder/legal reviewer",
+      },
+    ),
+    item(
+      "search_files",
+      "Robots and sitemap",
+      publicFilesMissing.length ? "warning" : "ready",
+      "robots.txt and sitemap.xml help the public site be discoverable while admin surfaces stay hidden.",
+      publicFilesMissing.length ? "Publish robots.txt and sitemap.xml at the domain root." : "robots.txt and sitemap.xml are reachable.",
+      publicFilesMissing,
+      {
+        copy_value: `${publicUrl() || "https://swadakta.com"}/sitemap.xml`,
+        priority: 55,
+        owner: "Founder/Vercel admin",
+      },
+    ),
+    item(
+      "admin_noindex",
+      "Admin noindex protection",
+      /noindex/i.test(adminNoindex) ? "ready" : "warning",
+      /noindex/i.test(adminNoindex)
+        ? "Admin readiness page returns an X-Robots-Tag noindex header."
+        : "Admin readiness page did not expose an X-Robots-Tag noindex signal in the public check.",
+      "Keep admin, auth, and readiness pages out of search indexes.",
+      /noindex/i.test(adminNoindex) ? [] : ["X-Robots-Tag"],
+      {
+        docs_url: DOCS.vercelHeaders,
+        priority: 18,
+        owner: "Founder/Vercel admin",
+      },
+    ),
+  ];
+}
+
+async function readinessReport(user) {
   const serviceRoleConfigured = anyEnv([
     "SUPABASE_SERVICE_ROLE_KEY",
     "SUPABASE_SECRET_KEY",
@@ -237,6 +387,11 @@ function readinessReport(user) {
           { priority: 12, owner: "Founder/Supabase admin" },
         ),
       ],
+    },
+    {
+      id: "public_trust",
+      label: "Public trust and domain safety",
+      items: await siteTrustItems(),
     },
     {
       id: "payments",
@@ -424,7 +579,7 @@ module.exports = async function handler(req, res) {
 
   try {
     const user = await assertAdmin(req.headers.authorization);
-    sendJson(res, 200, readinessReport(user));
+    sendJson(res, 200, await readinessReport(user));
   } catch (error) {
     sendJson(res, error.statusCode || 500, {
       error: error.message || "Could not load operations readiness.",
