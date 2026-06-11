@@ -166,6 +166,10 @@ with check (
   and btrim(notes) <> ''
   and contact_preference in ('whatsapp', 'email', 'either')
   and coalesce(array_length(supporting_links, 1), 0) <= 10
+  and (
+    coalesce(array_length(supporting_links, 1), 0) = 0
+    or array_to_string(supporting_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
+  )
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
   and task_type in ('quick', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')

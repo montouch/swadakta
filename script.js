@@ -63,12 +63,20 @@ function getReportItems() {
   return Array.from(form.querySelectorAll('input[name="report"]:checked')).map((item) => item.value);
 }
 
+function isHttpLink(value) {
+  try {
+    return ["http:", "https:"].includes(new URL(value).protocol);
+  } catch {
+    return false;
+  }
+}
+
 function getSupportingLinks() {
   return document
     .querySelector("#supporting-links")
     .value.split(/\r?\n/)
     .map((link) => link.trim())
-    .filter(Boolean)
+    .filter((link) => link && isHttpLink(link))
     .slice(0, 10);
 }
 

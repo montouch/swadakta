@@ -89,9 +89,18 @@ function formatConsentStatus(request) {
   return "Legacy or missing";
 }
 
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
 function renderSupportingLinks(request) {
   const links = Array.isArray(request.supporting_links)
-    ? request.supporting_links.map((link) => String(link || "").trim()).filter(Boolean)
+    ? request.supporting_links.map(safeHttpUrl).filter(Boolean)
     : [];
 
   if (!links.length) {
@@ -347,6 +356,7 @@ function renderRequestCardV2(request) {
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save update</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
+          <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
           <span class="copy-status" role="status"></span>
         </div>
       </form>
@@ -481,6 +491,49 @@ function buildClientUpdate(request, form) {
     .join("\n");
 }
 
+function buildOperatorBrief(request, form) {
+  const payload = formPayload(form);
+  const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "Basic update";
+  const supportingLinks = Array.isArray(request.supporting_links)
+    ? request.supporting_links.map((link) => `- ${link}`).join("\n")
+    : "";
+  const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
+  const consentStatus = formatConsentStatus(request);
+  const quoteLine = payload.quote_amount ? formatCurrency(payload.quote_amount, payload.quote_currency) : "Not quoted";
+
+  return [
+    `Swadakta operator brief: ${request.request_code}`,
+    `Client: ${request.client_name}`,
+    `Task: ${taskLabels[request.task_type] || request.task_type}`,
+    `Kenya location: ${request.kenya_location}`,
+    `Client base: ${request.client_base || request.australia_location || "Not specified"}`,
+    `Urgency: ${request.urgency}`,
+    `Deadline: ${request.deadline || "Flexible"}`,
+    `Local contact: ${localContact}`,
+    `Client contact preference: ${request.contact_preference || "whatsapp"}`,
+    `Best contact window: ${request.contact_window || "Not specified"}`,
+    `Consent status: ${consentStatus}`,
+    `Sensitive documents expected: ${request.sensitive_documents_expected ? "Yes" : "No"}`,
+    `Report pack required: ${reports}`,
+    `Quote: ${quoteLine}`,
+    "",
+    "Client notes:",
+    request.notes || "No notes provided.",
+    "",
+    "Supporting links:",
+    supportingLinks || "None provided.",
+    "",
+    "Field checklist:",
+    "- Confirm arrival/access before starting.",
+    "- Capture timestamped photos or short video where allowed.",
+    "- Keep receipts, queue tickets, names, and reference numbers.",
+    "- Record blockers, red flags, and next-step recommendations.",
+    "- Do not handle extra money, documents, or instructions outside the approved brief without admin confirmation.",
+    "",
+    payload.operator_notes ? `Internal notes:\n${payload.operator_notes}` : "Internal notes: None yet.",
+  ].join("\n");
+}
+
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   authStatus.textContent = "Sending magic link...";
@@ -523,7 +576,7 @@ requestBoard.addEventListener("submit", async (event) => {
 });
 
 requestBoard.addEventListener("click", async (event) => {
-  const button = event.target.closest(".copy-update");
+  const button = event.target.closest(".copy-update, .copy-operator");
   if (!button) {
     return;
   }
@@ -534,7 +587,10 @@ requestBoard.addEventListener("click", async (event) => {
   const statusElement = form.querySelector(".copy-status");
 
   if (request) {
-    await copyText(buildClientUpdate(request, form), statusElement);
+    const text = button.classList.contains("copy-operator")
+      ? buildOperatorBrief(request, form)
+      : buildClientUpdate(request, form);
+    await copyText(text, statusElement);
   }
 });
 

@@ -9,6 +9,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
+- Copy-ready client updates and field operator briefs
 - Request status, payment status, operator notes, and client report workflow
 - Quote amount, payment link, due date, report URL, and proof-link workflow
 - Required client permission, scope, terms, and privacy consent capture
