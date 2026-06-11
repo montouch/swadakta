@@ -1730,6 +1730,7 @@ function renderRequestCardV2(request) {
           <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
           <button class="button button-secondary create-paypal-order" type="button">Generate PayPal order</button>
           <button class="button button-secondary capture-paypal-order" type="button">Capture PayPal order</button>
+          <button class="button button-secondary create-mpesa-stk" type="button">Send M-Pesa STK</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
           <button class="button button-secondary copy-quote" type="button">Copy quote</button>
           <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
@@ -2382,6 +2383,61 @@ async function generatePayPalOrder(request, form, statusElement) {
   statusElement.textContent = "PayPal order ready. Review and save.";
 }
 
+function applyMpesaStkResult(form, result) {
+  const paymentStatusSelect = form.querySelector('[name="payment_status"]');
+  const fundsStatusSelect = form.querySelector('[name="funds_status"]');
+  const paymentReferenceInput = form.querySelector('[name="payment_reference"]');
+  const releaseNotesInput = form.querySelector('[name="release_notes"]');
+
+  if (paymentStatusSelect) {
+    paymentStatusSelect.value = result.data?.payment_status || "invoice_sent";
+  }
+
+  if (fundsStatusSelect) {
+    fundsStatusSelect.value = result.data?.funds_status || "payment_link_sent";
+  }
+
+  if (paymentReferenceInput && result.data?.provider_reference) {
+    paymentReferenceInput.value = result.data.provider_reference;
+  }
+
+  if (releaseNotesInput && result.data?.release_notes) {
+    releaseNotesInput.value = result.data.release_notes;
+  }
+}
+
+async function generateMpesaStk(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before sending M-Pesa STK Push.";
+    return;
+  }
+
+  if (payload.quote_currency !== "KES") {
+    statusElement.textContent = "Set quote currency to KES before sending M-Pesa STK Push.";
+    return;
+  }
+
+  const suggestedPhone = request.local_contact_phone || request.whatsapp || "";
+  const mpesaPhone = window.prompt("Kenyan M-Pesa phone number for STK Push", suggestedPhone);
+
+  if (!mpesaPhone) {
+    statusElement.textContent = "M-Pesa STK Push cancelled.";
+    return;
+  }
+
+  statusElement.textContent = "Sending M-Pesa STK Push...";
+
+  const result = await window.SwadaktaData.createMpesaStkPush(request, {
+    ...payload,
+    mpesa_phone: mpesaPhone,
+  });
+  applyMpesaStkResult(form, result);
+  statusElement.textContent = result.data?.customer_message || "M-Pesa STK Push sent. Review and save.";
+  await loadRequests();
+}
+
 function applyPaymentCaptureResult(form, result) {
   const paymentStatusSelect = form.querySelector('[name="payment_status"]');
   const fundsStatusSelect = form.querySelector('[name="funds_status"]');
@@ -2768,6 +2824,25 @@ requestBoard.addEventListener("click", async (event) => {
       await capturePayPalOrder(request, form, statusElement);
     } catch (error) {
       statusElement.textContent = error.message || "PayPal capture failed.";
+    }
+    return;
+  }
+
+  const mpesaButton = event.target.closest(".create-mpesa-stk");
+  if (mpesaButton) {
+    const form = mpesaButton.closest(".request-update-form");
+    const card = mpesaButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await generateMpesaStk(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "M-Pesa STK Push failed.";
     }
     return;
   }

@@ -1312,6 +1312,20 @@ output {
   background: #fff;
 }
 
+.account-profile-stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.portal-guide-panel {
+  background:
+    linear-gradient(135deg, #ffffff 0%, #eef3ff 100%);
+}
+
+.portal-guide-output {
+  min-height: 8rem;
+}
+
 .portal-hero {
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(320px, 1fr);

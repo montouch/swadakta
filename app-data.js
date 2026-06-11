@@ -1207,6 +1207,53 @@
     return { data, mode: "paypal" };
   }
 
+  async function createMpesaStkPush(request, updates = {}) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      throw new Error("M-Pesa STK Push requires Supabase admin sign-in.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in as an admin before sending M-Pesa STK Push.");
+    }
+
+    const response = await fetch("/api/payments/mpesa-stk", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        request_code: request.request_code,
+        client_name: request.client_name,
+        whatsapp: request.whatsapp,
+        phone_number: request.local_contact_phone || request.whatsapp,
+        mpesa_phone: updates.mpesa_phone,
+        service_package: updates.service_package || request.service_package,
+        quote_amount: updates.quote_amount || request.quote_amount,
+        quote_currency: updates.quote_currency || request.quote_currency || request.preferred_currency,
+        funds_protection_preference:
+          updates.funds_protection_preference || request.funds_protection_preference,
+        job_value_band: updates.job_value_band || request.job_value_band,
+        payment_kind: "mpesa_stk",
+      }),
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not send M-Pesa STK Push.");
+    }
+
+    return { data, mode: "mpesa" };
+  }
+
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
     const emailRedirectTo = normalizeAuthRedirect(redirectTo);
@@ -1286,6 +1333,7 @@
     createStripeCheckoutSession,
     createPayPalOrder,
     capturePayPalOrder,
+    createMpesaStkPush,
     signInAdmin,
     signInPortal,
     getSession,

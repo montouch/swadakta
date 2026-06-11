@@ -24,6 +24,13 @@ let assignedJobs = [];
 let lastTrackedCode = "";
 let lastTrackedContact = "";
 let lastTrackedRequest = null;
+let currentPortalContext = {
+  email: "",
+  profile: null,
+  requests: [],
+  applications: [],
+  jobs: [],
+};
 
 const statusLabels = {
   new: "New",
@@ -435,6 +442,87 @@ function buildReceiverUpdateDraft(form, job) {
   ].join("\n");
 }
 
+function compactRequestForGuide(request) {
+  return {
+    request_code: request.request_code,
+    service_package: request.service_package,
+    task_type: request.task_type,
+    kenya_location: request.kenya_location,
+    status: request.status,
+    payment_status: request.payment_status,
+    funds_status: request.funds_status,
+    quote_currency: request.quote_currency,
+    quote_amount: request.quote_amount,
+    verification_status: request.verification_status,
+    updated_at: request.updated_at,
+  };
+}
+
+function compactApplicationForGuide(application) {
+  return {
+    partner_code: application.partner_code,
+    status: application.status,
+    kenya_base: application.kenya_base,
+    service_regions: application.service_regions,
+    service_categories: application.service_categories,
+    identity_verification_status: application.identity_verification_status,
+    provenance_score: application.provenance_score,
+    updated_at: application.updated_at,
+  };
+}
+
+function compactJobForGuide(job) {
+  return {
+    request_code: job.request_code,
+    service_package: job.service_package,
+    task_type: job.task_type,
+    kenya_location: job.kenya_location,
+    status: job.status,
+    urgency: job.urgency,
+    deadline: job.deadline,
+    report_pack: job.report_pack,
+    notes: job.notes,
+    client_review_score: job.client_review_score,
+    updated_at: job.updated_at,
+  };
+}
+
+function portalGuideContext() {
+  return {
+    account: {
+      email: currentPortalContext.email,
+      role: currentPortalContext.profile?.account_role || "client",
+      identity_verification_status:
+        currentPortalContext.profile?.identity_verification_status || "not_started",
+      country: currentPortalContext.profile?.country || "",
+      kenya_base: currentPortalContext.profile?.kenya_base || "",
+      preferred_currency: currentPortalContext.profile?.preferred_currency || "AUD",
+    },
+    client_requests: currentPortalContext.requests.slice(0, 5).map(compactRequestForGuide),
+    receiver_applications: currentPortalContext.applications.slice(0, 5).map(compactApplicationForGuide),
+    assigned_jobs: currentPortalContext.jobs.slice(0, 5).map(compactJobForGuide),
+  };
+}
+
+async function askSwadaktaGuide(payload, fallbackText = "") {
+  try {
+    const result = await window.SwadaktaData.assist(payload);
+    const output = String(result.data?.output || "").trim();
+    return {
+      text: output || fallbackText,
+      mode: result.mode || "ai",
+      usedAi: Boolean(output),
+    };
+  } catch (error) {
+    return {
+      text: fallbackText,
+      mode: "fallback",
+      usedAi: false,
+      error,
+    };
+  }
+}
+
 function fieldStatusOptions(current = "progress") {
   return Object.entries(fieldStatusLabels)
     .map(
@@ -585,50 +673,86 @@ function renderAccountProfile(email, profile) {
         }
       </div>
     </div>
-    <form class="account-profile-form" id="account-profile-form">
-      <div class="field-row">
+    <div class="account-profile-stack">
+      <form class="account-profile-form" id="account-profile-form">
+        <div class="field-row">
+          <label class="field-group">
+            Email
+            <input type="email" value="${escapeHtml(email)}" disabled />
+          </label>
+          <label class="field-group">
+            Account type
+            <select name="account_role">${optionList(accountRoleLabels, role)}</select>
+          </label>
+          <label class="field-group">
+            Preferred currency
+            <select name="preferred_currency">${optionList(currencyLabels, currency)}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Full name
+            <input name="full_name" type="text" value="${escapeHtml(current.full_name || "")}" autocomplete="name" />
+          </label>
+          <label class="field-group">
+            WhatsApp
+            <input name="whatsapp" type="tel" value="${escapeHtml(current.whatsapp || "")}" autocomplete="tel" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Country or diaspora base
+            <input name="country" type="text" value="${escapeHtml(current.country || "")}" placeholder="Australia, UK, USA..." />
+          </label>
+          <label class="field-group">
+            Kenya base or coverage
+            <input name="kenya_base" type="text" value="${escapeHtml(current.kenya_base || "")}" placeholder="Nairobi, Kisumu, Mombasa..." />
+          </label>
+        </div>
         <label class="field-group">
-          Email
-          <input type="email" value="${escapeHtml(email)}" disabled />
+          Notes for Swadakta
+          <textarea name="profile_notes" rows="3" placeholder="Family region, work categories, preferred contact window, or anything useful.">${escapeHtml(current.profile_notes || "")}</textarea>
         </label>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">Save account profile</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </form>
+      <section class="assistant-panel portal-guide-panel" aria-label="Swadakta Guide">
+        <div>
+          <p class="eyebrow">Swadakta Guide</p>
+          <h3>Ask for help</h3>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Side
+            <select name="guide_role">
+              <option value="client" ${role === "receiver" ? "" : "selected"}>Client</option>
+              <option value="receiver" ${role === "receiver" ? "selected" : ""}>Receiver</option>
+            </select>
+          </label>
+          <label class="field-group">
+            Task
+            <select name="guide_task">
+              <option value="Explain my next step">Explain my next step</option>
+              <option value="Draft a message to Swadakta">Draft a message to Swadakta</option>
+              <option value="Improve my request or update">Improve my request or update</option>
+              <option value="List missing information">List missing information</option>
+            </select>
+          </label>
+        </div>
         <label class="field-group">
-          Account type
-          <select name="account_role">${optionList(accountRoleLabels, role)}</select>
+          Prompt
+          <textarea name="guide_prompt" rows="3" placeholder="Ask about your request, receiver application, assigned job, proof, review, or next step."></textarea>
         </label>
-        <label class="field-group">
-          Preferred currency
-          <select name="preferred_currency">${optionList(currencyLabels, currency)}</select>
-        </label>
-      </div>
-      <div class="field-row">
-        <label class="field-group">
-          Full name
-          <input name="full_name" type="text" value="${escapeHtml(current.full_name || "")}" autocomplete="name" />
-        </label>
-        <label class="field-group">
-          WhatsApp
-          <input name="whatsapp" type="tel" value="${escapeHtml(current.whatsapp || "")}" autocomplete="tel" />
-        </label>
-      </div>
-      <div class="field-row">
-        <label class="field-group">
-          Country or diaspora base
-          <input name="country" type="text" value="${escapeHtml(current.country || "")}" placeholder="Australia, UK, USA..." />
-        </label>
-        <label class="field-group">
-          Kenya base or coverage
-          <input name="kenya_base" type="text" value="${escapeHtml(current.kenya_base || "")}" placeholder="Nairobi, Kisumu, Mombasa..." />
-        </label>
-      </div>
-      <label class="field-group">
-        Notes for Swadakta
-        <textarea name="profile_notes" rows="3" placeholder="Family region, work categories, preferred contact window, or anything useful.">${escapeHtml(current.profile_notes || "")}</textarea>
-      </label>
-      <div class="form-actions">
-        <button class="button button-primary" type="submit">Save account profile</button>
-        <span class="copy-status" role="status"></span>
-      </div>
-    </form>
+        <textarea class="portal-guide-output" rows="5" readonly placeholder="Guide answer appears here."></textarea>
+        <div class="form-actions">
+          <button class="button button-secondary ask-portal-guide" type="button">Ask guide</button>
+          <button class="button button-secondary copy-portal-guide" type="button">Copy answer</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </section>
+    </div>
   `;
 }
 
@@ -829,6 +953,13 @@ async function loadAccountPanels() {
     const email = sessionResult.session?.user?.email || "";
 
     if (!email) {
+      currentPortalContext = {
+        email: "",
+        profile: null,
+        requests: [],
+        applications: [],
+        jobs: [],
+      };
       setAccountStatus({ mode: sessionResult.mode });
       if (accountProfileCard) {
         accountProfileCard.hidden = true;
@@ -845,9 +976,16 @@ async function loadAccountPanels() {
     ]);
 
     assignedJobs = assignedJobsResult.data || [];
-    renderClientAccount(email, clientResult.data || [], profileResult.data);
-    renderPartnerAccount(email, partnerResult.data || [], assignedJobs);
-    renderAccountProfile(email, profileResult.data);
+    currentPortalContext = {
+      email,
+      profile: profileResult.data || null,
+      requests: clientResult.data || [],
+      applications: partnerResult.data || [],
+      jobs: assignedJobs,
+    };
+    renderClientAccount(email, currentPortalContext.requests, currentPortalContext.profile);
+    renderPartnerAccount(email, currentPortalContext.applications, currentPortalContext.jobs);
+    renderAccountProfile(email, currentPortalContext.profile);
     setAccountStatus({
       email,
       mode: sessionResult.mode,
@@ -955,6 +1093,13 @@ if (portalSignOut) {
   portalSignOut.addEventListener("click", async () => {
     portalSignOut.textContent = "Signing out...";
     await window.SwadaktaData.signOut();
+    currentPortalContext = {
+      email: "",
+      profile: null,
+      requests: [],
+      applications: [],
+      jobs: [],
+    };
     if (clientAccountPanel) {
       clientAccountPanel.innerHTML = "";
     }
@@ -986,10 +1131,58 @@ if (accountProfileCard) {
       statusElement.textContent = "Profile saved.";
       const sessionResult = await window.SwadaktaData.getSession();
       const email = sessionResult.session?.user?.email || result.data?.email || "";
-      renderAccountProfile(email, result.data);
+      currentPortalContext = {
+        ...currentPortalContext,
+        email,
+        profile: result.data || currentPortalContext.profile,
+      };
+      renderAccountProfile(email, currentPortalContext.profile);
     } catch (error) {
       statusElement.textContent = error.message || "Could not save profile.";
     }
+  });
+
+  accountProfileCard.addEventListener("click", async (event) => {
+    const askButton = event.target.closest(".ask-portal-guide");
+    const copyButton = event.target.closest(".copy-portal-guide");
+
+    if (!askButton && !copyButton) {
+      return;
+    }
+
+    const panel = event.target.closest(".portal-guide-panel");
+    const output = panel.querySelector(".portal-guide-output");
+    const statusElement = panel.querySelector(".copy-status");
+
+    if (copyButton) {
+      await copyText(output.value, statusElement, "Answer copied.");
+      return;
+    }
+
+    const role = panel.querySelector('[name="guide_role"]').value;
+    const task = panel.querySelector('[name="guide_task"]').value;
+    const prompt = panel.querySelector('[name="guide_prompt"]').value.trim();
+
+    if (!prompt) {
+      statusElement.textContent = "Add a prompt first.";
+      return;
+    }
+
+    askButton.disabled = true;
+    statusElement.textContent = "Asking guide...";
+
+    const result = await askSwadaktaGuide({
+      role,
+      task,
+      draft: prompt,
+      context: portalGuideContext(),
+    });
+
+    output.value =
+      result.text ||
+      "Guide unavailable. Save your profile, check your request status, or contact Swadakta with your request code.";
+    statusElement.textContent = result.usedAi ? "Guide ready." : "Fallback ready.";
+    askButton.disabled = false;
   });
 }
 
@@ -1032,9 +1225,26 @@ partnerLoginForm.addEventListener("submit", async (event) => {
 });
 
 if (draftReceiverProfile && receiverAssistantDraft) {
-  draftReceiverProfile.addEventListener("click", () => {
-    receiverAssistantDraft.value = buildReceiverProfileDraft();
-    receiverAssistantStatus.textContent = "Draft ready.";
+  draftReceiverProfile.addEventListener("click", async () => {
+    const fallback = buildReceiverProfileDraft();
+    receiverAssistantStatus.textContent = "Drafting...";
+    draftReceiverProfile.disabled = true;
+
+    const result = await askSwadaktaGuide(
+      {
+        role: "receiver",
+        task: "Draft a concise receiver application profile",
+        draft: fallback,
+        context: {
+          partner_application: buildPartnerPayload(),
+        },
+      },
+      fallback,
+    );
+
+    receiverAssistantDraft.value = result.text || fallback;
+    receiverAssistantStatus.textContent = result.usedAi ? "AI draft ready." : "Draft ready.";
+    draftReceiverProfile.disabled = false;
   });
 }
 
@@ -1053,7 +1263,7 @@ if (copyReceiverDraft && receiverAssistantDraft) {
 }
 
 if (partnerAccountPanel) {
-  partnerAccountPanel.addEventListener("click", (event) => {
+  partnerAccountPanel.addEventListener("click", async (event) => {
     const button = event.target.closest(".draft-field-update");
     if (!button) {
       return;
@@ -1063,8 +1273,28 @@ if (partnerAccountPanel) {
     const job = assignedJobs.find((item) => item.request_code === form.dataset.requestCode);
     const updateBox = form.querySelector('[name="update_text"]');
     const statusElement = form.querySelector(".copy-status");
-    updateBox.value = buildReceiverUpdateDraft(form, job || { request_code: form.dataset.requestCode });
-    statusElement.textContent = "Draft ready.";
+    const fallback = buildReceiverUpdateDraft(form, job || { request_code: form.dataset.requestCode });
+
+    button.disabled = true;
+    statusElement.textContent = "Drafting update...";
+
+    const result = await askSwadaktaGuide(
+      {
+        role: "receiver",
+        task: "Draft a field update for an assigned Swadakta job",
+        draft: fallback,
+        context: {
+          selected_field_status: form.querySelector('[name="field_status"]').value,
+          job: compactJobForGuide(job || { request_code: form.dataset.requestCode }),
+          account: portalGuideContext().account,
+        },
+      },
+      fallback,
+    );
+
+    updateBox.value = result.text || fallback;
+    statusElement.textContent = result.usedAi ? "AI draft ready." : "Draft ready.";
+    button.disabled = false;
   });
 }
 

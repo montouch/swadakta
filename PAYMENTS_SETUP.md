@@ -10,7 +10,7 @@ Swadakta should stay quote-first at launch. Each request can vary by travel, acc
 2. PayPal invoices for clients who prefer PayPal or need a familiar invoice workflow.
 3. Wise Business payment links or account details for international transfers where card fees or currency conversion matter.
 4. Bank transfer or mobile money only when the client and operator have a clear receipt trail.
-5. M-Pesa through Safaricom Daraja later, once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
+5. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
 6. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
 
 ## Funds Protection and Milestones
@@ -186,11 +186,76 @@ Use Wise for larger site visits, supplier deposits, or monthly retainers where b
 
 ## M-Pesa
 
-M-Pesa should be planned through Safaricom Daraja, not improvised through personal numbers.
+M-Pesa should be planned through Safaricom Daraja, not improvised through personal numbers. Safaricom describes Daraja as the developer platform for Safaricom and M-PESA APIs, and M-Pesa's developer portal lists C2B, reversals, and transaction status query APIs for receiving and managing payments:
 
-- Start manual: record M-Pesa receipt/reference numbers in `Payment/provider ref` and milestone provider references.
-- Later: add Daraja STK Push/C2B for Kenya-side collections where appropriate.
-- Later: add B2C payout workflows only after receiver vetting, payout limits, reversal/dispute process, and accounting are ready.
+- https://developer.safaricom.co.ke/
+- https://developer.safaricom.co.ke/apis
+- https://business.m-pesa.com/developers/
+
+Swadakta now includes an admin-only M-Pesa STK Push handoff at:
+
+- `POST /api/payments/mpesa-stk`
+
+The endpoint:
+
+- Requires a signed-in Supabase admin session.
+- Verifies the user exists in `admin_users`.
+- Requires the quote currency to be `KES`.
+- Exchanges `MPESA_CONSUMER_KEY` and `MPESA_CONSUMER_SECRET` for a Daraja access token server-side.
+- Sends an STK Push through the configured Paybill/Till shortcode.
+- Records the `MerchantRequestID` and `CheckoutRequestID` in `Payment/provider ref`.
+- Sets `Payment: Invoice sent` and `Funds: Payment link sent` while waiting for callback confirmation.
+- Does not mark money paid, release funds, assign receivers, or mark milestones released.
+
+Callback endpoint:
+
+- `POST /api/payments/mpesa-callback`
+
+The callback endpoint:
+
+- Receives the Daraja STK callback.
+- Finds the request by `CheckoutRequestID` in `Payment/provider ref`.
+- On successful `ResultCode: 0`, sets `Payment: Paid`, `Funds: Deposit confirmed`, stores the M-Pesa receipt, and records the protected amount.
+- On failed/cancelled STK, records the callback result in release notes without marking funds paid.
+- Does not release receiver payouts.
+
+Required Vercel environment variables:
+
+- `MPESA_CONSUMER_KEY`: Daraja app consumer key.
+- `MPESA_CONSUMER_SECRET`: Daraja app consumer secret.
+- `MPESA_SHORTCODE`: Paybill/Till/shortcode used for collection.
+- `MPESA_PASSKEY`: Lipa na M-Pesa Online passkey.
+- `SUPABASE_SERVICE_ROLE_KEY` or `SUPABASE_SECRET_KEY`: server-only Supabase key used by the callback to update request records.
+- `PUBLIC_BASE_URL`: `https://swadakta.com`.
+
+Optional Vercel environment variables:
+
+- `MPESA_ENVIRONMENT`: `sandbox` or `live`; defaults to `sandbox`.
+- `MPESA_BASE_URL`: explicit Daraja base URL override.
+- `MPESA_TRANSACTION_TYPE`: defaults to `CustomerPayBillOnline`; set the Daraja-approved value for Till/Buy Goods if needed.
+- `MPESA_CALLBACK_URL`: explicit callback URL if Safaricom needs a fixed URL.
+- `MPESA_CALLBACK_TOKEN`: shared callback token. If set, the generated callback URL includes `?token=...` and the endpoint rejects callbacks without it.
+
+Admin workflow:
+
+1. Quote the request in `KES`.
+2. Click `Send M-Pesa STK`.
+3. Enter the Kenyan M-Pesa phone number that should receive the prompt.
+4. Wait for the client/payer to approve on their phone.
+5. The callback marks the request paid only after Safaricom confirms success.
+6. Review the M-Pesa receipt and protected amount before assigning or releasing any receiver payout.
+
+Manual M-Pesa fallback:
+
+- Record M-Pesa receipt/reference numbers in `Payment/provider ref` and milestone provider references.
+- Store receipt screenshots or statements in proof/report links where appropriate.
+- Use manual references only when there is a clear receipt trail and admin has checked the amount, phone, request code, and date.
+
+Future Kenya payment work:
+
+- Add C2B Paybill/Till confirmation and validation URLs for offline Paybill payments after Safaricom registration.
+- Add transaction-status checks for cases where callbacks fail or are delayed.
+- Add B2C payout workflows only after receiver vetting, payout limits, reversal/dispute process, tax/accounting handling, and founder approval controls are ready.
 - Keep M-Pesa as one provider in the milestone ledger, not the only source of truth.
 
 ## Operating Rules
