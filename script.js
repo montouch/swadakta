@@ -71,6 +71,24 @@ function isHttpLink(value) {
   }
 }
 
+function safeHttpUrl(value) {
+  try {
+    const url = new URL(String(value || "").trim());
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
 function getSupportingLinks() {
   return document
     .querySelector("#supporting-links")
@@ -303,23 +321,28 @@ function formatTrackedMoney(amount, currency) {
 }
 
 function renderTrackingResult(request) {
-  const paymentLink = request.payment_link
-    ? `<a class="status-link" href="${request.payment_link}" target="_blank" rel="noreferrer">Open secure payment link</a>`
+  const safePaymentLink = safeHttpUrl(request.payment_link);
+  const safeReportLink = safeHttpUrl(request.client_report_url);
+  const safeProofLinks = Array.isArray(request.proof_links)
+    ? request.proof_links.map(safeHttpUrl).filter(Boolean)
+    : [];
+  const paymentLink = safePaymentLink
+    ? `<a class="status-link" href="${escapeHtml(safePaymentLink)}" target="_blank" rel="noreferrer">Open secure payment link</a>`
     : "";
-  const reportLink = request.client_report_url
-    ? `<a class="status-link" href="${request.client_report_url}" target="_blank" rel="noreferrer">Open report</a>`
+  const reportLink = safeReportLink
+    ? `<a class="status-link" href="${escapeHtml(safeReportLink)}" target="_blank" rel="noreferrer">Open report</a>`
     : "";
-  const proofLinks = Array.isArray(request.proof_links)
-    ? request.proof_links.filter(Boolean).map((link) => `<a class="status-link" href="${link}" target="_blank" rel="noreferrer">Proof file</a>`).join("")
-    : "";
+  const proofLinks = safeProofLinks
+    .map((link, index) => `<a class="status-link" href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Proof file ${index + 1}</a>`)
+    .join("");
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
-    <strong>${request.request_code}</strong>
-    <span>Status: ${statusLabels[request.status] || request.status}</span>
-    <span>Payment: ${paymentLabels[request.payment_status] || request.payment_status}</span>
-    <span>Quote: ${formatTrackedMoney(request.quote_amount, request.quote_currency)}</span>
-    ${request.client_report ? `<p>${request.client_report}</p>` : `<p>Client report will appear here after the Kenya desk updates the job.</p>`}
+    <strong>${escapeHtml(request.request_code)}</strong>
+    <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
+    <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
+    <span>Quote: ${escapeHtml(formatTrackedMoney(request.quote_amount, request.quote_currency))}</span>
+    ${request.client_report ? `<p>${escapeHtml(request.client_report)}</p>` : `<p>Client report will appear here after the Kenya desk updates the job.</p>`}
     ${paymentLink}
     ${reportLink}
     ${proofLinks}

@@ -49,6 +49,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Collect only the information needed for the job.
 - Ask permission before contacting relatives, vendors, contractors, officials, or local contacts.
 - Use the supporting-links field for Google Drive folders, photo albums, title packs, vendor quotes, or other client-provided references.
+- Only use `https://` or `http://` links for supporting files, payment links, reports, and proof files.
 - Keep sensitive documents out of WhatsApp where possible. Use secure links when file upload is added.
 - Treat requests marked as involving sensitive documents as higher-risk jobs that need tighter access control.
 - Delete or archive old proof packs on a defined schedule after accounting and dispute windows pass.

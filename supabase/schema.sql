@@ -103,6 +103,46 @@ begin
     alter table public.service_requests
       add constraint service_requests_quote_currency_check check (quote_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
   end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_payment_link_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_payment_link_check check (coalesce(payment_link, '') = '' or payment_link ~* '^https?://[^[:space:]]+$');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_client_report_url_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_client_report_url_check check (coalesce(client_report_url, '') = '' or client_report_url ~* '^https?://[^[:space:]]+$');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_proof_links_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_proof_links_check check (
+        coalesce(array_length(proof_links, 1), 0) <= 20
+        and (
+          coalesce(array_length(proof_links, 1), 0) = 0
+          or array_to_string(proof_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
+        )
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_supporting_links_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_supporting_links_check check (
+        coalesce(array_length(supporting_links, 1), 0) <= 10
+        and (
+          coalesce(array_length(supporting_links, 1), 0) = 0
+          or array_to_string(supporting_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
+        )
+      );
+  end if;
 end
 $$;
 

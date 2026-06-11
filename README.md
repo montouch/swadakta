@@ -11,6 +11,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
 - Copy-ready client updates and field operator briefs
 - Request status, payment status, operator notes, and client report workflow
+- HTTP/HTTPS-only validation for supporting, payment, report, and proof links
 - Quote amount, payment link, due date, report URL, and proof-link workflow
 - Required client permission, scope, terms, and privacy consent capture
 - Contact preference, contact window, sensitive-document flag, and supporting-link capture

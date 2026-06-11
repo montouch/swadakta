@@ -428,6 +428,7 @@ function formPayload(form) {
   const proofLinks = String(formData.get("proof_links") || "")
     .split(/\n|,/)
     .map((item) => item.trim())
+    .map(safeHttpUrl)
     .filter(Boolean);
 
   return {
@@ -438,9 +439,9 @@ function formPayload(form) {
     client_report: formData.get("client_report"),
     quote_amount: quoteAmount ? Number(quoteAmount) : null,
     quote_currency: formData.get("quote_currency"),
-    payment_link: formData.get("payment_link"),
+    payment_link: safeHttpUrl(formData.get("payment_link")),
     payment_due_at: formData.get("payment_due_at") || null,
-    client_report_url: formData.get("client_report_url"),
+    client_report_url: safeHttpUrl(formData.get("client_report_url")),
     proof_links: proofLinks,
   };
 }
@@ -495,7 +496,7 @@ function buildOperatorBrief(request, form) {
   const payload = formPayload(form);
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "Basic update";
   const supportingLinks = Array.isArray(request.supporting_links)
-    ? request.supporting_links.map((link) => `- ${link}`).join("\n")
+    ? request.supporting_links.map(safeHttpUrl).filter(Boolean).map((link) => `- ${link}`).join("\n")
     : "";
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const consentStatus = formatConsentStatus(request);
