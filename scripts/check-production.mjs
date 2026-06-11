@@ -50,6 +50,8 @@ const requiredAppDataMarkers = [
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
+  "redirectToAccountHome",
+  "recoverAccountHomeFromSession",
   "rememberAccountHome",
   "normalizePortalHomeHash",
   "forceAccountHomeRoute",

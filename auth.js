@@ -8,12 +8,12 @@
 
   function safeNextPath() {
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get("next") || "/portal#home";
+    const raw = params.get("next") || "/portal.html#home";
 
     try {
       const target = new URL(raw, window.location.origin);
       if (target.origin !== window.location.origin) {
-        return "/portal#home";
+        return "/portal.html#home";
       }
       const allowedPaths = new Set([
         "/",
@@ -42,14 +42,17 @@
         "/admin-verification.html",
       ]);
       if (!allowedPaths.has(target.pathname)) {
-        return "/portal#home";
+        return "/portal.html#home";
+      }
+      if (target.pathname === "/portal") {
+        target.pathname = "/portal.html";
       }
       if ((target.pathname === "/portal" || target.pathname === "/portal.html") && !target.hash) {
         target.hash = "home";
       }
       return `${target.pathname}${target.search}${target.hash}`;
     } catch {
-      return "/portal#home";
+      return "/portal.html#home";
     }
   }
 

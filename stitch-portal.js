@@ -178,6 +178,18 @@
     return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
   }
 
+  function redirectToAccountHome(email = "") {
+    rememberAccountHome(email || signedInEmail);
+    const homeUrl = accountHomeUrl();
+
+    if (window.location.href !== homeUrl) {
+      window.location.replace(homeUrl);
+      return;
+    }
+
+    window.location.reload();
+  }
+
   function normalizePortalHomeHash() {
     const params = new URLSearchParams(window.location.search);
     if (window.location.hash !== "#work" || params.get("view") === "work") return;
@@ -274,7 +286,7 @@
     normalizePortalHomeHash();
     const forceToken = ++accountHomeForceToken;
 
-    [250, 1200, 3000].forEach((delay) => {
+    [250, 1200, 3000, 5200].forEach((delay) => {
       window.setTimeout(() => {
         if (forceToken !== accountHomeForceToken || signOutRequested || isAccountHomeOpen()) {
           return;
@@ -290,6 +302,28 @@
         window.location.replace(homeUrl);
       }, delay);
     });
+  }
+
+  async function recoverAccountHomeFromSession() {
+    try {
+      if (signOutRequested || isAccountHomeOpen()) return;
+      const sessionResult = await window.SwadaktaData.getSession();
+      const email = sessionResult.session?.user?.email || rememberedAccountHomeEmail();
+
+      if (!email) return;
+
+      const renderVersion = nextAccountRenderVersion();
+      signedInEmail = email;
+      setSignedInShell(email, {});
+      openAccountHome();
+      showContinueHomeButton(true, email);
+      forceAccountHomeRoute(email);
+      showCurrentAccount({
+        autoOpen: true,
+        fallbackEmail: email,
+        renderVersion,
+      }).catch(() => {});
+    } catch {}
   }
 
   function rememberAccountHome(email = "") {
@@ -1036,6 +1070,7 @@
         }).catch(() => {});
         setStatus("Signed in. Taking you to your account home now.", "text-primary");
         forceAccountHomeRoute(signedInUserEmail);
+        window.setTimeout(() => redirectToAccountHome(signedInUserEmail), 650);
         return;
       }
       if (shouldOpenWorkspace) {
@@ -1271,4 +1306,5 @@
     }).catch(() => {});
   }
   showCurrentAccount({ autoOpen: true });
+  [900, 2400].forEach((delay) => window.setTimeout(recoverAccountHomeFromSession, delay));
 })();
