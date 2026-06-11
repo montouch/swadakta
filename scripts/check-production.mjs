@@ -169,9 +169,15 @@ const requiredAdminVerificationMarkers = [
 ];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
+  "storageBackendItems",
   "account_onboarding",
+  "storage_media",
   "get_my_account_profile",
   "list_my_identity_verification_requests",
+  "private_proof_media_bucket",
+  "storage_read_policy_probe",
+  "swadakta-proof",
+  "stitch-portal.js?v=25",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",

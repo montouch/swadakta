@@ -11,7 +11,8 @@ const PUBLIC_BASE_URL =
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
 const EXPECTED_APP_DATA_REF = "app-data.js?v=44";
-const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=21";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=25";
+const PROOF_BUCKET_ID = "swadakta-proof";
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -149,6 +150,8 @@ const DOCS = {
   vercelHeaders: "https://vercel.com/docs/headers",
   supabaseApiSecurity: "https://supabase.com/docs/guides/api/securing-your-api",
   supabaseRls: "https://supabase.com/docs/guides/database/postgres/row-level-security",
+  supabaseStorage: "https://supabase.com/docs/guides/storage",
+  supabaseStorageAccess: "https://supabase.com/docs/guides/storage/security/access-control",
 };
 
 function item(id, label, status, detail, next, missing = [], options = {}) {
@@ -258,6 +261,50 @@ async function fetchSupabaseRest(path, authHeader, options = {}) {
   }
 }
 
+async function fetchSupabaseStorage(path, authHeader, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 4500);
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}${path}`, {
+      method: options.method || "GET",
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        authorization: authHeader,
+        accept: "application/json",
+        "content-type": "application/json",
+        ...(options.headers || {}),
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
+    });
+    const text = options.readText === false ? "" : await response.text().catch(() => "");
+    let json = null;
+    if (text) {
+      try {
+        json = JSON.parse(text);
+      } catch {}
+    }
+    return {
+      ok: response.ok,
+      status: response.status,
+      text,
+      json,
+      error: "",
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      text: "",
+      json: null,
+      error: error.name === "AbortError" ? "Timed out while checking Supabase Storage." : error.message || "Storage check failed.",
+    };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 async function accountBackendItems(authHeader) {
   const [profileRpc, verificationRpc, adminProfileRead] = await Promise.all([
     fetchSupabaseRest("/rest/v1/rpc/get_my_account_profile", authHeader, {
@@ -322,6 +369,71 @@ async function accountBackendItems(authHeader) {
       {
         docs_url: DOCS.supabaseApiSecurity,
         priority: 16,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+  ];
+}
+
+async function storageBackendItems(user, authHeader) {
+  const safeUserId = encodeURIComponent(user.id || "admin");
+  const [bucket, listProbe] = await Promise.all([
+    fetchSupabaseStorage(`/storage/v1/bucket/${PROOF_BUCKET_ID}`, authHeader),
+    fetchSupabaseStorage(`/storage/v1/object/list/${PROOF_BUCKET_ID}`, authHeader, {
+      method: "POST",
+      body: {
+        prefix: `${safeUserId}/account-profile`,
+        limit: 1,
+        offset: 0,
+        sortBy: { column: "created_at", order: "desc" },
+      },
+    }),
+  ]);
+
+  const bucketJson = bucket.json || {};
+  const bucketPrivate = bucket.ok && bucketJson.public === false;
+  const allowedTypes = Array.isArray(bucketJson.allowed_mime_types) ? bucketJson.allowed_mime_types : [];
+  const expectedMimeTypes = ["image/jpeg", "image/png", "image/webp", "video/mp4", "application/pdf"];
+  const missingMimeTypes = expectedMimeTypes.filter((type) => !allowedTypes.includes(type));
+  const sizeLimit = Number(bucketJson.file_size_limit || 0);
+  const hasReasonableSizeLimit = sizeLimit >= 6 * 1024 * 1024;
+
+  return [
+    item(
+      "private_proof_media_bucket",
+      "Private proof/profile media bucket",
+      bucketPrivate && missingMimeTypes.length === 0 && hasReasonableSizeLimit ? "ready" : bucket.ok ? "warning" : "missing",
+      bucket.ok
+        ? `${PROOF_BUCKET_ID} bucket responded through Supabase Storage and is ${bucketPrivate ? "private" : "not private"}.`
+        : `Storage bucket check returned ${bucket.status || bucket.error}.`,
+      bucketPrivate && missingMimeTypes.length === 0 && hasReasonableSizeLimit
+        ? "Client proof, receiver profile photos, and proof samples can share the private user-folder storage path."
+        : "Keep the bucket private, allow profile/proof MIME types, and keep the 6MB launch upload limit active.",
+      [
+        ...(bucketPrivate ? [] : ["private bucket"]),
+        ...missingMimeTypes,
+        ...(hasReasonableSizeLimit ? [] : ["6MB file size limit"]),
+      ],
+      {
+        docs_url: DOCS.supabaseStorage,
+        priority: 17,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "storage_read_policy_probe",
+      "Storage read policy probe",
+      listProbe.ok ? "ready" : "warning",
+      listProbe.ok
+        ? "The signed-in admin session can list its own account-profile folder through Storage policies."
+        : `Storage object list probe returned ${listProbe.status || listProbe.error}.`,
+      listProbe.ok
+        ? "This proves the private bucket read path is reachable; uploads still depend on the per-user INSERT policy."
+        : "Check storage.objects SELECT policy for user-owned folders and admin access.",
+      listProbe.ok ? [] : ["storage.objects SELECT policy"],
+      {
+        docs_url: DOCS.supabaseStorageAccess,
+        priority: 18,
         owner: "Founder/Supabase admin",
       },
     ),
@@ -529,6 +641,11 @@ async function readinessReport(user, authHeader) {
       id: "account_onboarding",
       label: "Account onboarding backend",
       items: await accountBackendItems(authHeader),
+    },
+    {
+      id: "storage_media",
+      label: "Private media and proof storage",
+      items: await storageBackendItems(user, authHeader),
     },
     {
       id: "payments",
