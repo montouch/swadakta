@@ -7,18 +7,19 @@
     <meta name="description" content="Operations dashboard for Swadakta Diaspora Concierge service requests." />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#0f332c" />
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=10" />
   </head>
   <body class="admin-body">
     <header class="admin-header">
       <a class="brand admin-brand" href="index.html" aria-label="Back to Swadakta site">
-        <span class="brand-mark" aria-hidden="true">S</span>
+        <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
         <span>
           <strong>Swadakta</strong>
-          <small>Operations Desk</small>
+          <small>Admin Operations Desk</small>
         </span>
       </a>
       <nav class="admin-nav" aria-label="Admin actions">
+        <a href="portal.html">Portals</a>
         <a href="index.html#intake">Client intake</a>
         <button class="header-action" type="button" id="refresh-requests">Refresh</button>
         <button class="header-action" type="button" id="sign-out" hidden>Sign out</button>
@@ -31,8 +32,8 @@
           <p class="eyebrow">Operations</p>
           <h1 id="admin-title">Request queue and client delivery desk.</h1>
           <p>
-            Track new briefs, quote work, assign operators, log internal notes, and prepare
-            client-ready updates from one place.
+            Track new briefs, quote work, vet receiver partners, assign operators, protect founder
+            margin, and prepare client-ready updates from one place.
           </p>
         </div>
         <div class="admin-metrics" aria-label="Request metrics">
@@ -123,10 +124,19 @@
       </section>
 
       <section class="request-board" id="request-board" aria-live="polite"></section>
+
+      <section class="partner-admin-panel" aria-labelledby="partner-admin-title">
+        <div>
+          <p class="eyebrow">Receiver Pipeline</p>
+          <h2 id="partner-admin-title">Partner applications</h2>
+          <p>Review Kenya-side receivers before they are allowed to take client work.</p>
+        </div>
+        <section class="request-board partner-board" id="partner-board" aria-live="polite"></section>
+      </section>
     </main>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=9"></script>
-    <script src="admin.js?v=12"></script>
+    <script src="app-data.js?v=10"></script>
+    <script src="admin.js?v=13"></script>
   </body>
 </html>

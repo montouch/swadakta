@@ -9,8 +9,10 @@ const statusFilter = document.querySelector("#status-filter");
 const paymentFilter = document.querySelector("#payment-filter");
 const sensitiveFilter = document.querySelector("#sensitive-filter");
 const searchRequests = document.querySelector("#search-requests");
+const partnerBoard = document.querySelector("#partner-board");
 
 let requests = [];
+let partnerApplications = [];
 let backendMode = "local";
 
 const taskLabels = {
@@ -46,6 +48,16 @@ const paymentMethodLabels = {
   bank: "Bank or mobile money transfer",
 };
 
+const servicePackageLabels = {
+  quote_first: "Help me choose the right package",
+  quick_errand: "Quick Errand - from AUD 85",
+  site_visit: "Site Visit - from AUD 180",
+  registry_errand: "Registry/Document Run - from AUD 150",
+  family_support: "Family Support Run - from AUD 120",
+  monthly_retainer: "Monthly Retainer - from AUD 450/mo",
+  business_ops: "Business Ops Support - quoted monthly",
+};
+
 const budgetRangeLabels = {
   unsure: "Not sure yet",
   under_100: "Under AUD 100",
@@ -71,6 +83,23 @@ const referralSourceLabels = {
   search: "Search",
   community_event: "Community event",
   other: "Other",
+};
+
+const partnerStatusLabels = {
+  new: "New",
+  reviewing: "Reviewing",
+  vetted: "Vetted",
+  on_hold: "On hold",
+  rejected: "Rejected",
+};
+
+const partnerCategoryLabels = {
+  site_visits: "Site visits",
+  registry_errands: "Registry/document errands",
+  family_logistics: "Family support",
+  deliveries: "Deliveries",
+  sourcing: "Supplier sourcing",
+  virtual_ops: "Virtual operations",
 };
 
 function escapeHtml(value) {
@@ -219,6 +248,7 @@ function getFilteredRequests() {
       request.local_contact_phone,
       request.contact_preference,
       request.contact_window,
+      servicePackageLabels[request.service_package] || request.service_package,
       paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
       budgetRangeLabels[request.budget_range] || request.budget_range,
       proofPriorityLabels[request.proof_priority] || request.proof_priority,
@@ -289,6 +319,24 @@ function currencyOptions(current) {
     .join("");
 }
 
+function servicePackageOptions(current) {
+  return Object.entries(servicePackageLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function partnerStatusOptions(current) {
+  return Object.entries(partnerStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
 function renderRequestCard(request) {
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
   return `
@@ -353,6 +401,8 @@ function renderRequestCardV2(request) {
   const clientBase = request.client_base || request.australia_location || "Not specified";
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
+  const servicePackage =
+    servicePackageLabels[request.service_package] || request.service_package || "Help me choose the right package";
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
@@ -383,6 +433,7 @@ function renderRequestCardV2(request) {
         <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
         <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
         <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
+        <div><dt>Package</dt><dd>${escapeHtml(servicePackage)}</dd></div>
         <div><dt>Pay method</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
         <div><dt>Budget</dt><dd>${escapeHtml(budgetRange)}</dd></div>
         <div><dt>Proof focus</dt><dd>${escapeHtml(proofPriority)}</dd></div>
@@ -413,6 +464,10 @@ function renderRequestCardV2(request) {
           </label>
         </div>
         <div class="field-row">
+          <label class="field-group">
+            Service package
+            <select name="service_package">${servicePackageOptions(request.service_package || "quote_first")}</select>
+          </label>
           <label class="field-group">
             Quote amount
             <input name="quote_amount" type="number" min="0" step="1" value="${escapeHtml(request.quote_amount || "")}" />
@@ -495,6 +550,107 @@ function renderRequests() {
   requestBoard.innerHTML = visibleRequests.map(renderRequestCardV2).join("");
 }
 
+function renderPartnerApplication(application) {
+  const categories = Array.isArray(application.service_categories)
+    ? application.service_categories.map((category) => partnerCategoryLabels[category] || category).join(", ")
+    : "Not specified";
+
+  return `
+    <article class="request-card partner-card" data-id="${escapeHtml(application.id)}">
+      <header class="request-card-header">
+        <div>
+          <span class="request-code">${escapeHtml(application.partner_code)}</span>
+          <h2>${escapeHtml(application.full_name)}</h2>
+          <p>${escapeHtml(application.kenya_base)} - ${escapeHtml(categories)}</p>
+        </div>
+        <span class="status-pill status-${escapeHtml(application.status)}">${escapeHtml(partnerStatusLabels[application.status] || application.status)}</span>
+      </header>
+
+      <dl class="request-details">
+        <div><dt>WhatsApp</dt><dd>${escapeHtml(application.whatsapp)}</dd></div>
+        <div><dt>Email</dt><dd>${escapeHtml(application.email || "Not provided")}</dd></div>
+        <div><dt>Coverage</dt><dd>${escapeHtml(application.service_regions || "Not specified")}</dd></div>
+        <div><dt>Availability</dt><dd>${escapeHtml(application.availability || "Not specified")}</dd></div>
+        <div><dt>Transport</dt><dd>${escapeHtml(application.transport_access || "Not specified")}</dd></div>
+        <div><dt>ID consent</dt><dd>${application.id_verification_consent ? "Yes" : "No"}</dd></div>
+        <div><dt>Proof consent</dt><dd>${application.proof_standard_consent ? "Yes" : "No"}</dd></div>
+        <div><dt>Applied</dt><dd>${formatDate(application.created_at)}</dd></div>
+      </dl>
+
+      <p class="request-notes">${escapeHtml(application.notes || "No notes provided.")}</p>
+
+      <form class="partner-update-form">
+        <div class="field-row">
+          <label class="field-group">
+            Partner status
+            <select name="status">${partnerStatusOptions(application.status || "new")}</select>
+          </label>
+          <label class="field-group">
+            Internal notes
+            <input name="internal_notes" type="text" value="${escapeHtml(application.internal_notes || "")}" placeholder="Checks, risk, next action" />
+          </label>
+        </div>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">Save partner</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </form>
+    </article>
+  `;
+}
+
+function renderPartnerApplications() {
+  if (!partnerBoard) {
+    return;
+  }
+
+  if (!partnerApplications.length) {
+    partnerBoard.innerHTML = `
+      <div class="empty-state">
+        <h2>No partner applications yet</h2>
+        <p>Receiver and field partner applications from the portal will appear here.</p>
+      </div>
+    `;
+    return;
+  }
+
+  partnerBoard.innerHTML = partnerApplications.map(renderPartnerApplication).join("");
+}
+
+async function loadPartnerApplications() {
+  if (!partnerBoard) {
+    return;
+  }
+
+  partnerBoard.innerHTML = `<div class="empty-state"><h2>Loading partner applications...</h2></div>`;
+
+  try {
+    const result = await window.SwadaktaData.listPartnerApplications();
+    partnerApplications = result.data || [];
+    renderPartnerApplications();
+  } catch (error) {
+    partnerBoard.innerHTML = `
+      <div class="empty-state is-error">
+        <h2>Could not load partner applications</h2>
+        <p>${escapeHtml(error.message || "Check Supabase partner application policies.")}</p>
+      </div>
+    `;
+  }
+}
+
+function getPartnerApplicationByCard(card) {
+  return partnerApplications.find((application) => application.id === card.dataset.id);
+}
+
+function partnerFormPayload(form) {
+  const formData = new FormData(form);
+
+  return {
+    status: formData.get("status"),
+    internal_notes: formData.get("internal_notes"),
+  };
+}
+
 async function loadRequests() {
   requestBoard.innerHTML = `<div class="empty-state"><h2>Loading requests...</h2></div>`;
 
@@ -513,6 +669,13 @@ async function loadRequests() {
           <p>Only emails added to <code>admin_users</code> can read or update production requests.</p>
         </div>
       `;
+      if (partnerBoard) {
+        partnerBoard.innerHTML = `
+          <div class="empty-state">
+            <h2>Sign in to view partner applications</h2>
+          </div>
+        `;
+      }
       return;
     }
 
@@ -522,6 +685,7 @@ async function loadRequests() {
     backendMode = result.mode;
     requests = result.data || [];
     renderRequests();
+    await loadPartnerApplications();
   } catch (error) {
     requestBoard.innerHTML = `
       <div class="empty-state is-error">
@@ -529,6 +693,9 @@ async function loadRequests() {
         <p>${escapeHtml(error.message || "Check Supabase keys, RLS policies, and admin access.")}</p>
       </div>
     `;
+    if (partnerBoard) {
+      partnerBoard.innerHTML = "";
+    }
   }
 }
 
@@ -548,6 +715,7 @@ function formPayload(form) {
   return {
     status: formData.get("status"),
     payment_status: formData.get("payment_status"),
+    service_package: formData.get("service_package"),
     assigned_to: formData.get("assigned_to"),
     operator_notes: formData.get("operator_notes"),
     client_report: formData.get("client_report"),
@@ -620,6 +788,7 @@ function buildQuoteMessage(request, form) {
   const paymentLine = payload.payment_link
     ? `Payment link: ${payload.payment_link}`
     : "Payment link: Not issued yet. We will send the secure link after confirming the quote.";
+  const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "photos, receipts, and written update";
 
@@ -627,6 +796,7 @@ function buildQuoteMessage(request, form) {
     `Hi ${request.client_name || "there"},`,
     "",
     `Swadakta quote for request ${request.request_code}: ${quoteLine}.`,
+    `Package: ${servicePackage}.`,
     `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya.`,
     `Preferred payment route: ${paymentMethod}.`,
     dueLine,
@@ -651,6 +821,7 @@ function buildOperatorBrief(request, form) {
   const founderMargin = formatFounderMargin(payload);
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
+  const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
@@ -661,6 +832,7 @@ function buildOperatorBrief(request, form) {
     `Task: ${taskLabels[request.task_type] || request.task_type}`,
     `Kenya location: ${request.kenya_location}`,
     `Client base: ${request.client_base || request.australia_location || "Not specified"}`,
+    `Package: ${servicePackage}`,
     `Urgency: ${request.urgency}`,
     `Deadline: ${request.deadline || "Flexible"}`,
     `Local contact: ${localContact}`,
@@ -733,6 +905,30 @@ requestBoard.addEventListener("submit", async (event) => {
     statusElement.textContent = error.message || "Could not save.";
   }
 });
+
+if (partnerBoard) {
+  partnerBoard.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.target.closest(".partner-update-form");
+    const card = event.target.closest(".partner-card");
+    const statusElement = form.querySelector(".copy-status");
+    const application = getPartnerApplicationByCard(card);
+
+    if (!application) {
+      return;
+    }
+
+    statusElement.textContent = "Saving...";
+
+    try {
+      await window.SwadaktaData.updatePartnerApplication(application.id, partnerFormPayload(form));
+      statusElement.textContent = "Saved.";
+      await loadPartnerApplications();
+    } catch (error) {
+      statusElement.textContent = error.message || "Could not save.";
+    }
+  });
+}
 
 requestBoard.addEventListener("click", async (event) => {
   const button = event.target.closest(".copy-update, .copy-quote, .copy-operator");

@@ -41,6 +41,16 @@ const paymentMethodLabels = {
   bank: "Bank or mobile money transfer",
 };
 
+const servicePackageLabels = {
+  quote_first: "Help me choose the right package",
+  quick_errand: "Quick Errand - from AUD 85",
+  site_visit: "Site Visit - from AUD 180",
+  registry_errand: "Registry/Document Run - from AUD 150",
+  family_support: "Family Support Run - from AUD 120",
+  monthly_retainer: "Monthly Retainer - from AUD 450/mo",
+  business_ops: "Business Ops Support - quoted monthly",
+};
+
 const budgetRangeLabels = {
   unsure: "Not sure yet",
   under_100: "Under AUD 100",
@@ -155,6 +165,7 @@ function buildBrief() {
   const diasporaLocation = document.querySelector("#diaspora-location").value.trim() || "Not specified";
   const deadline = document.querySelector("#deadline").value.trim() || "Flexible";
   const preferredCurrency = document.querySelector("#preferred-currency").value;
+  const servicePackage = document.querySelector("#service-package").value;
   const paymentMethodPreference = document.querySelector("#payment-method-preference").value;
   const budgetRange = document.querySelector("#budget-range").value;
   const proofPriority = document.querySelector("#proof-priority").value;
@@ -183,6 +194,7 @@ function buildBrief() {
     `Email: ${email}`,
     `Client base: ${diasporaLocation}`,
     `Preferred quote currency: ${preferredCurrency}`,
+    `Service package: ${servicePackageLabels[servicePackage] || servicePackage}`,
     `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
     `Budget comfort: ${budgetRangeLabels[budgetRange] || budgetRange}`,
     `Proof priority: ${proofPriorityLabels[proofPriority] || proofPriority}`,
@@ -224,6 +236,7 @@ function buildPayload() {
     supporting_links: getSupportingLinks(),
     sensitive_documents_expected: document.querySelector("#sensitive-documents").checked,
     preferred_currency: document.querySelector("#preferred-currency").value,
+    service_package: document.querySelector("#service-package").value,
     payment_method_preference: document.querySelector("#payment-method-preference").value,
     budget_range: document.querySelector("#budget-range").value,
     proof_priority: document.querySelector("#proof-priority").value,

@@ -28,15 +28,15 @@
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="preload" href="assets/saas-burst.png" as="image" />
     <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=9" />
+    <link rel="stylesheet" href="styles.css?v=10" />
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
       <a class="brand" href="#top" aria-label="Swadakta Diaspora Concierge home">
-        <span class="brand-mark" aria-hidden="true">S</span>
+        <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
         <span>
           <strong>Swadakta</strong>
-          <small>Diaspora Concierge</small>
+          <small>Client + Kenya Partner Desk</small>
         </span>
       </a>
       <nav class="nav-links" aria-label="Page sections">
@@ -44,10 +44,11 @@
         <a href="#workflow">Workflow</a>
         <a href="#trust">Trust</a>
         <a href="#pricing">Pricing</a>
+        <a href="portal.html">Portals</a>
         <a href="#intake">Intake</a>
         <a href="#tracking">Track</a>
       </nav>
-      <a class="header-action" href="#intake">Start a brief</a>
+      <a class="header-action" href="portal.html">Open portal</a>
     </header>
 
     <main id="top">
@@ -82,7 +83,8 @@
           <h1 id="hero-title">Trusted ground support in Kenya, wherever you live.</h1>
           <p class="hero-copy">
             Swadakta helps diaspora clients outside Kenya verify property work, run errands,
-            support family, and manage Kenyan operations with clear reports and reliable execution.
+            support family, and manage Kenyan operations through vetted Kenya-side receivers,
+            field partners, and admin oversight.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button button-primary" href="#intake">
@@ -91,7 +93,7 @@
               </svg>
               Plan an errand
             </a>
-            <a class="button button-secondary" href="#workflow">See the workflow</a>
+            <a class="button button-secondary" href="portal.html">Choose portal</a>
           </div>
           <dl class="hero-proof" aria-label="Service highlights">
             <div>
@@ -120,7 +122,7 @@
       <section class="section section-intro" id="services" aria-labelledby="services-title">
         <div class="section-heading">
           <p class="eyebrow">The Offer</p>
-          <h2 id="services-title">Two service lines, one accountable operator.</h2>
+          <h2 id="services-title">Two service lines, one accountable platform.</h2>
           <p>
             Built for people sending money, decisions, and trust across borders. Clients get
             Kenya-side execution with diaspora-friendly communication from wherever they are based.
@@ -189,24 +191,35 @@
       <section class="section role-band" aria-labelledby="roles-title">
         <div>
           <p class="eyebrow">Divide and Conquer</p>
-          <h2 id="roles-title">A clean two-sided operating model.</h2>
+          <h2 id="roles-title">Three entrances, one controlled operation.</h2>
         </div>
         <div class="role-grid">
           <article class="role-card">
-            <span class="role-label">Diaspora side</span>
-            <h3>The diaspora desk keeps communication clear.</h3>
+            <span class="role-label">Client side</span>
+            <h3>Get a job done in Kenya from outside Kenya.</h3>
             <p>
-              Intake, quoting, status updates, and client communication are handled in a way that
-              works across time zones and countries.
+              Diaspora clients submit briefs, receive quotes, pay through confirmed links, and track
+              job progress using client-safe updates.
             </p>
+            <a class="role-link" href="portal.html#client">Client portal</a>
           </article>
           <article class="role-card">
-            <span class="role-label">Kenya side</span>
-            <h3>Operations handles execution.</h3>
+            <span class="role-label">Receiver side</span>
+            <h3>Get vetted for Kenya-side field work.</h3>
             <p>
-              Errand planning, field visits, government-office navigation, runner coordination, and
-              detailed client reporting.
+              Local receivers, runners, and specialist partners apply for work categories, coverage
+              areas, proof standards, and availability.
             </p>
+            <a class="role-link" href="portal.html#partner">Partner portal</a>
+          </article>
+          <article class="role-card">
+            <span class="role-label">Admin side</span>
+            <h3>The founder controls trust, margin, and delivery.</h3>
+            <p>
+              Admin reviews requests, quotes jobs, vets partners, assigns operators, protects margins,
+              and sends consistent client updates.
+            </p>
+            <a class="role-link" href="portal.html#admin">Admin access</a>
           </article>
         </div>
       </section>
@@ -312,9 +325,24 @@
             <p>Construction/property inspection with short video, photos, call summary, and red flags.</p>
           </article>
           <article class="price-card">
+            <p class="package">Registry Run</p>
+            <h3>AUD 150+</h3>
+            <p>Document pickup, registry follow-up, NTSA, Ardhi House, KRA, or title-task coordination.</p>
+          </article>
+          <article class="price-card">
+            <p class="package">Family Support</p>
+            <h3>AUD 120+</h3>
+            <p>Shopping, parent support, gift delivery, local event coordination, or home-service checks.</p>
+          </article>
+          <article class="price-card">
             <p class="package">Ops Retainer</p>
             <h3>AUD 450/mo+</h3>
             <p>Weekly admin, vendor coordination, family logistics, or business support.</p>
+          </article>
+          <article class="price-card">
+            <p class="package">Business Desk</p>
+            <h3>By quote</h3>
+            <p>Supplier sourcing, quote comparison, customer follow-up, bookkeeping support, and local ops.</p>
           </article>
         </div>
       </section>
@@ -395,6 +423,19 @@
                 <option value="KES">KES</option>
               </select>
             </div>
+          </div>
+
+          <div class="field-group">
+            <label for="service-package">Service package</label>
+            <select id="service-package" name="servicePackage">
+              <option value="quote_first">Help me choose the right package</option>
+              <option value="quick_errand">Quick Errand - from AUD 85</option>
+              <option value="site_visit">Site Visit - from AUD 180</option>
+              <option value="registry_errand">Registry/Document Run - from AUD 150</option>
+              <option value="family_support">Family Support Run - from AUD 120</option>
+              <option value="monthly_retainer">Monthly Retainer - from AUD 450/mo</option>
+              <option value="business_ops">Business Ops Support - quoted monthly</option>
+            </select>
           </div>
 
           <div class="field-group">
@@ -662,7 +703,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=9"></script>
-    <script src="script.js?v=10"></script>
+    <script src="app-data.js?v=10"></script>
+    <script src="script.js?v=11"></script>
   </body>
 </html>

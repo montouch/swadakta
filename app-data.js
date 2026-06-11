@@ -1,5 +1,6 @@
 (function () {
   const STORAGE_KEY = "swadakta_service_requests";
+  const PARTNER_STORAGE_KEY = "swadakta_partner_applications";
   let supabaseClientPromise = null;
 
   function config() {
@@ -14,6 +15,11 @@
   function createLocalCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `SW-${token}`;
+  }
+
+  function createPartnerCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `SP-${token}`;
   }
 
   function createUuid() {
@@ -39,6 +45,18 @@
 
   function writeLocalRequests(requests) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
+  }
+
+  function readLocalPartnerApplications() {
+    try {
+      return JSON.parse(localStorage.getItem(PARTNER_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalPartnerApplications(applications) {
+    localStorage.setItem(PARTNER_STORAGE_KEY, JSON.stringify(applications));
   }
 
   function normalizeRequest(payload) {
@@ -68,6 +86,7 @@
       contact_window: "",
       supporting_links: [],
       sensitive_documents_expected: false,
+      service_package: "quote_first",
       payment_method_preference: "discuss",
       budget_range: "unsure",
       proof_priority: "balanced",
@@ -115,6 +134,7 @@
       supporting_links: payload.supporting_links,
       sensitive_documents_expected: payload.sensitive_documents_expected,
       preferred_currency: payload.preferred_currency,
+      service_package: payload.service_package,
       payment_method_preference: payload.payment_method_preference,
       budget_range: payload.budget_range,
       proof_priority: payload.proof_priority,
@@ -130,6 +150,48 @@
       professional_boundary_accepted: payload.professional_boundary_accepted,
       terms_accepted_at: payload.terms_accepted_at,
       privacy_accepted_at: payload.privacy_accepted_at,
+    };
+  }
+
+  function toPartnerDatabasePayload(payload) {
+    return {
+      id: payload.id,
+      partner_code: payload.partner_code,
+      full_name: payload.full_name,
+      email: payload.email,
+      whatsapp: payload.whatsapp,
+      kenya_base: payload.kenya_base,
+      service_regions: payload.service_regions,
+      service_categories: payload.service_categories,
+      availability: payload.availability,
+      transport_access: payload.transport_access,
+      notes: payload.notes,
+      id_verification_consent: payload.id_verification_consent,
+      proof_standard_consent: payload.proof_standard_consent,
+    };
+  }
+
+  function normalizePartnerApplication(payload) {
+    const now = new Date().toISOString();
+    return {
+      id: createUuid(),
+      partner_code: createPartnerCode(),
+      full_name: "",
+      email: "",
+      whatsapp: "",
+      kenya_base: "",
+      service_regions: "",
+      service_categories: [],
+      availability: "flexible",
+      transport_access: "mixed",
+      status: "new",
+      internal_notes: "",
+      id_verification_consent: false,
+      proof_standard_consent: false,
+      notes: "",
+      created_at: now,
+      updated_at: now,
+      ...payload,
     };
   }
 
@@ -182,6 +244,7 @@
       quote_currency: updates.quote_currency,
       payment_link: updates.payment_link,
       payment_due_at: updates.payment_due_at,
+      service_package: updates.service_package,
       operator_payout: updates.operator_payout,
       field_costs: updates.field_costs,
       payment_processing_fee: updates.payment_processing_fee,
@@ -200,6 +263,73 @@
 
     const { data, error } = await supabase
       .from("service_requests")
+      .update(updatePayload)
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function createPartnerApplication(payload) {
+    const normalized = normalizePartnerApplication(payload);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const applications = [normalized, ...readLocalPartnerApplications()];
+      writeLocalPartnerApplications(applications);
+      return { data: normalized, mode: "local" };
+    }
+
+    const { error } = await supabase.from("partner_applications").insert(toPartnerDatabasePayload(normalized));
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: normalized, mode: "supabase" };
+  }
+
+  async function listPartnerApplications() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalPartnerApplications(), mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("partner_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function updatePartnerApplication(id, updates) {
+    const updatePayload = {
+      status: updates.status,
+      internal_notes: updates.internal_notes,
+    };
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const applications = readLocalPartnerApplications().map((application) =>
+        application.id === id ? { ...application, ...updatePayload, updated_at: new Date().toISOString() } : application,
+      );
+      writeLocalPartnerApplications(applications);
+      return { data: applications.find((application) => application.id === id), mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("partner_applications")
       .update(updatePayload)
       .eq("id", id)
       .select("*")
@@ -266,7 +396,7 @@
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
-  async function signInAdmin(email) {
+  async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
 
     if (!supabase) {
@@ -276,7 +406,7 @@
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: window.location.href.split("#")[0],
+        emailRedirectTo: redirectTo,
       },
     });
 
@@ -315,6 +445,9 @@
     listRequests,
     updateRequest,
     trackRequest,
+    createPartnerApplication,
+    listPartnerApplications,
+    updatePartnerApplication,
     signInAdmin,
     getSession,
     signOut,

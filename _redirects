@@ -1,4 +1,5 @@
 https://www.swadakta.com/* https://swadakta.com/:splat 301
 /admin /admin.html 200
+/portal /portal.html 200
 /privacy /privacy.html 200
 /terms /terms.html 200

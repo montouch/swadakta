@@ -13,6 +13,7 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 - Remember Vercel does not provide email hosting. Add MX records through Google Workspace, Microsoft 365, Zoho, or another email host if you want addresses like `hello@swadakta.com`: https://vercel.com/docs/domains/managing-dns-records
 - After DNS settles, verify:
   - `https://swadakta.com/`
+  - `https://swadakta.com/portal`
   - `https://swadakta.com/privacy`
   - `https://swadakta.com/terms`
   - `https://swadakta.com/sitemap.xml`
@@ -28,7 +29,9 @@ Start with quote-based payment links, then automate later.
   - Quick errand deposit
   - Site visit deposit
   - Registry/document errand deposit
+  - Family support run deposit
   - Virtual assistant monthly retainer
+  - Business operations support retainer
 - Keep custom quote jobs as one-off payment links until pricing stabilizes.
 - Add PayPal Business as a backup option for clients who prefer PayPal or cards through PayPal. PayPal's Kenya business page describes online payments for businesses: https://www.paypal.com/ke/business
 - Keep Wise or bank transfer available for clients who need local transfer rails.
@@ -60,14 +63,14 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 
 1. Client submits the public intake form.
 2. Admin confirms consent status is `Complete`.
-3. Admin reviews the request, supporting links, contact preference, and sensitive-document flag.
+3. Admin reviews the service package, supporting links, contact preference, and sensitive-document flag.
 4. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
 6. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, and safety wording.
 7. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
 8. Client pays through the agreed provider.
 9. Admin sets status to `paid` after confirmation.
-10. Admin copies the operator brief and sends it to the assigned Kenya-side operator.
+10. Admin assigns only a vetted Kenya-side receiver/operator, then copies the operator brief.
 11. Kenya-side operator executes the task.
 12. Admin adds proof links, report URL, and final notes.
 13. Admin sets status to `completed`.
@@ -79,7 +82,9 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - `www.swadakta.com` redirects to the apex domain.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - Intake consent is required and visible as `Complete` in admin for new requests.
-- Intake captures budget comfort, proof priority, and lead source for quoting and early marketing feedback.
+- Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
+- `/portal` exposes client access, receiver-partner applications, and admin access.
+- Receiver partners can apply from the portal and must be marked `Vetted` before getting client jobs.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.

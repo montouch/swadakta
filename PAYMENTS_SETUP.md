@@ -23,10 +23,13 @@ Suggested first links:
 - Quick errand deposit
 - Site visit deposit
 - Registry/document errand deposit
+- Family support run deposit
 - Virtual assistant retainer
+- Business operations support retainer
 - Custom balance payment
 
 For one-off jobs, create a new link after quoting, paste it into the admin `Payment link` field, set `Payment` to `Invoice sent`, and set a payment due date.
+Use the intake `Service package` field to choose the right reusable deposit or retainer link before creating a custom link.
 Use the intake budget comfort field as a guide, not as a binding price cap; the final quote should still reflect travel, access, urgency, and proof requirements.
 Use the admin `Copy quote` action to send a consistent quote message that includes the amount, payment link, due date, proof plan, scope boundary, and card-data safety warning.
 
@@ -55,5 +58,6 @@ Use Wise for larger site visits, supplier deposits, or monthly retainers where b
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
 - Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.
 - Record operator payout, field costs, and payment fees in admin before marking a job profitable; the founder margin should stay visible on every quoted request.
+- Do not assign a job to a receiver partner until their application is reviewed and marked `Vetted` in admin.
 - Store receipts, payment screenshots, or processor confirmations in the proof/report pack, not in public tracking text.
 - For refunds, update `Payment` to `Refunded` and add a short internal note explaining the reason, amount, and date.
