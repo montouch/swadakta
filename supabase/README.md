@@ -48,7 +48,7 @@ Admin activation:
 
 - Secure admin sign-in email sent to `swadakta111@gmail.com`.
 - Supabase auth user added to `public.admin_users` as `owner`.
-- Open the sign-in email from the inbox, then return to `admin.html`.
+- Open the sign-in email from the inbox, then return to `admin-ops.html`.
 
 Auth redirect setup:
 
@@ -56,4 +56,4 @@ Auth redirect setup:
 - Redirect URLs must cover `https://swadakta.com/auth` and `https://swadakta.com/auth.html`.
   The current dashboard wildcard `https://swadakta.com/**` covers this; exact callbacks are the stricter production option.
 - If using wildcards for Vercel previews, keep them in addition to production coverage.
-- Swadakta sends account confirmations, password resets, OAuth returns, and admin secure email sign-ins to `/auth?next=...`; the callback page checks the session and then routes users to `/portal` or `/admin`.
+- Swadakta sends account confirmations, password resets, OAuth returns, and admin secure email sign-ins to `/auth?next=...`; the callback page checks the session and then routes users to `/portal`, `/admin-ops`, or another allow-listed Swadakta workspace.

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const baseUrl = (process.env.SWADAKTA_BASE_URL || "https://swadakta.com").replace(/\/+$/, "");
 const cacheBust = Date.now();
+const localBaseHosts = new Set(["localhost", "127.0.0.1", "::1"]);
 
 const htmlFiles = [
   "admin-ops.html",
@@ -32,6 +33,13 @@ const requiredAdminOpsMarkers = [
   "requestFlags",
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
+];
+const requiredRobotsMarkers = [
+  "Disallow: /admin",
+  "Disallow: /admin-ops",
+  "Disallow: /admin-readiness",
+  "Disallow: /admin-verification",
+  "Disallow: /auth",
 ];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
@@ -108,6 +116,14 @@ async function fetchPage(urlPath) {
   return { ...fallback, urlPath: `${urlPath}.html`, originalStatus: result.response.status };
 }
 
+function isLocalBaseUrl() {
+  try {
+    return localBaseHosts.has(new URL(baseUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function fail(failures, message) {
   failures.push(message);
   console.error(`FAIL ${message}`);
@@ -169,6 +185,13 @@ for (const key of requiredEnvExampleKeys) {
   }
 }
 
+const robots = await readLocal("robots.txt");
+for (const marker of requiredRobotsMarkers) {
+  if (!robots.includes(marker)) {
+    fail(failures, `Local robots.txt is missing marker ${marker}`);
+  }
+}
+
 for (const page of requiredPages) {
   const { response, text, urlPath } = await fetchPage(page);
   if (response.status !== 200) {
@@ -185,6 +208,35 @@ for (const page of requiredPages) {
   }
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=1")) {
     fail(failures, `${page} does not reference admin-ops.js?v=1`);
+  }
+}
+
+const { response: robotsResponse, text: robotsText } = await fetchText("/robots.txt");
+if (robotsResponse.status !== 200) {
+  fail(failures, `robots.txt returned ${robotsResponse.status}`);
+} else {
+  pass("robots.txt returned 200");
+}
+
+for (const marker of requiredRobotsMarkers) {
+  if (!robotsText.includes(marker)) {
+    fail(failures, `Production robots.txt is missing marker ${marker}`);
+  } else {
+    pass(`Production robots.txt contains ${marker}`);
+  }
+}
+
+if (isLocalBaseUrl()) {
+  pass("Skipping hosted /admin redirect check for local static server");
+} else {
+  for (const adminEntry of ["/admin", "/admin.html"]) {
+    const { response } = await fetchText(adminEntry);
+    const location = response.headers.get("location") || "";
+    if (![301, 302, 303, 307, 308].includes(response.status) || !location.startsWith("/admin-ops")) {
+      fail(failures, `${adminEntry} should redirect to /admin-ops, got ${response.status} ${location}`);
+    } else {
+      pass(`${adminEntry} redirects to ${location}`);
+    }
   }
 }
 

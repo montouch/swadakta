@@ -2,6 +2,8 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
+Disallow: /admin-ops
+Disallow: /admin-ops.html
 Disallow: /admin-readiness
 Disallow: /admin-readiness.html
 Disallow: /admin-verification

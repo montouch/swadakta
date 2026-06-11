@@ -25,7 +25,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Subtle client seal for job-giving accounts based on ID, funded work, and completion history
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
-- Admin operations entry at `admin.html` redirects to the authenticated launch readiness cockpit at `admin-readiness.html`
+- Admin operations entry at `admin.html` redirects to the founder exceptions desk at `admin-ops.html`
 - Receiver/field partner application pipeline for people in supported countries who want jobs
 - Vetted receiver assignment from admin to client requests
 - Mandatory receiver ID verification before a corridor counterpart can be vetted or assigned
@@ -52,6 +52,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
 - Founder-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, cross-border compliance, and external messages
 - Safe autopilot action in admin for routine triage, payment-request prep, quote readiness, due dates, proof checklists, and internal notes
+- Admin-only founder operations desk for live exceptions, payment follow-up, margin risk, ID/compliance blockers, and protected-decision review
 - Admin-only operations readiness desk for domain/auth, payment rails, AI fallback, and ID-provider setup
 - AI receipt check for Wise/bank-transfer evidence that writes an internal reconciliation note without changing money status
 - 90/10 operations boundary: AI/autopilot handles routine work, founder/admin approves protected money, identity, assignment, legal/customs, dispute, and outbound-message decisions
@@ -80,7 +81,8 @@ Then open:
 
 - Client site: `http://localhost:4173`
 - Portal: `http://localhost:4173/portal.html`
-- Founder console: `http://localhost:4173/admin.html` redirects to `http://localhost:4173/admin-readiness.html`
+- Founder console: `http://localhost:4173/admin.html` opens `http://localhost:4173/admin-ops.html`
+- Readiness cockpit: `http://localhost:4173/admin-readiness.html`
 
 ## Production health
 
@@ -90,7 +92,7 @@ Run a no-secret bundle check before demos or after Vercel deploys:
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
 ```
 
-Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle and the account-home `stitch-portal.js` bundle so stale sign-in code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
+Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, and production admin routing/indexing guards so stale sign-in or admin-entry code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
 
 ## Environment setup
 

@@ -25,7 +25,7 @@ Admin activation status:
 - Secure admin sign-in email sent to `swadakta111@gmail.com`.
 - Supabase auth user created.
 - Admin user added as `owner`.
-- Remaining step: open the sign-in email from the inbox, then return to `admin.html`.
+- Remaining step: open the sign-in email from the inbox, then return to `admin-ops.html`.
 
 Important: use the Supabase publishable key in the browser. Never put a secret/service-role key in `app-config.js`.
 
@@ -65,8 +65,8 @@ Minimum production checklist:
 - `app-config.js` filled with publishable key only
 - WhatsApp number filled
 - First request submitted from the live URL
-- Admin dashboard can see and update the request
-- Admin dashboard filters by status, payment state, and sensitive-document risk
+- Founder ops can see protected-decision exceptions, payment follow-up, margin risk, ID/compliance blockers, and sensitive-document risk
+- Readiness cockpit can show domain/auth, payment rails, AI fallback, ID-provider setup, and safe callback values
 - Admin shows budget comfort, proof priority, and lead source on each request
 - Admin can add quote amount, payment link, report link, and proof links
 - Admin can copy a client update or corridor operator brief from each request
