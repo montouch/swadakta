@@ -444,6 +444,59 @@
     };
   }
 
+  function permissionDenied(error) {
+    const message = String(error?.message || "").toLowerCase();
+    return error?.code === "42501" || message.includes("permission denied") || message.includes("insufficient privilege");
+  }
+
+  function missingFunction(error) {
+    const message = String(error?.message || "").toLowerCase();
+    return (
+      error?.code === "42883" ||
+      message.includes("could not find the function") ||
+      (message.includes("function") && message.includes("does not exist")) ||
+      (message.includes("function") && message.includes("schema cache"))
+    );
+  }
+
+  function accountProfileStorageError(error) {
+    if (permissionDenied(error)) {
+      return new Error("Account profile storage is not fully activated yet. Your sign-in is working; Swadakta needs the database profile grant or RPC applied before this can save.");
+    }
+
+    return error;
+  }
+
+  function identityVerificationStorageError(error) {
+    if (permissionDenied(error) || missingFunction(error)) {
+      return new Error("Verification storage is not fully activated yet. Your account is open; Swadakta needs the identity verification RPC/grants applied before this request can save.");
+    }
+
+    return error;
+  }
+
+  function minimalAccountProfile(user, warning = "") {
+    return {
+      user_id: user?.id || "",
+      email: user?.email || "",
+      account_role: "client",
+      full_name: "",
+      whatsapp: "",
+      country: "",
+      kenya_base: "",
+      preferred_currency: "AUD",
+      profile_notes: "",
+      onboarding_status: "started",
+      identity_verification_provider: "sumsub",
+      identity_verification_status: "not_started",
+      identity_verification_link: "",
+      identity_verification_reference: "",
+      identity_verified_at: null,
+      identity_verification_notes: warning,
+      _load_warning: warning,
+    };
+  }
+
   function normalizeIdentityVerificationRequest(payload) {
     const now = new Date().toISOString();
     return {
@@ -478,6 +531,7 @@
       country: profile.country,
       kenya_base: profile.kenya_base,
       preferred_currency: profile.preferred_currency,
+      identity_verification_provider: profile.identity_verification_provider,
       profile_notes: profile.profile_notes,
       onboarding_status: profile.onboarding_status,
     };
@@ -1120,11 +1174,31 @@
       return { data: null, mode: "supabase" };
     }
 
+    const profileRpc = await supabase.rpc("get_my_account_profile");
+    if (!profileRpc.error) {
+      return { data: profileRpc.data || null, mode: "supabase" };
+    }
+
+    if (!missingFunction(profileRpc.error) && !permissionDenied(profileRpc.error)) {
+      throw profileRpc.error;
+    }
+
     const { data, error, status } = await supabase
       .from("account_profiles")
       .select("*")
       .eq("user_id", user.id)
       .maybeSingle();
+
+    if (error && permissionDenied(error)) {
+      return {
+        data: minimalAccountProfile(
+          user,
+          "Profile storage is reachable only after the account_profiles grant or get_my_account_profile RPC is applied.",
+        ),
+        mode: "supabase",
+        warning: error.message,
+      };
+    }
 
     if (error && status !== 406) {
       throw error;
@@ -1177,8 +1251,22 @@
       input_onboarding_status: profile.onboarding_status,
     });
 
+    if (error && missingFunction(error)) {
+      const { data: fallbackData, error: fallbackError } = await supabase
+        .from("account_profiles")
+        .upsert(toAccountProfileDatabasePayload(profile), { onConflict: "user_id" })
+        .select("*")
+        .maybeSingle();
+
+      if (fallbackError) {
+        throw accountProfileStorageError(fallbackError);
+      }
+
+      return { data: fallbackData || profile, mode: "supabase" };
+    }
+
     if (error) {
-      throw error;
+      throw accountProfileStorageError(error);
     }
 
     return { data, mode: "supabase" };
@@ -1198,7 +1286,7 @@
       .order("updated_at", { ascending: false });
 
     if (error) {
-      throw error;
+      throw accountProfileStorageError(error);
     }
 
     return { data: data || [], mode: "supabase" };
@@ -1236,7 +1324,7 @@
     });
 
     if (error) {
-      throw error;
+      throw accountProfileStorageError(error);
     }
 
     return { data, mode: "supabase" };
@@ -1303,7 +1391,7 @@
     });
 
     if (error) {
-      throw error;
+      throw identityVerificationStorageError(error);
     }
 
     return { data, mode: "supabase" };
@@ -1324,6 +1412,10 @@
     }
 
     const { data, error } = await supabase.rpc("list_my_identity_verification_requests");
+
+    if (error && (permissionDenied(error) || missingFunction(error))) {
+      return { data: [], mode: "supabase", warning: error.message };
+    }
 
     if (error) {
       throw error;

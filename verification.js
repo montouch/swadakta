@@ -348,7 +348,12 @@
       const requests = requestsResult.data || [];
       renderSummary(profile, requests);
       renderRequests(requests);
-      setFormStatus("Account loaded. Verification is handled by the selected provider route; manual review is only an exception fallback.", "text-primary");
+      setFormStatus(
+        profile._load_warning || requestsResult.warning
+          ? "Account is open. Profile or verification history storage still needs the Supabase grant/RPC applied, but you can continue the demo and save once it is active."
+          : "Account loaded. Verification is handled by the selected provider route; manual review is only an exception fallback.",
+        "text-primary",
+      );
     } catch (error) {
       setFormStatus(error.message || "Could not load verification.", "text-error");
     }
