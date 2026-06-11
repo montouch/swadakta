@@ -53,3 +53,5 @@ After linking, `.vercel/project.json` should exist locally but should not be com
 ## Fallback Path
 
 If GitHub app authorization is not approved, create a manual Vercel deployment by uploading a clean static folder that contains only the public site files. This can get the domain live, but future updates will need manual redeploys until Git integration is connected.
+
+Cloudflare Pages is also ready as a fallback because the repo includes `_headers` and `_redirects`. Cloudflare Direct Upload can publish the static assets from the dashboard, then `swadakta.com` can be attached from the Pages project's **Custom domains** tab. Cloudflare's docs note that Direct Upload projects cannot be switched to Git integration later, so prefer Git import when automatic deployments are available.

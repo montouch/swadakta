@@ -19,7 +19,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`
 - Privacy, terms, sitemap, robots, and security-contact files
-- Vercel static deployment config
+- Vercel static deployment config plus Cloudflare Pages headers and redirects
 
 ## Run locally
 
