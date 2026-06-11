@@ -9,7 +9,7 @@ Last checked: June 11, 2026
 - Project: `swadakta`
 - Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
 - Latest production deployment: `dpl_6pAJQhrByR2SAdF95sy6RmQ3Mehy`
-- Latest production commit: `b5d4ebb` (`Fix www host redirect pattern`)
+- Latest production app commit verified: `40d7f89` (`Add account-wide ID verification and auth redirect fix`)
 - Git integration is connected to `montouch/swadakta` on `main`; pushes deploy automatically.
 - Chrome is logged into Vercel for this team.
 - Local `.vercel/project.json`: not present
@@ -35,6 +35,12 @@ Last checked: June 11, 2026
 - `https://swadakta.com/privacy` returns `200 OK`
 - `https://swadakta.com/.well-known/security.txt` returns `200 OK`
 - Production responses include CSP, HSTS, referrer, permissions, frame, and content-type hardening headers.
+
+## Supabase Auth
+
+- Auth Site URL is set to `https://swadakta.com`.
+- Auth Redirect URLs include `https://swadakta.com/**`.
+- Admin magic-link login has been verified in Chrome for `swadakta111@gmail.com`.
 
 ## CLI Path
 

@@ -20,7 +20,16 @@ This is the practical go-live checklist for turning the current MVP into a paid 
   - `https://swadakta.com/.well-known/security.txt`
 - See [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the latest local/Vercel project status.
 
-## 2. Payments
+## 2. Supabase Auth URL Configuration
+
+These hosted Supabase settings are required for magic links to leave local development and open the live app:
+
+- Auth Site URL: `https://swadakta.com`
+- Auth Redirect URLs: `https://swadakta.com/**`
+- URL configuration page: `https://supabase.com/dashboard/project/srwkoulknropnwwyqslj/auth/url-configuration`
+- If a magic-link email contains `redirect_to=http://localhost:3000`, the Supabase Auth URL configuration has drifted or the email was sent before the setting changed. Send a fresh link after correcting the setting.
+
+## 3. Payments
 
 Start with quote-based payment links, then automate later.
 
@@ -44,7 +53,7 @@ Automation later:
 - Add payment webhooks only when there is a backend route that can verify Stripe webhook signatures.
 - Store provider transaction IDs on the request record after payment confirmation.
 
-## 3. Privacy and Compliance
+## 4. Privacy and Compliance
 
 Swadakta handles names, contact details, task notes, Kenya local contacts, documents, receipts, photos, and report links. Treat the business as a privacy-sensitive operations desk from day one.
 
@@ -59,7 +68,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Treat requests marked as involving sensitive documents as higher-risk jobs that need tighter access control.
 - Delete or archive old proof packs on a defined schedule after accounting and dispute windows pass.
 
-## 4. First Paid Job Workflow
+## 5. First Paid Job Workflow
 
 1. Client submits the public intake form.
 2. Admin confirms consent status is `Complete`, including client ID-verification consent.
@@ -82,10 +91,11 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 19. Admin sets status to `completed`.
 20. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
 
-## 5. Launch Readiness Checklist
+## 6. Launch Readiness Checklist
 
 - `swadakta.com` connected to Vercel.
 - `www.swadakta.com` redirects to the apex domain.
+- Supabase Auth Site URL is `https://swadakta.com`, and Redirect URLs include `https://swadakta.com/**`.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
