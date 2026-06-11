@@ -33,6 +33,8 @@
         "/tracking.html",
         "/admin",
         "/admin.html",
+        "/admin-ops",
+        "/admin-ops.html",
         "/admin-readiness",
         "/admin-readiness.html",
         "/admin-verification",

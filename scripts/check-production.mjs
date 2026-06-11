@@ -7,6 +7,7 @@ const baseUrl = (process.env.SWADAKTA_BASE_URL || "https://swadakta.com").replac
 const cacheBust = Date.now();
 
 const htmlFiles = [
+  "admin-ops.html",
   "admin-readiness.html",
   "admin-verification.html",
   "assistant.html",
@@ -17,7 +18,7 @@ const htmlFiles = [
   "verification.html",
 ];
 
-const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/verification"];
+const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/verification", "/admin-ops"];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -26,6 +27,11 @@ const requiredAppDataMarkers = [
 const requiredPortalMarkers = [
   "setSignedInShell",
   "Account is open. Verification is only required before paid posting",
+];
+const requiredAdminOpsMarkers = [
+  "requestFlags",
+  "Protected decisions are not delegated to AI",
+  "Local static mode cannot call the Vercel readiness API",
 ];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
@@ -149,6 +155,13 @@ for (const marker of requiredPortalMarkers) {
   }
 }
 
+const localAdminOps = await readLocal("admin-ops.js");
+for (const marker of requiredAdminOpsMarkers) {
+  if (!localAdminOps.includes(marker)) {
+    fail(failures, `Local admin-ops.js is missing marker ${marker}`);
+  }
+}
+
 const envExample = await readLocal(".env.example");
 for (const key of requiredEnvExampleKeys) {
   if (!new RegExp(`^${key}=`, "m").test(envExample)) {
@@ -169,6 +182,9 @@ for (const page of requiredPages) {
   }
   if (page === "/portal" && expectedStitchPortalVersion && !text.includes(`stitch-portal.js?v=${expectedStitchPortalVersion}`)) {
     fail(failures, `${page} does not reference stitch-portal.js?v=${expectedStitchPortalVersion}`);
+  }
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=1")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=1`);
   }
 }
 
@@ -203,6 +219,21 @@ if (expectedStitchPortalVersion) {
     } else {
       pass(`Production stitch-portal.js contains ${marker}`);
     }
+  }
+}
+
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=1");
+if (adminOpsResponse.status !== 200) {
+  fail(failures, `admin-ops.js?v=1 returned ${adminOpsResponse.status}`);
+} else {
+  pass("admin-ops.js?v=1 returned 200");
+}
+
+for (const marker of requiredAdminOpsMarkers) {
+  if (!adminOpsText.includes(marker)) {
+    fail(failures, `Production admin-ops.js is missing marker ${marker}`);
+  } else {
+    pass(`Production admin-ops.js contains ${marker}`);
   }
 }
 

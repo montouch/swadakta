@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Swadakta Verification Console</title>
+    <title>Swadakta Founder Ops</title>
     <meta name="robots" content="noindex,nofollow" />
     <meta
       name="description"
-      content="Swadakta admin verification console for provider-led identity checks and AI triage."
+      content="Swadakta founder exceptions desk for live requests, protected decisions, payment follow-up, margin risk, and verification blockers."
     />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&family=Geist:wght@500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
@@ -81,25 +81,21 @@
           <span class="mt-1 block font-label text-xs uppercase tracking-[0.18em] text-secondary">Admin Console</span>
         </a>
         <nav class="mt-6 flex-1 space-y-1">
-          <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="admin-ops.html">
+          <a class="flex items-center gap-3 rounded-xl bg-primary-container/20 px-4 py-3 font-bold text-primary" href="admin-ops.html">
             <span class="material-symbols-outlined">dashboard</span>
             Founder ops
           </a>
-          <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="brief.html">
-            <span class="material-symbols-outlined">work</span>
-            Marketplace
-          </a>
-          <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="tracking.html">
-            <span class="material-symbols-outlined">support_agent</span>
-            Concierge
-          </a>
-          <a class="flex items-center gap-3 rounded-xl bg-primary-container/20 px-4 py-3 font-bold text-primary" href="admin-verification.html">
+          <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="admin-verification.html">
             <span class="material-symbols-outlined">verified_user</span>
             Verification
           </a>
           <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="admin-readiness.html">
             <span class="material-symbols-outlined">rocket_launch</span>
             Readiness
+          </a>
+          <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="assistant.html">
+            <span class="material-symbols-outlined">auto_awesome</span>
+            AI assistant
           </a>
           <a class="flex items-center gap-3 rounded-xl px-4 py-3 text-on-surface-variant hover:bg-surface-container/60" href="portal.html">
             <span class="material-symbols-outlined">settings</span>
@@ -116,16 +112,15 @@
         <header class="sticky top-0 z-30 border-b border-white/40 bg-surface/76 px-margin-mobile py-4 backdrop-blur-2xl md:px-margin-desktop">
           <div class="mx-auto flex max-w-container-max items-center justify-between gap-4">
             <div>
-              <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Provider-led verification</p>
-              <h1 class="font-display text-2xl font-extrabold md:text-4xl">Identity queue</h1>
+              <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Founder exceptions</p>
+              <h1 class="font-display text-2xl font-extrabold md:text-4xl">Operations desk</h1>
             </div>
             <div class="flex items-center gap-2">
-              <a class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary sm:inline-flex" href="verification.html">User view</a>
               <button class="admin-sign-out-control hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-on-surface-variant sm:inline-flex" type="button">Sign out</button>
               <button class="admin-sign-out-control inline-flex h-11 w-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 text-on-surface-variant sm:hidden" type="button" aria-label="Sign out">
                 <span class="material-symbols-outlined text-[20px]">logout</span>
               </button>
-              <button class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label font-bold text-white shadow-[0_16px_36px_rgba(70,72,212,0.2)]" id="refresh-queue" type="button">
+              <button class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label font-bold text-white shadow-[0_16px_36px_rgba(70,72,212,0.2)]" id="refresh-ops" type="button">
                 <span class="material-symbols-outlined mr-2 text-[20px]">refresh</span>
                 Refresh
               </button>
@@ -138,8 +133,8 @@
             <div class="grid gap-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
               <div>
                 <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Admin access</p>
-                <h2 class="mt-2 font-display text-3xl font-extrabold">Sign in to manage verification.</h2>
-                <p class="mt-3 text-on-surface-variant">Use the founder/admin account. Password sign-in is the normal path; email link is only a backup.</p>
+                <h2 class="mt-2 font-display text-3xl font-extrabold">Sign in to view live operations.</h2>
+                <p class="mt-3 text-on-surface-variant">Use a Swadakta owner/admin account. This page is for exceptions, protected decisions, and money-risk visibility.</p>
               </div>
               <form class="grid gap-3" id="admin-login-form">
                 <label class="grid gap-2 font-label text-sm">
@@ -152,72 +147,80 @@
                 </label>
                 <div class="flex flex-col gap-3 sm:flex-row">
                   <button class="inline-flex h-12 flex-1 items-center justify-center rounded-full bg-primary px-6 font-label font-bold text-white" type="submit">Sign in</button>
-                  <button class="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-outline-variant/60 bg-white/70 px-6 font-label font-bold text-primary" id="send-admin-link" type="button">Send backup link</button>
+                  <a class="inline-flex h-12 flex-1 items-center justify-center rounded-full border border-outline-variant/60 bg-white/70 px-6 font-label font-bold text-primary" href="admin-readiness.html">Readiness</a>
                 </div>
                 <p class="min-h-6 text-sm text-on-surface-variant" id="admin-login-status" role="status"></p>
               </form>
             </div>
           </section>
 
-          <section class="grid gap-4 md:grid-cols-4" id="queue-stats">
+          <section class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <div class="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">AI runs routine work. Founder reviews exceptions.</p>
+                <h2 class="mt-2 font-display text-3xl font-extrabold md:text-5xl">Show only what can hurt trust or money.</h2>
+                <p class="mt-4 max-w-3xl text-on-surface-variant">
+                  This desk groups live requests by protected decisions: identity, payment, route risk, margin risk, overdue follow-up, and proof gates. It does not release funds or mark ID verified.
+                </p>
+              </div>
+              <span class="inline-flex min-h-11 items-center rounded-full bg-white/70 px-4 font-label text-sm text-primary" id="ops-mode">Checking access</span>
+            </div>
+            <p class="mt-4 min-h-6 text-sm text-on-surface-variant" id="ops-status" role="status"></p>
+          </section>
+
+          <section class="grid gap-4 md:grid-cols-4" id="ops-stats">
             <article class="glass-panel rounded-3xl p-5">
-              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Open</p>
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Open jobs</p>
               <strong class="mt-2 block font-display text-4xl" id="stat-open">0</strong>
             </article>
             <article class="glass-panel rounded-3xl p-5">
-              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Provider ready</p>
-              <strong class="mt-2 block font-display text-4xl" id="stat-provider">0</strong>
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Founder exceptions</p>
+              <strong class="mt-2 block font-display text-4xl" id="stat-exceptions">0</strong>
             </article>
             <article class="glass-panel rounded-3xl p-5">
-              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Exceptions</p>
-              <strong class="mt-2 block font-display text-4xl" id="stat-exception">0</strong>
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Payment follow-up</p>
+              <strong class="mt-2 block font-display text-4xl" id="stat-payments">0</strong>
             </article>
             <article class="glass-panel rounded-3xl p-5">
-              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Verified</p>
-              <strong class="mt-2 block font-display text-4xl" id="stat-verified">0</strong>
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Margin risk</p>
+              <strong class="mt-2 block font-display text-4xl" id="stat-margin">0</strong>
             </article>
           </section>
 
           <section class="glass-panel rounded-[2rem] p-6 md:p-8">
-            <div class="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
-                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">AI operations guide</p>
-                <h2 class="mt-2 font-display text-3xl font-extrabold">Keep admin out of routine ID work.</h2>
-                <p class="mt-3 max-w-3xl text-on-surface-variant">
-                  Swadakta should route people to the best provider, explain the next step like a helpful operator, and only pull the founder in when a provider fails or the risk is genuinely sensitive.
-                </p>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Priority queue</p>
+                <h2 class="mt-1 font-display text-3xl font-extrabold">Requests needing attention</h2>
               </div>
-              <span class="inline-flex min-h-11 items-center rounded-full bg-white/70 px-4 font-label text-sm text-primary" id="queue-mode">Checking access</span>
+              <div class="flex flex-wrap gap-2" role="group" aria-label="Request filters">
+                <button class="ops-filter rounded-full bg-on-surface px-4 py-2 font-label text-sm font-bold text-white" data-filter="exceptions" type="button">Exceptions</button>
+                <button class="ops-filter rounded-full border border-outline-variant/50 bg-white/70 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" data-filter="payments" type="button">Payments</button>
+                <button class="ops-filter rounded-full border border-outline-variant/50 bg-white/70 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" data-filter="all" type="button">All open</button>
+              </div>
             </div>
-            <div class="mt-6 grid gap-4 md:grid-cols-3">
-              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
-                <strong class="font-label text-primary">Provider first</strong>
-                <p class="mt-2 text-sm text-on-surface-variant">Smile ID for Africa, Youverify for Nigeria/Ghana where useful, Sumsub for wider global coverage. Manual review is fallback only.</p>
-              </article>
-              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
-                <strong class="font-label text-primary">AI does the writing</strong>
-                <p class="mt-2 text-sm text-on-surface-variant">The console drafts the next friendly message, status explanation, and missing-info checklist for each person.</p>
-              </article>
-              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
-                <strong class="font-label text-primary">Hard stop controls</strong>
-                <p class="mt-2 text-sm text-on-surface-variant">AI cannot approve an ID, release milestone money, or clear legal/import risk without provider evidence or founder confirmation.</p>
-              </article>
+            <div class="mt-6 grid gap-4" id="ops-list" aria-live="polite">
+              <div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading operations queue...</div>
             </div>
           </section>
 
-          <section class="grid gap-5" id="verification-list" aria-live="polite">
-            <div class="glass-panel rounded-[2rem] p-8 text-center text-on-surface-variant">
-              Loading verification queue...
-            </div>
+          <section class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Protected decisions</p>
+            <h2 class="mt-2 font-display text-3xl font-extrabold">Hard stops stay human or provider-confirmed.</h2>
+            <ul class="mt-5 grid gap-3 text-on-surface-variant">
+              <li class="rounded-3xl border border-outline-variant/30 bg-white/58 p-4">Do not mark funds paid from Wise, bank, M-Pesa, PayPal, or Stripe unless provider-grade evidence is in the app.</li>
+              <li class="rounded-3xl border border-outline-variant/30 bg-white/58 p-4">Do not release receiver payouts until proof is reviewed and milestone conditions are met.</li>
+              <li class="rounded-3xl border border-outline-variant/30 bg-white/58 p-4">Do not mark ID verified, assign receivers, or clear legal/customs uncertainty without provider evidence or founder approval.</li>
+            </ul>
           </section>
         </section>
       </main>
     </div>
 
-    <div class="hidden bg-emerald-500/10 bg-error-container bg-amber-400/20 bg-primary/10 bg-surface-container text-emerald-700 text-on-error-container text-amber-800 text-primary text-secondary"></div>
+    <div class="hidden bg-emerald-500/10 bg-error-container bg-amber-400/20 bg-primary/10 bg-surface-container bg-sky-500/10 text-emerald-700 text-on-error-container text-amber-800 text-primary text-secondary text-sky-800"></div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=41"></script>
-    <script src="admin-verification.js?v=1"></script>
+    <script src="admin-ops.js?v=1"></script>
   </body>
 </html>

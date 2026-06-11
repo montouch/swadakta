@@ -14,12 +14,12 @@
     },
     {
       "source": "/admin",
-      "destination": "/admin-readiness",
+      "destination": "/admin-ops",
       "permanent": false
     },
     {
       "source": "/admin.html",
-      "destination": "/admin-readiness",
+      "destination": "/admin-ops",
       "permanent": false
     }
   ],
