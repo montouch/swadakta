@@ -94,6 +94,9 @@ const requiredAssistantMarkers = [
 const requiredDockMarkers = [
   "swadakta-ai-dock",
   "collectPageContext",
+  "inferSafeIntent",
+  "protectedIntentPattern",
+  "routeKeyFromPrompt",
   "safeActionMap",
   "performSafeAction",
   "Protected actions stay gated",
@@ -379,8 +382,8 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=2")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=2`);
+  if (!content.includes("assistant-dock.js?v=3")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=3`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -521,8 +524,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=2")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=2`);
+  if (!text.includes("assistant-dock.js?v=3")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=3`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -751,11 +754,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=2");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=3");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=2 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=3 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=2 returned 200");
+  pass("assistant-dock.js?v=3 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {

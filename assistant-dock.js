@@ -1,10 +1,12 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "1";
+  const DOCK_VERSION = "3";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
+  const protectedIntentPattern =
+    /\b(release\s+(money|funds)|refund|mark\s+.*(paid|verified)|approve\s+.*(id|identity|receiver|job)|assign\s+.*(receiver|job|paid)|send\s+.*(message|email|whatsapp)|submit\s+.*(payment|refund)|pay\s*out|payout)\b/i;
   const routeMap = {
     home: ["Account home", "portal.html#home"],
     post_job: ["Post a job", "corridor.html"],
@@ -39,6 +41,7 @@
     style.id = "swadakta-ai-dock-style";
     style.textContent = `
       #${rootId} { position: fixed; inset: auto 18px 18px auto; z-index: 9998; font-family: Inter, Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #131b2e; }
+      #${rootId}, #${rootId} * { box-sizing: border-box; }
       .sw-ai-fab { display: inline-flex; align-items: center; gap: 9px; min-height: 52px; padding: 0 16px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: linear-gradient(135deg, rgba(70,72,212,.94), rgba(129,39,207,.88)); color: #fff; box-shadow: 0 22px 50px rgba(48,52,150,.27); cursor: pointer; font-weight: 800; letter-spacing: 0; }
       .sw-ai-fab-dot { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: rgba(255,255,255,.18); }
       .sw-ai-panel { position: absolute; right: 0; bottom: 66px; width: min(390px, calc(100vw - 24px)); max-height: min(720px, calc(100vh - 96px)); display: none; overflow: hidden; border-radius: 24px; border: 1px solid rgba(255,255,255,.62); background: rgba(250,248,255,.88); backdrop-filter: blur(24px); box-shadow: 0 34px 90px rgba(35,42,105,.24); }
@@ -64,9 +67,9 @@
       .sw-ai-send:disabled { opacity: .58; cursor: not-allowed; }
       .sw-ai-note { margin: 8px 2px 0; font-size: 11px; line-height: 1.4; color: #464554; }
       @media (max-width: 640px) {
-        #${rootId} { left: 12px; right: 12px; bottom: 12px; }
+        #${rootId} { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
         .sw-ai-fab { margin-left: auto; min-height: 48px; }
-        .sw-ai-panel { left: 0; right: 0; bottom: 60px; width: auto; max-height: calc(100vh - 84px); border-radius: 22px; }
+        .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: 72px; width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 112px)); border-radius: 22px; }
       }
     `;
     document.head.append(style);
@@ -94,6 +97,14 @@
     return rect.width > 0 && rect.height > 0;
   }
 
+  function humanizeFieldName(value) {
+    return String(value || "")
+      .replace(/[-_]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .replace(/\b\w/g, (character) => character.toUpperCase());
+  }
+
   function fieldLabel(node) {
     const escapedId = node.id
       ? window.CSS?.escape
@@ -102,7 +113,13 @@
       : "";
     const id = escapedId ? document.querySelector(`label[for="${escapedId}"]`) : null;
     const label = id || node.closest("label");
-    return visibleText(label) || node.getAttribute("aria-label") || node.name || node.id || node.placeholder || "Field";
+    return (
+      visibleText(label) ||
+      node.getAttribute("aria-label") ||
+      humanizeFieldName(node.name || node.id) ||
+      String(node.placeholder || "").slice(0, 80) ||
+      "Field"
+    );
   }
 
   function safeFieldValue(node) {
@@ -156,14 +173,80 @@
 
   function routeKeysForText(text = "") {
     const lower = text.toLowerCase();
-    if (/verify|id|identity|kyc/.test(lower)) return ["verification", "trust"];
+    if (/verify|id|identity|kyc/.test(lower)) return ["verification", "trust", "full_ai"];
     if (/post|give|create|brief|request|job/.test(lower)) return ["post_job", "brief", "rules"];
-    if (/find work|job seeker|receiver|apply|earn/.test(lower)) return ["find_work", "verification"];
-    if (/pay|payment|money|mpesa|stripe|paypal|wise|escrow|milestone/.test(lower)) return ["payments", "trust"];
-    if (/message|chat|media|photo|voice|call|proof/.test(lower)) return ["messages", "tracking"];
+    if (/find work|job seeker|receiver|apply|earn/.test(lower)) return ["find_work", "verification", "messages"];
+    if (/pay|payment|money|mpesa|stripe|paypal|wise|escrow|milestone/.test(lower)) return ["payments", "trust", "tracking"];
+    if (/message|chat|media|photo|voice|call|proof/.test(lower)) return ["messages", "tracking", "resolution"];
     if (/issue|refund|dispute|delay|resolve|problem/.test(lower)) return ["resolution", "tracking", "messages"];
-    if (/rule|restricted|customs|law|ship|postal|courier/.test(lower)) return ["rules", "trust"];
+    if (/rule|restricted|customs|law|ship|postal|courier/.test(lower)) return ["rules", "trust", "post_job"];
     return ["home", "post_job", "find_work", "verification"];
+  }
+
+  function routeKeyFromPrompt(text = "") {
+    const lower = text.toLowerCase();
+    if (/full\s+(ai|chat)|ask\s+ai\s+page|bigger\s+chat|assistant\s+page/.test(lower)) return "full_ai";
+    if (/verify|identity|kyc|id\s+check/.test(lower)) return "verification";
+    if (/payment|pay|money|mpesa|stripe|paypal|wise|escrow|milestone|price|pricing/.test(lower)) return "payments";
+    if (/message|chat|media|photo|voice|call|proof|upload/.test(lower)) return "messages";
+    if (/issue|refund|dispute|delay|resolve|problem|case/.test(lower)) return "resolution";
+    if (/track|status|my\s+jobs|request\s+status|progress/.test(lower)) return "tracking";
+    if (/rule|restricted|customs|law|ship|postal|courier|allowed/.test(lower)) return "rules";
+    if (/trust|safety|provenance|score|seal/.test(lower)) return "trust";
+    if (/find\s+work|job\s+seeker|receiver|apply|earn|get\s+a\s+job/.test(lower)) return "find_work";
+    if (/post|give|create|start|new\s+(job|request)|brief/.test(lower)) return "post_job";
+    if (/home|account|dashboard|portal/.test(lower)) return "home";
+    return "";
+  }
+
+  function directActionVerb(text = "") {
+    return /\b(open|go\s+to|take\s+me|show\s+me|start|launch|navigate|bring\s+me|send\s+me\s+to|move\s+me|find|focus|use|apply|put|insert)\b/i.test(
+      text,
+    );
+  }
+
+  function inferSafeIntent(prompt, context) {
+    const text = String(prompt || "").trim();
+    const lower = text.toLowerCase();
+
+    if (!text) return null;
+
+    if (protectedIntentPattern.test(text)) {
+      const routes = /refund|release|money|paid|payment|payout/.test(lower)
+        ? ["payments", "resolution", "trust"]
+        : /id|identity|verified|verify/.test(lower)
+          ? ["verification", "trust", "resolution"]
+          : ["resolution", "tracking", "messages"];
+      return {
+        blocked: true,
+        routes,
+        message: `${protectedBoundary}\n\nI can route you to the right page and help prepare the evidence, but I will not perform that protected action directly.`,
+      };
+    }
+
+    if (/\b(next|empty|required|missing|focus|find|show)\b.*\b(field|input|box|form)\b/i.test(text)) {
+      return { action: "focus_next_field", label: "Find next field" };
+    }
+
+    if (/\b(apply|use|put|insert|place)\b.*\b(draft|answer|response|notes|field|box)\b/i.test(text)) {
+      return { action: "apply_to_notes", label: "Use draft here" };
+    }
+
+    if (/full\s+(ai|chat)|ask\s+ai\s+page|bigger\s+chat|assistant\s+page/i.test(text)) {
+      return { action: "open_full_ai", label: "Open full chat" };
+    }
+
+    const routeKey = routeKeyFromPrompt(text);
+    if (routeKey && directActionVerb(text)) {
+      return {
+        action: "navigate",
+        key: routeKey,
+        label: routeMap[routeKey]?.[0] || "Open tool",
+        message: `Opening ${routeMap[routeKey]?.[0] || "the right Swadakta tool"} now.`,
+      };
+    }
+
+    return null;
   }
 
   function deterministicAnswer(prompt, context) {
@@ -182,7 +265,7 @@
     }
 
     if (/do it|take me|open|go to|start|post|verify|pay|message|resolve|work/.test(lower)) {
-      lines.push("I can move you to the right Swadakta tool or focus the next field on this screen. Use the action buttons below.");
+      lines.push("I can move you to the right Swadakta tool, focus the next field, or open the full chat. Use the action buttons below, or say things like 'open payments' or 'find the next field'.");
     } else {
       lines.push("Ask me what to do next, or use a quick action. I can route you, focus fields, draft text, and explain what is blocked.");
     }
@@ -303,6 +386,35 @@
     if (action === "open_full_ai") return openFullAi();
   }
 
+  function performInferredIntent(intent) {
+    if (!intent) return false;
+
+    if (intent.blocked) {
+      addMessage("ai", intent.message);
+      renderActions(intent.routes || ["resolution", "trust", "tracking"]);
+      return true;
+    }
+
+    if (intent.action === "navigate") {
+      addMessage("ai", intent.message || `Opening ${intent.label || "the right Swadakta tool"} now.`);
+      window.setTimeout(() => performSafeAction(intent.action, intent.key), 500);
+      return true;
+    }
+
+    if (intent.action === "open_full_ai") {
+      addMessage("ai", "Opening the full Ask AI chat with this screen as context.");
+      window.setTimeout(() => performSafeAction(intent.action, intent.key), 500);
+      return true;
+    }
+
+    if (intent.action) {
+      performSafeAction(intent.action, intent.key);
+      return true;
+    }
+
+    return false;
+  }
+
   async function askAi(promptText) {
     const prompt = promptText.trim();
     if (!prompt) return;
@@ -310,6 +422,11 @@
     const context = collectPageContext();
     addMessage("user", prompt);
     renderActions(routeKeysForText(prompt));
+
+    const inferredIntent = inferSafeIntent(prompt, context);
+    if (performInferredIntent(inferredIntent)) {
+      return;
+    }
 
     if (window.SwadaktaAiPreference?.enabled?.() === false) {
       addMessage("ai", `AI is off. I can still help navigate and focus the screen.\n\n${deterministicAnswer(prompt, context)}`);
@@ -368,10 +485,10 @@
         </header>
         <div class="sw-ai-quick" aria-label="AI quick actions">
           <button class="sw-ai-chip" type="button" data-sw-ai-prompt="What should I do next on this screen?">Next step</button>
-          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Take me to the best place to post a job.">Post job</button>
-          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Help me find work or apply as a receiver.">Find work</button>
-          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Help me with ID verification.">Verify</button>
-          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Help me resolve an issue safely.">Resolve</button>
+          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open the best place to post a job.">Post job</button>
+          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open the receiver work area.">Find work</button>
+          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open ID verification.">Verify</button>
+          <button class="sw-ai-chip" type="button" data-sw-ai-prompt="Open the resolution center.">Resolve</button>
         </div>
         <div class="sw-ai-messages" id="sw-ai-messages" aria-live="polite"></div>
         <div class="sw-ai-actions" id="sw-ai-actions" aria-label="Safe AI actions"></div>
@@ -380,7 +497,7 @@
             <textarea class="sw-ai-input" id="sw-ai-input" rows="1" placeholder="Ask AI to guide, draft, focus, or open a tool..."></textarea>
             <button class="sw-ai-send" id="sw-ai-send" type="submit" aria-label="Ask AI">Send</button>
           </div>
-          <p class="sw-ai-note">${escapeHtml(protectedBoundary)}</p>
+          <p class="sw-ai-note">${escapeHtml(protectedBoundary)} Try: open payments, find the next field, open messages.</p>
         </form>
       </aside>
       <button class="sw-ai-fab" type="button" aria-controls="${rootId}" aria-expanded="false">
@@ -453,6 +570,7 @@
   window.SwadaktaAssistantDock = {
     version: DOCK_VERSION,
     collectPageContext,
+    inferSafeIntent,
     performSafeAction,
     safeActionMap,
     protectedBoundary,

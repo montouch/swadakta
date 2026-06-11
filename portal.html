@@ -284,15 +284,15 @@
 </div>
 </div>
 </main>
-<section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="home" hidden>
-<div class="max-w-[1440px] mx-auto grid gap-5 lg:grid-cols-[236px_minmax(0,1fr)]">
-<aside class="glass-panel rounded-[1.5rem] p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
+<section class="w-full max-w-full overflow-x-hidden px-margin-mobile md:px-margin-desktop pb-section-gap" id="home" hidden>
+<div class="max-w-[1440px] mx-auto grid min-w-0 w-full max-w-full gap-5 lg:grid-cols-[236px_minmax(0,1fr)]">
+<aside class="glass-panel min-w-0 w-full rounded-[1.5rem] p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
 <div class="px-3 py-4">
 <p class="font-label-sm text-primary uppercase tracking-[0.18em]">Workspace</p>
 <strong class="block font-display-lg text-headline-sm text-on-surface mt-1">Swadakta</strong>
 <p class="font-label-sm text-on-surface-variant mt-2 break-all" id="account-home-email">your account</p>
 </div>
-<nav class="grid gap-1 font-label-md text-sm" aria-label="Workspace tools">
+<nav class="grid min-w-0 gap-1 font-label-md text-sm" aria-label="Workspace tools">
 <a class="flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="#dashboard"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
 <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="corridor.html"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
 <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="#find-work"><span class="material-symbols-outlined text-[20px]">work</span>Find jobs</a>
@@ -305,7 +305,7 @@
 <button class="mt-3 w-full h-10 rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
 <button class="mt-4 w-full h-11 rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="account-home-sign-out" type="button">Sign out</button>
 </aside>
-<div class="space-y-5" id="dashboard">
+<div class="space-y-5 min-w-0" id="dashboard">
 <header class="glass-panel rounded-[1.5rem] p-4 md:p-5">
 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 <div>
@@ -771,5 +771,5 @@
 <script src="app-data.js?v=44"></script>
 <script src="ai-preferences.js?v=1"></script>
 <script src="stitch-portal.js?v=25"></script>
-<script src="assistant-dock.js?v=2"></script>
+<script src="assistant-dock.js?v=3"></script>
 </body></html>
