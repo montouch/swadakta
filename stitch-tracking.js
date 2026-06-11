@@ -23,6 +23,9 @@
   const paymentRisk = document.querySelector("#tracking-payment-risk");
   const milestonesEl = document.querySelector("#tracking-milestones");
   const proofChecklist = document.querySelector("#tracking-proof-checklist");
+  const resolutionSummary = document.querySelector("#tracking-resolution-summary");
+  const resolutionCases = document.querySelector("#tracking-resolution-cases");
+  const resolutionOpenLink = document.querySelector("#tracking-resolution-open-link");
   const reportSummary = document.querySelector("#tracking-report-summary");
   const mediaLinks = document.querySelector("#tracking-media-links");
 
@@ -243,6 +246,70 @@
       if (code) resolutionUrl.searchParams.set("code", code.toUpperCase());
       if (contact) resolutionUrl.searchParams.set("contact", contact);
       resolutionLink.href = `${resolutionUrl.pathname}${resolutionUrl.search}`;
+      if (resolutionOpenLink) resolutionOpenLink.href = resolutionLink.href;
+    }
+  }
+
+  function renderResolutionCaseRow(item) {
+    const needsFounder = Boolean(item.founder_review_required);
+    const tone =
+      needsFounder || ["payment", "legal", "safety"].includes(String(item.severity || "").toLowerCase())
+        ? "bg-tertiary/10 text-tertiary"
+        : "bg-primary/10 text-primary";
+    const created = item.created_at ? new Date(item.created_at).toLocaleDateString() : "Just opened";
+
+    return `
+      <article class="rounded-xl bg-white/50 border border-white/40 p-4">
+        <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div>
+            <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">${escapeHtml(item.resolution_code || "Resolution")}</p>
+            <p class="font-label-md text-on-surface mt-1">${escapeHtml(formatStatus(item.issue_type || "issue"))}</p>
+          </div>
+          <span class="inline-flex min-h-8 px-3 items-center rounded-full ${tone} font-label-sm">${escapeHtml(formatStatus(item.status || "ai_triage"))}</span>
+        </div>
+        <p class="text-sm text-on-surface-variant mt-3">${escapeHtml(item.ai_triage || "AI triage pending.")}</p>
+        <div class="mt-3 flex flex-wrap gap-3 text-xs text-on-surface-variant">
+          <span>Outcome: ${escapeHtml(formatStatus(item.desired_outcome || "explain_status"))}</span>
+          <span>${needsFounder ? "Founder review required" : "AI triage first"}</span>
+          <span>${escapeHtml(created)}</span>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderResolutionCases(cases = [], message = "") {
+    if (!resolutionCases || !resolutionSummary) return;
+
+    if (!cases.length) {
+      resolutionSummary.textContent = message || "No open issues are attached to this request yet.";
+      resolutionCases.innerHTML = `<p class="rounded-xl bg-white/40 px-4 py-3 text-sm text-on-surface-variant">${
+        message ? escapeHtml(message) : "If something is wrong, open an issue from here so proof, payment, and decisions stay tied to this request."
+      }</p>`;
+      return;
+    }
+
+    const founderCount = cases.filter((item) => item.founder_review_required).length;
+    resolutionSummary.textContent = `${cases.length} resolution case${cases.length === 1 ? "" : "s"} on this request. ${
+      founderCount ? `${founderCount} need founder review.` : "Routine cases can stay in AI triage first."
+    }`;
+    resolutionCases.innerHTML = cases.map(renderResolutionCaseRow).join("");
+  }
+
+  async function loadResolutionCases(code, contact) {
+    if (!resolutionCases || !window.SwadaktaData.listRequestResolutionCases) return;
+    if (!code || !contact) {
+      renderResolutionCases([], "Enter the request code and contact to load issue history.");
+      return;
+    }
+
+    resolutionSummary.textContent = "Loading resolution cases...";
+    resolutionCases.innerHTML = `<p class="rounded-xl bg-white/40 px-4 py-3 text-sm text-on-surface-variant">Checking issue history...</p>`;
+
+    try {
+      const result = await window.SwadaktaData.listRequestResolutionCases(code, contact);
+      renderResolutionCases(result.data || []);
+    } catch (error) {
+      renderResolutionCases([], error.message || "Could not load resolution cases.");
     }
   }
 
@@ -442,6 +509,7 @@
       setResult("No matching request found. Check the code and contact used on the original brief.", "text-error");
       setPaymentLink("");
       renderPaymentRailPlan({});
+      renderResolutionCases([], "No matching request found.");
       return;
     }
 
@@ -493,9 +561,13 @@
     try {
       const result = await window.SwadaktaData.trackRequest(code, contact);
       renderRequest(result.data);
+      if (result.data) {
+        await loadResolutionCases(result.data.request_code || code, contact);
+      }
     } catch (error) {
       setPaymentLink("");
       setResult(error.message || "Could not open request.", "text-error");
+      renderResolutionCases([], error.message || "Could not open request.");
     }
   }
 

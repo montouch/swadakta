@@ -3,6 +3,7 @@
   const prompt = document.querySelector("#assistant-prompt");
   const run = document.querySelector("#assistant-run");
   const output = document.querySelector("#assistant-output");
+  const params = new URLSearchParams(window.location.search);
 
   function fallbackAnswer() {
     const selected = task.value;
@@ -20,7 +21,40 @@
         "Manual review is only an exception: provider outage, unsupported country/document, mismatch, suspected fraud, legal uncertainty, or a high-value/sensitive job that needs extra controls."
       ].join("\n");
     }
+    if (selected.includes("issue") || /resolution|refund|dispute|proof|delay|receiver|payment/i.test(prompt.value)) {
+      return [
+        "Here is the safe issue flow:",
+        "",
+        "1. Keep the request code, contact, provider reference, proof links, and timeline together in the Resolution Center.",
+        "2. AI can summarize facts, spot missing evidence, and draft the next message to the client or receiver.",
+        "3. Payment, refund, release, restricted item, safety, legal, receiver replacement, and ID decisions are protected actions.",
+        "4. Protected actions need provider/system evidence or founder review before the app changes money, identity, or assignment state.",
+        "5. If proof is missing, ask for dated photos, receipts, location notes, video/voice context, or provider records before escalation.",
+      ].join("\n");
+    }
     return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or receive jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, receiver assignment, and sensitive task approval cannot be done by AI alone.";
+  }
+
+  function applyQueryContext() {
+    const incomingPrompt = params.get("prompt");
+    const incomingTask = params.get("task");
+
+    if (incomingPrompt && !prompt.value.trim()) {
+      prompt.value = incomingPrompt.slice(0, 2400);
+    }
+
+    if (incomingTask) {
+      const wanted = incomingTask.toLowerCase();
+      const option = [...task.options].find((item) => item.textContent.trim().toLowerCase() === wanted);
+      if (option) task.value = option.value;
+    } else if (incomingPrompt && /resolve|issue|refund|dispute|proof|delay|payment/i.test(incomingPrompt)) {
+      const option = [...task.options].find((item) => item.textContent.trim() === "Resolve an issue");
+      if (option) task.value = option.value;
+    }
+
+    if (incomingPrompt) {
+      output.textContent = "Issue context loaded. Ask AI when you are ready for a draft, checklist, or next safe step.";
+    }
   }
 
   run.addEventListener("click", async () => {
@@ -36,7 +70,7 @@
         role: "client",
         task: task.value,
         draft: prompt.value,
-        context: { page: "assistant" },
+        context: { page: "assistant", source: params.get("source") || "" },
       });
       output.textContent = result.data?.output || fallbackAnswer();
     } catch (error) {
@@ -45,4 +79,6 @@
       run.disabled = false;
     }
   });
+
+  applyQueryContext();
 })();

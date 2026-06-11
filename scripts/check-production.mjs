@@ -59,11 +59,18 @@ const requiredVerificationMarkers = [
   "Automation boundary",
   "release money, assign paid work",
 ];
+const requiredAssistantMarkers = [
+  "applyQueryContext",
+  "Resolve an issue",
+  "Issue context loaded",
+];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
   "Wise stays hidden as a fallback rail",
   "AI can explain and draft updates",
   "tracking-resolution-link",
+  "renderResolutionCases",
+  "tracking-resolution-cases",
 ];
 const requiredResolutionPageMarkers = [
   "Resolution Center",
@@ -74,6 +81,8 @@ const requiredResolutionScriptMarkers = [
   "createResolutionCase",
   "listRequestResolutionCases",
   "Founder review is required",
+  "task",
+  "source",
 ];
 const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
@@ -273,6 +282,14 @@ for (const marker of requiredVerificationMarkers) {
   }
 }
 
+const localAssistant = await readLocal("assistant.js");
+const localAssistantHtml = await readLocal("assistant.html");
+for (const marker of requiredAssistantMarkers) {
+  if (!localAssistant.includes(marker) && !localAssistantHtml.includes(marker)) {
+    fail(failures, `Local assistant flow is missing marker ${marker}`);
+  }
+}
+
 const localTracking = await readLocal("stitch-tracking.js");
 const localTrackingHtml = await readLocal("tracking.html");
 for (const marker of requiredTrackingMarkers) {
@@ -369,11 +386,14 @@ for (const page of requiredPages) {
   if (page === "/verification" && !text.includes("verification.js?v=4")) {
     fail(failures, `${page} does not reference verification.js?v=4`);
   }
-  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=6")) {
-    fail(failures, `${page} does not reference stitch-tracking.js?v=6`);
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=7")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=7`);
   }
-  if (page === "/resolution" && !text.includes("resolution.js?v=1")) {
-    fail(failures, `${page} does not reference resolution.js?v=1`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=2")) {
+    fail(failures, `${page} does not reference assistant.js?v=2`);
+  }
+  if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
+    fail(failures, `${page} does not reference resolution.js?v=2`);
   }
   if (page === "/resolution") {
     for (const marker of requiredResolutionPageMarkers) {
@@ -496,11 +516,26 @@ for (const marker of requiredAdminOpsMarkers) {
   }
 }
 
-const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=6");
-if (trackingResponse.status !== 200) {
-  fail(failures, `stitch-tracking.js?v=6 returned ${trackingResponse.status}`);
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=2");
+if (assistantResponse.status !== 200) {
+  fail(failures, `assistant.js?v=2 returned ${assistantResponse.status}`);
 } else {
-  pass("stitch-tracking.js?v=6 returned 200");
+  pass("assistant.js?v=2 returned 200");
+}
+
+for (const marker of requiredAssistantMarkers) {
+  if (!assistantText.includes(marker)) {
+    fail(failures, `Production assistant.js is missing marker ${marker}`);
+  } else {
+    pass(`Production assistant.js contains ${marker}`);
+  }
+}
+
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=7");
+if (trackingResponse.status !== 200) {
+  fail(failures, `stitch-tracking.js?v=7 returned ${trackingResponse.status}`);
+} else {
+  pass("stitch-tracking.js?v=7 returned 200");
 }
 
 for (const marker of requiredTrackingMarkers) {
@@ -511,11 +546,11 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
-const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=1");
+const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=2");
 if (resolutionResponse.status !== 200) {
-  fail(failures, `resolution.js?v=1 returned ${resolutionResponse.status}`);
+  fail(failures, `resolution.js?v=2 returned ${resolutionResponse.status}`);
 } else {
-  pass("resolution.js?v=1 returned 200");
+  pass("resolution.js?v=2 returned 200");
 }
 
 for (const marker of requiredResolutionScriptMarkers) {

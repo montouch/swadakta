@@ -85,6 +85,8 @@
         : "Help me understand how Swadakta resolution works.";
       const url = new URL("assistant.html", window.location.href);
       url.searchParams.set("prompt", prompt);
+      url.searchParams.set("task", "Resolve an issue");
+      url.searchParams.set("source", "resolution");
       assistantLink.href = `${url.pathname}${url.search}`;
     }
   }
