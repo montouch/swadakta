@@ -1944,6 +1944,22 @@
     return { session: data.session, mode: "supabase" };
   }
 
+  async function onAuthStateChange(callback) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return {
+        mode: "local",
+        subscription: {
+          unsubscribe() {},
+        },
+      };
+    }
+
+    const { data } = supabase.auth.onAuthStateChange(callback);
+    return { mode: "supabase", subscription: data.subscription };
+  }
+
   async function signOut() {
     const supabase = await getSupabase();
     if (supabase) {
@@ -1993,6 +2009,7 @@
     signInAdmin,
     signInPortal,
     getSession,
+    onAuthStateChange,
     signOut,
   };
 })();

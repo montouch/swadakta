@@ -131,6 +131,15 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+        body.is-account-signed-in > main {
+            display: none !important;
+        }
+        body.is-account-signed-in #home {
+            display: block !important;
+        }
+        body.is-account-signed-out #home {
+            display: none !important;
+        }
     </style>
 </head>
 <body class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
@@ -414,6 +423,6 @@
 </div>
 </footer>
 <script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=38"></script>
-<script src="stitch-portal.js?v=7"></script>
+<script src="app-data.js?v=39"></script>
+<script src="stitch-portal.js?v=8"></script>
 </body></html>

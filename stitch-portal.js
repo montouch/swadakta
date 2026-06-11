@@ -104,6 +104,12 @@
     return new URL("portal.html#home", window.location.href).href;
   }
 
+  function setAccountState(state) {
+    document.body.dataset.accountState = state;
+    document.body.classList.toggle("is-account-signed-in", state === "signed-in");
+    document.body.classList.toggle("is-account-signed-out", state !== "signed-in");
+  }
+
   function openAccountHome() {
     if (!accountHome) {
       openAccountWorkspace();
@@ -131,6 +137,8 @@
   }
 
   function setSignedInShell(email = "", profile = {}) {
+    setAccountState("signed-in");
+    signedInEmail = email || profile.email || signedInEmail;
     form.hidden = true;
     if (authShell) {
       authShell.hidden = true;
@@ -156,6 +164,7 @@
   }
 
   function setSignedOutShell() {
+    setAccountState("signed-out");
     form.hidden = false;
     if (authShell) {
       authShell.hidden = false;
@@ -521,7 +530,7 @@
             account_role: accountRole,
             onboarding_status: "started",
           }).catch(() => {});
-        setStatus("Signed in. Your Swadakta account is ready.", "text-primary");
+        setStatus("Signed in. Opening your account home.", "text-primary");
         await showCurrentAccount({ autoOpen: true });
         return;
       }
@@ -634,5 +643,19 @@
 
   updateMode();
   setVerificationEnabled(false);
+  setAccountState("checking");
+  if (window.SwadaktaData.onAuthStateChange) {
+    window.SwadaktaData.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        setSignedOutShell();
+        return;
+      }
+
+      if (session?.user?.email) {
+        setSignedInShell(session.user.email, {});
+        openAccountHome();
+      }
+    }).catch(() => {});
+  }
   showCurrentAccount({ autoOpen: true });
 })();
