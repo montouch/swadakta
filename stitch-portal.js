@@ -30,6 +30,8 @@
 
   let signedInEmail = "";
   let accountProviderTouched = false;
+  let accountRenderVersion = 0;
+  let signOutRequested = false;
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
   const AFRICA_COUNTRIES = new Set([
     "algeria",
@@ -108,6 +110,15 @@
     document.body.dataset.accountState = state;
     document.body.classList.toggle("is-account-signed-in", state === "signed-in");
     document.body.classList.toggle("is-account-signed-out", state !== "signed-in");
+  }
+
+  function nextAccountRenderVersion() {
+    accountRenderVersion += 1;
+    return accountRenderVersion;
+  }
+
+  function isCurrentAccountRender(version) {
+    return version === accountRenderVersion;
   }
 
   function openAccountHome() {
@@ -414,12 +425,25 @@
     }
   }
 
-  async function showCurrentAccount({ autoOpen = false } = {}) {
+  async function showCurrentAccount({ autoOpen = false, fallbackEmail = "", renderVersion = nextAccountRenderVersion() } = {}) {
     let email = "";
     try {
       const sessionResult = await window.SwadaktaData.getSession();
       email = sessionResult.session?.user?.email || "";
+      if (!isCurrentAccountRender(renderVersion)) {
+        return;
+      }
       if (!email) {
+        if (fallbackEmail) {
+          setSignedInShell(fallbackEmail, {});
+          if (autoOpen || window.location.hash === "#work" || window.location.hash === "#home") {
+            openSignedInDestination();
+          }
+          setVerificationEnabled(true);
+          setVerificationPill("Account open", "bg-primary-container/10 text-primary");
+          setVerificationStatus("Account is open. Reload if profile details do not appear immediately.", "text-primary");
+          return;
+        }
         setSignedOutShell();
         await refreshVerificationWorkspace(null);
         return;
@@ -454,12 +478,16 @@
       if (nextActions) nextActions.hidden = false;
       populateVerificationProfile(profile);
       await Promise.allSettled([refreshAccountHome(profile), refreshVerificationWorkspace(profile)]);
+      if (!isCurrentAccountRender(renderVersion)) {
+        return;
+      }
       if (autoOpen || window.location.hash === "#work" || window.location.hash === "#home") {
         openSignedInDestination();
       }
     } catch (error) {
-      if (email) {
-        setSignedInShell(email, {});
+      const displayEmail = email || fallbackEmail;
+      if (displayEmail && isCurrentAccountRender(renderVersion)) {
+        setSignedInShell(displayEmail, {});
         if (autoOpen || window.location.hash === "#work" || window.location.hash === "#home") openSignedInDestination();
         setVerificationEnabled(true);
         setVerificationStatus("Account is open. Some profile details could not load yet, but you can save them below.", "text-primary");
@@ -490,6 +518,7 @@
 
     submit.disabled = true;
     setStatus(creating ? "Creating account..." : "Signing in...");
+    const submitRenderVersion = nextAccountRenderVersion();
 
     try {
       let result;
@@ -526,19 +555,23 @@
         setSignedInShell(signedInUserEmail, { account_role: accountRole });
         openAccountHome();
         window.SwadaktaData.saveAccountProfile({
-            email: signedInUserEmail,
-            account_role: accountRole,
-            onboarding_status: "started",
-          }).catch(() => {});
+          email: signedInUserEmail,
+          account_role: accountRole,
+          onboarding_status: "started",
+        }).catch(() => {});
         setStatus("Signed in. Opening your account home.", "text-primary");
-        await showCurrentAccount({ autoOpen: true });
+        await showCurrentAccount({ autoOpen: true, fallbackEmail: signedInUserEmail, renderVersion: submitRenderVersion });
         return;
       }
       if (shouldOpenWorkspace) {
         setSignedInShell(email, { account_role: accountRole });
         openAccountHome();
       }
-      await showCurrentAccount({ autoOpen: shouldOpenWorkspace });
+      await showCurrentAccount({
+        autoOpen: shouldOpenWorkspace,
+        fallbackEmail: shouldOpenWorkspace ? email : "",
+        renderVersion: submitRenderVersion,
+      });
     } catch (error) {
       setStatus(error.message || "Account action failed.", "text-error");
     } finally {
@@ -617,20 +650,23 @@
 
   async function signOutCurrentAccount(button) {
     if (button) button.disabled = true;
-      try {
-        await window.SwadaktaData.signOut();
-        signedInEmail = "";
-        if (profileCard) profileCard.hidden = true;
-        if (nextActions) nextActions.hidden = true;
-        setSignedOutShell();
-        window.history.replaceState(null, "", window.location.pathname + window.location.search);
-        setStatus("Signed out.", "text-primary");
-        await refreshVerificationWorkspace(null);
-      } catch (error) {
-        setStatus(error.message || "Could not sign out.", "text-error");
-      } finally {
-        if (button) button.disabled = false;
-      }
+    signOutRequested = true;
+    nextAccountRenderVersion();
+    try {
+      await window.SwadaktaData.signOut();
+      signedInEmail = "";
+      if (profileCard) profileCard.hidden = true;
+      if (nextActions) nextActions.hidden = true;
+      setSignedOutShell();
+      window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      setStatus("Signed out.", "text-primary");
+      await refreshVerificationWorkspace(null);
+    } catch (error) {
+      setStatus(error.message || "Could not sign out.", "text-error");
+    } finally {
+      signOutRequested = false;
+      if (button) button.disabled = false;
+    }
   }
 
   if (signOutButton) {
@@ -647,11 +683,17 @@
   if (window.SwadaktaData.onAuthStateChange) {
     window.SwadaktaData.onAuthStateChange((event, session) => {
       if (event === "SIGNED_OUT") {
+        if (!signOutRequested && signedInEmail) {
+          return;
+        }
+        nextAccountRenderVersion();
+        signedInEmail = "";
         setSignedOutShell();
         return;
       }
 
       if (session?.user?.email) {
+        nextAccountRenderVersion();
         setSignedInShell(session.user.email, {});
         openAccountHome();
       }
