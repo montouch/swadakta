@@ -2,6 +2,8 @@
   const statusCard = document.querySelector("#auth-status-card");
   const message = document.querySelector("#auth-message");
   const continueLink = document.querySelector("#auth-continue");
+  const passwordResetForm = document.querySelector("#password-reset-form");
+  const passwordResetStatus = document.querySelector("#password-reset-status");
 
   function safeNextPath() {
     const params = new URLSearchParams(window.location.search);
@@ -26,6 +28,12 @@
     statusCard.innerHTML = `<strong>${title}</strong><span>${detail}</span>`;
   }
 
+  function isPasswordRecovery() {
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    const query = new URLSearchParams(window.location.search);
+    return hash.get("type") === "recovery" || query.get("type") === "recovery";
+  }
+
   async function checkSession(attempt = 1) {
     const nextPath = safeNextPath();
     const nextUrl = new URL(nextPath, window.location.origin).href;
@@ -34,8 +42,8 @@
     const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
     const error = hash.get("error_description") || hash.get("error") || "";
     if (error) {
-      setStatus("Sign-in link failed", error, "is-error");
-      message.textContent = "Request a fresh magic link from the portal or admin page.";
+      setStatus("Sign-in failed", error, "is-error");
+      message.textContent = "Return to the account page and try signing in again.";
       return;
     }
 
@@ -44,6 +52,13 @@
       const email = result.session?.user?.email || "";
 
       if (email) {
+        if (isPasswordRecovery() && passwordResetForm) {
+          passwordResetForm.hidden = false;
+          setStatus("Set a new password", `Account confirmed for ${email}. Choose a new password to continue.`, "is-success");
+          message.textContent = "Create a password you can remember. It must be at least 8 characters.";
+          return;
+        }
+
         setStatus("Signed in", `Account confirmed for ${email}. Continuing now.`, "is-success");
         message.textContent = "You can now continue to the selected Swadakta workspace.";
         window.setTimeout(() => {
@@ -57,12 +72,30 @@
         return;
       }
 
-      setStatus("No active session found", "Open the latest Swadakta email link in this browser, or request a new link.", "is-warning");
-      message.textContent = "If you requested the link from a local preview, the email should still open swadakta.com instead of localhost.";
+      setStatus("No active session found", "Open the latest Swadakta confirmation email in this browser, or sign in again.", "is-warning");
+      message.textContent = "If you started from a local preview, the confirmation should still open swadakta.com instead of localhost.";
     } catch (sessionError) {
-      setStatus("Could not check the session", sessionError.message || "Try requesting a fresh magic link.", "is-error");
-      message.textContent = "The safest next step is to return to the portal and request a new link.";
+      setStatus("Could not check the session", sessionError.message || "Try signing in again.", "is-error");
+      message.textContent = "The safest next step is to return to the account page and sign in again.";
     }
+  }
+
+  if (passwordResetForm) {
+    passwordResetForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const password = document.querySelector("#new-password").value;
+      passwordResetStatus.textContent = "Saving password...";
+
+      try {
+        await window.SwadaktaData.updateAccountPassword(password);
+        passwordResetStatus.textContent = "Password updated. Continuing...";
+        window.setTimeout(() => {
+          window.location.replace(continueLink.href);
+        }, 900);
+      } catch (error) {
+        passwordResetStatus.textContent = error.message || "Could not update password.";
+      }
+    });
   }
 
   checkSession();

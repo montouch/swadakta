@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=24" />
+    <link rel="stylesheet" href="styles.css?v=26" />
   </head>
   <body class="portal-body">
     <header class="site-header" aria-label="Portal navigation">
@@ -23,7 +23,8 @@
         </span>
       </a>
       <nav class="nav-links" aria-label="Portal sections">
-        <a href="#client">Client</a>
+        <a href="#account">Account</a>
+        <a href="#client">Request help</a>
         <a href="#partner">Get jobs</a>
         <a href="#admin">Admin</a>
         <a href="index.html#pricing">Pricing</a>
@@ -37,7 +38,7 @@
         <div>
           <span class="request-code">Account</span>
           <strong id="account-status-title">Not signed in</strong>
-          <small id="account-status-detail">Use your email to create or open a client or receiver account.</small>
+          <small id="account-status-detail">Use one email account for client work, job seeking, or both.</small>
         </div>
         <button class="button button-secondary" type="button" id="portal-sign-out" hidden>Sign out</button>
       </section>
@@ -46,52 +47,93 @@
 
       <section class="portal-hero" aria-labelledby="portal-title">
         <div>
-          <p class="eyebrow">Swadakta Access</p>
-          <h1 id="portal-title">Create or open the right account.</h1>
+          <p class="eyebrow">Swadakta Account</p>
+          <h1 id="portal-title">One account for getting jobs done and getting work.</h1>
           <p>
-            Clients request cross-border or local tasks. Receivers apply to get vetted corridor work.
-            The app handles routine routing, while founder review protects money, identity, compliance, and disputes.
+            Sign in once, choose whether you are a client, a job seeker, or both, then Swadakta
+            shows the right next steps. If your country or operating base changes, verification
+            can be requested again before paid, sensitive, or location-specific work proceeds.
           </p>
         </div>
         <div class="portal-choice-grid" aria-label="Swadakta portal choices">
-          <a class="portal-choice" href="#client">
+          <a class="portal-choice" href="#account">
             <span>01</span>
-            <strong>Client account</strong>
-            <small>Create or open your account, then track corridor requests.</small>
+            <strong>Create or open account</strong>
+            <small>One login, then choose client, job seeker, or both.</small>
+          </a>
+          <a class="portal-choice" href="#client">
+            <span>02</span>
+            <strong>Request help</strong>
+            <small>Start a brief or track client jobs linked to your email.</small>
           </a>
           <a class="portal-choice" href="#partner">
-            <span>02</span>
-            <strong>Receiver account</strong>
-            <small>Apply, get vetted, then receive assigned corridor jobs.</small>
-          </a>
-          <a class="portal-choice" href="#admin">
             <span>03</span>
-            <strong>Founder console</strong>
-            <small>Exception review and protected decisions.</small>
+            <strong>Apply for work</strong>
+            <small>Get vetted, add coverage, then receive assigned jobs.</small>
           </a>
         </div>
       </section>
 
+      <section class="section portal-section account-entry-section" id="account" aria-labelledby="account-entry-title">
+        <div class="tracking-copy">
+          <p class="eyebrow">Step 1</p>
+          <h2 id="account-entry-title">Create or open your Swadakta account.</h2>
+          <p>
+            Use one email and password. Your account can request work, apply for jobs, or do both.
+            When creating an account, add a mobile or WhatsApp backup number so Swadakta can reach
+            you for urgent proof, payment, delivery, or verification issues.
+          </p>
+        </div>
+        <form class="tracking-panel portal-login-form account-entry-form" id="client-login-form">
+          <div class="account-auth-toggle" role="radiogroup" aria-label="Account action">
+            <label>
+              <input type="radio" name="account-auth-mode" value="sign_in" checked />
+              Sign in
+            </label>
+            <label>
+              <input type="radio" name="account-auth-mode" value="create" />
+              Create account
+            </label>
+          </div>
+          <label class="field-group" for="client-login-email">
+            Email
+            <input id="client-login-email" name="clientEmail" type="email" placeholder="you@example.com" autocomplete="email" required />
+          </label>
+          <label class="field-group" for="client-login-password">
+            Password
+            <input id="client-login-password" name="clientPassword" type="password" placeholder="Your password" autocomplete="current-password" minlength="8" required />
+          </label>
+          <label class="field-group" id="account-backup-phone-group" for="account-backup-phone" hidden>
+            Mobile / WhatsApp backup
+            <input id="account-backup-phone" name="accountBackupPhone" type="tel" placeholder="+61 431 455 174" autocomplete="tel" disabled />
+          </label>
+          <label class="field-group" for="account-role-intent">
+            I want to use Swadakta as
+            <select id="account-role-intent" name="accountRole">
+              <option value="client">Client - get a job done</option>
+              <option value="receiver">Job seeker - get paid work</option>
+              <option value="both">Both - client and job seeker</option>
+            </select>
+          </label>
+          <button class="button button-primary" id="client-login-submit" type="submit">Sign in</button>
+          <button class="button button-secondary" id="account-google-sign-in" type="button">Continue with Google</button>
+          <button class="button button-ghost" id="account-password-reset" type="button">Forgot password?</button>
+          <span class="copy-status" id="client-login-status" role="status"></span>
+        </form>
+      </section>
+
       <section class="section portal-section" id="client" aria-labelledby="client-portal-title">
         <div class="tracking-copy">
-          <p class="eyebrow">Client Portal</p>
-          <h2 id="client-portal-title">Get a corridor job done.</h2>
+          <p class="eyebrow">Client Side</p>
+          <h2 id="client-portal-title">Request help or track a job.</h2>
           <p>
-            Create or open an email account to see requests linked to that email. You can also
-            check one request instantly with its request code and original email or WhatsApp.
+            After signing in above, client jobs linked to your email appear here. You can also
+            check a single request instantly with its request code and original email or WhatsApp.
           </p>
           <div class="portal-actions">
             <a class="button button-primary" href="index.html#intake">Start a new brief</a>
             <a class="button button-secondary" href="index.html#pricing">See packages</a>
           </div>
-          <form class="portal-login-form" id="client-login-form">
-            <label class="field-group" for="client-login-email">
-              Client account email
-              <input id="client-login-email" name="clientEmail" type="email" placeholder="Email used on your brief" autocomplete="email" required />
-            </label>
-            <button class="button button-secondary" type="submit">Create or open client account</button>
-            <span class="copy-status" id="client-login-status" role="status"></span>
-          </form>
           <div class="account-panel" id="client-account-panel" aria-live="polite"></div>
         </div>
         <form class="tracking-panel" id="portal-tracking-form">
@@ -110,20 +152,13 @@
 
       <section class="section portal-section" id="partner" aria-labelledby="partner-portal-title">
         <div class="intake-copy">
-          <p class="eyebrow">Receiver Portal</p>
-          <h2 id="partner-portal-title">Apply to get Swadakta receiver jobs.</h2>
+          <p class="eyebrow">Job Seeker Side</p>
+          <h2 id="partner-portal-title">Apply to get Swadakta jobs.</h2>
           <p>
-            Create or open a receiver account after applying. Vetted receivers can see assigned
-            jobs and send field updates from this portal.
+            Use the same account above. Save your profile as Job seeker or Both, then apply for
+            coverage areas and work categories. Vetted workers can see assigned jobs and send field updates here.
           </p>
-          <form class="portal-login-form" id="partner-login-form">
-            <label class="field-group" for="partner-login-email">
-              Receiver account email
-              <input id="partner-login-email" name="partnerEmail" type="email" placeholder="Email used on your application" autocomplete="email" required />
-            </label>
-            <button class="button button-secondary" type="submit">Create or open receiver account</button>
-            <span class="copy-status" id="partner-login-status" role="status"></span>
-          </form>
+          <p class="form-note">Already signed in? Your job-seeker dashboard appears below after you save your account profile or submit an application.</p>
           <div class="account-panel" id="partner-account-panel" aria-live="polite"></div>
         </div>
 
@@ -243,7 +278,7 @@
             Admin email
             <input id="portal-admin-email" name="adminEmail" type="email" value="swadakta111@gmail.com" autocomplete="email" required />
           </label>
-          <button class="button button-primary" type="submit">Send admin magic link</button>
+          <button class="button button-primary" type="submit">Send admin sign-in email</button>
           <div class="tracking-result" id="portal-admin-status" role="status" aria-live="polite"></div>
         </form>
       </section>
@@ -259,9 +294,9 @@
       </nav>
     </footer>
 
-    <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=33"></script>
-    <script src="portal.js?v=19"></script>
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=35"></script>
+    <script src="portal.js?v=22"></script>
     <script src="ai-desk.js?v=1"></script>
   </body>
 </html>

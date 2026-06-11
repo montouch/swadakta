@@ -22,10 +22,10 @@ Completed:
 
 Admin activation status:
 
-- Magic link sent to `swadakta111@gmail.com`.
+- Secure admin sign-in email sent to `swadakta111@gmail.com`.
 - Supabase auth user created.
 - Admin user added as `owner`.
-- Remaining step: open the magic link from the email inbox, then return to `admin.html`.
+- Remaining step: open the sign-in email from the inbox, then return to `admin.html`.
 
 Important: use the Supabase publishable key in the browser. Never put a secret/service-role key in `app-config.js`.
 

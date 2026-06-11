@@ -6,8 +6,12 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 
 - Client-facing landing page and real intake form
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
-- Client and receiver magic-link portal access with sanitized account summaries
-- Email magic-link account creation/opening for clients, receivers, and admins
+- Account-first flow blueprint in `FLOW_BLUEPRINT.md` for the Google Stitch rebuild
+- One account flow for client, job seeker, or both account modes
+- Email/password account access with sanitized account summaries
+- Account creation/opening for clients, job seekers, and mixed-role users, with social sign-in hooks ready for Google/Apple
+- Mobile/WhatsApp backup number captured during account creation for urgent support, proof, verification, and payment coordination
+- Social sign-in provider buttons are config-gated so they only appear after Supabase OAuth credentials are connected
 - Portal account status and sign-out controls
 - Signed-in account profiles for role, name, WhatsApp, country/base, service coverage, and preferred currency
 - Role-aware client and receiver onboarding checklists inside the portal

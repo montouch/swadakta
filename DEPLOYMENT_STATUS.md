@@ -40,7 +40,7 @@ Last checked: June 11, 2026
 
 - Auth Site URL is set to `https://swadakta.com`.
 - Auth Redirect URLs include `https://swadakta.com/**`.
-- Admin magic-link login has been verified in Chrome for `swadakta111@gmail.com`.
+- Admin secure email sign-in has been verified in Chrome for `swadakta111@gmail.com`.
 
 ## CLI Path
 

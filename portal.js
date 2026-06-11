@@ -2,6 +2,11 @@ const trackingForm = document.querySelector("#portal-tracking-form");
 const trackingResult = document.querySelector("#portal-tracking-result");
 const clientLoginForm = document.querySelector("#client-login-form");
 const clientLoginStatus = document.querySelector("#client-login-status");
+const clientLoginSubmit = document.querySelector("#client-login-submit");
+const accountGoogleSignIn = document.querySelector("#account-google-sign-in");
+const accountPasswordReset = document.querySelector("#account-password-reset");
+const accountBackupPhoneGroup = document.querySelector("#account-backup-phone-group");
+const accountBackupPhoneInput = document.querySelector("#account-backup-phone");
 const clientAccountPanel = document.querySelector("#client-account-panel");
 const partnerForm = document.querySelector("#partner-form");
 const partnerStatus = document.querySelector("#partner-status");
@@ -20,6 +25,9 @@ const copyReceiverDraft = document.querySelector("#copy-receiver-draft");
 const receiverAssistantDraft = document.querySelector("#receiver-assistant-draft");
 const receiverAssistantStatus = document.querySelector("#receiver-assistant-status");
 
+const PENDING_ACCOUNT_ROLE_KEY = "swadakta_pending_account_role";
+const PENDING_ACCOUNT_MOBILE_KEY = "swadakta_pending_account_mobile";
+
 let assignedJobs = [];
 let lastTrackedCode = "";
 let lastTrackedContact = "";
@@ -27,6 +35,7 @@ let lastTrackedRequest = null;
 let currentPortalContext = {
   email: "",
   profile: null,
+  identityRequests: [],
   requests: [],
   applications: [],
   jobs: [],
@@ -153,6 +162,27 @@ const identityStatusLabels = {
   manual_review: "Manual review",
 };
 
+const identityRequestStatusLabels = {
+  requested: "Requested",
+  link_sent: "Link sent",
+  submitted: "Submitted",
+  verified: "Verified",
+  failed: "Failed",
+  expired: "Expired",
+  cancelled: "Cancelled",
+  manual_review: "Manual review",
+};
+
+const identityRequestReasonLabels = {
+  account_required: "Account verification",
+  paid_work: "Paid job",
+  receiver_work: "Receiver work",
+  sensitive_job: "Sensitive task",
+  high_value_job: "High-value job",
+  manual_review: "Manual review",
+  other: "Other",
+};
+
 const fieldStatusLabels = {
   progress: "Progress",
   blocked: "Blocked",
@@ -171,9 +201,9 @@ const partnerCategoryLabels = {
 };
 
 const accountRoleLabels = {
-  client: "Client - I need jobs done in Kenya",
-  receiver: "Receiver - I want jobs in Kenya",
-  both: "Both client and receiver",
+  client: "Client - I need jobs done",
+  receiver: "Job seeker - I want Swadakta work",
+  both: "Both client and job seeker",
 };
 
 const currencyLabels = {
@@ -591,6 +621,66 @@ function safeHttpUrl(value) {
   }
 }
 
+function readPendingAccountRole() {
+  try {
+    const role = localStorage.getItem(PENDING_ACCOUNT_ROLE_KEY);
+    return ["client", "receiver", "both"].includes(role) ? role : "";
+  } catch {
+    return "";
+  }
+}
+
+function writePendingAccountRole(role) {
+  try {
+    if (["client", "receiver", "both"].includes(role)) {
+      localStorage.setItem(PENDING_ACCOUNT_ROLE_KEY, role);
+    }
+  } catch {
+    // Local storage can be unavailable in private browser modes.
+  }
+}
+
+function clearPendingAccountRole() {
+  try {
+    localStorage.removeItem(PENDING_ACCOUNT_ROLE_KEY);
+  } catch {
+    // Local storage can be unavailable in private browser modes.
+  }
+}
+
+function readPendingAccountMobile() {
+  try {
+    return localStorage.getItem(PENDING_ACCOUNT_MOBILE_KEY) || "";
+  } catch {
+    return "";
+  }
+}
+
+function writePendingAccountMobile(mobile) {
+  try {
+    const normalized = String(mobile || "").trim();
+    if (normalized) {
+      localStorage.setItem(PENDING_ACCOUNT_MOBILE_KEY, normalized);
+    }
+  } catch {
+    // Local storage can be unavailable in private browser modes.
+  }
+}
+
+function clearPendingAccountMobile() {
+  try {
+    localStorage.removeItem(PENDING_ACCOUNT_MOBILE_KEY);
+  } catch {
+    // Local storage can be unavailable in private browser modes.
+  }
+}
+
+function latestIdentityRequest(identityRequests = []) {
+  return [...identityRequests].sort(
+    (first, second) => new Date(second.updated_at || second.created_at) - new Date(first.updated_at || first.created_at),
+  )[0] || null;
+}
+
 function parseProofLinks(value) {
   return String(value || "")
     .split(/\n|,/)
@@ -721,6 +811,13 @@ function portalGuideContext() {
       kenya_base: currentPortalContext.profile?.kenya_base || "",
       preferred_currency: currentPortalContext.profile?.preferred_currency || "AUD",
     },
+    identity_requests: currentPortalContext.identityRequests.slice(0, 3).map((request) => ({
+      request_code: request.request_code,
+      provider: request.provider,
+      status: request.status,
+      reason: request.reason,
+      updated_at: request.updated_at,
+    })),
     client_requests: currentPortalContext.requests.slice(0, 5).map(compactRequestForGuide),
     receiver_applications: currentPortalContext.applications.slice(0, 5).map(compactApplicationForGuide),
     assigned_jobs: currentPortalContext.jobs.slice(0, 5).map(compactJobForGuide),
@@ -884,7 +981,7 @@ function setAccountStatus({ email = "", mode = "supabase", clientCount = 0, rece
   portalSignOut.hidden = false;
 }
 
-function renderAccountProfile(email, profile) {
+function renderAccountProfile(email, profile, identityRequests = []) {
   if (!accountProfileCard) {
     return;
   }
@@ -901,6 +998,14 @@ function renderAccountProfile(email, profile) {
     current.identity_verification_status ||
     "Not started";
   const identityLink = safeHttpUrl(current.identity_verification_link);
+  const latestRequest = latestIdentityRequest(identityRequests);
+  const latestRequestStatus = latestRequest
+    ? identityRequestStatusLabels[latestRequest.status] || latestRequest.status
+    : "";
+  const latestRequestReason = latestRequest
+    ? identityRequestReasonLabels[latestRequest.reason] || latestRequest.reason
+    : "";
+  const isVerified = current.identity_verification_status === "verified";
   accountProfileCard.hidden = false;
   accountProfileCard.innerHTML = `
     <div>
@@ -912,10 +1017,44 @@ function renderAccountProfile(email, profile) {
         <p>Identity verification is required for every Swadakta account before paid or sensitive work starts.</p>
         <span>Provider: ${escapeHtml(identityProvider)}</span>
         ${
+          latestRequest
+            ? `<span>Latest request: ${escapeHtml(latestRequest.request_code)} - ${escapeHtml(latestRequestStatus)}${latestRequestReason ? ` for ${escapeHtml(latestRequestReason)}` : ""}</span>`
+            : "<span>No verification request in the queue yet.</span>"
+        }
+        ${
           identityLink
             ? `<a href="${escapeHtml(identityLink)}" target="_blank" rel="noreferrer">Start ID verification</a>`
             : "<span>Verification link pending.</span>"
         }
+        ${
+          latestRequest?.admin_notes
+            ? `<small>${escapeHtml(latestRequest.admin_notes)}</small>`
+            : "<small>If you change country, operating base, legal name, or take a higher-risk job, Swadakta may re-check ID for that location.</small>"
+        }
+        <form class="identity-request-form">
+          <div class="field-row">
+            <label class="field-group">
+              Verification reason
+              <select name="identity_reason" ${isVerified ? "disabled" : ""}>
+                ${optionList(identityRequestReasonLabels, latestRequest?.reason || "account_required")}
+              </select>
+            </label>
+            <label class="field-group">
+              Preferred provider
+              <select name="identity_provider" ${isVerified ? "disabled" : ""}>
+                ${optionList(identityProviderLabels, current.identity_verification_provider || "smile_id")}
+              </select>
+            </label>
+          </div>
+          <label class="field-group">
+            Location or verification note
+            <input name="identity_user_notes" type="text" value="" placeholder="Example: I moved to Australia, need both Kenya and Australia-side work." ${isVerified ? "disabled" : ""} />
+          </label>
+          <div class="form-actions">
+            <button class="button button-secondary" type="submit" ${isVerified ? "disabled" : ""}>Request ID verification</button>
+            <span class="copy-status" role="status">${isVerified ? "Verified." : ""}</span>
+          </div>
+        </form>
       </div>
     </div>
     <div class="account-profile-stack">
@@ -1216,6 +1355,7 @@ async function loadAccountPanels() {
       currentPortalContext = {
         email: "",
         profile: null,
+        identityRequests: [],
         requests: [],
         applications: [],
         jobs: [],
@@ -1228,24 +1368,40 @@ async function loadAccountPanels() {
       return;
     }
 
-    const [clientResult, partnerResult, assignedJobsResult, profileResult] = await Promise.all([
+    let [clientResult, partnerResult, assignedJobsResult, profileResult, identityResult] = await Promise.all([
       window.SwadaktaData.listMyRequests(),
       window.SwadaktaData.listMyPartnerApplications(),
       window.SwadaktaData.listMyAssignedJobs(),
       window.SwadaktaData.getAccountProfile(),
+      window.SwadaktaData.listMyIdentityVerificationRequests().catch(() => ({ data: [] })),
     ]);
+    const pendingRole = readPendingAccountRole();
+    const pendingMobile = readPendingAccountMobile();
+
+    if ((pendingRole && profileResult.data?.account_role !== pendingRole) || pendingMobile) {
+      const savedProfile = await window.SwadaktaData.saveAccountProfile({
+        ...(profileResult.data || {}),
+        account_role: pendingRole || profileResult.data?.account_role || "client",
+        whatsapp: pendingMobile || profileResult.data?.whatsapp || "",
+        onboarding_status: profileResult.data?.onboarding_status || "started",
+      });
+      profileResult = savedProfile;
+      clearPendingAccountRole();
+      clearPendingAccountMobile();
+    }
 
     assignedJobs = assignedJobsResult.data || [];
     currentPortalContext = {
       email,
       profile: profileResult.data || null,
+      identityRequests: identityResult.data || [],
       requests: clientResult.data || [],
       applications: partnerResult.data || [],
       jobs: assignedJobs,
     };
     renderClientAccount(email, currentPortalContext.requests, currentPortalContext.profile);
     renderPartnerAccount(email, currentPortalContext.applications, currentPortalContext.jobs, currentPortalContext.profile);
-    renderAccountProfile(email, currentPortalContext.profile);
+    renderAccountProfile(email, currentPortalContext.profile, currentPortalContext.identityRequests);
     setAccountStatus({
       email,
       mode: sessionResult.mode,
@@ -1268,17 +1424,97 @@ async function loadAccountPanels() {
   }
 }
 
-async function sendPortalMagicLink(email, hash, statusElement) {
-  statusElement.textContent = "Sending magic link...";
+async function sendPortalMagicLink(email, hash, statusElement, accountRole = "client") {
+  statusElement.textContent = "Sending secure sign-in email...";
+  writePendingAccountRole(accountRole);
   const redirectTo = new URL(`portal.html${hash}`, window.location.href).href;
   const result = await window.SwadaktaData.signInPortal(email, redirectTo);
   statusElement.textContent =
     result.mode === "supabase"
-      ? `Account link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to your portal.`
+      ? `Secure sign-in email sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to your account.`
       : "Demo mode does not require sign-in.";
   if (result.mode === "local") {
     await loadAccountPanels();
   }
+}
+
+function currentAccountAuthMode() {
+  return document.querySelector('[name="account-auth-mode"]:checked')?.value || "sign_in";
+}
+
+function selectedAccountRole() {
+  return document.querySelector("#account-role-intent")?.value || "client";
+}
+
+function authProviderEnabled(provider) {
+  return Boolean(window.SWADAKTA_CONFIG?.authProviders?.[provider]);
+}
+
+function accountHashForRole(accountRole) {
+  return accountRole === "receiver" ? "#partner" : "#account";
+}
+
+function accountRedirectForRole(accountRole) {
+  return new URL(`portal.html${accountHashForRole(accountRole)}`, window.location.href).href;
+}
+
+function updateAccountAuthModeUi() {
+  const mode = currentAccountAuthMode();
+  if (clientLoginSubmit) {
+    clientLoginSubmit.textContent = mode === "create" ? "Create account" : "Sign in";
+  }
+  const passwordInput = document.querySelector("#client-login-password");
+  if (passwordInput) {
+    passwordInput.autocomplete = mode === "create" ? "new-password" : "current-password";
+    passwordInput.placeholder = mode === "create" ? "Create a password" : "Your password";
+  }
+  if (accountBackupPhoneGroup && accountBackupPhoneInput) {
+    const needsBackupPhone = mode === "create";
+    accountBackupPhoneGroup.hidden = !needsBackupPhone;
+    accountBackupPhoneInput.disabled = !needsBackupPhone;
+    accountBackupPhoneInput.required = needsBackupPhone;
+  }
+  if (accountGoogleSignIn && !authProviderEnabled("google")) {
+    accountGoogleSignIn.hidden = true;
+  }
+}
+
+async function handlePasswordAccountSubmit() {
+  const email = document.querySelector("#client-login-email").value.trim();
+  const password = document.querySelector("#client-login-password").value;
+  const backupPhone = accountBackupPhoneInput?.value.trim() || "";
+  const accountRole = selectedAccountRole();
+  const authMode = currentAccountAuthMode();
+
+  writePendingAccountRole(accountRole);
+
+  if (authMode === "create") {
+    writePendingAccountMobile(backupPhone);
+    clientLoginStatus.textContent = "Creating account...";
+    const result = await window.SwadaktaData.signUpAccount(email, password, accountRedirectForRole(accountRole));
+    if (result.mode === "local") {
+      clientLoginStatus.textContent = "Demo account ready.";
+      await loadAccountPanels();
+      return;
+    }
+    if (result.needsConfirmation) {
+      clientLoginStatus.textContent = "Account created. Check your email once to confirm it, then sign in here.";
+      return;
+    }
+    clientLoginStatus.textContent = "Account created. Loading your workspace...";
+    await loadAccountPanels();
+    return;
+  }
+
+  clientLoginStatus.textContent = "Signing in...";
+  const result = await window.SwadaktaData.signInWithPassword(email, password);
+  if (result.mode === "local") {
+    clientLoginStatus.textContent = "Demo mode does not require sign-in.";
+    await loadAccountPanels();
+    return;
+  }
+  clientLoginStatus.textContent = "Signed in. Loading your workspace...";
+  await loadAccountPanels();
 }
 
 trackingForm.addEventListener("submit", async (event) => {
@@ -1338,24 +1574,79 @@ document.addEventListener("submit", async (event) => {
   }
 });
 
-clientLoginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+if (clientLoginForm) {
+  updateAccountAuthModeUi();
+  clientLoginForm.addEventListener("change", (event) => {
+    if (event.target.matches('[name="account-auth-mode"]')) {
+      updateAccountAuthModeUi();
+    }
+  });
 
-  try {
+  clientLoginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    try {
+      await handlePasswordAccountSubmit();
+    } catch (error) {
+      clientLoginStatus.textContent = error.message || "Could not finish account sign-in.";
+    }
+  });
+}
+
+if (accountGoogleSignIn) {
+  accountGoogleSignIn.addEventListener("click", async () => {
+    const accountRole = selectedAccountRole();
+    writePendingAccountRole(accountRole);
+    clientLoginStatus.textContent = "Opening Google sign-in...";
+
+    try {
+      const result = await window.SwadaktaData.signInWithProvider("google", accountRedirectForRole(accountRole));
+      if (result.mode === "local") {
+        clientLoginStatus.textContent = "Demo mode does not require Google sign-in.";
+        await loadAccountPanels();
+        return;
+      }
+      if (result.data?.url) {
+        window.location.assign(result.data.url);
+      }
+    } catch (error) {
+      clientLoginStatus.textContent = error.message || "Google sign-in is not enabled yet. Use email and password for now.";
+    }
+  });
+}
+
+if (accountPasswordReset) {
+  accountPasswordReset.addEventListener("click", async () => {
     const email = document.querySelector("#client-login-email").value.trim();
-    await sendPortalMagicLink(email, "#client", clientLoginStatus);
-  } catch (error) {
-    clientLoginStatus.textContent = error.message || "Could not send client magic link.";
-  }
-});
+    if (!email) {
+      clientLoginStatus.textContent = "Enter your email first, then reset your password.";
+      return;
+    }
+
+    clientLoginStatus.textContent = "Sending password reset email...";
+
+    try {
+      const result = await window.SwadaktaData.resetAccountPassword(email, accountRedirectForRole(selectedAccountRole()));
+      clientLoginStatus.textContent =
+        result.mode === "supabase"
+          ? "Password reset email sent."
+          : "Demo mode does not require a password reset.";
+    } catch (error) {
+      clientLoginStatus.textContent = error.message || "Could not send password reset email.";
+    }
+  });
+}
 
 if (portalSignOut) {
   portalSignOut.addEventListener("click", async () => {
     portalSignOut.textContent = "Signing out...";
     await window.SwadaktaData.signOut();
+    clearPendingAccountRole();
+    clearPendingAccountMobile();
     currentPortalContext = {
       email: "",
       profile: null,
+      identityRequests: [],
       requests: [],
       applications: [],
       jobs: [],
@@ -1377,6 +1668,27 @@ if (portalSignOut) {
 
 if (accountProfileCard) {
   accountProfileCard.addEventListener("submit", async (event) => {
+    const identityForm = event.target.closest(".identity-request-form");
+    if (identityForm) {
+      event.preventDefault();
+      const statusElement = identityForm.querySelector(".copy-status");
+      const formData = new FormData(identityForm);
+      statusElement.textContent = "Requesting verification...";
+
+      try {
+        await window.SwadaktaData.requestAccountIdentityVerification({
+          reason: formData.get("identity_reason"),
+          provider: formData.get("identity_provider"),
+          user_notes: formData.get("identity_user_notes"),
+        });
+        statusElement.textContent = "Verification request queued.";
+        await loadAccountPanels();
+      } catch (error) {
+        statusElement.textContent = error.message || "Could not request verification.";
+      }
+      return;
+    }
+
     const form = event.target.closest(".account-profile-form");
     if (!form) {
       return;
@@ -1396,7 +1708,7 @@ if (accountProfileCard) {
         email,
         profile: result.data || currentPortalContext.profile,
       };
-      renderAccountProfile(email, currentPortalContext.profile);
+      renderAccountProfile(email, currentPortalContext.profile, currentPortalContext.identityRequests);
       renderClientAccount(email, currentPortalContext.requests, currentPortalContext.profile);
       renderPartnerAccount(
         email,
@@ -1480,16 +1792,18 @@ partnerForm.addEventListener("submit", async (event) => {
   }
 });
 
-partnerLoginForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
+if (partnerLoginForm) {
+  partnerLoginForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  try {
-    const email = document.querySelector("#partner-login-email").value.trim();
-    await sendPortalMagicLink(email, "#partner", partnerLoginStatus);
-  } catch (error) {
-    partnerLoginStatus.textContent = error.message || "Could not send receiver magic link.";
-  }
-});
+    try {
+      const email = document.querySelector("#partner-login-email").value.trim();
+      await sendPortalMagicLink(email, "#partner", partnerLoginStatus, "receiver");
+    } catch (error) {
+      partnerLoginStatus.textContent = error.message || "Could not send receiver sign-in email.";
+    }
+  });
+}
 
 if (draftReceiverProfile && receiverAssistantDraft) {
   draftReceiverProfile.addEventListener("click", async () => {
@@ -1613,7 +1927,7 @@ if (partnerAccountPanel) {
 adminForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   adminStatus.className = "tracking-result";
-  adminStatus.textContent = "Sending admin magic link...";
+  adminStatus.textContent = "Sending admin sign-in email...";
 
   try {
     const email = document.querySelector("#portal-admin-email").value.trim();
@@ -1622,11 +1936,11 @@ adminForm.addEventListener("submit", async (event) => {
     adminStatus.className = "tracking-result is-success";
     adminStatus.textContent =
       result.mode === "supabase"
-        ? `Admin account link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to admin.`
+        ? `Admin sign-in email sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to admin.`
         : "Demo mode does not require sign-in. Open the admin dashboard.";
   } catch (error) {
     adminStatus.className = "tracking-result is-error";
-    adminStatus.textContent = error.message || "Could not send magic link.";
+    adminStatus.textContent = error.message || "Could not send admin sign-in email.";
   }
 });
 

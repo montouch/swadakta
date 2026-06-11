@@ -4,6 +4,7 @@
   const FIELD_UPDATE_STORAGE_KEY = "swadakta_field_updates";
   const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
   const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
+  const IDENTITY_VERIFICATION_STORAGE_KEY = "swadakta_identity_verification_requests";
   const PROOF_BUCKET = "swadakta-proof";
   const MAX_STANDARD_UPLOAD_BYTES = 6 * 1024 * 1024;
   let supabaseClientPromise = null;
@@ -62,6 +63,11 @@
   function createFundMilestoneCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `FM-${token}`;
+  }
+
+  function createIdentityVerificationCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `IV-${token}`;
   }
 
   function safeStorageSegment(value, fallback = "file") {
@@ -162,6 +168,18 @@
 
   function writeLocalAccountProfile(profile) {
     localStorage.setItem(ACCOUNT_PROFILE_STORAGE_KEY, JSON.stringify(profile));
+  }
+
+  function readLocalIdentityVerificationRequests() {
+    try {
+      return JSON.parse(localStorage.getItem(IDENTITY_VERIFICATION_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalIdentityVerificationRequests(requests) {
+    localStorage.setItem(IDENTITY_VERIFICATION_STORAGE_KEY, JSON.stringify(requests));
   }
 
   function normalizeRequest(payload) {
@@ -421,6 +439,30 @@
       identity_verification_reference: payload.identity_verification_reference || "",
       identity_verified_at: payload.identity_verified_at || null,
       identity_verification_notes: payload.identity_verification_notes || "",
+      created_at: payload.created_at || now,
+      updated_at: now,
+    };
+  }
+
+  function normalizeIdentityVerificationRequest(payload) {
+    const now = new Date().toISOString();
+    return {
+      id: payload.id || createUuid(),
+      request_code: payload.request_code || createIdentityVerificationCode(),
+      user_id: payload.user_id || "local-user",
+      email: payload.email || "demo@swadakta.local",
+      account_role: payload.account_role || "client",
+      provider: payload.provider || "smile_id",
+      status: payload.status || "requested",
+      reason: payload.reason || "account_required",
+      country: payload.country || "",
+      kenya_base: payload.kenya_base || "",
+      whatsapp: payload.whatsapp || "",
+      user_notes: payload.user_notes || "",
+      admin_notes: payload.admin_notes || "",
+      provider_link: payload.provider_link || "",
+      provider_reference: payload.provider_reference || "",
+      resolved_at: payload.resolved_at || null,
       created_at: payload.created_at || now,
       updated_at: now,
     };
@@ -1194,6 +1236,188 @@
     return { data, mode: "supabase" };
   }
 
+  async function requestAccountIdentityVerification(payload = {}) {
+    const cleanPayload = {
+      reason: payload.reason || "account_required",
+      user_notes: String(payload.user_notes || "").trim().slice(0, 1200),
+      provider: payload.provider || "smile_id",
+    };
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const current = readLocalAccountProfile() || {
+        user_id: "local-user",
+        email: "demo@swadakta.local",
+        account_role: "client",
+      };
+      const profile = normalizeAccountProfile({
+        ...current,
+        identity_verification_provider: cleanPayload.provider,
+        identity_verification_status:
+          current.identity_verification_status === "verified"
+            ? "verified"
+            : "manual_review",
+        identity_verification_notes: "User requested identity verification.",
+      });
+      const requests = readLocalIdentityVerificationRequests();
+      const openRequest = requests.find(
+        (request) =>
+          request.user_id === profile.user_id &&
+          ["requested", "link_sent", "submitted", "manual_review"].includes(request.status),
+      );
+      const normalized = normalizeIdentityVerificationRequest({
+        ...(openRequest || {}),
+        user_id: profile.user_id,
+        email: profile.email,
+        account_role: profile.account_role,
+        provider: cleanPayload.provider,
+        status: openRequest?.status || "requested",
+        reason: cleanPayload.reason,
+        country: profile.country,
+        kenya_base: profile.kenya_base,
+        whatsapp: profile.whatsapp,
+        user_notes: cleanPayload.user_notes,
+      });
+      const nextRequests = openRequest
+        ? requests.map((request) => (request.id === openRequest.id ? normalized : request))
+        : [normalized, ...requests];
+
+      writeLocalAccountProfile(profile);
+      writeLocalIdentityVerificationRequests(nextRequests);
+      return { data: normalized, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("request_account_identity_verification", {
+      input_reason: cleanPayload.reason,
+      input_user_notes: cleanPayload.user_notes,
+      input_provider: cleanPayload.provider,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function listMyIdentityVerificationRequests() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const profile = readLocalAccountProfile();
+      const userId = profile?.user_id || "local-user";
+      return {
+        data: readLocalIdentityVerificationRequests()
+          .filter((request) => request.user_id === userId)
+          .sort((first, second) => new Date(second.updated_at) - new Date(first.updated_at)),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_identity_verification_requests");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function listIdentityVerificationRequests() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return {
+        data: readLocalIdentityVerificationRequests().sort(
+          (first, second) => new Date(second.updated_at) - new Date(first.updated_at),
+        ),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_identity_verification_requests");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function updateIdentityVerificationRequest(id, updates = {}) {
+    const supabase = await getSupabase();
+    const payload = {
+      status: updates.status || "requested",
+      provider: updates.provider || "smile_id",
+      provider_link: updates.provider_link || "",
+      provider_reference: updates.provider_reference || "",
+      admin_notes: String(updates.admin_notes || "").trim().slice(0, 1200),
+    };
+
+    if (!supabase) {
+      let updated = null;
+      const requests = readLocalIdentityVerificationRequests().map((request) => {
+        if (request.id !== id) {
+          return request;
+        }
+
+        updated = normalizeIdentityVerificationRequest({
+          ...request,
+          ...payload,
+          resolved_at: ["verified", "failed", "expired", "cancelled"].includes(payload.status)
+            ? request.resolved_at || new Date().toISOString()
+            : null,
+        });
+        return updated;
+      });
+
+      if (!updated) {
+        throw new Error("Identity verification request not found.");
+      }
+
+      const current = readLocalAccountProfile();
+      if (current && current.user_id === updated.user_id) {
+        writeLocalAccountProfile(
+          normalizeAccountProfile({
+            ...current,
+            identity_verification_provider: payload.provider,
+            identity_verification_status:
+              payload.status === "requested"
+                ? "manual_review"
+                : payload.status === "cancelled"
+                  ? "not_started"
+                  : payload.status,
+            identity_verification_link: payload.provider_link,
+            identity_verification_reference: payload.provider_reference,
+            identity_verified_at:
+              payload.status === "verified"
+                ? current.identity_verified_at || new Date().toISOString()
+                : null,
+            identity_verification_notes: payload.admin_notes,
+          }),
+        );
+      }
+
+      writeLocalIdentityVerificationRequests(requests);
+      return { data: updated, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("update_identity_verification_request", {
+      input_id: id,
+      input_status: payload.status,
+      input_provider: payload.provider,
+      input_link: payload.provider_link,
+      input_reference: payload.provider_reference,
+      input_admin_notes: payload.admin_notes,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
   async function assist(payload) {
     const supabase = await getSupabase();
 
@@ -1557,6 +1781,114 @@
     return { mode: "supabase", redirectTo: emailRedirectTo, finalRedirectTo };
   }
 
+  async function signUpAccount(email, password, redirectTo = window.location.href.split("#")[0]) {
+    const supabase = await getSupabase();
+    const finalRedirectTo = normalizeAuthRedirect(redirectTo);
+    const emailRedirectTo = authCallbackRedirect(finalRedirectTo);
+
+    if (!supabase) {
+      return { mode: "local", needsConfirmation: false };
+    }
+
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return {
+      mode: "supabase",
+      session: data.session || null,
+      user: data.user || null,
+      needsConfirmation: !data.session,
+      redirectTo: emailRedirectTo,
+      finalRedirectTo,
+    };
+  }
+
+  async function signInWithPassword(email, password) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { mode: "local" };
+    }
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { mode: "supabase", session: data.session || null, user: data.user || null };
+  }
+
+  async function resetAccountPassword(email, redirectTo = window.location.href.split("#")[0]) {
+    const supabase = await getSupabase();
+    const finalRedirectTo = normalizeAuthRedirect(redirectTo);
+    const emailRedirectTo = authCallbackRedirect(finalRedirectTo);
+
+    if (!supabase) {
+      return { mode: "local" };
+    }
+
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: emailRedirectTo,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { mode: "supabase", redirectTo: emailRedirectTo, finalRedirectTo };
+  }
+
+  async function updateAccountPassword(password) {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { mode: "local" };
+    }
+
+    const { data, error } = await supabase.auth.updateUser({ password });
+    if (error) {
+      throw error;
+    }
+
+    return { mode: "supabase", user: data.user || null };
+  }
+
+  async function signInWithProvider(provider, redirectTo = window.location.href.split("#")[0]) {
+    const supabase = await getSupabase();
+    const finalRedirectTo = normalizeAuthRedirect(redirectTo);
+    const emailRedirectTo = authCallbackRedirect(finalRedirectTo);
+
+    if (!supabase) {
+      return { mode: "local" };
+    }
+
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider,
+      options: {
+        redirectTo: emailRedirectTo,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { mode: "supabase", data, redirectTo: emailRedirectTo, finalRedirectTo };
+  }
+
   async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
     return signInWithEmail(email, redirectTo);
   }
@@ -1610,6 +1942,10 @@
     saveAccountProfile,
     listAccountProfiles,
     updateAccountIdentityVerification,
+    requestAccountIdentityVerification,
+    listMyIdentityVerificationRequests,
+    listIdentityVerificationRequests,
+    updateIdentityVerificationRequest,
     assist,
     getOperationsReadiness,
     createStripeCheckoutSession,
@@ -1617,6 +1953,11 @@
     createWisePaymentRequest,
     capturePayPalOrder,
     createMpesaStkPush,
+    signUpAccount,
+    signInWithPassword,
+    resetAccountPassword,
+    updateAccountPassword,
+    signInWithProvider,
     signInAdmin,
     signInPortal,
     getSession,

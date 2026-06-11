@@ -3697,20 +3697,20 @@ function buildOperatorBrief(request, form) {
 
 authForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  authStatus.textContent = "Sending magic link...";
+  authStatus.textContent = "Sending secure sign-in email...";
 
   try {
     const email = document.querySelector("#admin-email").value.trim();
     const result = await window.SwadaktaData.signInAdmin(email);
     authStatus.textContent =
       result.mode === "supabase"
-        ? `Magic link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then returns here.`
+        ? `Sign-in email sent. It opens ${new URL(result.redirectTo).origin}/auth first, then returns here.`
         : "Demo mode does not require sign-in.";
     if (result.mode === "local") {
       await loadRequests();
     }
   } catch (error) {
-    authStatus.textContent = error.message || "Could not send magic link.";
+    authStatus.textContent = error.message || "Could not send sign-in email.";
   }
 });
 

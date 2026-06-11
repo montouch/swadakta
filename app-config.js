@@ -6,6 +6,10 @@ window.SWADAKTA_CONFIG = {
   supabaseUrl: "https://srwkoulknropnwwyqslj.supabase.co",
   supabasePublishableKey: "sb_publishable_braRDOvu_VbLc6PItbElmg_3hK-Zg51",
   whatsappNumber: "+61431455174",
+  authProviders: {
+    google: false,
+    apple: false,
+  },
   paymentLinks: {
     quick: "",
     site: "",

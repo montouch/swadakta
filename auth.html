@@ -10,7 +10,7 @@
     />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#0f332c" />
-    <link rel="stylesheet" href="styles.css?v=24" />
+    <link rel="stylesheet" href="styles.css?v=26" />
   </head>
   <body class="auth-body">
     <main class="auth-shell" aria-labelledby="auth-title">
@@ -27,14 +27,23 @@
           <p class="eyebrow">Secure sign-in</p>
           <h1 id="auth-title">Opening your Swadakta account.</h1>
           <p id="auth-message">
-            Checking your magic link. Keep this tab open while Swadakta confirms the session.
+            Checking your account access. Keep this tab open while Swadakta confirms the session.
           </p>
         </div>
 
         <div class="auth-status-card" id="auth-status-card" role="status" aria-live="polite">
-          <strong>Checking link...</strong>
-          <span>Magic links work best when opened in the same browser that requested them.</span>
+          <strong>Checking account...</strong>
+          <span>Secure email confirmations work best in the same browser that requested them.</span>
         </div>
+
+        <form class="auth-form password-reset-form" id="password-reset-form" hidden>
+          <label class="field-group" for="new-password">
+            New password
+            <input id="new-password" name="newPassword" type="password" autocomplete="new-password" minlength="8" required />
+          </label>
+          <button class="button button-primary" type="submit">Save new password</button>
+          <p class="copy-status" id="password-reset-status" role="status"></p>
+        </form>
 
         <nav class="auth-actions" aria-label="Account destinations">
           <a class="button button-primary" id="auth-continue" href="portal.html">Continue</a>
@@ -44,8 +53,8 @@
       </section>
     </main>
 
-    <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=33"></script>
-    <script src="auth.js?v=1"></script>
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=35"></script>
+    <script src="auth.js?v=2"></script>
   </body>
 </html>

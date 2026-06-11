@@ -340,6 +340,18 @@ textarea:focus-visible,
   color: var(--deep);
 }
 
+.button-ghost {
+  color: var(--deep);
+  background: transparent;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.button-ghost:hover {
+  background: rgba(255, 255, 255, 0.62);
+  border-color: rgba(15, 51, 44, 0.12);
+}
+
 .section .button-secondary,
 .launch .button-secondary {
   border-color: var(--line);
@@ -1512,6 +1524,19 @@ output {
   background: #fff;
 }
 
+.account-entry-section {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #eef4ff 100%);
+}
+
+.account-entry-form {
+  margin-top: 0;
+}
+
+.account-entry-form .copy-status {
+  grid-column: 1 / -1;
+}
+
 #partner.portal-section {
   background:
     linear-gradient(180deg, #eef4ff 0%, #ffffff 100%);
@@ -1538,6 +1563,56 @@ output {
 .portal-login-form {
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: end;
+}
+
+#client-login-form.account-entry-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.account-auth-toggle {
+  grid-column: 1 / -1;
+  display: inline-flex;
+  width: fit-content;
+  gap: 0.2rem;
+  padding: 0.24rem;
+  border: 1px solid rgba(15, 51, 44, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.account-auth-toggle label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.48rem 0.72rem;
+  border-radius: 999px;
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.account-auth-toggle label:has(input:checked) {
+  color: #fff;
+  background: var(--deep);
+  box-shadow: 0 10px 22px rgba(15, 51, 44, 0.18);
+}
+
+.account-auth-toggle input {
+  accent-color: var(--deep);
+}
+
+#client-login-form .button,
+#client-login-form .copy-status {
+  grid-column: 1 / -1;
+}
+
+.identity-request-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgb(15 51 44 / 12%);
 }
 
 .account-panel:empty {
@@ -2692,6 +2767,10 @@ code {
   .field-row,
   .checkbox-group,
   .portal-login-form {
+    grid-template-columns: 1fr;
+  }
+
+  #client-login-form.account-entry-form {
     grid-template-columns: 1fr;
   }
 

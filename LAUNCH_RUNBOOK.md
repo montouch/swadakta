@@ -22,12 +22,12 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 
 ## 2. Supabase Auth URL Configuration
 
-These hosted Supabase settings are required for magic links to leave local development and open the live app:
+These hosted Supabase settings are required for Supabase Auth emails and OAuth redirects to leave local development and open the live app:
 
 - Auth Site URL: `https://swadakta.com`
 - Auth Redirect URLs: `https://swadakta.com/**`
 - URL configuration page: `https://supabase.com/dashboard/project/srwkoulknropnwwyqslj/auth/url-configuration`
-- If a magic-link email contains `redirect_to=http://localhost:3000`, the Supabase Auth URL configuration has drifted or the email was sent before the setting changed. Send a fresh link after correcting the setting.
+- If an auth email contains `redirect_to=http://localhost:3000`, the Supabase Auth URL configuration has drifted or the email was sent before the setting changed. Send a fresh email after correcting the setting.
 
 ## 3. Payments
 
@@ -104,10 +104,11 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - `www.swadakta.com` redirects to the apex domain.
 - Supabase Auth Site URL is `https://swadakta.com`, and Redirect URLs include `https://swadakta.com/**`.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
+- Social sign-in buttons stay hidden until `app-config.js` enables the provider and Supabase has real OAuth credentials configured.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
 - `/portal` exposes client access, receiver-partner applications, and admin access.
-- Client and receiver account access is email magic-link based; the same email creates the account if needed and opens it later.
+- Client and receiver account access uses normal email/password account login; the same account can request work, take jobs, or do both.
 - Portal accounts show role-aware next-step checklists for profile, identity verification, request/application, payment, vetting, proof, and review readiness.
 - Signed-in clients and receivers can save an account profile so Swadakta has their role, contact, base, and currency context.
 - Every saved account profile has an account-level ID verification status, link, reference, and admin notes.
@@ -115,7 +116,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Intake captures origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement.
 - Africa-Australia is the first active corridor; Africa-USA, Africa-Europe, and Africa-China are pilot lanes; non-Africa corridors require founder approval until coverage is proven.
 - Physical-item requests require legal/customs checks before buying, shipping, carrying, receiving, or releasing money.
-- Client and receiver portal magic links return sanitized account summaries only; full internal notes and founder margin stay in admin.
+- Client and receiver portal sessions return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must complete ID verification before being marked `Vetted`.
 - Only vetted and ID-verified receivers can be assigned to client jobs.
 - Assigned vetted and ID-verified receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
@@ -133,7 +134,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - M-Pesa/Daraja is now represented in the app as a Kenya payment rail; use sandbox/test mode until the business PayBill/Till/API access and callback URLs are approved for live collection.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
-- Admin magic link works for `swadakta111@gmail.com`.
+- Admin secure email sign-in works for `swadakta111@gmail.com`.
 - Stripe and PayPal accounts are created and verified.
 - First payment links are pasted into `app-config.js` or directly into admin request records.
 - Privacy and terms are reviewed before heavy document collection.
