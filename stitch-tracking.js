@@ -14,6 +14,12 @@
   const fundsStatus = document.querySelector("#tracking-funds-status");
   const protectedAmount = document.querySelector("#tracking-protected-amount");
   const releaseCondition = document.querySelector("#tracking-release-condition");
+  const paymentRail = document.querySelector("#tracking-payment-rail");
+  const paymentRailCopy = document.querySelector("#tracking-payment-rail-copy");
+  const paymentEvidence = document.querySelector("#tracking-payment-evidence");
+  const paymentNextAction = document.querySelector("#tracking-payment-next-action");
+  const paymentBoundary = document.querySelector("#tracking-payment-boundary");
+  const paymentRisk = document.querySelector("#tracking-payment-risk");
   const milestonesEl = document.querySelector("#tracking-milestones");
   const proofChecklist = document.querySelector("#tracking-proof-checklist");
   const reportSummary = document.querySelector("#tracking-report-summary");
@@ -37,6 +43,13 @@
     "in_progress",
   ]);
   const alertStates = new Set(["disputed", "refund_pending", "cancelled", "rejected", "failed"]);
+  const protectedFundStates = new Set([
+    "authorized",
+    "held_by_provider",
+    "deposit_confirmed",
+    "partially_released",
+    "released",
+  ]);
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
@@ -94,6 +107,126 @@
     securePaymentLink.href = href;
     securePaymentLink.classList.remove("hidden");
     securePaymentLink.classList.add("inline-flex");
+  }
+
+  function inferPaymentRail(request) {
+    const preference = String(request.payment_method_preference || "").toLowerCase();
+    const reference = String(request.payment_reference || request.provider_reference || "").toLowerCase();
+    const link = String(request.payment_link || "").toLowerCase();
+    const currency = String(request.quote_currency || "").toUpperCase();
+
+    if (preference && preference !== "discuss") return preference;
+    if (reference.includes("stripe") || link.includes("stripe") || link.includes("checkout")) return "card";
+    if (reference.includes("paypal") || link.includes("paypal")) return "paypal";
+    if (reference.includes("mpesa") || reference.includes("m-pesa") || currency === "KES") return "mpesa";
+    if (reference.includes("wise") || link.includes("wise")) return "wise";
+    if (reference.includes("bank") || reference.includes("transfer")) return "bank";
+    return "discuss";
+  }
+
+  function paymentRailCopyFor(method) {
+    const rails = {
+      card: {
+        label: "Stripe / card checkout",
+        copy: "Use the secure checkout link. Card details stay with the payment provider, not in Swadakta chat.",
+        evidence: "Stripe session or PaymentIntent",
+      },
+      paypal: {
+        label: "PayPal order or invoice",
+        copy: "Use the PayPal approval or invoice link. Swadakta waits for provider confirmation before treating funds as protected.",
+        evidence: "PayPal order, capture, or invoice ID",
+      },
+      mpesa: {
+        label: "M-Pesa KES collection",
+        copy: "Use the configured M-Pesa STK/Paybill route for KES jobs. Work should wait for callback or receipt confirmation.",
+        evidence: "M-Pesa receipt or CheckoutRequestID",
+      },
+      wise: {
+        label: "Wise fallback request",
+        copy: "Wise is a back-office fallback after simpler rails are unsuitable or fail. It needs receipt or statement reconciliation before funds count as protected.",
+        evidence: "Wise transfer reference",
+      },
+      bank: {
+        label: "Bank transfer reference",
+        copy: "Bank transfer is manual. Swadakta needs a matching receipt or statement line before work continues as funded.",
+        evidence: "Bank receipt or statement line",
+      },
+      discuss: {
+        label: "Quote-first rail selection",
+        copy: "Swadakta chooses the payment rail after quote, corridor, currency, value, and compliance checks are clear.",
+        evidence: "Provider reference pending",
+      },
+    };
+
+    return rails[method] || rails.discuss;
+  }
+
+  function nextPaymentAction(request, method) {
+    const funds = String(request.funds_status || "not_collected").toLowerCase();
+    const payment = String(request.payment_status || "unquoted").toLowerCase();
+    const hasQuote = numberValue(request.quote_amount) > 0;
+    const hasLink = Boolean(safeHttpUrl(request.payment_link));
+    const protectedFunds = protectedFundStates.has(funds);
+
+    if (["disputed", "refund_pending", "refunded"].includes(funds) || payment === "refunded") {
+      return "This is an exception case. Founder/admin review handles refunds, disputes, or reversals before any receiver payout.";
+    }
+    if (funds === "released" || request.status === "completed") {
+      return "Funds are marked released or the job is complete. Review and proof history stay visible for the record.";
+    }
+    if (!hasQuote) {
+      return "Wait for Swadakta to confirm scope, route legality, proof requirements, and a quote before paying.";
+    }
+    if (!protectedFunds && hasLink) {
+      return method === "wise" || method === "bank"
+        ? "Pay only if Swadakta has intentionally sent this fallback route, then keep the exact reference for reconciliation."
+        : "Use the secure provider link, then wait for Swadakta to confirm the provider reference before receiver work starts.";
+    }
+    if (!protectedFunds) {
+      return "Payment instructions are being prepared. Do not send money to a personal number unless Swadakta records it as the approved rail.";
+    }
+    if (funds === "partially_released") {
+      return "Some milestone money has been released. Remaining releases still need proof review and client-safe reporting.";
+    }
+    return "Funds are protected or confirmed. Next is receiver assignment, proof collection, and milestone review before any release.";
+  }
+
+  function paymentBoundaryCopy(request) {
+    const funds = String(request.funds_status || "not_collected").toLowerCase();
+    if (funds === "held_by_provider") {
+      return "Funds may be held by a payment provider, but Swadakta still releases receiver payouts only after proof is reviewed.";
+    }
+    if (funds === "authorized") {
+      return "Authorization is not the same as final payout. Work and release decisions stay gated by proof and risk checks.";
+    }
+    if (funds === "deposit_confirmed") {
+      return "Deposit confirmed. Receiver payout is still staged by milestones, proof quality, and admin/founder approval.";
+    }
+    return request.release_condition || "Receiver payout happens only after proof review and milestone approval.";
+  }
+
+  function renderPaymentRailPlan(request = {}) {
+    const method = inferPaymentRail(request);
+    const rail = paymentRailCopyFor(method);
+    const funds = String(request.funds_status || "not_collected").toLowerCase();
+    const protectedFunds = protectedFundStates.has(funds);
+
+    if (paymentRail) paymentRail.textContent = rail.label;
+    if (paymentRailCopy) paymentRailCopy.textContent = rail.copy;
+    if (paymentEvidence) {
+      paymentEvidence.textContent = protectedFunds ? "Evidence recorded" : rail.evidence;
+      paymentEvidence.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        protectedFunds ? "bg-primary/10 text-primary" : "bg-surface-container-high text-on-surface-variant"
+      }`.trim();
+    }
+    if (paymentNextAction) paymentNextAction.textContent = nextPaymentAction(request, method);
+    if (paymentBoundary) paymentBoundary.textContent = paymentBoundaryCopy(request);
+    if (paymentRisk) {
+      paymentRisk.textContent =
+        method === "wise"
+          ? "Wise stays hidden as a fallback rail because it adds manual reconciliation. AI can draft notes, but it cannot mark Wise funds paid or release milestones."
+          : "AI can explain and draft updates, but it cannot mark money paid, assign a receiver, or release/refund funds.";
+    }
   }
 
   function updateJobRoomLinks(code = codeInput.value.trim(), contact = contactInput.value.trim()) {
@@ -300,6 +433,7 @@
     if (!request) {
       setResult("No matching request found. Check the code and contact used on the original brief.", "text-error");
       setPaymentLink("");
+      renderPaymentRailPlan({});
       return;
     }
 
@@ -333,6 +467,7 @@
     }
 
     setPaymentLink(securePaymentHref);
+    renderPaymentRailPlan(request);
     renderMilestones(request);
     renderProofChecklist(request);
     renderMediaLinks(request);

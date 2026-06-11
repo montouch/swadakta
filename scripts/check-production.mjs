@@ -37,6 +37,11 @@ const requiredVerificationMarkers = [
   "Automation boundary",
   "release money, assign paid work",
 ];
+const requiredTrackingMarkers = [
+  "renderPaymentRailPlan",
+  "Wise stays hidden as a fallback rail",
+  "AI can explain and draft updates",
+];
 const requiredAdminOpsMarkers = [
   "requestFlags",
   "Protected decisions are not delegated to AI",
@@ -207,6 +212,14 @@ for (const marker of requiredVerificationMarkers) {
   }
 }
 
+const localTracking = await readLocal("stitch-tracking.js");
+const localTrackingHtml = await readLocal("tracking.html");
+for (const marker of requiredTrackingMarkers) {
+  if (!localTracking.includes(marker) && !localTrackingHtml.includes(marker)) {
+    fail(failures, `Local tracking flow is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -250,6 +263,9 @@ for (const page of requiredPages) {
   }
   if (page === "/verification" && !text.includes("verification.js?v=4")) {
     fail(failures, `${page} does not reference verification.js?v=4`);
+  }
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=5")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=5`);
   }
 }
 
@@ -335,6 +351,21 @@ for (const marker of requiredAdminOpsMarkers) {
     fail(failures, `Production admin-ops.js is missing marker ${marker}`);
   } else {
     pass(`Production admin-ops.js contains ${marker}`);
+  }
+}
+
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=5");
+if (trackingResponse.status !== 200) {
+  fail(failures, `stitch-tracking.js?v=5 returned ${trackingResponse.status}`);
+} else {
+  pass("stitch-tracking.js?v=5 returned 200");
+}
+
+for (const marker of requiredTrackingMarkers) {
+  if (!trackingText.includes(marker)) {
+    fail(failures, `Production stitch-tracking.js is missing marker ${marker}`);
+  } else {
+    pass(`Production stitch-tracking.js contains ${marker}`);
   }
 }
 
