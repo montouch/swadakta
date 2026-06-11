@@ -27,6 +27,7 @@ Suggested first links:
 - Custom balance payment
 
 For one-off jobs, create a new link after quoting, paste it into the admin `Payment link` field, set `Payment` to `Invoice sent`, and set a payment due date.
+Use the intake budget comfort field as a guide, not as a binding price cap; the final quote should still reflect travel, access, urgency, and proof requirements.
 
 ## PayPal
 

@@ -408,6 +408,30 @@
             </select>
           </div>
 
+          <div class="field-row">
+            <div class="field-group">
+              <label for="budget-range">Budget comfort</label>
+              <select id="budget-range" name="budgetRange">
+                <option value="unsure">Not sure yet</option>
+                <option value="under_100">Under AUD 100</option>
+                <option value="100_250">AUD 100-250</option>
+                <option value="250_500">AUD 250-500</option>
+                <option value="500_plus">AUD 500+</option>
+                <option value="retainer">Monthly retainer</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="proof-priority">Proof priority</label>
+              <select id="proof-priority" name="proofPriority">
+                <option value="balanced">Balanced proof pack</option>
+                <option value="speed">Fast confirmation</option>
+                <option value="detailed_media">Detailed photo/video</option>
+                <option value="receipts">Receipts and reference numbers</option>
+                <option value="debrief">Debrief call</option>
+              </select>
+            </div>
+          </div>
+
           <div class="field-group">
             <label for="task-type">Task type</label>
             <select id="task-type" name="taskType">
@@ -457,6 +481,19 @@
               <label for="contact-window">Best contact window</label>
               <input id="contact-window" name="contactWindow" type="text" placeholder="Evenings in my timezone, weekdays..." />
             </div>
+          </div>
+
+          <div class="field-group">
+            <label for="referral-source">How did you hear about us?</label>
+            <select id="referral-source" name="referralSource">
+              <option value="not_sure">Not sure</option>
+              <option value="facebook_instagram">Facebook or Instagram</option>
+              <option value="whatsapp_group">WhatsApp or community group</option>
+              <option value="friend_referral">Friend or referral</option>
+              <option value="search">Search</option>
+              <option value="community_event">Community event</option>
+              <option value="other">Other</option>
+            </select>
           </div>
 
           <label class="field-group" for="supporting-links">
@@ -625,7 +662,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=7"></script>
-    <script src="script.js?v=9"></script>
+    <script src="app-data.js?v=8"></script>
+    <script src="script.js?v=10"></script>
   </body>
 </html>

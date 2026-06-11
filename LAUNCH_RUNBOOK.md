@@ -61,7 +61,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 1. Client submits the public intake form.
 2. Admin confirms consent status is `Complete`.
 3. Admin reviews the request, supporting links, contact preference, and sensitive-document flag.
-4. Admin confirms missing details by WhatsApp or email.
+4. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
 6. Client pays through the agreed provider.
 7. Admin sets status to `paid` after confirmation.
@@ -77,6 +77,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - `www.swadakta.com` redirects to the apex domain.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - Intake consent is required and visible as `Complete` in admin for new requests.
+- Intake captures budget comfort, proof priority, and lead source for quoting and early marketing feedback.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.
 - Stripe and PayPal accounts are created and verified.

@@ -25,6 +25,9 @@ create table if not exists public.service_requests (
   sensitive_documents_expected boolean not null default false,
   preferred_currency text not null default 'AUD',
   payment_method_preference text not null default 'discuss',
+  budget_range text not null default 'unsure',
+  proof_priority text not null default 'balanced',
+  referral_source text not null default 'not_sure',
   task_type text not null check (task_type in ('quick', 'site', 'registry', 'virtual')),
   kenya_location text not null,
   urgency text not null check (urgency in ('standard', 'priority', 'same-day')),
@@ -61,6 +64,9 @@ alter table public.service_requests add column if not exists supporting_links te
 alter table public.service_requests add column if not exists sensitive_documents_expected boolean not null default false;
 alter table public.service_requests add column if not exists preferred_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_method_preference text not null default 'discuss';
+alter table public.service_requests add column if not exists budget_range text not null default 'unsure';
+alter table public.service_requests add column if not exists proof_priority text not null default 'balanced';
+alter table public.service_requests add column if not exists referral_source text not null default 'not_sure';
 alter table public.service_requests add column if not exists quote_amount integer;
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_link text;
@@ -111,6 +117,27 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_payment_method_preference_check check (payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_budget_range_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_budget_range_check check (budget_range in ('unsure', 'under_100', '100_250', '250_500', '500_plus', 'retainer'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_proof_priority_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_proof_priority_check check (proof_priority in ('balanced', 'speed', 'detailed_media', 'receipts', 'debrief'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_referral_source_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_referral_source_check check (referral_source in ('not_sure', 'facebook_instagram', 'whatsapp_group', 'friend_referral', 'search', 'community_event', 'other'));
   end if;
 
   if not exists (
@@ -221,6 +248,9 @@ with check (
   )
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
   and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank')
+  and budget_range in ('unsure', 'under_100', '100_250', '250_500', '500_plus', 'retainer')
+  and proof_priority in ('balanced', 'speed', 'detailed_media', 'receipts', 'debrief')
+  and referral_source in ('not_sure', 'facebook_instagram', 'whatsapp_group', 'friend_referral', 'search', 'community_event', 'other')
   and task_type in ('quick', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')
   and hours_estimate between 1 and 80
@@ -271,6 +301,9 @@ grant insert (
   sensitive_documents_expected,
   preferred_currency,
   payment_method_preference,
+  budget_range,
+  proof_priority,
+  referral_source,
   task_type,
   kenya_location,
   urgency,

@@ -18,7 +18,7 @@ Completed:
 - Public client intake insert was verified with the publishable key.
 - Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
 - Required client permission, scope, terms, and privacy consent fields were added to Supabase and enforced by RLS.
-- Contact preference, contact window, sensitive-document flag, and supporting-link fields were added to Supabase.
+- Contact preference, contact window, budget comfort, proof priority, lead source, sensitive-document flag, and supporting-link fields were added to Supabase.
 
 Admin activation status:
 
@@ -67,6 +67,7 @@ Minimum production checklist:
 - First request submitted from the live URL
 - Admin dashboard can see and update the request
 - Admin dashboard filters by status, payment state, and sensitive-document risk
+- Admin shows budget comfort, proof priority, and lead source on each request
 - Admin can add quote amount, payment link, report link, and proof links
 - Admin can copy a client update or Kenya-side operator brief from each request
 - Supabase rejects unsafe non-HTTP client-visible links for supporting, payment, report, and proof URLs

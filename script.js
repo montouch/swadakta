@@ -41,6 +41,33 @@ const paymentMethodLabels = {
   bank: "Bank or mobile money transfer",
 };
 
+const budgetRangeLabels = {
+  unsure: "Not sure yet",
+  under_100: "Under AUD 100",
+  "100_250": "AUD 100-250",
+  "250_500": "AUD 250-500",
+  "500_plus": "AUD 500+",
+  retainer: "Monthly retainer",
+};
+
+const proofPriorityLabels = {
+  balanced: "Balanced proof pack",
+  speed: "Fast confirmation",
+  detailed_media: "Detailed photo/video",
+  receipts: "Receipts and reference numbers",
+  debrief: "Debrief call",
+};
+
+const referralSourceLabels = {
+  not_sure: "Not sure",
+  facebook_instagram: "Facebook or Instagram",
+  whatsapp_group: "WhatsApp or community group",
+  friend_referral: "Friend or referral",
+  search: "Search",
+  community_event: "Community event",
+  other: "Other",
+};
+
 const baseRates = {
   quick: 85,
   site: 180,
@@ -129,6 +156,9 @@ function buildBrief() {
   const deadline = document.querySelector("#deadline").value.trim() || "Flexible";
   const preferredCurrency = document.querySelector("#preferred-currency").value;
   const paymentMethodPreference = document.querySelector("#payment-method-preference").value;
+  const budgetRange = document.querySelector("#budget-range").value;
+  const proofPriority = document.querySelector("#proof-priority").value;
+  const referralSource = document.querySelector("#referral-source").value;
   const location = document.querySelector("#location").value.trim() || "Not specified";
   const localContactName = document.querySelector("#local-contact-name").value.trim() || "Not provided";
   const localContactPhone = document.querySelector("#local-contact-phone").value.trim() || "Not provided";
@@ -154,6 +184,9 @@ function buildBrief() {
     `Client base: ${diasporaLocation}`,
     `Preferred quote currency: ${preferredCurrency}`,
     `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
+    `Budget comfort: ${budgetRangeLabels[budgetRange] || budgetRange}`,
+    `Proof priority: ${proofPriorityLabels[proofPriority] || proofPriority}`,
+    `Lead source: ${referralSourceLabels[referralSource] || referralSource}`,
     `Task: ${selectedTask}`,
     `Location: ${location}, Kenya`,
     `Ideal deadline: ${deadline}`,
@@ -192,6 +225,9 @@ function buildPayload() {
     sensitive_documents_expected: document.querySelector("#sensitive-documents").checked,
     preferred_currency: document.querySelector("#preferred-currency").value,
     payment_method_preference: document.querySelector("#payment-method-preference").value,
+    budget_range: document.querySelector("#budget-range").value,
+    proof_priority: document.querySelector("#proof-priority").value,
+    referral_source: document.querySelector("#referral-source").value,
     task_type: taskType.value,
     kenya_location: document.querySelector("#location").value.trim(),
     urgency: urgency.value,

@@ -46,6 +46,33 @@ const paymentMethodLabels = {
   bank: "Bank or mobile money transfer",
 };
 
+const budgetRangeLabels = {
+  unsure: "Not sure yet",
+  under_100: "Under AUD 100",
+  "100_250": "AUD 100-250",
+  "250_500": "AUD 250-500",
+  "500_plus": "AUD 500+",
+  retainer: "Monthly retainer",
+};
+
+const proofPriorityLabels = {
+  balanced: "Balanced proof pack",
+  speed: "Fast confirmation",
+  detailed_media: "Detailed photo/video",
+  receipts: "Receipts and reference numbers",
+  debrief: "Debrief call",
+};
+
+const referralSourceLabels = {
+  not_sure: "Not sure",
+  facebook_instagram: "Facebook or Instagram",
+  whatsapp_group: "WhatsApp or community group",
+  friend_referral: "Friend or referral",
+  search: "Search",
+  community_event: "Community event",
+  other: "Other",
+};
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -151,6 +178,9 @@ function getFilteredRequests() {
       request.contact_preference,
       request.contact_window,
       paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
+      budgetRangeLabels[request.budget_range] || request.budget_range,
+      proofPriorityLabels[request.proof_priority] || request.proof_priority,
+      referralSourceLabels[request.referral_source] || request.referral_source,
       Array.isArray(request.supporting_links) ? request.supporting_links.join(" ") : "",
       request.notes,
     ]
@@ -276,6 +306,9 @@ function renderRequestCardV2(request) {
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
+  const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
+  const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
   const consentStatus = formatConsentStatus(request);
   const contactPreference = request.contact_preference || "whatsapp";
   const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
@@ -301,6 +334,9 @@ function renderRequestCardV2(request) {
         <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
         <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
         <div><dt>Pay method</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
+        <div><dt>Budget</dt><dd>${escapeHtml(budgetRange)}</dd></div>
+        <div><dt>Proof focus</dt><dd>${escapeHtml(proofPriority)}</dd></div>
+        <div><dt>Lead source</dt><dd>${escapeHtml(referralSource)}</dd></div>
         <div><dt>Contact window</dt><dd>${escapeHtml(request.contact_window || "Not specified")}</dd></div>
         <div><dt>Sensitive docs</dt><dd>${escapeHtml(sensitiveDocuments)}</dd></div>
         <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
@@ -515,6 +551,9 @@ function buildOperatorBrief(request, form) {
   const quoteLine = payload.quote_amount ? formatCurrency(payload.quote_amount, payload.quote_currency) : "Not quoted";
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
+  const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
+  const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
 
   return [
     `Swadakta operator brief: ${request.request_code}`,
@@ -527,6 +566,9 @@ function buildOperatorBrief(request, form) {
     `Local contact: ${localContact}`,
     `Client contact preference: ${request.contact_preference || "whatsapp"}`,
     `Preferred payment method: ${paymentMethod}`,
+    `Budget comfort: ${budgetRange}`,
+    `Proof priority: ${proofPriority}`,
+    `Lead source: ${referralSource}`,
     `Best contact window: ${request.contact_window || "Not specified"}`,
     `Consent status: ${consentStatus}`,
     `Sensitive documents expected: ${request.sensitive_documents_expected ? "Yes" : "No"}`,
