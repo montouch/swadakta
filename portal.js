@@ -1067,7 +1067,7 @@ async function sendPortalMagicLink(email, hash, statusElement) {
   const result = await window.SwadaktaData.signInPortal(email, redirectTo);
   statusElement.textContent =
     result.mode === "supabase"
-      ? `Account link sent. It will open ${new URL(result.redirectTo).origin}.`
+      ? `Account link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to your portal.`
       : "Demo mode does not require sign-in.";
   if (result.mode === "local") {
     await loadAccountPanels();
@@ -1408,7 +1408,7 @@ adminForm.addEventListener("submit", async (event) => {
     adminStatus.className = "tracking-result is-success";
     adminStatus.textContent =
       result.mode === "supabase"
-        ? "Admin account link sent. Open it in this browser to enter the admin desk."
+        ? `Admin account link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then continues to admin.`
         : "Demo mode does not require sign-in. Open the admin dashboard.";
   } catch (error) {
     adminStatus.className = "tracking-result is-error";

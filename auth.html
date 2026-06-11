@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Swadakta Account Access</title>
+    <meta
+      name="description"
+      content="Confirm your Swadakta account access and continue to the right portal."
+    />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="theme-color" content="#0f332c" />
+    <link rel="stylesheet" href="styles.css?v=22" />
+  </head>
+  <body class="auth-body">
+    <main class="auth-shell" aria-labelledby="auth-title">
+      <section class="auth-panel">
+        <a class="brand" href="index.html" aria-label="Swadakta home">
+          <img class="brand-mark" src="assets/swadakta-brand-mark.svg" alt="" aria-hidden="true" />
+          <span>
+            <strong>Swadakta</strong>
+            <small>Account access</small>
+          </span>
+        </a>
+
+        <div class="auth-copy">
+          <p class="eyebrow">Secure sign-in</p>
+          <h1 id="auth-title">Opening your Swadakta account.</h1>
+          <p id="auth-message">
+            Checking your magic link. Keep this tab open while Swadakta confirms the session.
+          </p>
+        </div>
+
+        <div class="auth-status-card" id="auth-status-card" role="status" aria-live="polite">
+          <strong>Checking link...</strong>
+          <span>Magic links work best when opened in the same browser that requested them.</span>
+        </div>
+
+        <nav class="auth-actions" aria-label="Account destinations">
+          <a class="button button-primary" id="auth-continue" href="portal.html">Continue</a>
+          <a class="button button-secondary" href="portal.html">Portal</a>
+          <a class="button button-secondary" href="admin.html">Admin</a>
+        </nav>
+      </section>
+    </main>
+
+    <script src="app-config.js?v=3"></script>
+    <script src="app-data.js?v=32"></script>
+    <script src="auth.js?v=1"></script>
+  </body>
+</html>

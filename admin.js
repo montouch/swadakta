@@ -3585,7 +3585,7 @@ authForm.addEventListener("submit", async (event) => {
     const result = await window.SwadaktaData.signInAdmin(email);
     authStatus.textContent =
       result.mode === "supabase"
-        ? `Magic link sent. It will open ${new URL(result.redirectTo).origin}.`
+        ? `Magic link sent. It opens ${new URL(result.redirectTo).origin}/auth first, then returns here.`
         : "Demo mode does not require sign-in.";
     if (result.mode === "local") {
       await loadRequests();

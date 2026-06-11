@@ -35,6 +35,15 @@
     return target.href;
   }
 
+  function authCallbackRedirect(redirectTo = window.location.href.split("#")[0]) {
+    const target = new URL(normalizeAuthRedirect(redirectTo));
+    const base = publicBaseUrl() || target.origin;
+    const next = `${target.pathname}${target.search}${target.hash}` || "/portal";
+    const callback = new URL("/auth", base);
+    callback.searchParams.set("next", next);
+    return callback.href;
+  }
+
   function createLocalCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `SW-${token}`;
@@ -1455,7 +1464,8 @@
 
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
-    const emailRedirectTo = normalizeAuthRedirect(redirectTo);
+    const finalRedirectTo = normalizeAuthRedirect(redirectTo);
+    const emailRedirectTo = authCallbackRedirect(finalRedirectTo);
 
     if (!supabase) {
       return { mode: "local" };
@@ -1473,7 +1483,7 @@
       throw error;
     }
 
-    return { mode: "supabase", redirectTo: emailRedirectTo };
+    return { mode: "supabase", redirectTo: emailRedirectTo, finalRedirectTo };
   }
 
   async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
