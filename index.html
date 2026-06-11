@@ -6,17 +6,18 @@
     <title>Swadakta Diaspora Concierge</title>
     <meta
       name="description"
-      content="Swadakta is a Kenya-Australia concierge and virtual assistant service for diaspora errands, property tracking, family logistics, and local business support."
+      content="Swadakta is a global diaspora concierge and virtual assistant service for Kenya errands, property tracking, family logistics, and local business support."
     />
     <meta name="theme-color" content="#0f332c" />
     <meta property="og:title" content="Swadakta Diaspora Concierge" />
     <meta
       property="og:description"
-      content="Trusted eyes, ears, and boots on the ground in Kenya for Kenyans living in Australia."
+      content="Trusted eyes, ears, and boots on the ground in Kenya for diaspora clients anywhere outside Kenya."
     />
     <meta property="og:image" content="assets/diaspora-concierge-hero.png" />
-    <link rel="preload" href="assets/diaspora-concierge-hero.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=2" />
+    <link rel="preload" href="assets/saas-burst.png" as="image" />
+    <link rel="preload" href="assets/saas-objects.png" as="image" />
+    <link rel="stylesheet" href="styles.css?v=4" />
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
@@ -39,14 +40,37 @@
 
     <main id="top">
       <section class="hero" aria-labelledby="hero-title">
-        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-media" aria-hidden="true">
+          <div class="hero-dashboard">
+            <div class="dashboard-bar">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <div class="dashboard-grid">
+              <div class="dashboard-panel wide">
+                <small>Live brief</small>
+                <strong>London to Kiambu</strong>
+                <p>Site visit, video proof, contractor check.</p>
+              </div>
+              <div class="dashboard-panel">
+                <small>Status</small>
+                <strong>Quoted</strong>
+              </div>
+              <div class="dashboard-panel">
+                <small>Proof pack</small>
+                <strong>8 files</strong>
+              </div>
+            </div>
+          </div>
+        </div>
         <div class="hero-overlay"></div>
         <div class="hero-content">
-          <p class="eyebrow">Kenya-Australia Nexus</p>
-          <h1 id="hero-title">Trusted ground support for Kenyans in Australia.</h1>
+          <p class="eyebrow">Global Kenya Diaspora</p>
+          <h1 id="hero-title">Trusted ground support in Kenya, wherever you live.</h1>
           <p class="hero-copy">
-            Swadakta helps diaspora clients verify property work, run errands, support family,
-            and manage Kenyan operations from Australia with clear reports and reliable execution.
+            Swadakta helps diaspora clients outside Kenya verify property work, run errands,
+            support family, and manage Kenyan operations with clear reports and reliable execution.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
             <a class="button button-primary" href="#intake">
@@ -55,7 +79,7 @@
               </svg>
               Plan an errand
             </a>
-            <a class="button button-secondary" href="#launch">Launch with Steward</a>
+            <a class="button button-secondary" href="#workflow">See the workflow</a>
           </div>
           <dl class="hero-proof" aria-label="Service highlights">
             <div>
@@ -64,7 +88,7 @@
             </div>
             <div>
               <dt>2 desks</dt>
-              <dd>Australia growth, Kenya operations</dd>
+              <dd>diaspora intake, Kenya operations</dd>
             </div>
             <div>
               <dt>3 layers</dt>
@@ -87,7 +111,7 @@
           <h2 id="services-title">Two service lines, one accountable operator.</h2>
           <p>
             Built for people sending money, decisions, and trust across borders. Clients get
-            Kenyan execution with Australian-side relationship management.
+            Kenya-side execution with diaspora-friendly communication from wherever they are based.
           </p>
         </div>
         <div class="service-tabs" data-tabs>
@@ -157,11 +181,11 @@
         </div>
         <div class="role-grid">
           <article class="role-card">
-            <span class="role-label">Australia side</span>
-            <h3>Steward leads growth and trust.</h3>
+            <span class="role-label">Diaspora side</span>
+            <h3>The diaspora desk keeps communication clear.</h3>
             <p>
-              Community content, referral loops, inquiry handling, and relationship building inside
-              the Kenyan-Australian network.
+              Intake, quoting, status updates, and client communication are handled in a way that
+              works across time zones and countries.
             </p>
           </article>
           <article class="role-card">
@@ -208,7 +232,7 @@
         <div class="section-heading">
           <p class="eyebrow">Starter Pricing</p>
           <h2 id="pricing-title">Simple entry points for testing demand.</h2>
-          <p>Launch pricing can be tuned after the first ten paid jobs.</p>
+          <p>Launch pricing can be tuned after the first ten paid jobs. AUD is shown for the pilot, with local-currency quotes available for clients elsewhere.</p>
         </div>
         <div class="pricing-grid">
           <article class="price-card">
@@ -234,8 +258,8 @@
           <p class="eyebrow">Client Intake</p>
           <h2 id="intake-title">Build a first brief in under a minute.</h2>
           <p>
-            Use this as the first sales workflow: qualify the request, set expectations, estimate
-            the fee, and copy a clean client brief for follow-up.
+            Brief the Kenya desk with the location, timeline, proof requirements, and contact
+            details needed to estimate and schedule the work.
           </p>
         </div>
 
@@ -254,11 +278,11 @@
           <div class="field-row">
             <div class="field-group">
               <label for="email">Email</label>
-              <input id="email" name="email" type="email" value="swadakta111@gmail.com" autocomplete="email" />
+              <input id="email" name="email" type="email" autocomplete="email" />
             </div>
             <div class="field-group">
-              <label for="australia-location">Australia location</label>
-              <input id="australia-location" name="australiaLocation" type="text" value="Adelaide" autocomplete="address-level2" />
+              <label for="diaspora-location">Where are you based?</label>
+              <input id="diaspora-location" name="diasporaLocation" type="text" placeholder="City and country outside Kenya" autocomplete="address-level2" />
             </div>
           </div>
 
@@ -275,7 +299,7 @@
           <div class="field-row">
             <div class="field-group">
               <label for="location">Kenya location</label>
-              <input id="location" name="location" type="text" value="Nairobi" autocomplete="address-level2" />
+              <input id="location" name="location" type="text" placeholder="Nairobi, Kisumu, Nakuru..." autocomplete="address-level2" />
             </div>
             <div class="field-group">
               <label for="urgency">Urgency</label>
@@ -310,7 +334,7 @@
 
           <label class="field-group" for="notes">
             Notes
-            <textarea id="notes" name="notes" rows="4">Client needs a progress update and proof that the contractor completed the agreed work.</textarea>
+            <textarea id="notes" name="notes" rows="4" placeholder="Tell us what needs to happen in Kenya, who is involved, and what proof you need."></textarea>
           </label>
 
           <div class="form-actions">
@@ -334,28 +358,26 @@
 
       <section class="section launch" id="launch" aria-labelledby="launch-title">
         <div>
-          <p class="eyebrow">Launch Plan</p>
-          <h2 id="launch-title">A soft announcement Steward can post this week.</h2>
+          <p class="eyebrow">Start Anywhere Outside Kenya</p>
+          <h2 id="launch-title">Send one brief, get a tracked Kenya execution plan.</h2>
         </div>
         <div class="launch-grid">
           <article class="launch-post">
-            <h3>Social post draft</h3>
+            <h3>WhatsApp message draft</h3>
             <p id="launch-copy">
-              Kenyans in Australia: if you need trusted help handling property checks, errands,
-              documents, deliveries, or business follow-ups back home in Kenya, we are testing a
-              new concierge service. You brief us from Australia, our Kenya desk executes, and you
-              receive clear updates with photos, video, receipts, and next steps. Reply "Kenya help"
-              and we will send the first intake form.
+              Hi Swadakta, I am based outside Kenya and need help with a task in Kenya. The task is
+              in [Kenya town/location], I need [errand/site visit/document/family support/business
+              follow-up], and my ideal timeline is [date]. Please help me price and plan it.
             </p>
-            <button class="button button-secondary" type="button" id="copy-launch">Copy launch post</button>
+            <button class="button button-secondary" type="button" id="copy-launch">Copy WhatsApp draft</button>
             <span class="copy-status" id="launch-status" role="status"></span>
           </article>
-          <ul class="launch-checklist" aria-label="Launch checklist">
-            <li>Name and WhatsApp intake number</li>
-            <li>Three pilot service packages</li>
-            <li>Runner vetting checklist</li>
-            <li>Report template and proof policy</li>
-            <li>First ten-client feedback loop</li>
+          <ul class="launch-checklist" aria-label="Brief checklist">
+            <li>Your city and country outside Kenya</li>
+            <li>Kenya location and local contact, if any</li>
+            <li>Task type, deadline, and urgency</li>
+            <li>Documents, access details, or vendor contacts</li>
+            <li>Photos, video, receipts, or call report needed</li>
           </ul>
         </div>
       </section>
@@ -368,6 +390,6 @@
 
     <script src="app-config.js?v=3"></script>
     <script src="app-data.js?v=3"></script>
-    <script src="script.js?v=3"></script>
+    <script src="script.js?v=4"></script>
   </body>
 </html>

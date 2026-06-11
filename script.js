@@ -62,7 +62,7 @@ function buildBrief() {
   const clientName = document.querySelector("#client-name").value.trim() || "Not specified";
   const whatsapp = document.querySelector("#whatsapp").value.trim() || "Not specified";
   const email = document.querySelector("#email").value.trim() || "Not specified";
-  const australiaLocation = document.querySelector("#australia-location").value.trim() || "Not specified";
+  const diasporaLocation = document.querySelector("#diaspora-location").value.trim() || "Not specified";
   const location = document.querySelector("#location").value.trim() || "Not specified";
   const notes = document.querySelector("#notes").value.trim() || "No notes added.";
   const selectedTask = taskType.options[taskType.selectedIndex].text;
@@ -74,7 +74,7 @@ function buildBrief() {
     `Client: ${clientName}`,
     `WhatsApp: ${whatsapp}`,
     `Email: ${email}`,
-    `Australia location: ${australiaLocation}`,
+    `Client base: ${diasporaLocation}`,
     `Task: ${selectedTask}`,
     `Location: ${location}, Kenya`,
     `Urgency: ${selectedUrgency}`,
@@ -90,7 +90,7 @@ function buildPayload() {
     client_name: document.querySelector("#client-name").value.trim(),
     email: document.querySelector("#email").value.trim(),
     whatsapp: document.querySelector("#whatsapp").value.trim(),
-    australia_location: document.querySelector("#australia-location").value.trim(),
+    australia_location: document.querySelector("#diaspora-location").value.trim(),
     task_type: taskType.value,
     kenya_location: document.querySelector("#location").value.trim(),
     urgency: urgency.value,
@@ -193,10 +193,6 @@ form.addEventListener("submit", async (event) => {
     const result = await window.SwadaktaData.createRequest(buildPayload());
     showSubmissionSuccess(result);
     form.reset();
-    document.querySelector("#australia-location").value = "Adelaide";
-    document.querySelector("#location").value = "Nairobi";
-    document.querySelector("#notes").value =
-      "Client needs a progress update and proof that the contractor completed the agreed work.";
     form.querySelector('input[value="photos"]').checked = true;
     form.querySelector('input[value="video"]').checked = true;
     form.querySelector('input[value="receipts"]').checked = true;
@@ -216,7 +212,7 @@ form.addEventListener("submit", async (event) => {
 copyBrief.addEventListener("click", () => copyText(buildBrief(), briefStatus, "Brief copied."));
 copyLaunch.addEventListener("click", () => {
   const launchCopy = document.querySelector("#launch-copy").textContent.trim().replace(/\s+/g, " ");
-  copyText(launchCopy, launchStatus, "Launch post copied.");
+  copyText(launchCopy, launchStatus, "WhatsApp draft copied.");
 });
 
 updateEstimate();

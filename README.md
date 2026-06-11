@@ -1,6 +1,6 @@
 # Swadakta Diaspora Concierge
 
-A launch-ready MVP for a Kenya-Australia diaspora concierge and virtual assistant service.
+A launch-ready MVP for a global diaspora concierge and virtual assistant service for Kenya-bound errands, property checks, family logistics, and local business support.
 
 ## What is included
 
