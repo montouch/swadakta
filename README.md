@@ -9,7 +9,9 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`
 - Request status, payment status, operator notes, and client report workflow
-- Copy-ready client updates and social launch post
+- Quote amount, payment link, due date, report URL, and proof-link workflow
+- Client-safe request tracking by request code plus email/WhatsApp
+- Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`
 - Vercel static deployment config
 

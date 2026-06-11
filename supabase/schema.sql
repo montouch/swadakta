@@ -14,7 +14,12 @@ create table if not exists public.service_requests (
   client_name text not null,
   email text,
   whatsapp text not null,
+  client_base text,
   australia_location text,
+  deadline date,
+  local_contact_name text,
+  local_contact_phone text,
+  preferred_currency text not null default 'AUD',
   task_type text not null check (task_type in ('quick', 'site', 'registry', 'virtual')),
   kenya_location text not null,
   urgency text not null check (urgency in ('standard', 'priority', 'same-day')),
@@ -27,9 +32,56 @@ create table if not exists public.service_requests (
   assigned_to text,
   operator_notes text,
   client_report text,
+  quote_amount integer,
+  quote_currency text not null default 'AUD',
+  payment_link text,
+  payment_due_at date,
+  client_report_url text,
+  proof_links text[] not null default array[]::text[],
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table public.service_requests add column if not exists client_base text;
+alter table public.service_requests add column if not exists deadline date;
+alter table public.service_requests add column if not exists local_contact_name text;
+alter table public.service_requests add column if not exists local_contact_phone text;
+alter table public.service_requests add column if not exists preferred_currency text not null default 'AUD';
+alter table public.service_requests add column if not exists quote_amount integer;
+alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
+alter table public.service_requests add column if not exists payment_link text;
+alter table public.service_requests add column if not exists payment_due_at date;
+alter table public.service_requests add column if not exists client_report_url text;
+alter table public.service_requests add column if not exists proof_links text[] not null default array[]::text[];
+
+update public.service_requests
+set client_base = australia_location
+where client_base is null and australia_location is not null;
+
+do $$
+begin
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_quote_amount_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_quote_amount_check check (quote_amount is null or quote_amount >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_preferred_currency_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_quote_currency_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_quote_currency_check check (quote_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+  end if;
+end
+$$;
 
 create index if not exists service_requests_status_idx on public.service_requests (status);
 create index if not exists service_requests_created_at_idx on public.service_requests (created_at desc);
@@ -86,8 +138,10 @@ with check (
   and length(request_code) between 6 and 24
   and btrim(client_name) <> ''
   and btrim(whatsapp) <> ''
+  and btrim(coalesce(client_base, australia_location, '')) <> ''
   and btrim(kenya_location) <> ''
   and btrim(notes) <> ''
+  and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
   and task_type in ('quick', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')
   and hours_estimate between 1 and 80
@@ -112,7 +166,7 @@ using ((select app_private.is_admin()))
 with check ((select app_private.is_admin()));
 
 grant usage on schema public to anon, authenticated;
-grant usage on schema app_private to authenticated;
+grant usage on schema app_private to anon, authenticated;
 grant execute on function app_private.is_admin() to authenticated;
 
 grant insert (
@@ -121,7 +175,12 @@ grant insert (
   client_name,
   email,
   whatsapp,
+  client_base,
   australia_location,
+  deadline,
+  local_contact_name,
+  local_contact_phone,
+  preferred_currency,
   task_type,
   kenya_location,
   urgency,
@@ -137,9 +196,86 @@ grant update (
   payment_status,
   assigned_to,
   operator_notes,
-  client_report
+  client_report,
+  quote_amount,
+  quote_currency,
+  payment_link,
+  payment_due_at,
+  client_report_url,
+  proof_links
 ) on public.service_requests to authenticated;
 grant select on public.admin_users to authenticated;
+
+create or replace function app_private.track_service_request(
+  lookup_code text,
+  lookup_contact text
+)
+returns table (
+  request_code text,
+  status text,
+  payment_status text,
+  quote_amount integer,
+  quote_currency text,
+  payment_link text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    sr.request_code,
+    sr.status,
+    sr.payment_status,
+    sr.quote_amount,
+    sr.quote_currency,
+    sr.payment_link,
+    sr.client_report,
+    sr.client_report_url,
+    sr.proof_links,
+    sr.updated_at
+  from public.service_requests sr
+  where upper(btrim(sr.request_code)) = upper(btrim(lookup_code))
+    and (
+      lower(btrim(coalesce(sr.email, ''))) = lower(btrim(lookup_contact))
+      or regexp_replace(coalesce(sr.whatsapp, ''), '\D', '', 'g') = regexp_replace(coalesce(lookup_contact, ''), '\D', '', 'g')
+    )
+  limit 1;
+$$;
+
+revoke all on function app_private.track_service_request(text, text) from public;
+grant execute on function app_private.track_service_request(text, text) to anon, authenticated;
+
+create or replace function public.track_service_request(
+  lookup_code text,
+  lookup_contact text
+)
+returns table (
+  request_code text,
+  status text,
+  payment_status text,
+  quote_amount integer,
+  quote_currency text,
+  payment_link text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security invoker
+set search_path = public, app_private
+as $$
+  select * from app_private.track_service_request(lookup_code, lookup_contact);
+$$;
+
+revoke all on function public.track_service_request(text, text) from public;
+grant execute on function public.track_service_request(text, text) to anon, authenticated;
 
 do $$
 begin

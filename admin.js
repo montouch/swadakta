@@ -56,8 +56,12 @@ function formatDate(value) {
   }).format(new Date(value));
 }
 
-function formatCurrency(amount) {
-  return `AUD ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(amount || 0)}`;
+function formatCurrency(amount, currency = "AUD") {
+  if (!amount) {
+    return "Not quoted";
+  }
+
+  return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(amount)}`;
 }
 
 function getFilteredRequests() {
@@ -72,7 +76,10 @@ function getFilteredRequests() {
       request.whatsapp,
       request.email,
       request.kenya_location,
+      request.client_base,
       request.australia_location,
+      request.local_contact_name,
+      request.local_contact_phone,
       request.notes,
     ]
       .join(" ")
@@ -104,6 +111,12 @@ function paymentOptions(current) {
       ([value, label]) =>
         `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
     )
+    .join("");
+}
+
+function currencyOptions(current) {
+  return ["AUD", "USD", "GBP", "EUR", "KES"]
+    .map((currency) => `<option value="${currency}" ${currency === current ? "selected" : ""}>${currency}</option>`)
     .join("");
 }
 
@@ -165,6 +178,101 @@ function renderRequestCard(request) {
   `;
 }
 
+function renderRequestCardV2(request) {
+  const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "";
+  const proofLinks = Array.isArray(request.proof_links) ? request.proof_links.join("\n") : "";
+  const clientBase = request.client_base || request.australia_location || "Not specified";
+  const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
+  const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
+
+  return `
+    <article class="request-card" data-id="${escapeHtml(request.id)}">
+      <header class="request-card-header">
+        <div>
+          <span class="request-code">${escapeHtml(request.request_code)}</span>
+          <h2>${escapeHtml(request.client_name)}</h2>
+          <p>${escapeHtml(taskLabels[request.task_type] || request.task_type)} - ${escapeHtml(request.kenya_location)}, Kenya</p>
+        </div>
+        <span class="status-pill status-${escapeHtml(request.status)}">${escapeHtml(statusLabels[request.status] || request.status)}</span>
+      </header>
+
+      <dl class="request-details">
+        <div><dt>WhatsApp</dt><dd>${escapeHtml(request.whatsapp)}</dd></div>
+        <div><dt>Email</dt><dd>${escapeHtml(request.email || "Not provided")}</dd></div>
+        <div><dt>Client base</dt><dd>${escapeHtml(clientBase)}</dd></div>
+        <div><dt>Urgency</dt><dd>${escapeHtml(request.urgency)}</dd></div>
+        <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
+        <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
+        <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
+        <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>
+        <div><dt>Quote</dt><dd>${escapeHtml(formatCurrency(request.quote_amount, quoteCurrency))}</dd></div>
+        <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
+        <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>
+      </dl>
+
+      <p class="request-notes">${escapeHtml(request.notes)}</p>
+
+      <form class="request-update-form">
+        <div class="field-row">
+          <label class="field-group">
+            Status
+            <select name="status">${statusOptions(request.status)}</select>
+          </label>
+          <label class="field-group">
+            Payment
+            <select name="payment_status">${paymentOptions(request.payment_status)}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Quote amount
+            <input name="quote_amount" type="number" min="0" step="1" value="${escapeHtml(request.quote_amount || "")}" />
+          </label>
+          <label class="field-group">
+            Quote currency
+            <select name="quote_currency">${currencyOptions(quoteCurrency)}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Payment link
+            <input name="payment_link" type="url" value="${escapeHtml(request.payment_link || "")}" placeholder="Stripe, PayPal, Wise, or invoice URL" />
+          </label>
+          <label class="field-group">
+            Payment due
+            <input name="payment_due_at" type="date" value="${escapeHtml(request.payment_due_at || "")}" />
+          </label>
+        </div>
+        <label class="field-group">
+          Assigned operator
+          <input name="assigned_to" type="text" value="${escapeHtml(request.assigned_to || "")}" />
+        </label>
+        <label class="field-group">
+          Internal notes
+          <textarea name="operator_notes" rows="3">${escapeHtml(request.operator_notes || "")}</textarea>
+        </label>
+        <label class="field-group">
+          Client report
+          <textarea name="client_report" rows="4">${escapeHtml(request.client_report || "")}</textarea>
+        </label>
+        <label class="field-group">
+          Client report URL
+          <input name="client_report_url" type="url" value="${escapeHtml(request.client_report_url || "")}" placeholder="Shareable report link" />
+        </label>
+        <label class="field-group">
+          Proof links
+          <textarea name="proof_links" rows="3" placeholder="One proof/media link per line">${escapeHtml(proofLinks)}</textarea>
+        </label>
+        <div class="form-actions">
+          <button class="button button-primary" type="submit">Save update</button>
+          <button class="button button-secondary copy-update" type="button">Copy client update</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </form>
+    </article>
+  `;
+}
+
 function renderRequests() {
   updateMetrics();
   const visibleRequests = getFilteredRequests();
@@ -179,7 +287,7 @@ function renderRequests() {
     return;
   }
 
-  requestBoard.innerHTML = visibleRequests.map(renderRequestCard).join("");
+  requestBoard.innerHTML = visibleRequests.map(renderRequestCardV2).join("");
 }
 
 async function loadRequests() {
@@ -225,12 +333,24 @@ function getRequestByCard(card) {
 
 function formPayload(form) {
   const formData = new FormData(form);
+  const quoteAmount = formData.get("quote_amount");
+  const proofLinks = String(formData.get("proof_links") || "")
+    .split(/\n|,/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+
   return {
     status: formData.get("status"),
     payment_status: formData.get("payment_status"),
     assigned_to: formData.get("assigned_to"),
     operator_notes: formData.get("operator_notes"),
     client_report: formData.get("client_report"),
+    quote_amount: quoteAmount ? Number(quoteAmount) : null,
+    quote_currency: formData.get("quote_currency"),
+    payment_link: formData.get("payment_link"),
+    payment_due_at: formData.get("payment_due_at") || null,
+    client_report_url: formData.get("client_report_url"),
+    proof_links: proofLinks,
   };
 }
 
@@ -258,13 +378,26 @@ async function copyText(text, statusElement) {
 
 function buildClientUpdate(request, form) {
   const payload = formPayload(form);
+  const quoteLine = payload.quote_amount ? `Quote: ${formatCurrency(payload.quote_amount, payload.quote_currency)}` : "Quote: Pending.";
+  const paymentLine = payload.payment_link ? `Payment link: ${payload.payment_link}` : "Payment link: Not issued yet.";
+  const dueLine = payload.payment_due_at ? `Payment due: ${payload.payment_due_at}` : "";
+  const reportUrlLine = payload.client_report_url ? `Report link: ${payload.client_report_url}` : "";
+  const proofLines = payload.proof_links.length ? [`Proof links:`, ...payload.proof_links.map((link) => `- ${link}`)] : [];
+
   return [
     `Swadakta update for ${request.request_code}`,
     `Status: ${statusLabels[payload.status] || payload.status}`,
     `Payment: ${paymentLabels[payload.payment_status] || payload.payment_status}`,
+    quoteLine,
+    paymentLine,
+    dueLine,
     payload.client_report ? `Report: ${payload.client_report}` : "Report: Update pending.",
+    reportUrlLine,
+    ...proofLines,
     "Thank you for trusting Swadakta Diaspora Concierge.",
-  ].join("\n");
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 authForm.addEventListener("submit", async (event) => {

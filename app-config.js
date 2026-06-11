@@ -1,6 +1,8 @@
 window.SWADAKTA_CONFIG = {
   brandName: "Swadakta",
   adminEmail: "swadakta111@gmail.com",
+  supportEmail: "swadakta111@gmail.com",
+  publicBaseUrl: "https://swadakta.com",
   supabaseUrl: "https://srwkoulknropnwwyqslj.supabase.co",
   supabasePublishableKey: "sb_publishable_braRDOvu_VbLc6PItbElmg_3hK-Zg51",
   whatsappNumber: "+61431455174",
@@ -9,5 +11,8 @@ window.SWADAKTA_CONFIG = {
     site: "",
     registry: "",
     virtual: "",
+    paypal: "",
+    stripe: "",
+    wise: "",
   },
 };

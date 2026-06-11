@@ -16,6 +16,7 @@ Completed:
 - `supabase/schema.sql` applied as migrations.
 - Security advisors are clean.
 - Public client intake insert was verified with the publishable key.
+- Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
 
 Admin activation status:
 
@@ -42,6 +43,9 @@ window.SWADAKTA_CONFIG = {
     site: "",
     registry: "",
     virtual: "",
+    paypal: "",
+    stripe: "",
+    wise: "",
   },
 };
 ```
@@ -60,6 +64,8 @@ Minimum production checklist:
 - WhatsApp number filled
 - First request submitted from the live URL
 - Admin dashboard can see and update the request
+- Admin can add quote amount, payment link, report link, and proof links
+- Client tracking can find a request by request code plus original email/WhatsApp
 
 ## 4. Pilot operations
 
@@ -90,8 +96,8 @@ For every job, capture:
 After the pilot:
 
 - Add file uploads for documents and proof media
-- Add Stripe or manual payment links per package
+- Connect Stripe, PayPal, Wise, or bank-transfer payment links
 - Add automated email notifications
-- Add customer tracking page by request code
+- Add custom email addresses for `swadakta.com`
 - Add runner mobile upload workflow
 - Add analytics for lead source, revenue, turnaround time, and repeat clients

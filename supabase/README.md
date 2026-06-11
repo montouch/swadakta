@@ -15,6 +15,8 @@ The schema creates:
 - RLS policies:
   - anonymous users can insert new service requests
   - only approved authenticated admins can read and update requests
+- Public request tracking:
+  - clients can look up limited status/report/payment details with request code plus original email or WhatsApp
 - private helper functions under `app_private`
 
 Admin activation:

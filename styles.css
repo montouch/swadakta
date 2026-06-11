@@ -909,6 +909,155 @@ output {
   margin: 0;
 }
 
+.trust-section,
+.faq-section {
+  background: #fff;
+}
+
+.assurance-grid,
+.faq-grid,
+.payment-flow {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.assurance-card,
+.faq-grid article,
+.payment-flow article,
+.tracking-panel {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: var(--radius);
+  box-shadow: 0 1px 0 rgb(16 28 80 / 5%);
+}
+
+.assurance-card,
+.faq-grid article,
+.payment-flow article {
+  min-height: 15rem;
+  padding: 1.35rem;
+}
+
+.assurance-card span,
+.payment-flow strong {
+  display: inline-grid;
+  width: 2.3rem;
+  height: 2.3rem;
+  place-items: center;
+  margin-bottom: 1.5rem;
+  border-radius: var(--radius);
+  background: #eef3ff;
+  color: var(--blue);
+  font-weight: 950;
+}
+
+.assurance-card h3,
+.faq-grid h3,
+.payment-flow h3 {
+  margin: 0 0 0.7rem;
+  color: var(--deep);
+}
+
+.coverage {
+  display: grid;
+  grid-template-columns: minmax(0, 0.82fr) minmax(320px, 1.18fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+  background: #eef3ff;
+}
+
+.coverage-copy h2,
+.tracking-copy h2 {
+  margin-left: 0;
+  text-align: left;
+}
+
+.coverage-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--line);
+}
+
+.coverage-list span {
+  min-height: 5rem;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  background: #fff;
+  color: var(--deep);
+  font-weight: 900;
+}
+
+.payments-section {
+  background:
+    linear-gradient(180deg, #ffffff 0%, #f7f8ff 100%);
+}
+
+.payment-flow {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.form-note {
+  margin: -0.45rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.tracking-section {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(320px, 1fr);
+  gap: clamp(1.5rem, 5vw, 4rem);
+  align-items: start;
+  background:
+    linear-gradient(180deg, #f7f8ff 0%, #ffffff 100%);
+}
+
+.tracking-panel {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 3vw, 1.5rem);
+}
+
+.tracking-result {
+  display: none;
+  gap: 0.35rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.tracking-result:not(:empty) {
+  display: grid;
+}
+
+.tracking-result strong,
+.tracking-result span {
+  color: var(--deep);
+}
+
+.tracking-result p {
+  margin: 0.4rem 0 0;
+}
+
+.tracking-result.is-success {
+  border-color: rgb(11 152 125 / 32%);
+  background: rgb(11 152 125 / 8%);
+}
+
+.tracking-result.is-error {
+  border-color: rgb(228 95 95 / 42%);
+  background: rgb(228 95 95 / 8%);
+}
+
 .admin-body {
   background: #f3f5fb;
 }
@@ -1197,11 +1346,17 @@ code {
   .hero-proof,
   .trust-strip,
   .service-panel.is-active,
+  .assurance-grid,
+  .coverage,
+  .coverage-list,
   .role-band,
   .timeline,
   .pricing-grid,
+  .payment-flow,
   .app-section,
-  .launch-grid {
+  .launch-grid,
+  .tracking-section,
+  .faq-grid {
     grid-template-columns: 1fr;
   }
 

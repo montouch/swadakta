@@ -17,7 +17,7 @@
     <meta property="og:image" content="assets/diaspora-concierge-hero.png" />
     <link rel="preload" href="assets/saas-burst.png" as="image" />
     <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=4" />
+    <link rel="stylesheet" href="styles.css?v=5" />
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
@@ -31,9 +31,10 @@
       <nav class="nav-links" aria-label="Page sections">
         <a href="#services">Services</a>
         <a href="#workflow">Workflow</a>
+        <a href="#trust">Trust</a>
         <a href="#pricing">Pricing</a>
         <a href="#intake">Intake</a>
-        <a href="admin.html">Admin</a>
+        <a href="#tracking">Track</a>
       </nav>
       <a class="header-action" href="#intake">Start a brief</a>
     </header>
@@ -199,6 +200,39 @@
         </div>
       </section>
 
+      <section class="section trust-section" id="trust" aria-labelledby="trust-title">
+        <div class="section-heading">
+          <p class="eyebrow">Trust System</p>
+          <h2 id="trust-title">Built for proof, not promises.</h2>
+          <p>
+            Every request is handled with a clear brief, permission to act, receipts where available,
+            and a final report the client can keep for records.
+          </p>
+        </div>
+        <div class="assurance-grid">
+          <article class="assurance-card">
+            <span>01</span>
+            <h3>Permission first</h3>
+            <p>We confirm who can be contacted, what documents may be handled, and what outcome is expected before field work starts.</p>
+          </article>
+          <article class="assurance-card">
+            <span>02</span>
+            <h3>Proof pack</h3>
+            <p>Photos, short video, receipts, call notes, GPS/context details, and next-step recommendations are packaged per request.</p>
+          </article>
+          <article class="assurance-card">
+            <span>03</span>
+            <h3>Secure documents</h3>
+            <p>Sensitive files are requested only when needed, shared with the assigned operator, and referenced in the job notes.</p>
+          </article>
+          <article class="assurance-card">
+            <span>04</span>
+            <h3>Escalation path</h3>
+            <p>If a vendor, office, or relative blocks progress, the client receives a written issue summary and options.</p>
+          </article>
+        </div>
+      </section>
+
       <section class="section workflow" id="workflow" aria-labelledby="workflow-title">
         <div class="section-heading">
           <p class="eyebrow">Workflow</p>
@@ -228,6 +262,27 @@
         </ol>
       </section>
 
+      <section class="section coverage" id="coverage" aria-labelledby="coverage-title">
+        <div class="coverage-copy">
+          <p class="eyebrow">Coverage</p>
+          <h2 id="coverage-title">Start with Kenya's busiest routes, expand by quote.</h2>
+          <p>
+            Nairobi and nearby counties are the fastest launch zones. Requests outside core coverage
+            can still be quoted with travel time, runner availability, and risk level included.
+          </p>
+        </div>
+        <div class="coverage-list" aria-label="Launch coverage areas">
+          <span>Nairobi</span>
+          <span>Kiambu</span>
+          <span>Machakos</span>
+          <span>Kajiado</span>
+          <span>Nakuru</span>
+          <span>Kisumu</span>
+          <span>Mombasa</span>
+          <span>Other towns by quote</span>
+        </div>
+      </section>
+
       <section class="section pricing" id="pricing" aria-labelledby="pricing-title">
         <div class="section-heading">
           <p class="eyebrow">Starter Pricing</p>
@@ -249,6 +304,34 @@
             <p class="package">Ops Retainer</p>
             <h3>AUD 450/mo+</h3>
             <p>Weekly admin, vendor coordination, family logistics, or business support.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section payments-section" aria-labelledby="payments-title">
+        <div class="section-heading">
+          <p class="eyebrow">Payments</p>
+          <h2 id="payments-title">Quote first, then pay through a secure link.</h2>
+          <p>
+            Because each job has different travel, access, and risk, Swadakta confirms the final
+            price before payment. Stripe, PayPal, Wise, or bank transfer links can be attached by admin.
+          </p>
+        </div>
+        <div class="payment-flow">
+          <article>
+            <strong>1</strong>
+            <h3>Submit brief</h3>
+            <p>Client explains the task, deadline, Kenya location, and proof required.</p>
+          </article>
+          <article>
+            <strong>2</strong>
+            <h3>Receive quote</h3>
+            <p>Admin confirms price, deposit needs, payment method, and expected turnaround.</p>
+          </article>
+          <article>
+            <strong>3</strong>
+            <h3>Pay and track</h3>
+            <p>Client pays by secure link and follows progress using the request code.</p>
           </article>
         </div>
       </section>
@@ -282,7 +365,24 @@
             </div>
             <div class="field-group">
               <label for="diaspora-location">Where are you based?</label>
-              <input id="diaspora-location" name="diasporaLocation" type="text" placeholder="City and country outside Kenya" autocomplete="address-level2" />
+              <input id="diaspora-location" name="diasporaLocation" type="text" placeholder="City and country outside Kenya" autocomplete="address-level2" required />
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="deadline">Ideal deadline</label>
+              <input id="deadline" name="deadline" type="date" />
+            </div>
+            <div class="field-group">
+              <label for="preferred-currency">Preferred quote currency</label>
+              <select id="preferred-currency" name="preferredCurrency">
+                <option value="AUD">AUD</option>
+                <option value="USD">USD</option>
+                <option value="GBP">GBP</option>
+                <option value="EUR">EUR</option>
+                <option value="KES">KES</option>
+              </select>
             </div>
           </div>
 
@@ -299,7 +399,7 @@
           <div class="field-row">
             <div class="field-group">
               <label for="location">Kenya location</label>
-              <input id="location" name="location" type="text" placeholder="Nairobi, Kisumu, Nakuru..." autocomplete="address-level2" />
+              <input id="location" name="location" type="text" placeholder="Nairobi, Kisumu, Nakuru..." autocomplete="address-level2" required />
             </div>
             <div class="field-group">
               <label for="urgency">Urgency</label>
@@ -308,6 +408,17 @@
                 <option value="priority">Priority</option>
                 <option value="same-day">Same day</option>
               </select>
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field-group">
+              <label for="local-contact-name">Kenya contact name</label>
+              <input id="local-contact-name" name="localContactName" type="text" placeholder="Optional" autocomplete="name" />
+            </div>
+            <div class="field-group">
+              <label for="local-contact-phone">Kenya contact phone</label>
+              <input id="local-contact-phone" name="localContactPhone" type="tel" placeholder="Optional" autocomplete="tel" />
             </div>
           </div>
 
@@ -331,10 +442,11 @@
             <span>Estimated fee</span>
             <strong id="estimate-output">AUD 180</strong>
           </div>
+          <p class="form-note">This is a planning estimate. Final quote is confirmed after Swadakta checks travel, access, documents, and urgency.</p>
 
           <label class="field-group" for="notes">
             Notes
-            <textarea id="notes" name="notes" rows="4" placeholder="Tell us what needs to happen in Kenya, who is involved, and what proof you need."></textarea>
+            <textarea id="notes" name="notes" rows="4" placeholder="Tell us what needs to happen in Kenya, who is involved, and what proof you need." required></textarea>
           </label>
 
           <div class="form-actions">
@@ -381,15 +493,63 @@
           </ul>
         </div>
       </section>
+
+      <section class="section tracking-section" id="tracking" aria-labelledby="tracking-title">
+        <div class="tracking-copy">
+          <p class="eyebrow">Request Tracking</p>
+          <h2 id="tracking-title">Check a request without chasing messages.</h2>
+          <p>
+            Enter the request code and the email or WhatsApp used on the brief. Public tracking only
+            shows client-safe status, payment, and report details.
+          </p>
+        </div>
+        <form class="tracking-panel" id="tracking-form">
+          <label class="field-group" for="tracking-code">
+            Request code
+            <input id="tracking-code" name="trackingCode" type="text" placeholder="SW-1234ABCD" autocomplete="off" required />
+          </label>
+          <label class="field-group" for="tracking-contact">
+            Email or WhatsApp
+            <input id="tracking-contact" name="trackingContact" type="text" placeholder="Used on the original brief" autocomplete="email" required />
+          </label>
+          <button class="button button-primary" type="submit">Check status</button>
+          <div class="tracking-result" id="tracking-result" role="status" aria-live="polite"></div>
+        </form>
+      </section>
+
+      <section class="section faq-section" aria-labelledby="faq-title">
+        <div class="section-heading">
+          <p class="eyebrow">Questions</p>
+          <h2 id="faq-title">What clients should know before sending a job.</h2>
+        </div>
+        <div class="faq-grid">
+          <article>
+            <h3>Do you replace lawyers or surveyors?</h3>
+            <p>No. Swadakta handles coordination, verification, errands, and reporting. Legal, valuation, and survey work should be handled by licensed professionals.</p>
+          </article>
+          <article>
+            <h3>Can you hold money for projects?</h3>
+            <p>Not by default. We can verify progress and coordinate payments, but client funds should move through agreed payment channels with clear receipts.</p>
+          </article>
+          <article>
+            <h3>Can you contact relatives or contractors?</h3>
+            <p>Yes, if the client gives permission and shares the correct contact details. Sensitive situations are handled carefully and documented.</p>
+          </article>
+          <article>
+            <h3>What happens if a task cannot be completed?</h3>
+            <p>The client receives the issue, evidence gathered, time spent, and recommended next steps before more work is approved.</p>
+          </article>
+        </div>
+      </section>
     </main>
 
     <footer class="site-footer">
       <p>Swadakta Diaspora Concierge</p>
-      <p><a href="admin.html">Admin dashboard</a></p>
+      <p><a href="#tracking">Track request</a></p>
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=3"></script>
-    <script src="script.js?v=4"></script>
+    <script src="app-data.js?v=5"></script>
+    <script src="script.js?v=5"></script>
   </body>
 </html>
