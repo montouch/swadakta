@@ -33,6 +33,43 @@ const paymentLabels = {
   refunded: "Refunded",
 };
 
+const fundsStatusLabels = {
+  not_collected: "Not collected",
+  payment_link_sent: "Payment link sent",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  deposit_confirmed: "Deposit confirmed",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+};
+
+const verificationStatusLabels = {
+  not_required: "Not required",
+  required: "Required",
+  requested: "Requested",
+  submitted: "Submitted",
+  verified: "Verified",
+  rejected: "Rejected",
+  expired: "Expired",
+};
+
+const milestoneStatusLabels = {
+  planned: "Planned",
+  funded: "Funded",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  ready_to_release: "Ready to release",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+  cancelled: "Cancelled",
+};
+
 const paymentMethodLabels = {
   discuss: "Recommend after quote",
   card: "Card or Stripe link",
@@ -380,6 +417,36 @@ function formatTrackedMoney(amount, currency) {
   }).format(amount)}`;
 }
 
+function formatTrackedAmount(amount, currency) {
+  return `${currency || "AUD"} ${new Intl.NumberFormat("en-AU", {
+    maximumFractionDigits: 0,
+  }).format(Number(amount || 0))}`;
+}
+
+function renderTrackedMilestones(request) {
+  const milestones = Array.isArray(request.milestones) ? request.milestones : [];
+
+  if (!milestones.length) {
+    return "";
+  }
+
+  return `
+    <div class="milestone-client-list">
+      ${milestones
+        .map(
+          (milestone) => `
+            <article>
+              <strong>${escapeHtml(milestone.title || milestone.milestone_code || "Milestone")}</strong>
+              <span>${escapeHtml(milestoneStatusLabels[milestone.release_status] || milestone.release_status || "Planned")}</span>
+              <span>${escapeHtml(formatTrackedAmount(milestone.released_amount, milestone.currency))} released of ${escapeHtml(formatTrackedAmount(milestone.amount, milestone.currency))}</span>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function renderTrackingResult(request) {
   const safePaymentLink = safeHttpUrl(request.payment_link);
   const safeReportLink = safeHttpUrl(request.client_report_url);
@@ -395,6 +462,9 @@ function renderTrackingResult(request) {
   const proofLinks = safeProofLinks
     .map((link, index) => `<a class="status-link" href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Proof file ${index + 1}</a>`)
     .join("");
+  const fundsStatus = fundsStatusLabels[request.funds_status] || request.funds_status || "Not collected";
+  const verificationStatus =
+    verificationStatusLabels[request.verification_status] || request.verification_status || "Not required";
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
@@ -402,6 +472,11 @@ function renderTrackingResult(request) {
     <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
     <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
     <span>Quote: ${escapeHtml(formatTrackedMoney(request.quote_amount, request.quote_currency))}</span>
+    <span>Funds: ${escapeHtml(fundsStatus)}</span>
+    <span>Protected amount: ${escapeHtml(formatTrackedAmount(request.protected_amount, request.quote_currency))}</span>
+    ${request.identity_verification_required ? `<span>ID verification: ${escapeHtml(verificationStatus)}</span>` : ""}
+    ${request.release_condition ? `<p>${escapeHtml(request.release_condition)}</p>` : ""}
+    ${renderTrackedMilestones(request)}
     ${request.client_report ? `<p>${escapeHtml(request.client_report)}</p>` : `<p>Client report will appear here after the Kenya desk updates the job.</p>`}
     ${paymentLink}
     ${reportLink}

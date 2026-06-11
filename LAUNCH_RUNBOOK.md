@@ -66,15 +66,18 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 3. Admin reviews the service package, supporting links, contact preference, and sensitive-document flag.
 4. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-6. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, and safety wording.
-7. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
-8. Client pays through the agreed provider.
-9. Admin sets status to `paid` after confirmation.
-10. Admin assigns only a vetted Kenya-side receiver/operator in the request card, then copies the operator brief.
-11. Kenya-side operator executes the task.
-12. Admin adds proof links, report URL, and final notes.
-13. Admin sets status to `completed`.
-14. Client tracks status with request code plus original email or WhatsApp.
+6. Admin sets the funds status, protected amount, release condition, provider reference, and ID verification requirement if the job is high-value, sensitive, title/document-related, family-authority-related, or otherwise risky.
+7. Admin creates one or more release milestones, for example deposit, travel/access confirmation, site media delivered, final report accepted, or receiver payout.
+8. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, funds-protection wording, and safety wording.
+9. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
+10. Client pays through the agreed provider.
+11. Admin sets payment and funds statuses after confirmation.
+12. Admin assigns only a vetted Kenya-side receiver/operator in the request card, then copies the operator brief.
+13. Kenya-side operator executes the task and submits field updates/proof links from the receiver portal.
+14. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
+15. Admin adds approved proof links, report URL, and final client notes.
+16. Admin sets status to `completed`.
+17. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
 
 ## 5. Launch Readiness Checklist
 
@@ -87,6 +90,10 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - Client and receiver portal magic links return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must be marked `Vetted` before getting client jobs.
 - Assigned vetted receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
+- Assigned vetted receivers can submit field updates and proof links for admin review before anything becomes client-facing.
+- Admin tracks protected funds, provider references, and milestone releases before paying receivers.
+- ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
+- M-Pesa/Daraja is a future Kenya payment rail; record M-Pesa references manually first, then integrate once the business PayBill/Till/API access and callback URLs are ready.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.

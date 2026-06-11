@@ -46,6 +46,15 @@ create table if not exists public.service_requests (
   quote_currency text not null default 'AUD',
   payment_link text,
   payment_due_at date,
+  funds_status text not null default 'not_collected',
+  protected_amount integer not null default 0,
+  release_condition text not null default 'Admin verifies proof and client-safe report before receiver payout.',
+  payment_reference text,
+  release_notes text,
+  identity_verification_required boolean not null default false,
+  verification_status text not null default 'not_required',
+  verification_reason text,
+  verified_at timestamptz,
   operator_payout integer not null default 0,
   field_costs integer not null default 0,
   payment_processing_fee integer not null default 0,
@@ -79,6 +88,37 @@ create table if not exists public.partner_applications (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.field_updates (
+  id uuid primary key default gen_random_uuid(),
+  update_code text not null unique default ('FU-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
+  service_request_id uuid not null references public.service_requests(id) on delete cascade,
+  partner_application_id uuid not null references public.partner_applications(id) on delete cascade,
+  field_status text not null default 'progress',
+  update_text text not null,
+  proof_links text[] not null default array[]::text[],
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.fund_milestones (
+  id uuid primary key default gen_random_uuid(),
+  milestone_code text not null unique default ('FM-' || upper(substr(replace(gen_random_uuid()::text, '-', ''), 1, 8))),
+  service_request_id uuid not null references public.service_requests(id) on delete cascade,
+  title text not null,
+  amount integer not null default 0,
+  currency text not null default 'AUD',
+  release_status text not null default 'planned',
+  release_trigger text not null default 'Admin verifies milestone proof before release.',
+  due_at date,
+  released_amount integer not null default 0,
+  released_at timestamptz,
+  provider text not null default 'manual',
+  provider_reference text,
+  internal_notes text,
+  client_visible boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 alter table public.service_requests add column if not exists client_base text;
 alter table public.service_requests add column if not exists deadline date;
 alter table public.service_requests add column if not exists local_contact_name text;
@@ -98,6 +138,15 @@ alter table public.service_requests add column if not exists quote_amount intege
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_link text;
 alter table public.service_requests add column if not exists payment_due_at date;
+alter table public.service_requests add column if not exists funds_status text not null default 'not_collected';
+alter table public.service_requests add column if not exists protected_amount integer not null default 0;
+alter table public.service_requests add column if not exists release_condition text not null default 'Admin verifies proof and client-safe report before receiver payout.';
+alter table public.service_requests add column if not exists payment_reference text;
+alter table public.service_requests add column if not exists release_notes text;
+alter table public.service_requests add column if not exists identity_verification_required boolean not null default false;
+alter table public.service_requests add column if not exists verification_status text not null default 'not_required';
+alter table public.service_requests add column if not exists verification_reason text;
+alter table public.service_requests add column if not exists verified_at timestamptz;
 alter table public.service_requests add column if not exists operator_payout integer not null default 0;
 alter table public.service_requests add column if not exists field_costs integer not null default 0;
 alter table public.service_requests add column if not exists payment_processing_fee integer not null default 0;
@@ -182,6 +231,38 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_payment_link_check check (coalesce(payment_link, '') = '' or payment_link ~* '^https?://[^[:space:]]+$');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_funds_status_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_funds_status_check check (
+        funds_status in ('not_collected', 'payment_link_sent', 'authorized', 'held_by_provider', 'deposit_confirmed', 'partially_released', 'released', 'refund_pending', 'refunded', 'disputed')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_protected_amount_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_protected_amount_check check (protected_amount >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_release_condition_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_release_condition_check check (btrim(release_condition) <> '');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_verification_status_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_verification_status_check check (
+        verification_status in ('not_required', 'required', 'requested', 'submitted', 'verified', 'rejected', 'expired')
+      );
   end if;
 
   if not exists (
@@ -285,6 +366,108 @@ begin
       add constraint service_requests_assigned_partner_id_fkey
       foreign key (assigned_partner_id) references public.partner_applications(id) on delete set null;
   end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'field_updates_update_code_check'
+  ) then
+    alter table public.field_updates
+      add constraint field_updates_update_code_check check (
+        update_code like 'FU-%' and length(update_code) between 6 and 24
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'field_updates_field_status_check'
+  ) then
+    alter table public.field_updates
+      add constraint field_updates_field_status_check check (
+        field_status in ('progress', 'blocked', 'completed', 'needs_admin', 'safety_issue')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'field_updates_update_text_check'
+  ) then
+    alter table public.field_updates
+      add constraint field_updates_update_text_check check (btrim(update_text) <> '');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'field_updates_proof_links_check'
+  ) then
+    alter table public.field_updates
+      add constraint field_updates_proof_links_check check (
+        coalesce(array_length(proof_links, 1), 0) <= 20
+        and (
+          coalesce(array_length(proof_links, 1), 0) = 0
+          or array_to_string(proof_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
+        )
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_milestone_code_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_milestone_code_check check (
+        milestone_code like 'FM-%' and length(milestone_code) between 6 and 24
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_title_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_title_check check (btrim(title) <> '');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_amount_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_amount_check check (amount >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_released_amount_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_released_amount_check check (
+        released_amount >= 0 and released_amount <= amount
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_currency_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_currency_check check (currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_release_status_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_release_status_check check (
+        release_status in ('planned', 'funded', 'authorized', 'held_by_provider', 'ready_to_release', 'partially_released', 'released', 'refund_pending', 'refunded', 'disputed', 'cancelled')
+      );
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_release_trigger_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_release_trigger_check check (btrim(release_trigger) <> '');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'fund_milestones_provider_check'
+  ) then
+    alter table public.fund_milestones
+      add constraint fund_milestones_provider_check check (
+        provider in ('manual', 'stripe', 'paypal', 'wise', 'escrow_com', 'bank', 'mpesa', 'other')
+      );
+  end if;
 end
 $$;
 
@@ -293,6 +476,10 @@ create index if not exists service_requests_created_at_idx on public.service_req
 create index if not exists service_requests_assigned_partner_id_idx on public.service_requests (assigned_partner_id);
 create index if not exists partner_applications_status_idx on public.partner_applications (status);
 create index if not exists partner_applications_created_at_idx on public.partner_applications (created_at desc);
+create index if not exists field_updates_service_request_id_idx on public.field_updates (service_request_id, created_at desc);
+create index if not exists field_updates_partner_application_id_idx on public.field_updates (partner_application_id, created_at desc);
+create index if not exists fund_milestones_service_request_id_idx on public.fund_milestones (service_request_id, created_at asc);
+create index if not exists fund_milestones_release_status_idx on public.fund_milestones (release_status);
 
 create or replace function app_private.is_admin()
 returns boolean
@@ -332,9 +519,17 @@ before update on public.partner_applications
 for each row
 execute function app_private.set_updated_at();
 
+drop trigger if exists fund_milestones_set_updated_at on public.fund_milestones;
+create trigger fund_milestones_set_updated_at
+before update on public.fund_milestones
+for each row
+execute function app_private.set_updated_at();
+
 alter table public.admin_users enable row level security;
 alter table public.service_requests enable row level security;
 alter table public.partner_applications enable row level security;
+alter table public.field_updates enable row level security;
+alter table public.fund_milestones enable row level security;
 
 drop policy if exists "Admins can read own admin profile" on public.admin_users;
 create policy "Admins can read own admin profile"
@@ -432,14 +627,44 @@ to authenticated
 using ((select app_private.is_admin()))
 with check ((select app_private.is_admin()));
 
+drop policy if exists "Admins can read field updates" on public.field_updates;
+create policy "Admins can read field updates"
+on public.field_updates
+for select
+to authenticated
+using ((select app_private.is_admin()));
+
+drop policy if exists "Admins can read fund milestones" on public.fund_milestones;
+create policy "Admins can read fund milestones"
+on public.fund_milestones
+for select
+to authenticated
+using ((select app_private.is_admin()));
+
+drop policy if exists "Admins can create fund milestones" on public.fund_milestones;
+create policy "Admins can create fund milestones"
+on public.fund_milestones
+for insert
+to authenticated
+with check ((select app_private.is_admin()));
+
+drop policy if exists "Admins can update fund milestones" on public.fund_milestones;
+create policy "Admins can update fund milestones"
+on public.fund_milestones
+for update
+to authenticated
+using ((select app_private.is_admin()))
+with check ((select app_private.is_admin()));
+
 grant usage on schema public to anon, authenticated;
-revoke usage on schema app_private from anon;
-grant usage on schema app_private to authenticated;
+grant usage on schema app_private to anon, authenticated;
 revoke all on function app_private.is_admin() from public;
 grant execute on function app_private.is_admin() to authenticated;
 
 revoke truncate, references, trigger on table public.service_requests from anon, authenticated;
 revoke truncate, references, trigger on table public.partner_applications from anon, authenticated;
+revoke insert, update, delete, truncate, references, trigger on table public.field_updates from anon, authenticated;
+revoke delete, truncate, references, trigger on table public.fund_milestones from anon, authenticated;
 
 grant insert (
   id,
@@ -488,6 +713,15 @@ grant update (
   quote_currency,
   payment_link,
   payment_due_at,
+  funds_status,
+  protected_amount,
+  release_condition,
+  payment_reference,
+  release_notes,
+  identity_verification_required,
+  verification_status,
+  verification_reason,
+  verified_at,
   operator_payout,
   field_costs,
   payment_processing_fee,
@@ -517,6 +751,39 @@ grant update (
   internal_notes
 ) on public.partner_applications to authenticated;
 grant select on public.admin_users to authenticated;
+grant select on public.field_updates to authenticated;
+grant select on public.fund_milestones to authenticated;
+grant insert (
+  id,
+  milestone_code,
+  service_request_id,
+  title,
+  amount,
+  currency,
+  release_status,
+  release_trigger,
+  due_at,
+  released_amount,
+  released_at,
+  provider,
+  provider_reference,
+  internal_notes,
+  client_visible
+) on public.fund_milestones to authenticated;
+grant update (
+  title,
+  amount,
+  currency,
+  release_status,
+  release_trigger,
+  due_at,
+  released_amount,
+  released_at,
+  provider,
+  provider_reference,
+  internal_notes,
+  client_visible
+) on public.fund_milestones to authenticated;
 
 create or replace function app_private.track_service_request(
   lookup_code text,
@@ -528,10 +795,16 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  funds_status text,
+  protected_amount integer,
+  release_condition text,
+  identity_verification_required boolean,
+  verification_status text,
   payment_link text,
   client_report text,
   client_report_url text,
   proof_links text[],
+  milestones jsonb,
   updated_at timestamptz
 )
 language sql
@@ -545,10 +818,37 @@ as $$
     sr.payment_status,
     sr.quote_amount,
     sr.quote_currency,
+    sr.funds_status,
+    sr.protected_amount,
+    sr.release_condition,
+    sr.identity_verification_required,
+    sr.verification_status,
     sr.payment_link,
     sr.client_report,
     sr.client_report_url,
     sr.proof_links,
+    (
+      select coalesce(
+        jsonb_agg(
+          jsonb_build_object(
+            'milestone_code', fm.milestone_code,
+            'title', fm.title,
+            'amount', fm.amount,
+            'currency', fm.currency,
+            'release_status', fm.release_status,
+            'release_trigger', fm.release_trigger,
+            'due_at', fm.due_at,
+            'released_amount', fm.released_amount,
+            'released_at', fm.released_at
+          )
+          order by fm.created_at asc
+        ),
+        '[]'::jsonb
+      )
+      from public.fund_milestones fm
+      where fm.service_request_id = sr.id
+        and fm.client_visible = true
+    ) as milestones,
     sr.updated_at
   from public.service_requests sr
   where upper(btrim(sr.request_code)) = upper(btrim(lookup_code))
@@ -560,7 +860,7 @@ as $$
 $$;
 
 revoke all on function app_private.track_service_request(text, text) from public;
-revoke all on function app_private.track_service_request(text, text) from anon, authenticated;
+grant execute on function app_private.track_service_request(text, text) to anon, authenticated;
 
 create or replace function public.track_service_request(
   lookup_code text,
@@ -572,15 +872,21 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  funds_status text,
+  protected_amount integer,
+  release_condition text,
+  identity_verification_required boolean,
+  verification_status text,
   payment_link text,
   client_report text,
   client_report_url text,
   proof_links text[],
+  milestones jsonb,
   updated_at timestamptz
 )
 language sql
 stable
-security definer
+security invoker
 set search_path = public, app_private
 as $$
   select * from app_private.track_service_request(lookup_code, lookup_contact);
@@ -598,10 +904,16 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  funds_status text,
+  protected_amount integer,
+  release_condition text,
+  identity_verification_required boolean,
+  verification_status text,
   payment_link text,
   client_report text,
   client_report_url text,
   proof_links text[],
+  milestones jsonb,
   updated_at timestamptz
 )
 language sql
@@ -617,10 +929,37 @@ as $$
     sr.payment_status,
     sr.quote_amount,
     sr.quote_currency,
+    sr.funds_status,
+    sr.protected_amount,
+    sr.release_condition,
+    sr.identity_verification_required,
+    sr.verification_status,
     sr.payment_link,
     sr.client_report,
     sr.client_report_url,
     sr.proof_links,
+    (
+      select coalesce(
+        jsonb_agg(
+          jsonb_build_object(
+            'milestone_code', fm.milestone_code,
+            'title', fm.title,
+            'amount', fm.amount,
+            'currency', fm.currency,
+            'release_status', fm.release_status,
+            'release_trigger', fm.release_trigger,
+            'due_at', fm.due_at,
+            'released_amount', fm.released_amount,
+            'released_at', fm.released_at
+          )
+          order by fm.created_at asc
+        ),
+        '[]'::jsonb
+      )
+      from public.fund_milestones fm
+      where fm.service_request_id = sr.id
+        and fm.client_visible = true
+    ) as milestones,
     sr.updated_at
   from public.service_requests sr
   where lower(btrim(coalesce(sr.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
@@ -630,7 +969,8 @@ as $$
 $$;
 
 revoke all on function app_private.list_my_service_requests() from public;
-revoke all on function app_private.list_my_service_requests() from anon, authenticated;
+revoke all on function app_private.list_my_service_requests() from anon;
+grant execute on function app_private.list_my_service_requests() to authenticated;
 
 create or replace function public.list_my_service_requests()
 returns table (
@@ -641,15 +981,21 @@ returns table (
   payment_status text,
   quote_amount integer,
   quote_currency text,
+  funds_status text,
+  protected_amount integer,
+  release_condition text,
+  identity_verification_required boolean,
+  verification_status text,
   payment_link text,
   client_report text,
   client_report_url text,
   proof_links text[],
+  milestones jsonb,
   updated_at timestamptz
 )
 language sql
 stable
-security definer
+security invoker
 set search_path = public, app_private
 as $$
   select * from app_private.list_my_service_requests();
@@ -691,7 +1037,8 @@ as $$
 $$;
 
 revoke all on function app_private.list_my_partner_applications() from public;
-revoke all on function app_private.list_my_partner_applications() from anon, authenticated;
+revoke all on function app_private.list_my_partner_applications() from anon;
+grant execute on function app_private.list_my_partner_applications() to authenticated;
 
 create or replace function public.list_my_partner_applications()
 returns table (
@@ -706,7 +1053,7 @@ returns table (
 )
 language sql
 stable
-security definer
+security invoker
 set search_path = public, app_private
 as $$
   select * from app_private.list_my_partner_applications();
@@ -771,7 +1118,8 @@ as $$
 $$;
 
 revoke all on function app_private.list_my_assigned_jobs() from public;
-revoke all on function app_private.list_my_assigned_jobs() from anon, authenticated;
+revoke all on function app_private.list_my_assigned_jobs() from anon;
+grant execute on function app_private.list_my_assigned_jobs() to authenticated;
 
 create or replace function public.list_my_assigned_jobs()
 returns table (
@@ -796,7 +1144,7 @@ returns table (
 )
 language sql
 stable
-security definer
+security invoker
 set search_path = public, app_private
 as $$
   select * from app_private.list_my_assigned_jobs();
@@ -804,6 +1152,129 @@ $$;
 
 revoke all on function public.list_my_assigned_jobs() from public;
 grant execute on function public.list_my_assigned_jobs() to authenticated;
+
+create or replace function app_private.submit_assigned_job_update(
+  input_request_code text,
+  input_field_status text,
+  input_update_text text,
+  input_proof_links text[] default array[]::text[]
+)
+returns table (
+  update_code text,
+  request_code text,
+  field_status text,
+  created_at timestamptz
+)
+language plpgsql
+volatile
+security definer
+set search_path = public
+as $$
+declare
+  target_request_id uuid;
+  target_request_code text;
+  target_partner_id uuid;
+  clean_status text := lower(btrim(coalesce(input_field_status, '')));
+  clean_text text := btrim(coalesce(input_update_text, ''));
+  clean_links text[] := array[]::text[];
+  inserted_update public.field_updates%rowtype;
+begin
+  select coalesce(array_agg(link), array[]::text[])
+  into clean_links
+  from (
+    select btrim(item) as link
+    from unnest(coalesce(input_proof_links, array[]::text[])) as item
+    where btrim(item) <> ''
+  ) cleaned;
+
+  select sr.id, sr.request_code, pa.id
+  into target_request_id, target_request_code, target_partner_id
+  from public.service_requests sr
+  join public.partner_applications pa on pa.id = sr.assigned_partner_id
+  where upper(btrim(sr.request_code)) = upper(btrim(coalesce(input_request_code, '')))
+    and lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+    and btrim(coalesce(pa.email, '')) <> ''
+    and pa.status = 'vetted'
+    and sr.status in ('paid', 'in_progress', 'waiting_client', 'completed')
+  limit 1;
+
+  if target_request_id is null then
+    raise exception 'Assigned job not found or not available for receiver update';
+  end if;
+
+  if clean_status not in ('progress', 'blocked', 'completed', 'needs_admin', 'safety_issue') then
+    raise exception 'Invalid field update status';
+  end if;
+
+  if clean_text = '' then
+    raise exception 'Field update text is required';
+  end if;
+
+  if coalesce(array_length(clean_links, 1), 0) > 20 then
+    raise exception 'Too many proof links';
+  end if;
+
+  if coalesce(array_length(clean_links, 1), 0) > 0
+    and array_to_string(clean_links, E'\n') !~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$' then
+    raise exception 'Proof links must be HTTP or HTTPS URLs';
+  end if;
+
+  insert into public.field_updates (
+    service_request_id,
+    partner_application_id,
+    field_status,
+    update_text,
+    proof_links
+  )
+  values (
+    target_request_id,
+    target_partner_id,
+    clean_status,
+    clean_text,
+    clean_links
+  )
+  returning * into inserted_update;
+
+  return query
+    select
+      inserted_update.update_code,
+      target_request_code,
+      inserted_update.field_status,
+      inserted_update.created_at;
+end;
+$$;
+
+revoke all on function app_private.submit_assigned_job_update(text, text, text, text[]) from public;
+revoke all on function app_private.submit_assigned_job_update(text, text, text, text[]) from anon;
+grant execute on function app_private.submit_assigned_job_update(text, text, text, text[]) to authenticated;
+
+create or replace function public.submit_assigned_job_update(
+  input_request_code text,
+  input_field_status text,
+  input_update_text text,
+  input_proof_links text[] default array[]::text[]
+)
+returns table (
+  update_code text,
+  request_code text,
+  field_status text,
+  created_at timestamptz
+)
+language sql
+volatile
+security invoker
+set search_path = public, app_private
+as $$
+  select * from app_private.submit_assigned_job_update(
+    input_request_code,
+    input_field_status,
+    input_update_text,
+    input_proof_links
+  );
+$$;
+
+revoke all on function public.submit_assigned_job_update(text, text, text, text[]) from public;
+grant execute on function public.submit_assigned_job_update(text, text, text, text[]) to authenticated;
 
 do $$
 begin

@@ -10,6 +10,20 @@ Swadakta should stay quote-first at launch. Each request can vary by travel, acc
 2. PayPal invoices for clients who prefer PayPal or need a familiar invoice workflow.
 3. Wise Business payment links or account details for international transfers where card fees or currency conversion matter.
 4. Bank transfer or mobile money only when the client and operator have a clear receipt trail.
+5. M-Pesa through Safaricom Daraja later, once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
+6. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
+
+## Funds Protection and Milestones
+
+Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:
+
+- Set `Funds status` to show whether funds are not collected, authorized, held by provider, deposit confirmed, partially released, released, refunded, or disputed.
+- Set `Protected amount` to the amount currently held, authorized, or confirmed through the provider.
+- Add one milestone per release event: deposit, travel/access, media proof, document submission, final report, receiver payout, refund, or dispute hold.
+- Release receiver money bit by bit only after admin reviews receiver proof and updates the milestone.
+- Keep provider references for Stripe PaymentIntent/Checkout, PayPal authorization/invoice, Wise transfer, M-Pesa receipt, bank reference, or escrow transaction ID.
+- Client tracking can show safe milestone status, but internal notes and founder economics stay in admin.
+- Require ID verification for high-value, title/document, local-authority, family-authority, or sensitive-document jobs before funds are released.
 
 ## Stripe
 
@@ -51,9 +65,19 @@ Use Wise when a diaspora client wants international transfer, local account deta
 
 Use Wise for larger site visits, supplier deposits, or monthly retainers where bank-style settlement may be preferred.
 
+## M-Pesa
+
+M-Pesa should be planned through Safaricom Daraja, not improvised through personal numbers.
+
+- Start manual: record M-Pesa receipt/reference numbers in `Payment/provider ref` and milestone provider references.
+- Later: add Daraja STK Push/C2B for Kenya-side collections where appropriate.
+- Later: add B2C payout workflows only after receiver vetting, payout limits, reversal/dispute process, and accounting are ready.
+- Keep M-Pesa as one provider in the milestone ledger, not the only source of truth.
+
 ## Operating Rules
 
 - Do not hold client construction or family-support funds as an informal escrow.
+- Do not call funds "escrow" in client terms unless a regulated escrow/payment provider is actually holding them.
 - Keep payment links HTTP/HTTPS only; Supabase rejects unsafe links.
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
 - Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.

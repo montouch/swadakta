@@ -1,6 +1,8 @@
 (function () {
   const STORAGE_KEY = "swadakta_service_requests";
   const PARTNER_STORAGE_KEY = "swadakta_partner_applications";
+  const FIELD_UPDATE_STORAGE_KEY = "swadakta_field_updates";
+  const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
   let supabaseClientPromise = null;
 
   function config() {
@@ -20,6 +22,16 @@
   function createPartnerCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `SP-${token}`;
+  }
+
+  function createFieldUpdateCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `FU-${token}`;
+  }
+
+  function createFundMilestoneCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `FM-${token}`;
   }
 
   function createUuid() {
@@ -59,6 +71,30 @@
     localStorage.setItem(PARTNER_STORAGE_KEY, JSON.stringify(applications));
   }
 
+  function readLocalFieldUpdates() {
+    try {
+      return JSON.parse(localStorage.getItem(FIELD_UPDATE_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalFieldUpdates(updates) {
+    localStorage.setItem(FIELD_UPDATE_STORAGE_KEY, JSON.stringify(updates));
+  }
+
+  function readLocalFundMilestones() {
+    try {
+      return JSON.parse(localStorage.getItem(FUND_MILESTONE_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalFundMilestones(milestones) {
+    localStorage.setItem(FUND_MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
+  }
+
   function normalizeRequest(payload) {
     const now = new Date().toISOString();
     return {
@@ -74,6 +110,15 @@
       quote_currency: "AUD",
       payment_link: "",
       payment_due_at: null,
+      funds_status: "not_collected",
+      protected_amount: 0,
+      release_condition: "Admin verifies proof and client-safe report before receiver payout.",
+      payment_reference: "",
+      release_notes: "",
+      identity_verification_required: false,
+      verification_status: "not_required",
+      verification_reason: "",
+      verified_at: null,
       operator_payout: 0,
       field_costs: 0,
       payment_processing_fee: 0,
@@ -196,6 +241,44 @@
     };
   }
 
+  function normalizeFieldUpdate(payload) {
+    return {
+      id: createUuid(),
+      update_code: createFieldUpdateCode(),
+      service_request_id: "",
+      partner_application_id: "",
+      field_status: "progress",
+      update_text: "",
+      proof_links: [],
+      created_at: new Date().toISOString(),
+      ...payload,
+    };
+  }
+
+  function normalizeFundMilestone(payload) {
+    const now = new Date().toISOString();
+    return {
+      id: createUuid(),
+      milestone_code: createFundMilestoneCode(),
+      service_request_id: "",
+      title: "",
+      amount: 0,
+      currency: "AUD",
+      release_status: "planned",
+      release_trigger: "Admin verifies milestone proof before release.",
+      due_at: null,
+      released_amount: 0,
+      released_at: null,
+      provider: "manual",
+      provider_reference: "",
+      internal_notes: "",
+      client_visible: true,
+      created_at: now,
+      updated_at: now,
+      ...payload,
+    };
+  }
+
   async function createRequest(payload) {
     const normalized = normalizeRequest(payload);
     const supabase = await getSupabase();
@@ -246,6 +329,15 @@
       quote_currency: updates.quote_currency,
       payment_link: updates.payment_link,
       payment_due_at: updates.payment_due_at,
+      funds_status: updates.funds_status,
+      protected_amount: updates.protected_amount,
+      release_condition: updates.release_condition,
+      payment_reference: updates.payment_reference,
+      release_notes: updates.release_notes,
+      identity_verification_required: updates.identity_verification_required,
+      verification_status: updates.verification_status,
+      verification_reason: updates.verification_reason,
+      verified_at: updates.verified_at,
       service_package: updates.service_package,
       operator_payout: updates.operator_payout,
       field_costs: updates.field_costs,
@@ -315,6 +407,106 @@
     return { data, mode: "supabase" };
   }
 
+  async function listFieldUpdates() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalFieldUpdates(), mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("field_updates")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function listFundMilestones() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalFundMilestones(), mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("fund_milestones")
+      .select("*")
+      .order("created_at", { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function createFundMilestone(payload) {
+    const normalized = normalizeFundMilestone(payload);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const milestones = [...readLocalFundMilestones(), normalized];
+      writeLocalFundMilestones(milestones);
+      return { data: normalized, mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("fund_milestones")
+      .insert(normalized)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  async function updateFundMilestone(id, updates) {
+    const updatePayload = {
+      title: updates.title,
+      amount: updates.amount,
+      currency: updates.currency,
+      release_status: updates.release_status,
+      release_trigger: updates.release_trigger,
+      due_at: updates.due_at,
+      released_amount: updates.released_amount,
+      released_at: updates.released_at,
+      provider: updates.provider,
+      provider_reference: updates.provider_reference,
+      internal_notes: updates.internal_notes,
+      client_visible: updates.client_visible,
+    };
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const milestones = readLocalFundMilestones().map((milestone) =>
+        milestone.id === id ? { ...milestone, ...updatePayload, updated_at: new Date().toISOString() } : milestone,
+      );
+      writeLocalFundMilestones(milestones);
+      return { data: milestones.find((milestone) => milestone.id === id), mode: "local" };
+    }
+
+    const { data, error } = await supabase
+      .from("fund_milestones")
+      .update(updatePayload)
+      .eq("id", id)
+      .select("*")
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
   async function updatePartnerApplication(id, updates) {
     const updatePayload = {
       status: updates.status,
@@ -361,16 +553,38 @@
       return null;
     }
 
+    const milestones = readLocalFundMilestones()
+      .filter((milestone) => milestone.service_request_id === request.id && milestone.client_visible !== false)
+      .map((milestone) => ({
+        milestone_code: milestone.milestone_code,
+        title: milestone.title,
+        amount: milestone.amount,
+        currency: milestone.currency,
+        release_status: milestone.release_status,
+        release_trigger: milestone.release_trigger,
+        due_at: milestone.due_at,
+        released_amount: milestone.released_amount,
+        released_at: milestone.released_at,
+      }));
+
     return {
       request_code: request.request_code,
+      service_package: request.service_package,
+      kenya_location: request.kenya_location,
       status: request.status,
       payment_status: request.payment_status,
       quote_amount: request.quote_amount,
       quote_currency: request.quote_currency,
+      funds_status: request.funds_status || "not_collected",
+      protected_amount: request.protected_amount || 0,
+      release_condition: request.release_condition || "",
+      identity_verification_required: Boolean(request.identity_verification_required),
+      verification_status: request.verification_status || "not_required",
       payment_link: request.payment_link,
       client_report: request.client_report,
       client_report_url: request.client_report_url,
       proof_links: request.proof_links || [],
+      milestones,
       updated_at: request.updated_at,
     };
   }
@@ -402,7 +616,7 @@
     const supabase = await getSupabase();
 
     if (!supabase) {
-      return { data: readLocalRequests(), mode: "local" };
+      return { data: readLocalRequests().map(publicTrackingPayload), mode: "local" };
     }
 
     const { data, error } = await supabase.rpc("list_my_service_requests");
@@ -458,6 +672,66 @@
     }
 
     return { data: data || [], mode: "supabase" };
+  }
+
+  async function submitAssignedJobUpdate(requestCode, payload) {
+    const cleanPayload = {
+      field_status: payload.field_status,
+      update_text: String(payload.update_text || "").trim(),
+      proof_links: Array.isArray(payload.proof_links) ? payload.proof_links : [],
+    };
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const normalizedCode = String(requestCode || "").trim().toUpperCase();
+      const request = readLocalRequests().find(
+        (item) => String(item.request_code || "").toUpperCase() === normalizedCode,
+      );
+      const partner = request
+        ? readLocalPartnerApplications().find((application) => application.id === request.assigned_partner_id)
+        : null;
+
+      if (!request || !partner || partner.status !== "vetted") {
+        throw new Error("Assigned job not found or not available for receiver update.");
+      }
+
+      if (!cleanPayload.update_text) {
+        throw new Error("Field update text is required.");
+      }
+
+      const update = normalizeFieldUpdate({
+        service_request_id: request.id,
+        partner_application_id: partner.id,
+        field_status: cleanPayload.field_status || "progress",
+        update_text: cleanPayload.update_text,
+        proof_links: cleanPayload.proof_links,
+        request_code: request.request_code,
+      });
+      writeLocalFieldUpdates([update, ...readLocalFieldUpdates()]);
+
+      return {
+        data: {
+          update_code: update.update_code,
+          request_code: request.request_code,
+          field_status: update.field_status,
+          created_at: update.created_at,
+        },
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("submit_assigned_job_update", {
+      input_request_code: String(requestCode || "").trim().toUpperCase(),
+      input_field_status: cleanPayload.field_status,
+      input_update_text: cleanPayload.update_text,
+      input_proof_links: cleanPayload.proof_links,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
   async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
@@ -522,6 +796,11 @@
     listPartnerApplications,
     listMyPartnerApplications,
     listMyAssignedJobs,
+    listFieldUpdates,
+    listFundMilestones,
+    createFundMilestone,
+    updateFundMilestone,
+    submitAssignedJobUpdate,
     updatePartnerApplication,
     signInAdmin,
     signInPortal,

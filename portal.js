@@ -29,6 +29,43 @@ const paymentLabels = {
   refunded: "Refunded",
 };
 
+const fundsStatusLabels = {
+  not_collected: "Not collected",
+  payment_link_sent: "Payment link sent",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  deposit_confirmed: "Deposit confirmed",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+};
+
+const verificationStatusLabels = {
+  not_required: "Not required",
+  required: "Required",
+  requested: "Requested",
+  submitted: "Submitted",
+  verified: "Verified",
+  rejected: "Rejected",
+  expired: "Expired",
+};
+
+const milestoneStatusLabels = {
+  planned: "Planned",
+  funded: "Funded",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  ready_to_release: "Ready to release",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+  cancelled: "Cancelled",
+};
+
 const taskLabels = {
   quick: "Quick errand",
   site: "Property or site visit",
@@ -52,6 +89,14 @@ const partnerStatusLabels = {
   vetted: "Vetted",
   on_hold: "On hold",
   rejected: "Rejected",
+};
+
+const fieldStatusLabels = {
+  progress: "Progress",
+  blocked: "Blocked",
+  completed: "Completed",
+  needs_admin: "Needs admin",
+  safety_issue: "Safety issue",
 };
 
 const partnerCategoryLabels = {
@@ -80,6 +125,10 @@ function formatCurrency(amount, currency = "AUD") {
   return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(amount)}`;
 }
 
+function formatAmount(amount, currency = "AUD") {
+  return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(Number(amount || 0))}`;
+}
+
 function formatDate(value) {
   if (!value) {
     return "No update yet";
@@ -100,6 +149,47 @@ function safeHttpUrl(value) {
   }
 }
 
+function parseProofLinks(value) {
+  return String(value || "")
+    .split(/\n|,/)
+    .map((item) => item.trim())
+    .map(safeHttpUrl)
+    .filter(Boolean);
+}
+
+function fieldStatusOptions(current = "progress") {
+  return Object.entries(fieldStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function renderMilestones(request) {
+  const milestones = Array.isArray(request.milestones) ? request.milestones : [];
+
+  if (!milestones.length) {
+    return "";
+  }
+
+  return `
+    <div class="milestone-client-list">
+      ${milestones
+        .map(
+          (milestone) => `
+            <article>
+              <strong>${escapeHtml(milestone.title || milestone.milestone_code || "Milestone")}</strong>
+              <span>${escapeHtml(milestoneStatusLabels[milestone.release_status] || milestone.release_status || "Planned")}</span>
+              <span>${escapeHtml(formatAmount(milestone.released_amount, milestone.currency))} released of ${escapeHtml(formatAmount(milestone.amount, milestone.currency))}</span>
+            </article>
+          `,
+        )
+        .join("")}
+    </div>
+  `;
+}
+
 function selectedPartnerCategories() {
   return Array.from(partnerForm.querySelectorAll('input[name="category"]:checked')).map((item) => item.value);
 }
@@ -117,6 +207,9 @@ function renderTrackingResult(request) {
     : "";
   const paymentLink = safeHttpUrl(request.payment_link);
   const reportLink = safeHttpUrl(request.client_report_url);
+  const fundsStatus = fundsStatusLabels[request.funds_status] || request.funds_status || "Not collected";
+  const verificationStatus =
+    verificationStatusLabels[request.verification_status] || request.verification_status || "Not required";
 
   trackingResult.className = "tracking-result is-success";
   trackingResult.innerHTML = `
@@ -124,6 +217,11 @@ function renderTrackingResult(request) {
     <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}</span>
     <span>Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}</span>
     <span>Quote: ${escapeHtml(formatCurrency(request.quote_amount, request.quote_currency))}</span>
+    <span>Funds: ${escapeHtml(fundsStatus)}</span>
+    <span>Protected amount: ${escapeHtml(formatAmount(request.protected_amount, request.quote_currency))}</span>
+    ${request.identity_verification_required ? `<span>ID verification: ${escapeHtml(verificationStatus)}</span>` : ""}
+    ${request.release_condition ? `<p>${escapeHtml(request.release_condition)}</p>` : ""}
+    ${renderMilestones(request)}
     ${paymentLink ? `<p><a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">Open payment link</a></p>` : ""}
     ${request.client_report ? `<p>${escapeHtml(request.client_report)}</p>` : ""}
     ${reportLink ? `<p><a href="${escapeHtml(reportLink)}" target="_blank" rel="noreferrer">Open client report</a></p>` : ""}
@@ -163,12 +261,15 @@ function renderClientAccount(email, requests) {
   const items = requests
     .map((request) => {
       const paymentLink = safeHttpUrl(request.payment_link);
+      const fundsStatus = fundsStatusLabels[request.funds_status] || request.funds_status || "Not collected";
       return `
         <article>
           <strong>${escapeHtml(request.request_code)}</strong>
           <span>${escapeHtml(servicePackageLabels[request.service_package] || request.service_package || "Quote-first service")} in ${escapeHtml(request.kenya_location || "Kenya")}</span>
           <span>Status: ${escapeHtml(statusLabels[request.status] || request.status)}. Payment: ${escapeHtml(paymentLabels[request.payment_status] || request.payment_status)}.</span>
           <span>Quote: ${escapeHtml(formatCurrency(request.quote_amount, request.quote_currency))}</span>
+          <span>Funds: ${escapeHtml(fundsStatus)}. Protected: ${escapeHtml(formatAmount(request.protected_amount, request.quote_currency))}.</span>
+          ${renderMilestones(request)}
           ${paymentLink ? `<a href="${escapeHtml(paymentLink)}" target="_blank" rel="noreferrer">Open payment link</a>` : ""}
           <small>Updated ${escapeHtml(formatDate(request.updated_at))}</small>
         </article>
@@ -231,6 +332,26 @@ function renderPartnerAccount(email, applications, jobs = []) {
           ${supportingLinks.length ? `<p>${supportingLinks.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Supporting link ${index + 1}</a>`).join(" ")}</p>` : ""}
           ${job.client_report ? `<p>Admin report note: ${escapeHtml(job.client_report)}</p>` : ""}
           ${proofLinks.length ? `<p>${proofLinks.map((link, index) => `<a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Proof link ${index + 1}</a>`).join(" ")}</p>` : ""}
+          <form class="field-update-form" data-request-code="${escapeHtml(job.request_code)}">
+            <div class="field-row">
+              <label class="field-group">
+                Field status
+                <select name="field_status">${fieldStatusOptions()}</select>
+              </label>
+              <label class="field-group">
+                Proof links
+                <textarea name="proof_links" rows="2" placeholder="One proof link per line"></textarea>
+              </label>
+            </div>
+            <label class="field-group">
+              Field update
+              <textarea name="update_text" rows="3" placeholder="Progress, blocker, reference number, receipt note, or completion summary" required></textarea>
+            </label>
+            <div class="form-actions">
+              <button class="button button-primary" type="submit">Send field update</button>
+              <span class="copy-status" role="status"></span>
+            </div>
+          </form>
           <small>Updated ${escapeHtml(formatDate(job.updated_at))}</small>
         </article>
       `;
@@ -350,6 +471,41 @@ partnerLoginForm.addEventListener("submit", async (event) => {
     partnerLoginStatus.textContent = error.message || "Could not send receiver magic link.";
   }
 });
+
+if (partnerAccountPanel) {
+  partnerAccountPanel.addEventListener("submit", async (event) => {
+    const form = event.target.closest(".field-update-form");
+    if (!form) {
+      return;
+    }
+
+    event.preventDefault();
+    const statusElement = form.querySelector(".copy-status");
+    const formData = new FormData(form);
+    const updateText = String(formData.get("update_text") || "").trim();
+
+    if (!updateText) {
+      statusElement.textContent = "Add a field update before sending.";
+      return;
+    }
+
+    statusElement.textContent = "Sending update...";
+
+    try {
+      const result = await window.SwadaktaData.submitAssignedJobUpdate(form.dataset.requestCode, {
+        field_status: formData.get("field_status"),
+        update_text: updateText,
+        proof_links: parseProofLinks(formData.get("proof_links")),
+      });
+      form.reset();
+      statusElement.textContent = result.data?.update_code
+        ? `Sent ${result.data.update_code}.`
+        : "Field update sent.";
+    } catch (error) {
+      statusElement.textContent = error.message || "Could not send field update.";
+    }
+  });
+}
 
 adminForm.addEventListener("submit", async (event) => {
   event.preventDefault();

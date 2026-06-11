@@ -13,6 +13,8 @@ const partnerBoard = document.querySelector("#partner-board");
 
 let requests = [];
 let partnerApplications = [];
+let fieldUpdates = [];
+let fundMilestones = [];
 let backendMode = "local";
 
 const taskLabels = {
@@ -46,6 +48,29 @@ const paymentMethodLabels = {
   paypal: "PayPal invoice or link",
   wise: "Wise transfer",
   bank: "Bank or mobile money transfer",
+};
+
+const fundsStatusLabels = {
+  not_collected: "Not collected",
+  payment_link_sent: "Payment link sent",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  deposit_confirmed: "Deposit confirmed",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+};
+
+const verificationStatusLabels = {
+  not_required: "Not required",
+  required: "Required",
+  requested: "Requested",
+  submitted: "Submitted",
+  verified: "Verified",
+  rejected: "Rejected",
+  expired: "Expired",
 };
 
 const servicePackageLabels = {
@@ -93,6 +118,39 @@ const partnerStatusLabels = {
   rejected: "Rejected",
 };
 
+const fieldUpdateStatusLabels = {
+  progress: "Progress",
+  blocked: "Blocked",
+  completed: "Completed",
+  needs_admin: "Needs admin",
+  safety_issue: "Safety issue",
+};
+
+const milestoneStatusLabels = {
+  planned: "Planned",
+  funded: "Funded",
+  authorized: "Authorized",
+  held_by_provider: "Held by provider",
+  ready_to_release: "Ready to release",
+  partially_released: "Partially released",
+  released: "Released",
+  refund_pending: "Refund pending",
+  refunded: "Refunded",
+  disputed: "Disputed",
+  cancelled: "Cancelled",
+};
+
+const milestoneProviderLabels = {
+  manual: "Manual record",
+  stripe: "Stripe",
+  paypal: "PayPal",
+  wise: "Wise",
+  escrow_com: "Escrow.com",
+  bank: "Bank",
+  mpesa: "M-Pesa",
+  other: "Other",
+};
+
 const partnerCategoryLabels = {
   site_visits: "Site visits",
   registry_errands: "Registry/document errands",
@@ -137,6 +195,20 @@ function toMoneyNumber(value) {
 
 function formatMoney(amount, currency = "AUD") {
   return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(toMoneyNumber(amount))}`;
+}
+
+function formatDateTimeInput(value) {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return localDate.toISOString().slice(0, 16);
 }
 
 function calculateFounderMargin(source) {
@@ -223,6 +295,224 @@ function renderSupportingLinks(request) {
   return `<ul class="request-links">${items}</ul>`;
 }
 
+function getFundMilestonesForRequest(request) {
+  return fundMilestones.filter((milestone) => milestone.service_request_id === request.id);
+}
+
+function renderClientMilestoneLine(milestone) {
+  const amount = formatMoney(milestone.amount, milestone.currency || "AUD");
+  const released = formatMoney(milestone.released_amount, milestone.currency || "AUD");
+  const status = milestoneStatusLabels[milestone.release_status] || milestone.release_status || "Planned";
+  return `${milestone.title || "Milestone"} - ${status} - ${released} of ${amount}`;
+}
+
+function renderFundMilestones(request) {
+  const milestones = getFundMilestonesForRequest(request);
+  const totalPlanned = milestones.reduce((sum, item) => sum + toMoneyNumber(item.amount), 0);
+  const totalReleased = milestones.reduce((sum, item) => sum + toMoneyNumber(item.released_amount), 0);
+  const currency = request.quote_currency || request.preferred_currency || "AUD";
+
+  const milestoneItems = milestones
+    .map((milestone) => {
+      const status = milestoneStatusLabels[milestone.release_status] || milestone.release_status || "Planned";
+      const provider = milestoneProviderLabels[milestone.provider] || milestone.provider || "Manual record";
+      return `
+        <article class="milestone-item" data-milestone-id="${escapeHtml(milestone.id)}">
+          <header>
+            <div>
+              <span class="request-code">${escapeHtml(milestone.milestone_code || "Milestone")}</span>
+              <strong>${escapeHtml(milestone.title || "Untitled milestone")}</strong>
+            </div>
+            <span class="status-pill status-${escapeHtml(milestone.release_status || "planned")}">${escapeHtml(status)}</span>
+          </header>
+          <p>${escapeHtml(renderClientMilestoneLine(milestone))}</p>
+          <p>${escapeHtml(milestone.release_trigger || "Admin verifies milestone proof before release.")}</p>
+          <form class="milestone-update-form">
+            <div class="field-row">
+              <label class="field-group">
+                Title
+                <input name="title" type="text" value="${escapeHtml(milestone.title || "")}" required />
+              </label>
+              <label class="field-group">
+                Status
+                <select name="release_status">${milestoneStatusOptions(milestone.release_status || "planned")}</select>
+              </label>
+              <label class="field-group">
+                Provider
+                <select name="provider">${milestoneProviderOptions(milestone.provider || "manual")}</select>
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field-group">
+                Amount
+                <input name="amount" type="number" min="0" step="1" value="${escapeHtml(milestone.amount || "")}" />
+              </label>
+              <label class="field-group">
+                Released
+                <input name="released_amount" type="number" min="0" step="1" value="${escapeHtml(milestone.released_amount || "")}" />
+              </label>
+              <label class="field-group">
+                Currency
+                <select name="currency">${currencyOptions(milestone.currency || currency)}</select>
+              </label>
+            </div>
+            <div class="field-row">
+              <label class="field-group">
+                Due
+                <input name="due_at" type="date" value="${escapeHtml(milestone.due_at || "")}" />
+              </label>
+              <label class="field-group">
+                Released at
+                <input name="released_at" type="datetime-local" value="${escapeHtml(formatDateTimeInput(milestone.released_at))}" />
+              </label>
+              <label class="field-group">
+                Provider ref
+                <input name="provider_reference" type="text" value="${escapeHtml(milestone.provider_reference || "")}" placeholder="Stripe, PayPal, M-Pesa, bank ref" />
+              </label>
+            </div>
+            <label class="field-group">
+              Release trigger
+              <input name="release_trigger" type="text" value="${escapeHtml(milestone.release_trigger || "")}" />
+            </label>
+            <label class="field-group">
+              Internal notes
+              <textarea name="internal_notes" rows="2">${escapeHtml(milestone.internal_notes || "")}</textarea>
+            </label>
+            <label class="single-check">
+              <input name="client_visible" type="checkbox" ${milestone.client_visible !== false ? "checked" : ""} />
+              Show safe milestone status to client
+            </label>
+            <div class="form-actions">
+              <button class="button button-secondary" type="submit">Save milestone</button>
+              <span class="copy-status" role="status"></span>
+            </div>
+          </form>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `
+    <section class="milestone-list" aria-label="Funds protection milestones">
+      <div class="field-update-list-header">
+        <span class="request-code">Funds protection</span>
+        <strong>${escapeHtml(formatMoney(totalReleased, currency))}</strong>
+      </div>
+      <p class="form-note">Released ${escapeHtml(formatMoney(totalReleased, currency))} of ${escapeHtml(formatMoney(totalPlanned, currency))}. Use provider references for Stripe, PayPal, Wise, M-Pesa, bank, or escrow records.</p>
+      ${milestoneItems || `<p class="form-note">No milestones yet. Add the first release milestone below.</p>`}
+      <form class="milestone-create-form">
+        <div class="field-row">
+          <label class="field-group">
+            New milestone
+            <input name="title" type="text" placeholder="Deposit, site media, final report..." required />
+          </label>
+          <label class="field-group">
+            Amount
+            <input name="amount" type="number" min="0" step="1" placeholder="0" />
+          </label>
+          <label class="field-group">
+            Currency
+            <select name="currency">${currencyOptions(currency)}</select>
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Status
+            <select name="release_status">${milestoneStatusOptions("planned")}</select>
+          </label>
+          <label class="field-group">
+            Provider
+            <select name="provider">${milestoneProviderOptions("manual")}</select>
+          </label>
+          <label class="field-group">
+            Due
+            <input name="due_at" type="date" />
+          </label>
+        </div>
+        <label class="field-group">
+          Release trigger
+          <input name="release_trigger" type="text" value="Admin verifies milestone proof before release." />
+        </label>
+        <div class="form-actions">
+          <button class="button button-secondary" type="submit">Add milestone</button>
+          <span class="copy-status" role="status"></span>
+        </div>
+      </form>
+    </section>
+  `;
+}
+
+function getFieldUpdatesForRequest(request) {
+  return fieldUpdates.filter(
+    (update) =>
+      update.service_request_id === request.id ||
+      (update.request_code &&
+        String(update.request_code || "").toUpperCase() === String(request.request_code || "").toUpperCase()),
+  );
+}
+
+function fieldUpdatePartnerLabel(update) {
+  const partner = getPartnerById(update.partner_application_id);
+  return partner ? `${partner.full_name} (${partner.partner_code})` : "Assigned receiver";
+}
+
+function renderFieldUpdateProofLinks(update) {
+  const links = Array.isArray(update.proof_links) ? update.proof_links.map(safeHttpUrl).filter(Boolean) : [];
+
+  if (!links.length) {
+    return "";
+  }
+
+  return `
+    <ul class="request-links">
+      ${links
+        .map(
+          (link, index) =>
+            `<li><a href="${escapeHtml(link)}" target="_blank" rel="noreferrer">Field proof ${index + 1}</a></li>`,
+        )
+        .join("")}
+    </ul>
+  `;
+}
+
+function renderFieldUpdates(request) {
+  const updates = getFieldUpdatesForRequest(request);
+
+  if (!updates.length) {
+    return "";
+  }
+
+  const items = updates
+    .map((update) => {
+      const statusLabel = fieldUpdateStatusLabels[update.field_status] || update.field_status || "Progress";
+      return `
+        <article class="field-update-item">
+          <header>
+            <div>
+              <span class="request-code">${escapeHtml(update.update_code || "Field update")}</span>
+              <strong>${escapeHtml(fieldUpdatePartnerLabel(update))}</strong>
+            </div>
+            <span class="status-pill status-${escapeHtml(update.field_status || "progress")}">${escapeHtml(statusLabel)}</span>
+          </header>
+          <p>${escapeHtml(update.update_text || "")}</p>
+          ${renderFieldUpdateProofLinks(update)}
+          <small>${escapeHtml(formatDate(update.created_at))}</small>
+        </article>
+      `;
+    })
+    .join("");
+
+  return `
+    <section class="field-update-list" aria-label="Receiver field updates">
+      <div class="field-update-list-header">
+        <span class="request-code">Receiver updates</span>
+        <strong>${updates.length}</strong>
+      </div>
+      ${items}
+    </section>
+  `;
+}
+
 function getFilteredRequests() {
   const selectedStatus = statusFilter.value;
   const selectedPayment = paymentFilter.value;
@@ -254,10 +544,33 @@ function getFilteredRequests() {
       budgetRangeLabels[request.budget_range] || request.budget_range,
       proofPriorityLabels[request.proof_priority] || request.proof_priority,
       referralSourceLabels[request.referral_source] || request.referral_source,
+      fundsStatusLabels[request.funds_status] || request.funds_status,
+      request.protected_amount,
+      request.release_condition,
+      request.payment_reference,
+      request.release_notes,
+      verificationStatusLabels[request.verification_status] || request.verification_status,
+      request.verification_reason,
       request.operator_payout,
       request.field_costs,
       request.payment_processing_fee,
       Array.isArray(request.supporting_links) ? request.supporting_links.join(" ") : "",
+      getFundMilestonesForRequest(request)
+        .map((milestone) =>
+          [
+            milestone.milestone_code,
+            milestone.title,
+            milestone.release_status,
+            milestone.provider,
+            milestone.provider_reference,
+            milestone.release_trigger,
+            milestone.internal_notes,
+          ].join(" "),
+        )
+        .join(" "),
+      getFieldUpdatesForRequest(request)
+        .map((update) => [update.update_code, update.field_status, update.update_text, update.proof_links].join(" "))
+        .join(" "),
       request.notes,
     ]
       .join(" ")
@@ -314,9 +627,45 @@ function paymentOptions(current) {
     .join("");
 }
 
+function fundsStatusOptions(current) {
+  return Object.entries(fundsStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function verificationStatusOptions(current) {
+  return Object.entries(verificationStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
 function currencyOptions(current) {
   return ["AUD", "USD", "GBP", "EUR", "KES"]
     .map((currency) => `<option value="${currency}" ${currency === current ? "selected" : ""}>${currency}</option>`)
+    .join("");
+}
+
+function milestoneStatusOptions(current) {
+  return Object.entries(milestoneStatusLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
+    .join("");
+}
+
+function milestoneProviderOptions(current) {
+  return Object.entries(milestoneProviderLabels)
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${value === current ? "selected" : ""}>${label}</option>`,
+    )
     .join("");
 }
 
@@ -384,7 +733,7 @@ function renderRequestCard(request) {
         <div>
           <span class="request-code">${escapeHtml(request.request_code)}</span>
           <h2>${escapeHtml(request.client_name)}</h2>
-          <p>${escapeHtml(taskLabels[request.task_type] || request.task_type)} · ${escapeHtml(request.kenya_location)}, Kenya</p>
+          <p>${escapeHtml(taskLabels[request.task_type] || request.task_type)} - ${escapeHtml(request.kenya_location)}, Kenya</p>
         </div>
         <span class="status-pill status-${escapeHtml(request.status)}">${escapeHtml(statusLabels[request.status] || request.status)}</span>
       </header>
@@ -453,6 +802,11 @@ function renderRequestCardV2(request) {
   const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
   const assignedPartner = assignedPartnerLabel(request);
   const supportingLinks = renderSupportingLinks(request);
+  const fundsStatus = fundsStatusLabels[request.funds_status] || request.funds_status || "Not collected";
+  const protectedAmount = formatMoney(request.protected_amount, quoteCurrency);
+  const verificationStatus =
+    verificationStatusLabels[request.verification_status] || request.verification_status || "Not required";
+  const verificationRequired = request.identity_verification_required ? "Required" : "Not required";
 
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
@@ -485,6 +839,9 @@ function renderRequestCardV2(request) {
         <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>
         <div><dt>Quote</dt><dd>${escapeHtml(formatCurrency(request.quote_amount, quoteCurrency))}</dd></div>
         <div><dt>Founder margin</dt><dd>${escapeHtml(founderMargin)}</dd></div>
+        <div><dt>Funds</dt><dd>${escapeHtml(fundsStatus)}</dd></div>
+        <div><dt>Protected</dt><dd>${escapeHtml(protectedAmount)}</dd></div>
+        <div><dt>ID check</dt><dd>${escapeHtml(`${verificationRequired} - ${verificationStatus}`)}</dd></div>
         <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
         <div><dt>Consent</dt><dd>${escapeHtml(consentStatus)}</dd></div>
         <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>
@@ -492,6 +849,8 @@ function renderRequestCardV2(request) {
 
       <p class="request-notes">${escapeHtml(request.notes)}</p>
       ${supportingLinks}
+      ${renderFundMilestones(request)}
+      ${renderFieldUpdates(request)}
 
       <form class="request-update-form">
         <div class="field-row">
@@ -528,6 +887,46 @@ function renderRequestCardV2(request) {
             <input name="payment_due_at" type="date" value="${escapeHtml(request.payment_due_at || "")}" />
           </label>
         </div>
+        <div class="field-row">
+          <label class="field-group">
+            Funds status
+            <select name="funds_status">${fundsStatusOptions(request.funds_status || "not_collected")}</select>
+          </label>
+          <label class="field-group">
+            Protected amount
+            <input name="protected_amount" type="number" min="0" step="1" value="${escapeHtml(request.protected_amount || "")}" placeholder="Amount held/authorized" />
+          </label>
+          <label class="field-group">
+            Payment/provider ref
+            <input name="payment_reference" type="text" value="${escapeHtml(request.payment_reference || "")}" placeholder="Stripe PI, PayPal auth, M-Pesa receipt..." />
+          </label>
+        </div>
+        <label class="field-group">
+          Release condition
+          <input name="release_condition" type="text" value="${escapeHtml(request.release_condition || "Admin verifies proof and client-safe report before receiver payout.")}" />
+        </label>
+        <label class="field-group">
+          Funds release notes
+          <textarea name="release_notes" rows="2">${escapeHtml(request.release_notes || "")}</textarea>
+        </label>
+        <div class="field-row">
+          <label class="field-group">
+            ID verification
+            <select name="verification_status">${verificationStatusOptions(request.verification_status || "not_required")}</select>
+          </label>
+          <label class="field-group">
+            Verification reason
+            <input name="verification_reason" type="text" value="${escapeHtml(request.verification_reason || "")}" placeholder="High amount, title docs, family authority..." />
+          </label>
+          <label class="field-group">
+            Verified at
+            <input name="verified_at" type="datetime-local" value="${escapeHtml(formatDateTimeInput(request.verified_at))}" />
+          </label>
+        </div>
+        <label class="single-check">
+          <input name="identity_verification_required" type="checkbox" ${request.identity_verification_required ? "checked" : ""} />
+          Require ID verification before release or sensitive work
+        </label>
         <div class="field-row">
           <label class="field-group">
             Operator payout
@@ -689,6 +1088,26 @@ async function loadPartnerApplications({ renderPanel = true } = {}) {
   }
 }
 
+async function loadFieldUpdates() {
+  try {
+    const result = await window.SwadaktaData.listFieldUpdates();
+    fieldUpdates = result.data || [];
+  } catch (error) {
+    fieldUpdates = [];
+    throw error;
+  }
+}
+
+async function loadFundMilestones() {
+  try {
+    const result = await window.SwadaktaData.listFundMilestones();
+    fundMilestones = result.data || [];
+  } catch (error) {
+    fundMilestones = [];
+    throw error;
+  }
+}
+
 function getPartnerApplicationByCard(card) {
   return partnerApplications.find((application) => application.id === card.dataset.id);
 }
@@ -727,12 +1146,19 @@ async function loadRequests() {
           </div>
         `;
       }
+      fieldUpdates = [];
+      fundMilestones = [];
       return;
     }
 
     authCard.hidden = true;
     signOutButton.hidden = backendMode !== "supabase";
-    const [requestResult] = await Promise.all([window.SwadaktaData.listRequests(), loadPartnerApplications({ renderPanel: false })]);
+    const [requestResult] = await Promise.all([
+      window.SwadaktaData.listRequests(),
+      loadPartnerApplications({ renderPanel: false }),
+      loadFieldUpdates(),
+      loadFundMilestones(),
+    ]);
     backendMode = requestResult.mode;
     requests = requestResult.data || [];
     renderRequests();
@@ -775,12 +1201,57 @@ function formPayload(form) {
     quote_currency: formData.get("quote_currency"),
     payment_link: safeHttpUrl(formData.get("payment_link")),
     payment_due_at: formData.get("payment_due_at") || null,
+    funds_status: formData.get("funds_status"),
+    protected_amount: toMoneyNumber(formData.get("protected_amount")),
+    release_condition:
+      String(formData.get("release_condition") || "").trim() ||
+      "Admin verifies proof and client-safe report before receiver payout.",
+    payment_reference: formData.get("payment_reference"),
+    release_notes: formData.get("release_notes"),
+    identity_verification_required: Boolean(formData.get("identity_verification_required")),
+    verification_status: formData.get("verification_status"),
+    verification_reason: formData.get("verification_reason"),
+    verified_at: formData.get("verified_at") || null,
     operator_payout: toMoneyNumber(formData.get("operator_payout")),
     field_costs: toMoneyNumber(formData.get("field_costs")),
     payment_processing_fee: toMoneyNumber(formData.get("payment_processing_fee")),
     client_report_url: safeHttpUrl(formData.get("client_report_url")),
     proof_links: proofLinks,
   };
+}
+
+function milestonePayload(form, request) {
+  const formData = new FormData(form);
+  const amount = toMoneyNumber(formData.get("amount"));
+  const releasedAmount = toMoneyNumber(formData.get("released_amount"));
+
+  return {
+    service_request_id: request.id,
+    title: String(formData.get("title") || "").trim(),
+    amount,
+    currency: formData.get("currency") || request.quote_currency || request.preferred_currency || "AUD",
+    release_status: formData.get("release_status") || "planned",
+    release_trigger:
+      String(formData.get("release_trigger") || "").trim() ||
+      "Admin verifies milestone proof before release.",
+    due_at: formData.get("due_at") || null,
+    released_amount: Math.min(releasedAmount, amount),
+    released_at: formData.get("released_at") || null,
+    provider: formData.get("provider") || "manual",
+    provider_reference: formData.get("provider_reference") || "",
+    internal_notes: formData.get("internal_notes") || "",
+    client_visible: Boolean(formData.get("client_visible")) || form.classList.contains("milestone-create-form"),
+  };
+}
+
+function buildMilestoneSummary(request) {
+  const milestones = getFundMilestonesForRequest(request).filter((milestone) => milestone.client_visible !== false);
+
+  if (!milestones.length) {
+    return [];
+  }
+
+  return ["Milestone release plan:", ...milestones.map((milestone) => `- ${renderClientMilestoneLine(milestone)}`)];
 }
 
 async function copyText(text, statusElement) {
@@ -810,6 +1281,7 @@ function buildClientUpdate(request, form) {
   const quoteLine = payload.quote_amount ? `Quote: ${formatCurrency(payload.quote_amount, payload.quote_currency)}` : "Quote: Pending.";
   const paymentLine = payload.payment_link ? `Payment link: ${payload.payment_link}` : "Payment link: Not issued yet.";
   const dueLine = payload.payment_due_at ? `Payment due: ${payload.payment_due_at}` : "";
+  const fundsLine = `Funds protection: ${fundsStatusLabels[payload.funds_status] || payload.funds_status}; protected amount ${formatMoney(payload.protected_amount, payload.quote_currency)}.`;
   const reportUrlLine = payload.client_report_url ? `Report link: ${payload.client_report_url}` : "";
   const proofLines = payload.proof_links.length ? [`Proof links:`, ...payload.proof_links.map((link) => `- ${link}`)] : [];
 
@@ -820,8 +1292,10 @@ function buildClientUpdate(request, form) {
     quoteLine,
     paymentLine,
     dueLine,
+    fundsLine,
     payload.client_report ? `Report: ${payload.client_report}` : "Report: Update pending.",
     reportUrlLine,
+    ...buildMilestoneSummary(request),
     ...proofLines,
     "Thank you for trusting Swadakta Diaspora Concierge.",
   ]
@@ -843,6 +1317,13 @@ function buildQuoteMessage(request, form) {
   const servicePackage = servicePackageLabels[payload.service_package] || payload.service_package || "Quote-first service";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "photos, receipts, and written update";
+  const fundsLine =
+    payload.protected_amount > 0
+      ? `Funds protection: ${formatMoney(payload.protected_amount, payload.quote_currency)} will be tracked against milestone release conditions.`
+      : "Funds protection: Swadakta will confirm the payment hold/deposit and milestone release process before field work starts.";
+  const verificationLine = payload.identity_verification_required
+    ? "ID verification may be required before release or sensitive work starts."
+    : "ID verification may be requested for higher-risk, high-value, title/document, or authority-sensitive jobs.";
 
   return [
     `Hi ${request.client_name || "there"},`,
@@ -853,6 +1334,10 @@ function buildQuoteMessage(request, form) {
     `Preferred payment route: ${paymentMethod}.`,
     dueLine,
     paymentLine,
+    "",
+    fundsLine,
+    verificationLine,
+    ...buildMilestoneSummary(request),
     "",
     `Proof plan: ${proofPriority}. Report pack: ${reports}.`,
     "Please pay only through the link above or another channel confirmed by Swadakta. Do not send card numbers, PINs, passwords, or one-time codes by WhatsApp, email, or the intake form.",
@@ -878,6 +1363,10 @@ function buildOperatorBrief(request, form) {
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
+  const milestoneSummary = getFundMilestonesForRequest(request)
+    .map((milestone) => `- ${renderClientMilestoneLine(milestone)}; provider ${milestoneProviderLabels[milestone.provider] || milestone.provider}; trigger: ${milestone.release_trigger}`)
+    .join("\n");
+  const verificationStatus = verificationStatusLabels[payload.verification_status] || payload.verification_status || "Not required";
 
   return [
     `Swadakta operator brief: ${request.request_code}`,
@@ -900,7 +1389,13 @@ function buildOperatorBrief(request, form) {
     `Sensitive documents expected: ${request.sensitive_documents_expected ? "Yes" : "No"}`,
     `Report pack required: ${reports}`,
     `Quote: ${quoteLine}`,
+    `Funds status: ${fundsStatusLabels[payload.funds_status] || payload.funds_status}; protected amount ${formatMoney(payload.protected_amount, payload.quote_currency)}; reference ${payload.payment_reference || "not set"}.`,
+    `Release condition: ${payload.release_condition}`,
+    `ID verification: ${payload.identity_verification_required ? "required" : "not required"}; status ${verificationStatus}; reason ${payload.verification_reason || "not set"}.`,
     `Founder economics: ${founderMargin}; operator payout ${formatMoney(payload.operator_payout, payload.quote_currency)}; field costs ${formatMoney(payload.field_costs, payload.quote_currency)}; payment fees ${formatMoney(payload.payment_processing_fee, payload.quote_currency)}.`,
+    "",
+    "Milestone ledger:",
+    milestoneSummary || "No milestones set yet.",
     "",
     "Client notes:",
     request.notes || "No notes provided.",
@@ -940,15 +1435,41 @@ authForm.addEventListener("submit", async (event) => {
 
 requestBoard.addEventListener("submit", async (event) => {
   event.preventDefault();
-  const form = event.target.closest(".request-update-form");
+  const milestoneCreateForm = event.target.closest(".milestone-create-form");
+  const milestoneUpdateForm = event.target.closest(".milestone-update-form");
   const card = event.target.closest(".request-card");
-  const statusElement = form.querySelector(".copy-status");
   const request = getRequestByCard(card);
 
-  if (!request) {
+  if ((milestoneCreateForm || milestoneUpdateForm) && request) {
+    const form = milestoneCreateForm || milestoneUpdateForm;
+    const statusElement = form.querySelector(".copy-status");
+    const milestoneCard = form.closest(".milestone-item");
+    statusElement.textContent = "Saving milestone...";
+
+    try {
+      if (milestoneCreateForm) {
+        await window.SwadaktaData.createFundMilestone(milestonePayload(form, request));
+      } else {
+        await window.SwadaktaData.updateFundMilestone(
+          milestoneCard.dataset.milestoneId,
+          milestonePayload(form, request),
+        );
+      }
+      statusElement.textContent = "Milestone saved.";
+      await loadRequests();
+    } catch (error) {
+      statusElement.textContent = error.message || "Could not save milestone.";
+    }
     return;
   }
 
+  const form = event.target.closest(".request-update-form");
+
+  if (!form || !request) {
+    return;
+  }
+
+  const statusElement = form.querySelector(".copy-status");
   statusElement.textContent = "Saving...";
 
   try {

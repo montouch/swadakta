@@ -1552,14 +1552,23 @@ output {
 
 .status-paid,
 .status-completed,
-.status-vetted {
+.status-vetted,
+.status-funded,
+.status-released,
+.status-deposit_confirmed {
   background: rgb(11 152 125 / 14%);
   color: var(--teal);
 }
 
 .status-in_progress,
 .status-quoted,
-.status-reviewing {
+.status-reviewing,
+.status-progress,
+.status-authorized,
+.status-held_by_provider,
+.status-ready_to_release,
+.status-partially_released,
+.status-payment_link_sent {
   background: rgb(49 87 214 / 14%);
   color: var(--blue);
 }
@@ -1567,7 +1576,13 @@ output {
 .status-waiting_client,
 .status-cancelled,
 .status-on_hold,
-.status-rejected {
+.status-rejected,
+.status-blocked,
+.status-needs_admin,
+.status-safety_issue,
+.status-refund_pending,
+.status-refunded,
+.status-disputed {
   background: rgb(228 95 95 / 13%);
   color: var(--coral);
 }
@@ -1626,6 +1641,101 @@ output {
   overflow-wrap: anywhere;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+}
+
+.field-update-form {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--line);
+}
+
+.field-update-form textarea {
+  min-height: 5rem;
+}
+
+.field-update-list,
+.milestone-list {
+  display: grid;
+  gap: 0.75rem;
+  padding: 1rem;
+  border: 1px solid rgb(49 87 214 / 18%);
+  border-radius: var(--radius);
+  background: #f7faff;
+}
+
+.field-update-list-header,
+.field-update-item header,
+.milestone-item header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.field-update-list-header strong {
+  display: inline-grid;
+  min-width: 2rem;
+  min-height: 2rem;
+  place-items: center;
+  border-radius: var(--radius);
+  background: var(--blue);
+  color: #fff;
+}
+
+.field-update-item,
+.milestone-item {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.field-update-item strong,
+.milestone-item strong {
+  display: block;
+  margin-top: 0.25rem;
+  color: var(--deep);
+}
+
+.field-update-item p,
+.milestone-item p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.58;
+}
+
+.field-update-item small,
+.milestone-item small {
+  color: var(--muted);
+  font-weight: 850;
+}
+
+.milestone-client-list {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.milestone-client-list article {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: rgb(255 255 255 / 74%);
+}
+
+.milestone-client-list strong {
+  color: var(--deep);
+}
+
+.milestone-client-list span {
+  color: var(--muted);
+  font-size: 0.9rem;
 }
 
 code {

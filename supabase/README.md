@@ -12,6 +12,8 @@ The schema creates:
 
 - `service_requests`: public intake requests
 - `admin_users`: approved admin users
+- `field_updates`: receiver-submitted proof/update notes for assigned jobs
+- `fund_milestones`: admin-controlled funds-protection and staged release records
 - Consent fields for local-contact permission, professional-scope acceptance, terms acceptance, and privacy acceptance
 - Contact preference, contact window, supporting links, and sensitive-document flags
 - RLS policies:
@@ -19,6 +21,7 @@ The schema creates:
   - only approved authenticated admins can read and update requests
 - Public request tracking:
   - clients can look up limited status/report/payment details with request code plus original email or WhatsApp
+  - clients can see safe funds-protection and milestone release status only
 - private helper functions under `app_private`
 
 Admin activation:
