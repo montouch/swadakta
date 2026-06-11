@@ -53,6 +53,7 @@ Admin activation:
 Auth redirect setup:
 
 - Set the Supabase Site URL to `https://swadakta.com`.
-- Add `https://swadakta.com/auth` and `https://swadakta.com/auth.html` to Auth redirect URLs.
-- If using wildcards for Vercel previews, keep them in addition to the exact production callback.
+- Redirect URLs must cover `https://swadakta.com/auth` and `https://swadakta.com/auth.html`.
+  The current dashboard wildcard `https://swadakta.com/**` covers this; exact callbacks are the stricter production option.
+- If using wildcards for Vercel previews, keep them in addition to production coverage.
 - Swadakta sends client, receiver, and admin magic links to `/auth?next=...`; the callback page checks the session and then routes users to `/portal` or `/admin`.
