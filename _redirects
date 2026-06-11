@@ -12,6 +12,7 @@ https://www.swadakta.com/* https://swadakta.com/:splat 301
 /payments /payments.html 200
 /portal /portal.html 200
 /privacy /privacy.html 200
+/resolution /resolution.html 200
 /rules /rules.html 200
 /terms /terms.html 200
 /tracking /tracking.html 200

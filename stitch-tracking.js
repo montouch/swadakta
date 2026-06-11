@@ -7,6 +7,7 @@
   const codeLabel = document.querySelector("#tracking-code-label");
   const assignee = document.querySelector("#tracking-assignee");
   const messageLink = document.querySelector("#tracking-message-link");
+  const resolutionLink = document.querySelector("#tracking-resolution-link");
   const paymentAnchor = document.querySelector("#tracking-payment-link");
   const securePaymentLink = document.querySelector("#tracking-secure-payment-link");
   const jobRoomLink = document.querySelector("#tracking-job-room-link");
@@ -236,6 +237,13 @@
     const href = `${url.pathname}${url.search}`;
     if (messageLink) messageLink.href = href;
     if (jobRoomLink) jobRoomLink.href = href;
+
+    if (resolutionLink) {
+      const resolutionUrl = new URL("resolution.html", window.location.href);
+      if (code) resolutionUrl.searchParams.set("code", code.toUpperCase());
+      if (contact) resolutionUrl.searchParams.set("contact", contact);
+      resolutionLink.href = `${resolutionUrl.pathname}${resolutionUrl.search}`;
+    }
   }
 
   function milestoneVisual(status) {
@@ -495,6 +503,11 @@
     event.preventDefault();
     lookup();
   });
+
+  for (const input of [codeInput, contactInput]) {
+    input.addEventListener("input", () => updateJobRoomLinks());
+    input.addEventListener("change", () => updateJobRoomLinks());
+  }
 
   const params = new URLSearchParams(window.location.search);
   if (params.get("code")) codeInput.value = params.get("code");

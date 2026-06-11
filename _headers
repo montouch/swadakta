@@ -72,5 +72,11 @@
 /messages.html
   X-Robots-Tag: noindex, nofollow
 
+/resolution
+  X-Robots-Tag: noindex, nofollow
+
+/resolution.html
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

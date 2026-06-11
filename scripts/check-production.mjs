@@ -18,6 +18,7 @@ const htmlFiles = [
   "messages.html",
   "payments.html",
   "portal.html",
+  "resolution.html",
   "rules.html",
   "trust.html",
   "tracking.html",
@@ -35,6 +36,7 @@ const requiredPages = [
   "/verification",
   "/trust",
   "/payments",
+  "/resolution",
   "/rules",
   "/admin-ops",
 ];
@@ -42,6 +44,7 @@ const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
   "createMpesaStkPush",
+  "createResolutionCase",
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
@@ -60,6 +63,17 @@ const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
   "Wise stays hidden as a fallback rail",
   "AI can explain and draft updates",
+  "tracking-resolution-link",
+];
+const requiredResolutionPageMarkers = [
+  "Resolution Center",
+  "Protected decision: AI cannot refund, release money",
+  "Stripe / PayPal / M-Pesa / Wise provider evidence",
+];
+const requiredResolutionScriptMarkers = [
+  "createResolutionCase",
+  "listRequestResolutionCases",
+  "Founder review is required",
 ];
 const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
@@ -89,6 +103,7 @@ const requiredRulesMarkers = [
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
+  "renderResolutionCases",
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
 ];
@@ -98,6 +113,7 @@ const requiredRobotsMarkers = [
   "Disallow: /admin-readiness",
   "Disallow: /admin-verification",
   "Disallow: /auth",
+  "Disallow: /resolution",
 ];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
@@ -265,6 +281,19 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
+const localResolution = await readLocal("resolution.js");
+const localResolutionHtml = await readLocal("resolution.html");
+for (const marker of requiredResolutionPageMarkers) {
+  if (!localResolutionHtml.includes(marker)) {
+    fail(failures, `Local resolution flow is missing marker ${marker}`);
+  }
+}
+for (const marker of requiredResolutionScriptMarkers) {
+  if (!localResolution.includes(marker)) {
+    fail(failures, `Local resolution.js is missing marker ${marker}`);
+  }
+}
+
 const localMessages = await readLocal("messages.js");
 const localMessagesHtml = await readLocal("messages.html");
 for (const marker of requiredMessagesMarkers) {
@@ -340,8 +369,18 @@ for (const page of requiredPages) {
   if (page === "/verification" && !text.includes("verification.js?v=4")) {
     fail(failures, `${page} does not reference verification.js?v=4`);
   }
-  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=5")) {
-    fail(failures, `${page} does not reference stitch-tracking.js?v=5`);
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=6")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=6`);
+  }
+  if (page === "/resolution" && !text.includes("resolution.js?v=1")) {
+    fail(failures, `${page} does not reference resolution.js?v=1`);
+  }
+  if (page === "/resolution") {
+    for (const marker of requiredResolutionPageMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
   }
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
@@ -457,11 +496,11 @@ for (const marker of requiredAdminOpsMarkers) {
   }
 }
 
-const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=5");
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=6");
 if (trackingResponse.status !== 200) {
-  fail(failures, `stitch-tracking.js?v=5 returned ${trackingResponse.status}`);
+  fail(failures, `stitch-tracking.js?v=6 returned ${trackingResponse.status}`);
 } else {
-  pass("stitch-tracking.js?v=5 returned 200");
+  pass("stitch-tracking.js?v=6 returned 200");
 }
 
 for (const marker of requiredTrackingMarkers) {
@@ -469,6 +508,21 @@ for (const marker of requiredTrackingMarkers) {
     fail(failures, `Production stitch-tracking.js is missing marker ${marker}`);
   } else {
     pass(`Production stitch-tracking.js contains ${marker}`);
+  }
+}
+
+const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=1");
+if (resolutionResponse.status !== 200) {
+  fail(failures, `resolution.js?v=1 returned ${resolutionResponse.status}`);
+} else {
+  pass("resolution.js?v=1 returned 200");
+}
+
+for (const marker of requiredResolutionScriptMarkers) {
+  if (!resolutionText.includes(marker)) {
+    fail(failures, `Production resolution.js is missing marker ${marker}`);
+  } else {
+    pass(`Production resolution.js contains ${marker}`);
   }
 }
 

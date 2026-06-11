@@ -12,10 +12,12 @@
   const opsMode = document.querySelector("#ops-mode");
   const opsStatus = document.querySelector("#ops-status");
   const opsList = document.querySelector("#ops-list");
+  const resolutionList = document.querySelector("#ops-resolution-list");
   const filterButtons = document.querySelectorAll(".ops-filter");
 
   let currentFilter = "exceptions";
   let currentRequests = [];
+  let currentResolutionCases = [];
 
   const closedStatuses = new Set(["completed", "cancelled"]);
   const paidStatuses = new Set(["paid", "deposit_paid"]);
@@ -43,6 +45,12 @@
     if (!value) return "No date";
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
+  }
+
+  function formatDateTime(value) {
+    if (!value) return "No date";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
   }
 
   function margin(request) {
@@ -250,6 +258,76 @@
     opsList.innerHTML = visible.map(renderRequest).join("");
   }
 
+  function resolutionTone(item) {
+    const issue = String(item.issue_type || "").toLowerCase();
+    const status = String(item.status || "").toLowerCase();
+    if (status === "resolved" || status === "closed") return "bg-emerald-500/10 text-emerald-700";
+    if (["payment_refund", "payment_dispute"].includes(issue)) return "bg-amber-400/20 text-amber-800";
+    if (["receiver_safety", "restricted_item"].includes(issue) || item.severity === "safety" || item.severity === "legal") {
+      return "bg-error-container text-on-error-container";
+    }
+    return "bg-primary/10 text-primary";
+  }
+
+  function renderResolutionCase(item) {
+    const statusOptions = [
+      ["needs_evidence", "Needs evidence"],
+      ["waiting_party", "Waiting party"],
+      ["provider_review", "Provider review"],
+      ["founder_review", "Founder review"],
+      ["resolved", "Resolved"],
+      ["closed", "Closed"],
+    ];
+    const statusButtons = statusOptions
+      .map(
+        ([status, label]) =>
+          `<button class="resolution-status-button rounded-full border border-outline-variant/50 bg-white/72 px-3 py-1.5 font-label text-xs font-bold text-primary" data-resolution-code="${escapeHtml(item.resolution_code)}" data-resolution-status="${status}" type="button">${escapeHtml(label)}</button>`,
+      )
+      .join("");
+
+    return `
+      <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+        <div class="grid gap-4 lg:grid-cols-[1fr_auto]">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <strong class="font-display text-2xl">${escapeHtml(item.resolution_code || "Resolution")}</strong>
+              <span class="rounded-full px-3 py-1 font-label text-xs ${resolutionTone(item)}">${escapeHtml(formatStatus(item.status))}</span>
+              ${
+                item.founder_review_required
+                  ? '<span class="rounded-full bg-tertiary/10 px-3 py-1 font-label text-xs text-tertiary">Founder review required</span>'
+                  : '<span class="rounded-full bg-primary/10 px-3 py-1 font-label text-xs text-primary">AI triage first</span>'
+              }
+            </div>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">
+              ${escapeHtml(item.request_code)} / ${escapeHtml(formatStatus(item.issue_type))} / ${escapeHtml(formatStatus(item.desired_outcome))}
+            </p>
+            <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(item.ai_triage || "Triage pending.")}</p>
+          </div>
+          <div class="grid gap-2 text-sm text-on-surface-variant lg:min-w-[17rem]">
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Severity</strong>${escapeHtml(formatStatus(item.severity))}</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Payment action</strong>${escapeHtml(formatStatus(item.payment_action_requested || "none"))}</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Updated</strong>${escapeHtml(formatDateTime(item.updated_at))}</span>
+          </div>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-2">
+          ${statusButtons}
+          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" href="assistant.html">Ask AI</a>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderResolutionCases() {
+    if (!resolutionList) return;
+
+    if (!currentResolutionCases.length) {
+      resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No resolution cases yet. User issues will appear here after they are opened from tracking or Account Home.</div>`;
+      return;
+    }
+
+    resolutionList.innerHTML = currentResolutionCases.map(renderResolutionCase).join("");
+  }
+
   async function loadOps() {
     showAuth(false);
     opsMode.textContent = "Loading operations";
@@ -275,11 +353,19 @@
         setStatus("Local static mode cannot call the Vercel readiness API; loading requests through Supabase/RLS instead.");
       }
 
-      const result = await data.listRequests();
-      currentRequests = result.data || [];
-      opsMode.textContent = result.mode === "local" ? "Local demo requests" : "Live production requests";
+      const [requestResult, resolutionResult] = await Promise.all([
+        data.listRequests(),
+        data.listResolutionCases().catch((error) => ({ data: [], error })),
+      ]);
+      currentRequests = requestResult.data || [];
+      currentResolutionCases = resolutionResult.data || [];
+      opsMode.textContent = requestResult.mode === "local" ? "Local demo requests" : "Live production requests";
       setStatus(`Updated ${new Date().toLocaleString()}. Showing protected-decision exceptions first.`);
       renderQueue();
+      renderResolutionCases();
+      if (resolutionResult.error && resolutionList) {
+        resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(resolutionResult.error.message || "Could not load resolution cases.")}</div>`;
+      }
     } catch (error) {
       const message = error.message || "Could not load operations.";
       if (/admin/i.test(message)) {
@@ -291,6 +377,7 @@
       opsMode.textContent = "Needs attention";
       setStatus(message, "text-on-error-container");
       opsList.innerHTML = "";
+      if (resolutionList) resolutionList.innerHTML = "";
     }
   }
 
@@ -341,6 +428,30 @@
       setStatus(`Copied founder brief for ${request.request_code}.`, "text-primary");
     } catch {
       setStatus("Could not copy. Open the request and copy manually.", "text-on-error-container");
+    }
+  });
+
+  document.addEventListener("click", async (event) => {
+    const button = event.target.closest(".resolution-status-button");
+    if (!button) return;
+    const resolutionCode = button.dataset.resolutionCode || "";
+    const status = button.dataset.resolutionStatus || "";
+    if (!resolutionCode || !status) return;
+
+    button.disabled = true;
+    try {
+      await data.updateResolutionCase(resolutionCode, {
+        status,
+        admin_notes: `Founder ops set status to ${formatStatus(status)} at ${new Date().toISOString()}.`,
+      });
+      setStatus(`Updated resolution case ${resolutionCode}.`, "text-primary");
+      const result = await data.listResolutionCases();
+      currentResolutionCases = result.data || [];
+      renderResolutionCases();
+    } catch (error) {
+      setStatus(error.message || "Could not update resolution case.", "text-on-error-container");
+    } finally {
+      button.disabled = false;
     }
   });
 

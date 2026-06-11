@@ -5,6 +5,7 @@
   const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
   const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
   const IDENTITY_VERIFICATION_STORAGE_KEY = "swadakta_identity_verification_requests";
+  const RESOLUTION_CASE_STORAGE_KEY = "swadakta_resolution_cases";
   const PROOF_BUCKET = "swadakta-proof";
   const MAX_STANDARD_UPLOAD_BYTES = 6 * 1024 * 1024;
   let supabaseClientPromise = null;
@@ -68,6 +69,11 @@
   function createIdentityVerificationCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `IV-${token}`;
+  }
+
+  function createResolutionCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `RC-${token}`;
   }
 
   function safeStorageSegment(value, fallback = "file") {
@@ -180,6 +186,18 @@
 
   function writeLocalIdentityVerificationRequests(requests) {
     localStorage.setItem(IDENTITY_VERIFICATION_STORAGE_KEY, JSON.stringify(requests));
+  }
+
+  function readLocalResolutionCases() {
+    try {
+      return JSON.parse(localStorage.getItem(RESOLUTION_CASE_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalResolutionCases(cases) {
+    localStorage.setItem(RESOLUTION_CASE_STORAGE_KEY, JSON.stringify(cases));
   }
 
   function normalizeRequest(payload) {
@@ -1013,6 +1031,325 @@
     }
 
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
+  }
+
+  function resolutionFounderRequired(issueType, desiredOutcome, severity, paymentAction) {
+    const cleanIssue = String(issueType || "").toLowerCase();
+    const cleanOutcome = String(desiredOutcome || "").toLowerCase();
+    const cleanSeverity = String(severity || "").toLowerCase();
+    const cleanPaymentAction = String(paymentAction || "none").toLowerCase();
+
+    return (
+      ["safety", "legal", "payment"].includes(cleanSeverity) ||
+      ["payment_refund", "payment_dispute", "receiver_safety", "restricted_item"].includes(cleanIssue) ||
+      ["partial_refund", "full_refund", "release_milestone", "replace_receiver", "legal_compliance_review"].includes(
+        cleanOutcome,
+      ) ||
+      cleanPaymentAction !== "none"
+    );
+  }
+
+  function resolutionAiTriage(issueType, desiredOutcome, severity, founderRequired) {
+    const cleanIssue = String(issueType || "other").toLowerCase();
+    const cleanOutcome = String(desiredOutcome || "explain_status").toLowerCase();
+    const cleanSeverity = String(severity || "normal").toLowerCase();
+
+    const opening =
+      cleanSeverity === "safety"
+        ? "Safety issue: pause risky activity, preserve proof, and request founder review."
+        : cleanSeverity === "legal"
+          ? "Legal/compliance issue: pause quoting, buying, shipping, or release until human review."
+          : cleanSeverity === "payment"
+            ? "Payment issue: freeze milestone release until provider evidence is checked."
+            : "Routine issue: ask for missing proof, timeline, and preferred outcome before escalation.";
+
+    const evidence =
+      cleanIssue === "proof_missing" || cleanIssue === "poor_quality"
+        ? "Ask both sides for dated photos, receipts, location notes, or provider records."
+        : cleanIssue === "payment_refund" || cleanIssue === "payment_dispute"
+          ? "Collect provider reference, amount, payment rail, and exact disputed milestone."
+          : cleanIssue === "restricted_item"
+            ? "Check item legality and courier/postal acceptance before any movement."
+            : cleanIssue === "delay"
+              ? "Request the blocker, next checkpoint, and revised ETA."
+              : "Summarize facts, evidence gaps, and the next safe message.";
+
+    const boundary = founderRequired
+      ? "Protected decision: AI may draft and summarize, but cannot refund, release money, mark payment paid, replace a receiver, approve ID, or clear legal/import risk."
+      : "AI may draft the next message and checklist; admin review is only needed if evidence or risk changes.";
+
+    return `${opening} ${evidence} ${boundary} Requested outcome: ${cleanOutcome.replaceAll("_", " ")}.`;
+  }
+
+  function cleanResolutionChoice(value, allowed, fallback) {
+    const clean = String(value || fallback).trim().toLowerCase();
+    return allowed.includes(clean) ? clean : fallback;
+  }
+
+  function normalizeResolutionEvidenceLinks(value) {
+    const links = Array.isArray(value)
+      ? value
+      : String(value || "")
+          .split(/[\n,]+/)
+          .map((line) => line.trim());
+
+    return links
+      .map((link) => String(link || "").trim())
+      .filter(Boolean)
+      .slice(0, 12);
+  }
+
+  function normalizeResolutionCase(payload = {}) {
+    const now = new Date().toISOString();
+    const issueType = cleanResolutionChoice(
+      payload.issue_type,
+      [
+        "proof_missing",
+        "poor_quality",
+        "delay",
+        "payment_refund",
+        "payment_dispute",
+        "receiver_safety",
+        "restricted_item",
+        "wrong_item",
+        "communication",
+        "other",
+      ],
+      "other",
+    );
+    const desiredOutcome = cleanResolutionChoice(
+      payload.desired_outcome,
+      [
+        "explain_status",
+        "pause_job",
+        "redo_work",
+        "partial_refund",
+        "full_refund",
+        "release_milestone",
+        "replace_receiver",
+        "legal_compliance_review",
+        "other",
+      ],
+      "explain_status",
+    );
+    const severity = cleanResolutionChoice(payload.severity, ["normal", "urgent", "safety", "legal", "payment"], "normal");
+    const paymentAction = cleanResolutionChoice(
+      payload.payment_action_requested,
+      [
+        "none",
+        "pause_release",
+        "partial_refund",
+        "full_refund",
+        "provider_dispute",
+        "mpesa_reversal",
+        "chargeback_evidence",
+      ],
+      "none",
+    );
+    const founderRequired =
+      typeof payload.founder_review_required === "boolean"
+        ? payload.founder_review_required
+        : resolutionFounderRequired(issueType, desiredOutcome, severity, paymentAction);
+    const amount = Number(payload.amount_in_dispute);
+
+    return {
+      id: payload.id || createUuid(),
+      resolution_code: payload.resolution_code || createResolutionCode(),
+      service_request_id: payload.service_request_id || null,
+      request_code: String(payload.request_code || "").trim().toUpperCase(),
+      reporter_role: cleanResolutionChoice(payload.reporter_role, ["client", "receiver", "local_contact", "admin", "other"], "client"),
+      reporter_name: String(payload.reporter_name || "").trim().slice(0, 180),
+      reporter_contact: String(payload.reporter_contact || "").trim().slice(0, 220),
+      issue_type: issueType,
+      desired_outcome: desiredOutcome,
+      severity,
+      status: cleanResolutionChoice(
+        payload.status,
+        ["ai_triage", "needs_evidence", "founder_review", "waiting_party", "provider_review", "resolved", "closed"],
+        founderRequired ? "founder_review" : "ai_triage",
+      ),
+      payment_action_requested: paymentAction,
+      provider_reference: String(payload.provider_reference || "").trim().slice(0, 240),
+      amount_in_dispute: Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : null,
+      evidence_links: normalizeResolutionEvidenceLinks(payload.evidence_links),
+      summary: String(payload.summary || "").trim().slice(0, 2400),
+      ai_triage:
+        payload.ai_triage ||
+        resolutionAiTriage(issueType, desiredOutcome, severity, founderRequired),
+      founder_review_required: founderRequired,
+      admin_notes: String(payload.admin_notes || "").trim().slice(0, 2400),
+      resolved_at: payload.resolved_at || null,
+      created_at: payload.created_at || now,
+      updated_at: payload.updated_at || now,
+    };
+  }
+
+  function validateResolutionSummary(casePayload) {
+    if (!casePayload.summary) {
+      throw new Error("Describe the issue before opening a resolution case.");
+    }
+
+    const invalidLink = casePayload.evidence_links.find((link) => !/^https?:\/\//i.test(link));
+    if (invalidLink) {
+      throw new Error("Evidence links must start with http:// or https://.");
+    }
+  }
+
+  async function createResolutionCase(code, contact, payload = {}) {
+    const normalizedCode = String(code || "").trim().toUpperCase();
+    const normalizedContact = String(contact || "").trim();
+    const supabase = await getSupabase();
+
+    const cleanPayload = normalizeResolutionCase({
+      ...payload,
+      request_code: normalizedCode,
+      reporter_contact: normalizedContact,
+    });
+    validateResolutionSummary(cleanPayload);
+
+    if (!supabase) {
+      const request = readLocalRequests().find(
+        (item) => String(item.request_code || "").toUpperCase() === normalizedCode && contactMatches(item, normalizedContact),
+      );
+      if (!request) {
+        throw new Error("No matching request found.");
+      }
+
+      const localCase = normalizeResolutionCase({
+        ...cleanPayload,
+        service_request_id: request.id,
+        request_code: request.request_code,
+      });
+      writeLocalResolutionCases([localCase, ...readLocalResolutionCases()]);
+      return { data: localCase, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("create_resolution_case", {
+      lookup_code: normalizedCode,
+      lookup_contact: normalizedContact,
+      input_reporter_role: cleanPayload.reporter_role,
+      input_reporter_name: cleanPayload.reporter_name,
+      input_issue_type: cleanPayload.issue_type,
+      input_desired_outcome: cleanPayload.desired_outcome,
+      input_severity: cleanPayload.severity,
+      input_summary: cleanPayload.summary,
+      input_evidence_links: cleanPayload.evidence_links,
+      input_provider_reference: cleanPayload.provider_reference,
+      input_amount_in_dispute: cleanPayload.amount_in_dispute,
+      input_payment_action_requested: cleanPayload.payment_action_requested,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
+  }
+
+  async function listRequestResolutionCases(code, contact) {
+    const normalizedCode = String(code || "").trim().toUpperCase();
+    const normalizedContact = String(contact || "").trim();
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const request = readLocalRequests().find(
+        (item) => String(item.request_code || "").toUpperCase() === normalizedCode && contactMatches(item, normalizedContact),
+      );
+      if (!request) {
+        throw new Error("No matching request found.");
+      }
+
+      return {
+        data: readLocalResolutionCases()
+          .filter(
+            (item) =>
+              item.service_request_id === request.id ||
+              String(item.request_code || "").toUpperCase() === normalizedCode,
+          )
+          .sort((first, second) => new Date(second.updated_at || second.created_at) - new Date(first.updated_at || first.created_at)),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_request_resolution_cases", {
+      lookup_code: normalizedCode,
+      lookup_contact: normalizedContact,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function listResolutionCases() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return {
+        data: readLocalResolutionCases().sort(
+          (first, second) => new Date(second.updated_at || second.created_at) - new Date(first.updated_at || first.created_at),
+        ),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_resolution_cases");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function updateResolutionCase(resolutionCode, updates = {}) {
+    const normalizedCode = String(resolutionCode || "").trim().toUpperCase();
+    const status = cleanResolutionChoice(
+      updates.status,
+      ["ai_triage", "needs_evidence", "founder_review", "waiting_party", "provider_review", "resolved", "closed"],
+      "ai_triage",
+    );
+    const adminNotes = String(updates.admin_notes || "").trim().slice(0, 2400);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      let updatedCase = null;
+      const cases = readLocalResolutionCases().map((item) => {
+        if (String(item.resolution_code || "").toUpperCase() !== normalizedCode) {
+          return item;
+        }
+
+        updatedCase = normalizeResolutionCase({
+          ...item,
+          status,
+          admin_notes: adminNotes,
+          resolved_at: ["resolved", "closed"].includes(status) ? item.resolved_at || new Date().toISOString() : null,
+          updated_at: new Date().toISOString(),
+        });
+        return updatedCase;
+      });
+
+      if (!updatedCase) {
+        throw new Error("No matching resolution case found.");
+      }
+
+      writeLocalResolutionCases(cases);
+      return { data: updatedCase, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("update_resolution_case", {
+      input_resolution_code: normalizedCode,
+      input_status: status,
+      input_admin_notes: adminNotes,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
   }
 
   async function listMyRequests() {
@@ -2107,6 +2444,10 @@
     updateRequest,
     trackRequest,
     submitServiceReview,
+    createResolutionCase,
+    listRequestResolutionCases,
+    listResolutionCases,
+    updateResolutionCase,
     listMyRequests,
     createPartnerApplication,
     listPartnerApplications,

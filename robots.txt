@@ -10,5 +10,7 @@ Disallow: /admin-verification
 Disallow: /admin-verification.html
 Disallow: /auth
 Disallow: /auth.html
+Disallow: /resolution
+Disallow: /resolution.html
 
 Sitemap: https://swadakta.com/sitemap.xml

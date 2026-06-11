@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Resolution Center | Swadakta</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4648d4",
+              tertiary: "#8127cf",
+              surface: "#faf8ff",
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "outline-variant": "#c7c4d7",
+              "surface-container": "#eaedff",
+              "error": "#ba1a1a"
+            },
+            fontFamily: { display: ["Manrope"], body: ["Inter"], label: ["Geist"] }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background:
+          radial-gradient(circle at 14% 8%, rgba(96, 99, 238, 0.2), transparent 30%),
+          radial-gradient(circle at 90% 6%, rgba(129, 39, 207, 0.14), transparent 28%),
+          linear-gradient(180deg, #faf8ff 0%, #eef2ff 55%, #faf8ff 100%);
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
+      }
+      .soft-button {
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78), 0 14px 30px rgba(70, 72, 212, 0.13);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
+      }
+      input,
+      select,
+      textarea {
+        min-width: 0;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface antialiased">
+    <header class="sticky top-0 z-40 h-20 px-4 md:px-12 flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="hidden md:flex items-center gap-6 text-sm font-label">
+        <a class="text-on-surface-variant hover:text-primary" href="portal.html#home">Account home</a>
+        <a class="text-on-surface-variant hover:text-primary" href="tracking.html">Tracking</a>
+        <a class="text-on-surface-variant hover:text-primary" href="messages.html">Messages</a>
+        <a class="text-on-surface-variant hover:text-primary" href="trust.html">Trust</a>
+      </nav>
+      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold soft-button" href="assistant.html">Ask AI</a>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-4 md:px-12 py-12 md:py-16">
+      <section class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-start">
+        <div class="space-y-6">
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Resolution Center</p>
+            <h1 class="font-display text-4xl md:text-5xl font-extrabold mt-3 leading-tight">Open an issue for a job.</h1>
+            <p class="text-on-surface-variant mt-4 max-w-xl">
+              Keep proof, payments, receiver updates, and provider references tied to the request. Routine issues stay in AI triage; protected decisions move to founder review.
+            </p>
+            <div class="mt-6 grid gap-3 sm:grid-cols-3">
+              <a class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4 text-primary font-label soft-button" id="resolution-tracking-link" href="tracking.html">
+                <span class="material-symbols-outlined block text-3xl mb-2">travel_explore</span>
+                Tracking
+              </a>
+              <a class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4 text-primary font-label soft-button" id="resolution-message-link" href="messages.html">
+                <span class="material-symbols-outlined block text-3xl mb-2">forum</span>
+                Messages
+              </a>
+              <a class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4 text-primary font-label soft-button" id="resolution-assistant-link" href="assistant.html">
+                <span class="material-symbols-outlined block text-3xl mb-2">auto_awesome</span>
+                AI
+              </a>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-tertiary">Automation boundary</p>
+            <p class="mt-3 text-on-surface-variant">
+              Protected decision: AI cannot refund, release money, mark payment paid, replace a receiver, approve ID, or clear legal/import risk.
+            </p>
+            <div class="mt-5 grid gap-3 text-sm text-on-surface-variant">
+              <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">Stripe / PayPal / M-Pesa / Wise provider evidence should be recorded before any payment action.</p>
+              <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">Safety, legal, restricted goods, refund, and milestone-release requests automatically ask for founder review.</p>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment rails</p>
+            <div class="mt-4 grid gap-3 text-sm">
+              <a class="text-on-surface-variant hover:text-primary" href="https://docs.stripe.com/disputes" target="_blank" rel="noreferrer">Stripe dispute evidence</a>
+              <a class="text-on-surface-variant hover:text-primary" href="https://developer.paypal.com/docs/disputes/integration-guide/" target="_blank" rel="noreferrer">PayPal dispute flow</a>
+              <a class="text-on-surface-variant hover:text-primary" href="https://www.safaricom.co.ke/main-mpesa/m-pesa-for-you/getting-started/m-pesa-reversal" target="_blank" rel="noreferrer">M-Pesa reversal guidance</a>
+              <a class="text-on-surface-variant hover:text-primary" href="https://docs.wise.com/" target="_blank" rel="noreferrer">Wise API docs</a>
+            </div>
+          </div>
+        </div>
+
+        <section class="glass-panel rounded-[2rem] p-6 md:p-8">
+          <form class="grid gap-5" id="resolution-form">
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Request code</span>
+                <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-code" placeholder="SW-1234AB" required type="text" />
+              </label>
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Email or WhatsApp</span>
+                <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-contact" placeholder="Used on the brief" required type="text" />
+              </label>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">I am the</span>
+                <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-role">
+                  <option value="client">Client</option>
+                  <option value="receiver">Receiver</option>
+                  <option value="local_contact">Local contact</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Name</span>
+                <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-name" placeholder="Optional" type="text" autocomplete="name" />
+              </label>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Issue type</span>
+                <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-issue-type">
+                  <option value="delay">Delay</option>
+                  <option value="proof_missing">Proof missing</option>
+                  <option value="poor_quality">Poor proof quality</option>
+                  <option value="payment_refund">Payment or refund</option>
+                  <option value="payment_dispute">Payment dispute</option>
+                  <option value="receiver_safety">Receiver safety</option>
+                  <option value="restricted_item">Restricted item</option>
+                  <option value="wrong_item">Wrong item</option>
+                  <option value="communication">Communication</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Desired outcome</span>
+                <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-desired-outcome">
+                  <option value="explain_status">Explain status</option>
+                  <option value="pause_job">Pause job</option>
+                  <option value="redo_work">Redo work</option>
+                  <option value="partial_refund">Partial refund</option>
+                  <option value="full_refund">Full refund</option>
+                  <option value="release_milestone">Release milestone</option>
+                  <option value="replace_receiver">Replace receiver</option>
+                  <option value="legal_compliance_review">Legal or compliance review</option>
+                  <option value="other">Other</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Severity</span>
+                <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-severity">
+                  <option value="normal">Normal</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="payment">Payment</option>
+                  <option value="legal">Legal</option>
+                  <option value="safety">Safety</option>
+                </select>
+              </label>
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Payment action</span>
+                <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-payment-action">
+                  <option value="none">None</option>
+                  <option value="pause_release">Pause release</option>
+                  <option value="partial_refund">Partial refund</option>
+                  <option value="full_refund">Full refund</option>
+                  <option value="provider_dispute">Provider dispute</option>
+                  <option value="mpesa_reversal">M-Pesa reversal</option>
+                  <option value="chargeback_evidence">Chargeback evidence</option>
+                </select>
+              </label>
+              <label class="grid gap-2">
+                <span class="font-label text-sm text-on-surface-variant">Amount</span>
+                <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-amount" placeholder="Optional" type="number" min="0" step="1" />
+              </label>
+            </div>
+
+            <label class="grid gap-2">
+              <span class="font-label text-sm text-on-surface-variant">Provider reference</span>
+              <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-provider-reference" placeholder="Stripe, PayPal, M-Pesa, Wise, bank, receipt, or courier reference" type="text" />
+            </label>
+
+            <label class="grid gap-2">
+              <span class="font-label text-sm text-on-surface-variant">Evidence links</span>
+              <textarea class="min-h-24 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 outline-none focus:border-primary resize-none" id="resolution-evidence-links" placeholder="Paste photos, Drive links, receipts, provider pages, or courier records. One link per line."></textarea>
+            </label>
+
+            <label class="grid gap-2">
+              <span class="font-label text-sm text-on-surface-variant">What happened?</span>
+              <textarea class="min-h-36 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 outline-none focus:border-primary resize-none" id="resolution-summary" placeholder="Write the facts, what proof exists, what is missing, and what outcome you want." required></textarea>
+            </label>
+
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+              <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold soft-button" id="resolution-submit" type="submit">Open issue</button>
+              <p class="min-h-6 text-sm text-on-surface-variant font-label" id="resolution-status" role="status"></p>
+            </div>
+          </form>
+
+          <div class="mt-8 border-t border-outline-variant/40 pt-6">
+            <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Case history</p>
+                <h2 class="font-display text-2xl font-bold mt-2">Open issues on this request</h2>
+              </div>
+              <button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/76 border border-outline-variant/50 text-primary font-bold" id="resolution-refresh" type="button">Refresh</button>
+            </div>
+            <div class="mt-5 grid gap-3" id="resolution-list" aria-live="polite">
+              <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4 text-sm text-on-surface-variant">Enter a request code and contact to load cases.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=42"></script>
+    <script src="resolution.js?v=1"></script>
+  </body>
+</html>
