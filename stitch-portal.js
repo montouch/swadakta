@@ -6,6 +6,7 @@
   const phoneInput = document.querySelector("#account-backup-phone");
   const googleButton = document.querySelector("#account-google-sign-in");
   const resetButton = document.querySelector("#account-password-reset");
+  const continueHomeButton = document.querySelector("#account-continue-home");
   const profileCard = document.querySelector("#account-profile-card");
   const nextActions = document.querySelector("#account-next-actions");
   const signOutButton = document.querySelector("#account-sign-out");
@@ -277,6 +278,7 @@
     }
 
     setAccountState("signed-out");
+    showContinueHomeButton(false);
     form.hidden = false;
     if (authShell) {
       authShell.hidden = false;
@@ -287,6 +289,14 @@
   function setStatus(message, tone = "") {
     status.textContent = message;
     status.className = `font-label-md text-label-md min-h-6 ${tone}`.trim();
+  }
+
+  function showContinueHomeButton(show, email = "") {
+    if (!continueHomeButton) return;
+    continueHomeButton.hidden = !show;
+    if (email) {
+      continueHomeButton.dataset.email = email;
+    }
   }
 
   function updateMode() {
@@ -471,6 +481,7 @@
 
   function handOffToAccountHome(email, profile = {}, renderVersion = nextAccountRenderVersion()) {
     rememberAccountHome(email);
+    showContinueHomeButton(true, email);
     setSignedInShell(email, profile);
     openAccountHome();
     setStatus("Signed in. Opening your account home.", "text-primary");
@@ -678,6 +689,7 @@
         return;
       }
 
+      showContinueHomeButton(true, email);
       setSignedInShell(email, {});
       if (autoOpen || window.location.hash === "#work" || window.location.hash === "#home") {
         openSignedInDestination();
@@ -856,6 +868,22 @@
     });
   }
 
+  if (continueHomeButton) {
+    continueHomeButton.addEventListener("click", () => {
+      const email = signedInEmail || continueHomeButton.dataset.email || field("#client-login-email")?.value.trim() || "";
+      const renderVersion = nextAccountRenderVersion();
+      setSignedInShell(email, { account_role: roleIntent() });
+      openAccountHome();
+      showCurrentAccount({
+        autoOpen: true,
+        fallbackEmail: email,
+        renderVersion,
+      }).catch(() => {
+        setVerificationStatus("Account home is open. Profile details can finish loading in the background.", "text-primary");
+      });
+    });
+  }
+
   if (receiverApplicationForm) {
     receiverApplicationForm.addEventListener("submit", async (event) => {
       event.preventDefault();
@@ -993,6 +1021,7 @@
 
       if (session?.user?.email) {
         const authRenderVersion = nextAccountRenderVersion();
+        showContinueHomeButton(true, session.user.email);
         setSignedInShell(session.user.email, {});
         openAccountHome();
         showCurrentAccount({

@@ -2368,6 +2368,22 @@
     return { mode: "supabase", user: data.user || null };
   }
 
+  async function exchangeAuthCodeForSession(code) {
+    const supabase = await getSupabase();
+    const cleanCode = String(code || "").trim();
+
+    if (!supabase || !cleanCode) {
+      return { mode: supabase ? "supabase" : "local", session: null, user: null };
+    }
+
+    const { data, error } = await supabase.auth.exchangeCodeForSession(cleanCode);
+    if (error) {
+      throw error;
+    }
+
+    return { mode: "supabase", session: data.session || null, user: data.user || null };
+  }
+
   async function signInWithProvider(provider, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
     const finalRedirectTo = normalizeAuthRedirect(redirectTo);
@@ -2479,6 +2495,7 @@
     signInWithPassword,
     resetAccountPassword,
     updateAccountPassword,
+    exchangeAuthCodeForSession,
     signInWithProvider,
     signInAdmin,
     signInPortal,

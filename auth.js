@@ -4,6 +4,7 @@
   const continueLink = document.querySelector("#auth-continue");
   const passwordResetForm = document.querySelector("#password-reset-form");
   const passwordResetStatus = document.querySelector("#password-reset-status");
+  let authCodeHandled = false;
 
   function safeNextPath() {
     const params = new URLSearchParams(window.location.search);
@@ -63,6 +64,37 @@
     return hash.get("type") === "recovery" || query.get("type") === "recovery";
   }
 
+  function authCode() {
+    const query = new URLSearchParams(window.location.search);
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    return query.get("code") || hash.get("code") || "";
+  }
+
+  function clearAuthCodeFromUrl() {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.delete("code");
+    nextUrl.searchParams.delete("state");
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ""));
+    hash.delete("code");
+    hash.delete("state");
+    const cleanHash = hash.toString();
+    nextUrl.hash = cleanHash ? `#${cleanHash}` : "";
+    window.history.replaceState(null, "", nextUrl);
+  }
+
+  async function ensureAuthCodeSession() {
+    const code = authCode();
+    if (!code || authCodeHandled || !window.SwadaktaData.exchangeAuthCodeForSession) {
+      return null;
+    }
+
+    authCodeHandled = true;
+    setStatus("Confirming secure link", "Creating your browser session now.", "is-success");
+    const exchanged = await window.SwadaktaData.exchangeAuthCodeForSession(code);
+    clearAuthCodeFromUrl();
+    return exchanged.session || null;
+  }
+
   async function checkSession(attempt = 1) {
     const nextPath = safeNextPath();
     const nextUrl = new URL(nextPath, window.location.origin).href;
@@ -77,8 +109,19 @@
     }
 
     try {
+      let exchangedSession = null;
+      try {
+        exchangedSession = await ensureAuthCodeSession();
+      } catch (codeError) {
+        const existing = await window.SwadaktaData.getSession().catch(() => ({ session: null }));
+        if (!existing.session?.user?.email) {
+          throw codeError;
+        }
+        exchangedSession = existing.session;
+        clearAuthCodeFromUrl();
+      }
       const result = await window.SwadaktaData.getSession();
-      const email = result.session?.user?.email || "";
+      const email = result.session?.user?.email || exchangedSession?.user?.email || "";
 
       if (email) {
         if (isPasswordRecovery() && passwordResetForm) {

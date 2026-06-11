@@ -45,11 +45,13 @@ const requiredAppDataMarkers = [
   "get_my_account_profile",
   "createMpesaStkPush",
   "createResolutionCase",
+  "exchangeAuthCodeForSession",
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
   "rememberAccountHome",
   "forceAccountHomeRoute",
+  "showContinueHomeButton",
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",
   "renderReceiverApplications",
