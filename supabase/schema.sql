@@ -577,6 +577,132 @@ $$;
 revoke all on function public.track_service_request(text, text) from public;
 grant execute on function public.track_service_request(text, text) to anon, authenticated;
 
+create or replace function app_private.list_my_service_requests()
+returns table (
+  request_code text,
+  service_package text,
+  kenya_location text,
+  status text,
+  payment_status text,
+  quote_amount integer,
+  quote_currency text,
+  payment_link text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    sr.request_code,
+    sr.service_package,
+    sr.kenya_location,
+    sr.status,
+    sr.payment_status,
+    sr.quote_amount,
+    sr.quote_currency,
+    sr.payment_link,
+    sr.client_report,
+    sr.client_report_url,
+    sr.proof_links,
+    sr.updated_at
+  from public.service_requests sr
+  where lower(btrim(coalesce(sr.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+    and btrim(coalesce(sr.email, '')) <> ''
+  order by sr.created_at desc
+  limit 50;
+$$;
+
+revoke all on function app_private.list_my_service_requests() from public;
+revoke all on function app_private.list_my_service_requests() from anon, authenticated;
+
+create or replace function public.list_my_service_requests()
+returns table (
+  request_code text,
+  service_package text,
+  kenya_location text,
+  status text,
+  payment_status text,
+  quote_amount integer,
+  quote_currency text,
+  payment_link text,
+  client_report text,
+  client_report_url text,
+  proof_links text[],
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public, app_private
+as $$
+  select * from app_private.list_my_service_requests();
+$$;
+
+revoke all on function public.list_my_service_requests() from public;
+grant execute on function public.list_my_service_requests() to authenticated;
+
+create or replace function app_private.list_my_partner_applications()
+returns table (
+  partner_code text,
+  kenya_base text,
+  service_regions text,
+  service_categories text[],
+  availability text,
+  transport_access text,
+  status text,
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    pa.partner_code,
+    pa.kenya_base,
+    pa.service_regions,
+    pa.service_categories,
+    pa.availability,
+    pa.transport_access,
+    pa.status,
+    pa.updated_at
+  from public.partner_applications pa
+  where lower(btrim(coalesce(pa.email, ''))) = lower(btrim(coalesce(auth.jwt() ->> 'email', '')))
+    and btrim(coalesce(pa.email, '')) <> ''
+  order by pa.created_at desc
+  limit 50;
+$$;
+
+revoke all on function app_private.list_my_partner_applications() from public;
+revoke all on function app_private.list_my_partner_applications() from anon, authenticated;
+
+create or replace function public.list_my_partner_applications()
+returns table (
+  partner_code text,
+  kenya_base text,
+  service_regions text,
+  service_categories text[],
+  availability text,
+  transport_access text,
+  status text,
+  updated_at timestamptz
+)
+language sql
+stable
+security definer
+set search_path = public, app_private
+as $$
+  select * from app_private.list_my_partner_applications();
+$$;
+
+revoke all on function public.list_my_partner_applications() from public;
+grant execute on function public.list_my_partner_applications() to authenticated;
+
 do $$
 begin
   if to_regprocedure('public.rls_auto_enable()') is not null then

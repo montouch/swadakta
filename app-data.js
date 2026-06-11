@@ -396,7 +396,39 @@
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
-  async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
+  async function listMyRequests() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalRequests(), mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_service_requests");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function listMyPartnerApplications() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: readLocalPartnerApplications(), mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_partner_applications");
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function signInWithEmail(email, redirectTo = window.location.href.split("#")[0]) {
     const supabase = await getSupabase();
 
     if (!supabase) {
@@ -415,6 +447,14 @@
     }
 
     return { mode: "supabase" };
+  }
+
+  async function signInAdmin(email, redirectTo = window.location.href.split("#")[0]) {
+    return signInWithEmail(email, redirectTo);
+  }
+
+  async function signInPortal(email, redirectTo = window.location.href.split("#")[0]) {
+    return signInWithEmail(email, redirectTo);
   }
 
   async function getSession() {
@@ -445,10 +485,13 @@
     listRequests,
     updateRequest,
     trackRequest,
+    listMyRequests,
     createPartnerApplication,
     listPartnerApplications,
+    listMyPartnerApplications,
     updatePartnerApplication,
     signInAdmin,
+    signInPortal,
     getSession,
     signOut,
   };

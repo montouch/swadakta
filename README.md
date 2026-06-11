@@ -6,6 +6,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 
 - Client-facing landing page and real intake form
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
+- Client and receiver magic-link portal access with sanitized account summaries
 - Local demo persistence before backend setup
 - Supabase-ready production persistence
 - Admin operations dashboard at `admin.html`
