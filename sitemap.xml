@@ -2,23 +2,26 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://swadakta.com/</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://swadakta.com/portal</loc>
-  </url>
-  <url>
-    <loc>https://swadakta.com/brief</loc>
-  </url>
-  <url>
-    <loc>https://swadakta.com/tracking</loc>
-  </url>
-  <url>
-    <loc>https://swadakta.com/verification</loc>
+    <loc>https://swadakta.com/corridor</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://swadakta.com/privacy</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
   <url>
     <loc>https://swadakta.com/terms</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
   </url>
 </urlset>

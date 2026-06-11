@@ -2,5 +2,11 @@ User-agent: *
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
+Disallow: /admin-readiness
+Disallow: /admin-readiness.html
+Disallow: /admin-verification
+Disallow: /admin-verification.html
+Disallow: /auth
+Disallow: /auth.html
 
 Sitemap: https://swadakta.com/sitemap.xml

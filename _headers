@@ -30,5 +30,41 @@
 /auth.html
   X-Robots-Tag: noindex, nofollow
 
+/portal
+  X-Robots-Tag: noindex, nofollow
+
+/portal.html
+  X-Robots-Tag: noindex, nofollow
+
+/brief
+  X-Robots-Tag: noindex, nofollow
+
+/brief.html
+  X-Robots-Tag: noindex, nofollow
+
+/tracking
+  X-Robots-Tag: noindex, nofollow
+
+/tracking.html
+  X-Robots-Tag: noindex, nofollow
+
+/verification
+  X-Robots-Tag: noindex, nofollow
+
+/verification.html
+  X-Robots-Tag: noindex, nofollow
+
+/assistant
+  X-Robots-Tag: noindex, nofollow
+
+/assistant.html
+  X-Robots-Tag: noindex, nofollow
+
+/messages
+  X-Robots-Tag: noindex, nofollow
+
+/messages.html
+  X-Robots-Tag: noindex, nofollow
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
