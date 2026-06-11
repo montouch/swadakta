@@ -1035,18 +1035,49 @@
     const supabase = await getSupabase();
 
     if (!supabase) {
-      return { data: null, mode: "local" };
+      return {
+        data: {
+          output:
+            "Swadakta AI is available after signing in on the live Supabase-backed app. Use the action queue draft as the safe manual fallback for now.",
+          guardrails: ["local_demo_only", "no_external_actions"],
+        },
+        mode: "local",
+      };
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in before using Swadakta AI.");
     }
 
     const { data, error } = await supabase.functions.invoke("swadakta-assistant", {
       body: payload,
     });
 
-    if (error) {
-      throw error;
+    if (!error) {
+      return { data, mode: "supabase" };
     }
 
-    return { data, mode: "supabase" };
+    const response = await fetch("/api/ai/assistant", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const fallbackData = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(fallbackData.error || error.message || "AI assistant unavailable.");
+    }
+
+    return { data: fallbackData, mode: "vercel" };
   }
 
   async function createStripeCheckoutSession(request, updates = {}) {

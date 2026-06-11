@@ -38,6 +38,8 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Stripe webhook payment confirmation that updates request payment state without releasing funds
 - Admin-only PayPal order generation through a Vercel Function
 - Admin-only PayPal capture that confirms paid funds without releasing receiver payouts
+- Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
+- Admin-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, and external messages
 - ID verification gates for higher-value, sensitive-document, title, family-authority, or risky jobs
 - Required client permission, scope, terms, and privacy consent capture
 - Service package intent, contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture

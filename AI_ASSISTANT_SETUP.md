@@ -4,18 +4,24 @@ Swadakta AI must run through a backend, not from browser JavaScript.
 
 ## Server-side secret
 
-Add these Supabase Edge Function secrets:
+Add these secrets server-side only:
 
 - `OPENAI_API_KEY`: OpenAI project API key
 - `OPENAI_MODEL`: optional model override, default `gpt-5.5`
 
-Do not place OpenAI keys in `app-config.js`, HTML, public JavaScript, GitHub, or Vercel static env exposed to the browser.
+Use the same names in Supabase Edge Function secrets and Vercel environment variables. Do not place OpenAI keys in `app-config.js`, HTML, public JavaScript, GitHub, or any Vercel env exposed to the browser.
+
+If an API key has ever been pasted into chat, a browser field, or any public file, treat it as compromised: revoke it in the OpenAI dashboard and add a fresh key only through Supabase/Vercel server-side secrets.
 
 ## Edge Function
 
 Function name: `swadakta-assistant`
 
-The function accepts authenticated POST requests with:
+Primary route: Supabase Edge Function `swadakta-assistant`
+
+Fallback route: Vercel Function `/api/ai/assistant`
+
+Both routes accept authenticated POST requests with:
 
 ```json
 {
@@ -25,6 +31,8 @@ The function accepts authenticated POST requests with:
   "draft": ""
 }
 ```
+
+Both routes require a signed-in Supabase session. Admin operations additionally require the signed-in user's `user_id` to exist in `admin_users`.
 
 It returns:
 
@@ -39,6 +47,8 @@ It returns:
 ## Safety boundary
 
 The assistant may draft, summarize, and recommend next steps. It must not release funds, assign a receiver, contact a client, or mark verification complete without founder/admin approval.
+
+The browser helper tries the Supabase Edge Function first. If the Edge Function is unavailable or missing its OpenAI secret, it falls back to the same-origin Vercel Function using the signed-in user's Supabase access token.
 
 ## Operating model
 
