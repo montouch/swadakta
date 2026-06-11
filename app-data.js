@@ -1243,10 +1243,13 @@
   }
 
   async function requestAccountIdentityVerification(payload = {}) {
+    const provider = ["smile_id", "sumsub", "youverify"].includes(payload.provider)
+      ? payload.provider
+      : "sumsub";
     const cleanPayload = {
       reason: payload.reason || "account_required",
       user_notes: String(payload.user_notes || "").trim().slice(0, 1200),
-      provider: payload.provider || "smile_id",
+      provider,
     };
     const supabase = await getSupabase();
 
@@ -1262,8 +1265,8 @@
         identity_verification_status:
           current.identity_verification_status === "verified"
             ? "verified"
-            : "manual_review",
-        identity_verification_notes: "User requested identity verification.",
+            : "submitted",
+        identity_verification_notes: "User requested automated identity verification.",
       });
       const requests = readLocalIdentityVerificationRequests();
       const openRequest = requests.find(

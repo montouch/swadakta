@@ -78,8 +78,8 @@
     <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
       <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
       <nav class="hidden md:flex items-center gap-7 text-sm font-label text-on-surface-variant">
-        <a class="hover:text-primary" href="portal.html">Account</a>
-        <a class="hover:text-primary" href="brief.html">Create brief</a>
+        <a class="hover:text-primary" href="portal.html#home">Account</a>
+        <a class="hover:text-primary" href="corridor.html">Choose corridor</a>
         <a class="hover:text-primary" href="tracking.html">Track request</a>
         <a class="text-primary border-b-2 border-primary" href="verification.html">Verify ID</a>
       </nav>
@@ -126,7 +126,7 @@
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-primary">2. Request verification</strong>
-              <p class="mt-1 text-sm text-on-surface-variant">Swadakta creates or attaches a provider link for Smile ID, Sumsub, Youverify, or manual review.</p>
+              <p class="mt-1 text-sm text-on-surface-variant">Swadakta selects the provider route and prepares a Smile ID, Sumsub, or Youverify check.</p>
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-primary">3. Complete the provider check</strong>
@@ -134,7 +134,7 @@
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-primary">4. Status is confirmed</strong>
-              <p class="mt-1 text-sm text-on-surface-variant">Only Swadakta/admin or provider evidence can mark an account verified.</p>
+              <p class="mt-1 text-sm text-on-surface-variant">The provider result unlocks the account. Manual review is only for exceptions.</p>
             </article>
           </div>
         </aside>
@@ -162,8 +162,8 @@
             <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-country" type="text" autocomplete="country-name" placeholder="Australia" />
           </label>
           <label class="space-y-2">
-            <span class="font-label text-sm text-on-surface-variant ml-1">Kenya / corridor base</span>
-            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-base" type="text" placeholder="Nairobi, Adelaide, Guangzhou..." />
+            <span class="font-label text-sm text-on-surface-variant ml-1">Corridor base / operating city</span>
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-base" type="text" placeholder="Adelaide, London, Lagos, Guangzhou..." />
           </label>
           <label class="space-y-2">
             <span class="font-label text-sm text-on-surface-variant ml-1">Working mode</span>
@@ -185,13 +185,13 @@
             </select>
           </label>
           <label class="space-y-2">
-            <span class="font-label text-sm text-on-surface-variant ml-1">Provider preference</span>
+            <span class="font-label text-sm text-on-surface-variant ml-1">Provider route</span>
             <select class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-provider">
               <option value="smile_id">Smile ID</option>
               <option value="sumsub">Sumsub</option>
               <option value="youverify">Youverify</option>
-              <option value="manual">Manual review</option>
             </select>
+            <p class="text-xs text-on-surface-variant ml-1">Auto-selected from your country. Manual review is only an exception fallback.</p>
           </label>
           <label class="space-y-2">
             <span class="font-label text-sm text-on-surface-variant ml-1">Reason</span>
@@ -237,7 +237,17 @@
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">Provider logic</strong>
-              <p class="mt-1 text-sm text-on-surface-variant">Smile ID for Africa-first coverage, Sumsub for wider global corridors, Youverify for selected African checks, and manual review where provider coverage or local law is uncertain.</p>
+              <p class="mt-1 text-sm text-on-surface-variant">Smile ID for Africa-first checks, Sumsub for broad global WebSDK coverage, and Youverify for selected African checks. If a provider cannot support the document or country, the case is escalated as an exception instead of making the user wait by default.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">What happens after request?</strong>
+              <ol class="mt-2 grid gap-2 text-sm text-on-surface-variant list-decimal pl-5">
+                <li>Swadakta saves the profile and selected provider route.</li>
+                <li>The provider check is prepared or attached to this page.</li>
+                <li>You complete ID and selfie/liveness steps with the provider.</li>
+                <li>The provider result updates your account status.</li>
+                <li>Paid posting and receiver work unlock once verified.</li>
+              </ol>
             </article>
           </div>
         </div>
@@ -245,7 +255,7 @@
     </main>
 
     <script src="app-config.js?v=4"></script>
-    <script src="app-data.js?v=36"></script>
-    <script src="verification.js?v=1"></script>
+    <script src="app-data.js?v=38"></script>
+    <script src="verification.js?v=2"></script>
   </body>
 </html>

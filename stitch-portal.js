@@ -29,6 +29,64 @@
   if (!form || !window.SwadaktaData) return;
 
   let signedInEmail = "";
+  let accountProviderTouched = false;
+  const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
+  const AFRICA_COUNTRIES = new Set([
+    "algeria",
+    "angola",
+    "benin",
+    "botswana",
+    "burkina faso",
+    "burundi",
+    "cameroon",
+    "cape verde",
+    "central african republic",
+    "chad",
+    "comoros",
+    "congo",
+    "democratic republic of congo",
+    "djibouti",
+    "egypt",
+    "equatorial guinea",
+    "eritrea",
+    "eswatini",
+    "ethiopia",
+    "gabon",
+    "gambia",
+    "ghana",
+    "guinea",
+    "guinea-bissau",
+    "ivory coast",
+    "kenya",
+    "lesotho",
+    "liberia",
+    "libya",
+    "madagascar",
+    "malawi",
+    "mali",
+    "mauritania",
+    "mauritius",
+    "morocco",
+    "mozambique",
+    "namibia",
+    "niger",
+    "nigeria",
+    "rwanda",
+    "senegal",
+    "seychelles",
+    "sierra leone",
+    "somalia",
+    "south africa",
+    "south sudan",
+    "sudan",
+    "tanzania",
+    "togo",
+    "tunisia",
+    "uganda",
+    "zambia",
+    "zimbabwe",
+  ]);
+  const YOUVERIFY_COUNTRIES = new Set(["nigeria", "ghana"]);
 
   function authMode() {
     return form.querySelector('input[name="account-auth-mode"]:checked')?.value || "sign_in";
@@ -154,9 +212,34 @@
   }
 
   function formatStatus(value) {
+    if (value === "manual_review") return "Exception Review";
     return String(value || "not_started")
       .replaceAll("_", " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function normalizeCountry(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, " ");
+  }
+
+  function recommendedProviderForCountry(country) {
+    const normalized = normalizeCountry(country);
+    if (YOUVERIFY_COUNTRIES.has(normalized)) return "youverify";
+    if (AFRICA_COUNTRIES.has(normalized)) return "smile_id";
+    return "sumsub";
+  }
+
+  function safeProvider(value, fallback = "sumsub") {
+    return USER_SELECTABLE_PROVIDERS.has(value) ? value : fallback;
+  }
+
+  function updateAccountProviderRoute({ force = false } = {}) {
+    const provider = field("#account-verification-provider");
+    if (!provider || (accountProviderTouched && !force)) return;
+    provider.value = recommendedProviderForCountry(field("#account-country")?.value || "");
   }
 
   function syncRoleInputs(role = "client") {
@@ -245,7 +328,7 @@
       kenya_base: field("#account-kenya-base")?.value.trim() || "",
       preferred_currency: field("#account-preferred-currency")?.value || "AUD",
       profile_notes: field("#account-verification-notes")?.value.trim() || "",
-      identity_verification_provider: field("#account-verification-provider")?.value || "smile_id",
+      identity_verification_provider: safeProvider(field("#account-verification-provider")?.value, "sumsub"),
       onboarding_status: selectedRole === "client" ? "profile_complete" : "needs_review",
     };
   }
@@ -257,9 +340,13 @@
     field("#account-country").value = profile.country || "";
     field("#account-kenya-base").value = profile.kenya_base || "";
     field("#account-preferred-currency").value = profile.preferred_currency || "AUD";
-    field("#account-verification-provider").value = profile.identity_verification_provider || "smile_id";
+    field("#account-verification-provider").value = safeProvider(
+      profile.identity_verification_provider,
+      recommendedProviderForCountry(profile.country || ""),
+    );
     field("#account-verification-notes").value = profile.profile_notes || "";
     syncRoleInputs(profile.account_role || roleIntent());
+    updateAccountProviderRoute();
   }
 
   function renderVerificationRequests(requests = []) {
@@ -310,7 +397,7 @@
       populateVerificationProfile(currentProfile);
       const statusLabel = formatStatus(currentProfile.identity_verification_status || "not_started");
       setVerificationPill(statusLabel, currentProfile.identity_verification_status === "verified" ? "bg-emerald-100 text-emerald-700" : "bg-primary-container/10 text-primary");
-      setVerificationStatus("Profile loaded. Verification requests stay pending until Swadakta or the provider confirms them.", "text-primary");
+      setVerificationStatus("Profile loaded. The provider route handles verification; manual review is only an exception fallback.", "text-primary");
       const requests = await window.SwadaktaData.listMyIdentityVerificationRequests();
       renderVerificationRequests(requests.data || []);
     } catch (error) {
@@ -374,6 +461,14 @@
   form.addEventListener("change", updateMode);
   if (field("#account-work-role")) {
     field("#account-work-role").addEventListener("change", (event) => syncRoleInputs(event.target.value));
+  }
+  if (field("#account-country")) {
+    field("#account-country").addEventListener("input", () => updateAccountProviderRoute());
+  }
+  if (field("#account-verification-provider")) {
+    field("#account-verification-provider").addEventListener("change", () => {
+      accountProviderTouched = true;
+    });
   }
 
   form.addEventListener("submit", async (event) => {
@@ -460,10 +555,10 @@
         if (action === "request") {
           await window.SwadaktaData.requestAccountIdentityVerification({
             reason: field("#account-verification-reason")?.value || "account_required",
-            provider: field("#account-verification-provider")?.value || "smile_id",
+            provider: safeProvider(field("#account-verification-provider")?.value, "sumsub"),
             user_notes: field("#account-verification-notes")?.value || "",
           });
-          setVerificationStatus("Verification request queued. Swadakta will send or update the provider link once reviewed.", "text-primary");
+          setVerificationStatus("Verification request saved. Swadakta will show the provider check or provider instructions when ready.", "text-primary");
         } else {
           setVerificationStatus("Profile saved.", "text-primary");
         }

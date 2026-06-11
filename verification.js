@@ -100,7 +100,8 @@
     "united states of america",
   ]);
   const YOUVERIFY_COUNTRIES = new Set(["nigeria", "ghana"]);
-  let providerTouched = Boolean(params.get("provider"));
+  const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
+  let providerTouched = USER_SELECTABLE_PROVIDERS.has(params.get("provider") || "");
 
   function field(selector) {
     return document.querySelector(selector);
@@ -119,6 +120,7 @@
   }
 
   function formatStatus(value) {
+    if (value === "manual_review") return "Exception Review";
     return String(value || "not_started")
       .replaceAll("_", " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
@@ -160,8 +162,8 @@
 
     if (!normalized) {
       return {
-        provider: "manual",
-        copy: "Enter your current country so Swadakta can choose the right verification route.",
+        provider: "sumsub",
+        copy: "Enter your current country so Swadakta can choose the best route. Sumsub is the broad default until a country-specific route is clear.",
         requirements,
       };
     }
@@ -169,7 +171,7 @@
     if (YOUVERIFY_COUNTRIES.has(normalized)) {
       return {
         provider: "youverify",
-        copy: "Recommended: Youverify for selected West African identity checks, with Smile ID or manual review as fallback.",
+        copy: "Recommended: Youverify for selected West African identity checks. If the provider cannot complete the check, Swadakta escalates it as an exception.",
         requirements,
       };
     }
@@ -177,7 +179,7 @@
     if (AFRICA_COUNTRIES.has(normalized)) {
       return {
         provider: "smile_id",
-        copy: "Recommended: Smile ID for Africa-first identity coverage, especially Kenya and wider Africa corridor work.",
+        copy: "Recommended: Smile ID for Africa-first identity coverage across eligible African corridor work.",
         requirements,
       };
     }
@@ -190,12 +192,16 @@
       };
     }
 
-    requirements.push("Manual provider coverage check before accepting paid receiver work");
+    requirements.push("Provider coverage check before accepting paid receiver work");
     return {
-      provider: "manual",
-      copy: "Recommended: manual review first because provider coverage or local-document support needs confirmation.",
+      provider: "sumsub",
+      copy: "Recommended: Sumsub as the global fallback route. Manual review is only used if provider coverage, local law, or document mismatch blocks automation.",
       requirements,
     };
+  }
+
+  function safeProvider(value, fallback = "sumsub") {
+    return USER_SELECTABLE_PROVIDERS.has(value) ? value : fallback;
   }
 
   function updateProviderRoute({ setProvider = false } = {}) {
@@ -230,7 +236,7 @@
     field("#verify-base").value = profile.kenya_base || "";
     field("#verify-role").value = profile.account_role || initialRole();
     field("#verify-currency").value = profile.preferred_currency || "AUD";
-    field("#verify-provider").value = profile.identity_verification_provider || params.get("provider") || "smile_id";
+    field("#verify-provider").value = safeProvider(profile.identity_verification_provider || params.get("provider"), "sumsub");
     field("#verify-reason").value = initialReason();
     field("#verify-notes").value = profile.profile_notes || "";
     updateProviderRoute({ setProvider: true });
@@ -245,7 +251,7 @@
       country: field("#verify-country").value.trim(),
       kenya_base: field("#verify-base").value.trim(),
       preferred_currency: field("#verify-currency").value || "AUD",
-      identity_verification_provider: field("#verify-provider").value || "smile_id",
+      identity_verification_provider: safeProvider(field("#verify-provider").value, "sumsub"),
       profile_notes: field("#verify-notes").value.trim(),
       onboarding_status: role === "client" ? "profile_complete" : "needs_review",
     };
@@ -303,9 +309,9 @@
     if (isVerified) {
       summaryCopy.textContent = "Your account is verified. Swadakta can use this status for eligible client and receiver workflows.";
     } else if (request?.provider_link) {
-      summaryCopy.textContent = "Your verification link is ready. Open the provider check and complete the steps there.";
+      summaryCopy.textContent = "Your provider check is ready. Open it and complete the ID and selfie/liveness steps there.";
     } else if (request) {
-      summaryCopy.textContent = "Your verification request is queued. Swadakta will attach a provider link or review instructions.";
+      summaryCopy.textContent = "Your verification request is saved. Swadakta is preparing the provider route; manual review is only an exception fallback.";
     } else {
       summaryCopy.textContent = "No verification request has been created yet.";
     }
@@ -328,13 +334,13 @@
         populate({});
         setPill("Sign in required", "bg-error-container text-on-error-container");
         summaryCopy.textContent = "Sign in or create an account before requesting verification.";
-        signInLink.href = `portal.html?next=${encodeURIComponent("verification.html")}`;
+        signInLink.href = `portal.html#home`;
         renderRequests([]);
         return;
       }
 
       setEnabled(true);
-      signInLink.href = "portal.html";
+      signInLink.href = "portal.html#home";
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
       populate(profile);
@@ -342,7 +348,7 @@
       const requests = requestsResult.data || [];
       renderSummary(profile, requests);
       renderRequests(requests);
-      setFormStatus("Account loaded. Verification status can only be confirmed by Swadakta or provider evidence.", "text-primary");
+      setFormStatus("Account loaded. Verification is handled by the selected provider route; manual review is only an exception fallback.", "text-primary");
     } catch (error) {
       setFormStatus(error.message || "Could not load verification.", "text-error");
     }
@@ -365,10 +371,10 @@
       if (action === "request") {
         await window.SwadaktaData.requestAccountIdentityVerification({
           reason: field("#verify-reason").value || "account_required",
-          provider: field("#verify-provider").value || "smile_id",
+          provider: safeProvider(field("#verify-provider").value, "sumsub"),
           user_notes: field("#verify-notes").value || "",
         });
-        setFormStatus("Verification request saved. This page will show the provider link once Swadakta attaches it.", "text-primary");
+        setFormStatus("Verification request saved. This page will show the provider check or provider instructions when ready.", "text-primary");
       } else {
         setFormStatus("Profile saved.", "text-primary");
       }

@@ -10,16 +10,17 @@
       return [
         "After verification is requested:",
         "",
-        "1. Swadakta saves your account profile and chooses the best provider route.",
-        "2. Smile ID, Sumsub, or Youverify should handle the ID check depending on your country and document coverage.",
-        "3. You complete the provider check with ID and selfie/liveness.",
-        "4. The provider result updates the account status.",
-        "5. Once verified, paid posting, paid receiver work, and sensitive tasks unlock.",
+        "1. Your account stays open. Verification is only the gate for paid posting, paid receiver work, sensitive jobs, and higher-value money flow.",
+        "2. Swadakta chooses the provider route from your country: Smile ID for eligible Africa-first checks, Youverify for selected West African checks, and Sumsub as the broad global route.",
+        "3. The provider check is prepared or attached to your verification page.",
+        "4. You complete ID and selfie/liveness with the provider, not with a founder manually inspecting documents.",
+        "5. The provider result updates your account status.",
+        "6. Once verified, paid posting and paid receiver work unlock.",
         "",
-        "Manual review should only be an exception: provider outage, unsupported country/document, mismatch, fraud risk, or high-value/sensitive job."
+        "Manual review is only an exception: provider outage, unsupported country/document, mismatch, suspected fraud, legal uncertainty, or a high-value/sensitive job that needs extra controls."
       ].join("\n");
     }
-    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or receive jobs. AI can draft, explain, and predict blockers, but protected actions still need verified system/provider signals.";
+    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or receive jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, receiver assignment, and sensitive task approval cannot be done by AI alone.";
   }
 
   run.addEventListener("click", async () => {

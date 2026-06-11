@@ -323,7 +323,7 @@
 <span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
 <div>
 <h2 class="font-headline-lg text-headline-sm text-on-surface">Account verification</h2>
-<p class="font-body-md text-on-surface-variant">One verified account can request help, receive work, or do both.</p>
+<p class="font-body-md text-on-surface-variant">Account access is open first. Provider verification unlocks paid posting, paid receiver work, and sensitive jobs.</p>
 </div>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="verification-pill">Sign in required</span>
@@ -346,8 +346,8 @@
 <input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-country" name="country" placeholder="Australia" type="text" autocomplete="country-name"/>
 </div>
 <div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-kenya-base">Kenya / corridor base</label>
-<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-kenya-base" name="kenya_base" placeholder="Nairobi, Mombasa, Adelaide, Guangzhou..." type="text"/>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-kenya-base">Corridor base / operating city</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-kenya-base" name="kenya_base" placeholder="Adelaide, London, Lagos, Guangzhou..." type="text"/>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-preferred-currency">Preferred currency</label>
@@ -361,13 +361,13 @@
 </select>
 </div>
 <div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-provider">Verification provider</label>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-provider">Provider route</label>
 <select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-verification-provider" name="provider">
 <option value="smile_id">Smile ID</option>
 <option value="sumsub">Sumsub</option>
 <option value="youverify">Youverify</option>
-<option value="manual">Manual review</option>
 </select>
+<p class="font-label-sm text-on-surface-variant ml-1">Auto-selected from your country. Manual review is only an exception fallback.</p>
 </div>
 <div class="space-y-2 md:col-span-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-notes">Corridor coverage / notes</label>
@@ -412,6 +412,6 @@
 </div>
 </footer>
 <script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=36"></script>
-<script src="stitch-portal.js?v=5"></script>
+<script src="app-data.js?v=38"></script>
+<script src="stitch-portal.js?v=6"></script>
 </body></html>
