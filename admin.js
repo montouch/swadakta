@@ -38,6 +38,14 @@ const paymentLabels = {
   refunded: "Refunded",
 };
 
+const paymentMethodLabels = {
+  discuss: "Recommend after quote",
+  card: "Card or Stripe link",
+  paypal: "PayPal invoice or link",
+  wise: "Wise transfer",
+  bank: "Bank or mobile money transfer",
+};
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -142,6 +150,7 @@ function getFilteredRequests() {
       request.local_contact_phone,
       request.contact_preference,
       request.contact_window,
+      paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference,
       Array.isArray(request.supporting_links) ? request.supporting_links.join(" ") : "",
       request.notes,
     ]
@@ -265,6 +274,8 @@ function renderRequestCardV2(request) {
   const clientBase = request.client_base || request.australia_location || "Not specified";
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
+  const paymentMethod =
+    paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
   const consentStatus = formatConsentStatus(request);
   const contactPreference = request.contact_preference || "whatsapp";
   const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
@@ -289,6 +300,7 @@ function renderRequestCardV2(request) {
         <div><dt>Deadline</dt><dd>${escapeHtml(request.deadline || "Flexible")}</dd></div>
         <div><dt>Kenya contact</dt><dd>${escapeHtml(localContact)}</dd></div>
         <div><dt>Contact pref</dt><dd>${escapeHtml(contactPreference)}</dd></div>
+        <div><dt>Pay method</dt><dd>${escapeHtml(paymentMethod)}</dd></div>
         <div><dt>Contact window</dt><dd>${escapeHtml(request.contact_window || "Not specified")}</dd></div>
         <div><dt>Sensitive docs</dt><dd>${escapeHtml(sensitiveDocuments)}</dd></div>
         <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
@@ -501,6 +513,8 @@ function buildOperatorBrief(request, form) {
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const consentStatus = formatConsentStatus(request);
   const quoteLine = payload.quote_amount ? formatCurrency(payload.quote_amount, payload.quote_currency) : "Not quoted";
+  const paymentMethod =
+    paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
 
   return [
     `Swadakta operator brief: ${request.request_code}`,
@@ -512,6 +526,7 @@ function buildOperatorBrief(request, form) {
     `Deadline: ${request.deadline || "Flexible"}`,
     `Local contact: ${localContact}`,
     `Client contact preference: ${request.contact_preference || "whatsapp"}`,
+    `Preferred payment method: ${paymentMethod}`,
     `Best contact window: ${request.contact_window || "Not specified"}`,
     `Consent status: ${consentStatus}`,
     `Sensitive documents expected: ${request.sensitive_documents_expected ? "Yes" : "No"}`,

@@ -14,7 +14,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - HTTP/HTTPS-only validation for supporting, payment, report, and proof links
 - Quote amount, payment link, due date, report URL, and proof-link workflow
 - Required client permission, scope, terms, and privacy consent capture
-- Contact preference, contact window, sensitive-document flag, and supporting-link capture
+- Contact preference, payment preference, contact window, sensitive-document flag, and supporting-link capture
 - Client-safe request tracking by request code plus email/WhatsApp
 - Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`

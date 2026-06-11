@@ -24,6 +24,7 @@ create table if not exists public.service_requests (
   supporting_links text[] not null default array[]::text[],
   sensitive_documents_expected boolean not null default false,
   preferred_currency text not null default 'AUD',
+  payment_method_preference text not null default 'discuss',
   task_type text not null check (task_type in ('quick', 'site', 'registry', 'virtual')),
   kenya_location text not null,
   urgency text not null check (urgency in ('standard', 'priority', 'same-day')),
@@ -59,6 +60,7 @@ alter table public.service_requests add column if not exists contact_window text
 alter table public.service_requests add column if not exists supporting_links text[] not null default array[]::text[];
 alter table public.service_requests add column if not exists sensitive_documents_expected boolean not null default false;
 alter table public.service_requests add column if not exists preferred_currency text not null default 'AUD';
+alter table public.service_requests add column if not exists payment_method_preference text not null default 'discuss';
 alter table public.service_requests add column if not exists quote_amount integer;
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_link text;
@@ -102,6 +104,13 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_quote_currency_check check (quote_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_payment_method_preference_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_payment_method_preference_check check (payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank'));
   end if;
 
   if not exists (
@@ -211,6 +220,7 @@ with check (
     or array_to_string(supporting_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
   )
   and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
+  and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'bank')
   and task_type in ('quick', 'site', 'registry', 'virtual')
   and urgency in ('standard', 'priority', 'same-day')
   and hours_estimate between 1 and 80
@@ -258,6 +268,7 @@ grant insert (
   supporting_links,
   sensitive_documents_expected,
   preferred_currency,
+  payment_method_preference,
   task_type,
   kenya_location,
   urgency,

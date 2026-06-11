@@ -398,6 +398,17 @@
           </div>
 
           <div class="field-group">
+            <label for="payment-method-preference">Preferred payment method</label>
+            <select id="payment-method-preference" name="paymentMethodPreference">
+              <option value="discuss">Recommend after quote</option>
+              <option value="card">Card or Stripe link</option>
+              <option value="paypal">PayPal invoice or link</option>
+              <option value="wise">Wise transfer</option>
+              <option value="bank">Bank or mobile money transfer</option>
+            </select>
+          </div>
+
+          <div class="field-group">
             <label for="task-type">Task type</label>
             <select id="task-type" name="taskType">
               <option value="quick">Quick errand</option>

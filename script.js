@@ -33,6 +33,14 @@ const paymentLabels = {
   refunded: "Refunded",
 };
 
+const paymentMethodLabels = {
+  discuss: "Recommend after quote",
+  card: "Card or Stripe link",
+  paypal: "PayPal invoice or link",
+  wise: "Wise transfer",
+  bank: "Bank or mobile money transfer",
+};
+
 const baseRates = {
   quick: 85,
   site: 180,
@@ -120,6 +128,7 @@ function buildBrief() {
   const diasporaLocation = document.querySelector("#diaspora-location").value.trim() || "Not specified";
   const deadline = document.querySelector("#deadline").value.trim() || "Flexible";
   const preferredCurrency = document.querySelector("#preferred-currency").value;
+  const paymentMethodPreference = document.querySelector("#payment-method-preference").value;
   const location = document.querySelector("#location").value.trim() || "Not specified";
   const localContactName = document.querySelector("#local-contact-name").value.trim() || "Not provided";
   const localContactPhone = document.querySelector("#local-contact-phone").value.trim() || "Not provided";
@@ -144,6 +153,7 @@ function buildBrief() {
     `Email: ${email}`,
     `Client base: ${diasporaLocation}`,
     `Preferred quote currency: ${preferredCurrency}`,
+    `Preferred payment method: ${paymentMethodLabels[paymentMethodPreference] || paymentMethodPreference}`,
     `Task: ${selectedTask}`,
     `Location: ${location}, Kenya`,
     `Ideal deadline: ${deadline}`,
@@ -181,6 +191,7 @@ function buildPayload() {
     supporting_links: getSupportingLinks(),
     sensitive_documents_expected: document.querySelector("#sensitive-documents").checked,
     preferred_currency: document.querySelector("#preferred-currency").value,
+    payment_method_preference: document.querySelector("#payment-method-preference").value,
     task_type: taskType.value,
     kenya_location: document.querySelector("#location").value.trim(),
     urgency: urgency.value,
