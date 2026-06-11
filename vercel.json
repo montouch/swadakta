@@ -2,14 +2,14 @@
   "cleanUrls": true,
   "redirects": [
     {
-      "source": "/:path*",
+      "source": "/(.*)",
       "has": [
         {
           "type": "host",
           "value": "www.swadakta.com"
         }
       ],
-      "destination": "https://swadakta.com/:path*",
+      "destination": "https://swadakta.com/$1",
       "permanent": true
     }
   ],
