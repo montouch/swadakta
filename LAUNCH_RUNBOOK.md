@@ -126,6 +126,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Admin tracks protected funds, provider references, and milestone releases before paying receivers.
 - Wise and bank-transfer receipts require receipt/statement review before the admin marks funds paid; AI can draft the checklist but cannot make the protected money decision.
 - Use `Run safe autopilot` on request cards for routine admin work. It may prepare supported payment requests, save internal notes, set due dates, and route low-risk active-lane work forward; it still pauses at money confirmation, ID approval, receiver assignment, compliance/legal uncertainty, outbound messages, and milestone release.
+- Review the admin Operations Readiness panel after every Vercel or provider setup change. It checks domain/auth, Stripe, PayPal, Wise, M-Pesa, OpenAI fallback, and ID-provider setup without exposing secret values.
 - Use `AI receipt check` after a Wise/bank-transfer receipt is received. Paste the receipt or statement text, review the drafted evidence checklist, save the request, then change payment status only after founder/admin verification.
 - ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
 - Smile ID is the default Africa verification provider; Persona, Sumsub, or Stripe Identity can cover wider global verification after provider setup.

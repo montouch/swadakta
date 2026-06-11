@@ -18,6 +18,7 @@ let accountProfiles = [];
 let partnerApplications = [];
 let fieldUpdates = [];
 let fundMilestones = [];
+let operationsReadiness = null;
 let backendMode = "local";
 let actionFilter = "all";
 
@@ -961,6 +962,118 @@ function sumMilestones(items, getter) {
   return items.reduce((sum, item) => sum + toMoneyNumber(getter(item)), 0);
 }
 
+function readinessStatusLabel(status) {
+  const labels = {
+    ready: "Ready",
+    warning: "Check",
+    missing: "Missing",
+    manual: "Manual",
+    blocked: "Blocked",
+    pending: "Pending",
+  };
+
+  return labels[status] || status || "Unknown";
+}
+
+function renderReadinessItem(entry) {
+  const missing =
+    Array.isArray(entry.missing) && entry.missing.length
+      ? `<small>Missing: ${escapeHtml(entry.missing.join(", "))}</small>`
+      : "";
+
+  return `
+    <article class="readiness-item readiness-${escapeHtml(entry.status || "pending")}">
+      <header>
+        <span>${escapeHtml(readinessStatusLabel(entry.status))}</span>
+        <strong>${escapeHtml(entry.label || "Readiness item")}</strong>
+      </header>
+      <p>${escapeHtml(entry.detail || "No detail provided.")}</p>
+      ${entry.next ? `<small>${escapeHtml(entry.next)}</small>` : ""}
+      ${missing}
+    </article>
+  `;
+}
+
+function renderOperationsReadiness() {
+  if (!operationsReadiness) {
+    return `
+      <section class="readiness-panel" aria-label="Operations readiness">
+        <div class="founder-command-header">
+          <div>
+            <p class="eyebrow">Operations readiness</p>
+            <h2>Checking payment, AI, domain, and verification setup.</h2>
+          </div>
+          <span class="mode-badge">Loading</span>
+        </div>
+        <p class="form-note">The readiness desk loads after admin access is confirmed.</p>
+      </section>
+    `;
+  }
+
+  if (operationsReadiness.error) {
+    return `
+      <section class="readiness-panel" aria-label="Operations readiness">
+        <div class="founder-command-header">
+          <div>
+            <p class="eyebrow">Operations readiness</p>
+            <h2>Readiness check needs attention.</h2>
+          </div>
+          <span class="mode-badge">Unavailable</span>
+        </div>
+        <p class="form-note">${escapeHtml(operationsReadiness.error)}</p>
+      </section>
+    `;
+  }
+
+  const counts = operationsReadiness.counts || {};
+  const categories = Array.isArray(operationsReadiness.categories) ? operationsReadiness.categories : [];
+  const protectedActions = Array.isArray(operationsReadiness.protected_actions)
+    ? operationsReadiness.protected_actions
+    : [];
+  const generatedAt = operationsReadiness.generated_at ? formatDate(operationsReadiness.generated_at) : "just now";
+  const environment = operationsReadiness.environment || {};
+  const categoryHtml = categories
+    .map(
+      (category) => `
+        <section class="readiness-category">
+          <div class="readiness-category-header">
+            <strong>${escapeHtml(category.label || "Readiness")}</strong>
+            <span>${escapeHtml(String((category.items || []).length))} checks</span>
+          </div>
+          <div class="readiness-list">
+            ${(category.items || []).map(renderReadinessItem).join("")}
+          </div>
+        </section>
+      `,
+    )
+    .join("");
+
+  return `
+    <section class="readiness-panel" aria-label="Operations readiness">
+      <div class="founder-command-header">
+        <div>
+          <p class="eyebrow">Operations readiness</p>
+          <h2>What is ready to make money safely.</h2>
+          <p class="form-note">Updated ${escapeHtml(generatedAt)}. Environment: ${escapeHtml(environment.vercel_env || "unknown")} / ${escapeHtml(environment.public_base_url || "domain unknown")}.</p>
+        </div>
+        <span class="mode-badge">${escapeHtml((counts.missing || 0) ? `${counts.missing} missing` : "Launch rails checked")}</span>
+      </div>
+      <div class="readiness-summary" aria-label="Readiness summary">
+        <article class="readiness-ready"><strong>${escapeHtml(String(counts.ready || 0))}</strong><span>Ready</span></article>
+        <article class="readiness-warning"><strong>${escapeHtml(String(counts.warning || 0))}</strong><span>Check</span></article>
+        <article class="readiness-missing"><strong>${escapeHtml(String(counts.missing || 0))}</strong><span>Missing</span></article>
+        <article class="readiness-manual"><strong>${escapeHtml(String(counts.manual || 0))}</strong><span>Manual rails</span></article>
+      </div>
+      ${categoryHtml}
+      ${
+        protectedActions.length
+          ? `<div class="protected-actions"><strong>Protected decisions</strong><ul>${protectedActions.map((action) => `<li>${escapeHtml(action)}</li>`).join("")}</ul></div>`
+          : ""
+      }
+    </section>
+  `;
+}
+
 function renderFounderCommand() {
   if (!founderCommand) {
     return;
@@ -1079,6 +1192,7 @@ function renderFounderCommand() {
         )
         .join("")}
     </div>
+    ${renderOperationsReadiness()}
     <section class="ops-ai-panel" aria-label="Swadakta Ops AI">
       <div class="founder-command-header">
         <div>
@@ -2598,19 +2712,24 @@ async function loadRequests() {
       fieldUpdates = [];
       fundMilestones = [];
       accountProfiles = [];
+      operationsReadiness = null;
       return;
     }
 
     authCard.hidden = true;
     signOutButton.hidden = backendMode !== "supabase";
-    const [requestResult] = await Promise.all([
+    const [requestResult, readinessResult] = await Promise.all([
       window.SwadaktaData.listRequests(),
+      window.SwadaktaData.getOperationsReadiness().catch((error) => ({
+        data: { error: error.message || "Could not load operations readiness." },
+      })),
       loadAccountProfiles({ renderPanel: false }),
       loadPartnerApplications({ renderPanel: false }),
       loadFieldUpdates(),
       loadFundMilestones(),
     ]);
     backendMode = requestResult.mode;
+    operationsReadiness = readinessResult.data || null;
     requests = requestResult.data || [];
     renderRequests();
     renderAccountProfiles();

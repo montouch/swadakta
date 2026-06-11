@@ -1243,6 +1243,77 @@
     return { data: fallbackData, mode: "vercel" };
   }
 
+  async function getOperationsReadiness() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return {
+        data: {
+          generated_at: new Date().toISOString(),
+          environment: {
+            vercel_env: "local-demo",
+            public_base_url: publicBaseUrl() || window.location.origin,
+            supabase_host: "not configured",
+          },
+          counts: { ready: 2, missing: 0, warning: 0, manual: 2 },
+          categories: [
+            {
+              id: "local_demo",
+              label: "Local demo mode",
+              items: [
+                {
+                  id: "browser_storage",
+                  label: "Browser demo storage",
+                  status: "ready",
+                  detail: "Requests and profiles can be tested locally without server secrets.",
+                  next: "Use the live Supabase-backed site for real payments, AI, ID, and admin readiness.",
+                  missing: [],
+                },
+                {
+                  id: "payment_rails",
+                  label: "Payment rails",
+                  status: "manual",
+                  detail: "Stripe, PayPal, Wise, and M-Pesa require Vercel serverless functions and production env vars.",
+                  next: "Sign in on swadakta.com/admin to view live payment readiness.",
+                  missing: [],
+                },
+              ],
+            },
+          ],
+          protected_actions: [
+            "Local demo mode cannot confirm money, identity, receiver assignment, or provider callbacks.",
+          ],
+        },
+        mode: "local",
+      };
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const accessToken = sessionData.session?.access_token;
+    if (!accessToken) {
+      throw new Error("Sign in as an admin before viewing operations readiness.");
+    }
+
+    const response = await fetch("/api/ops/readiness", {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(data.error || "Could not load operations readiness.");
+    }
+
+    return { data, mode: "vercel" };
+  }
+
   async function createStripeCheckoutSession(request, updates = {}) {
     const supabase = await getSupabase();
 
@@ -1540,6 +1611,7 @@
     listAccountProfiles,
     updateAccountIdentityVerification,
     assist,
+    getOperationsReadiness,
     createStripeCheckoutSession,
     createPayPalOrder,
     createWisePaymentRequest,

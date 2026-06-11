@@ -48,6 +48,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
 - Founder-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, cross-border compliance, and external messages
 - Safe autopilot action in admin for routine triage, payment-request prep, quote readiness, due dates, proof checklists, and internal notes
+- Admin-only operations readiness desk for domain/auth, payment rails, AI fallback, and ID-provider setup
 - AI receipt check for Wise/bank-transfer evidence that writes an internal reconciliation note without changing money status
 - 90/10 operations boundary: AI/autopilot handles routine work, founder/admin approves protected money, identity, assignment, legal/customs, dispute, and outbound-message decisions
 - Autopilot route classification for active lanes, pilot lanes, unsupported corridors, physical-item logistics, and founder escalation
