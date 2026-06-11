@@ -1,0 +1,4 @@
+Contact: mailto:swadakta111@gmail.com
+Preferred-Languages: en
+Canonical: https://swadakta.com/.well-known/security.txt
+Expires: 2027-06-11T00:00:00Z

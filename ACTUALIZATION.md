@@ -14,7 +14,7 @@ Completed:
 
 - Supabase project created.
 - `supabase/schema.sql` applied as migrations.
-- Security advisors are clean.
+- Supabase security advisors show one remaining launch hardening item: enable leaked-password protection in Auth.
 - Public client intake insert was verified with the publishable key.
 - Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
 
@@ -66,6 +66,8 @@ Minimum production checklist:
 - Admin dashboard can see and update the request
 - Admin can add quote amount, payment link, report link, and proof links
 - Client tracking can find a request by request code plus original email/WhatsApp
+- Privacy, terms, robots, sitemap, and security-contact files are live
+- Admin routes are blocked from search indexing
 
 ## 4. Pilot operations
 
@@ -101,3 +103,5 @@ After the pilot:
 - Add custom email addresses for `swadakta.com`
 - Add runner mobile upload workflow
 - Add analytics for lead source, revenue, turnaround time, and repeat clients
+
+See [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md) for the domain, payments, privacy, and go-live checklist.

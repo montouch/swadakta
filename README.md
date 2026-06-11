@@ -13,6 +13,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Client-safe request tracking by request code plus email/WhatsApp
 - Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`
+- Privacy, terms, sitemap, robots, and security-contact files
 - Vercel static deployment config
 
 ## Run locally
@@ -30,4 +31,4 @@ Then open:
 
 ## Go live
 
-See [ACTUALIZATION.md](ACTUALIZATION.md) for the Supabase, admin, Vercel, and pilot launch checklist.
+See [ACTUALIZATION.md](ACTUALIZATION.md) and [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
