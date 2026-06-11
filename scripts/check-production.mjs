@@ -16,11 +16,12 @@ const htmlFiles = [
   "brief.html",
   "messages.html",
   "portal.html",
+  "trust.html",
   "tracking.html",
   "verification.html",
 ];
 
-const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/messages", "/verification", "/admin-ops"];
+const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/messages", "/verification", "/trust", "/admin-ops"];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -48,6 +49,13 @@ const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
   "uploadProofFiles",
   "Live proof submit is only for the assigned verified receiver",
+];
+const requiredTrustMarkers = [
+  "Trust & Safety Center",
+  "Swadakta is not currently a licensed escrow provider",
+  "AI cannot mark ID verified, release money, assign paid work",
+  "Receiver provenance starts at 25%",
+  "Restricted goods",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -235,6 +243,13 @@ for (const marker of requiredMessagesMarkers) {
   }
 }
 
+const localTrustHtml = await readLocal("trust.html");
+for (const marker of requiredTrustMarkers) {
+  if (!localTrustHtml.includes(marker)) {
+    fail(failures, `Local trust page is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -284,6 +299,13 @@ for (const page of requiredPages) {
   }
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
+  }
+  if (page === "/trust") {
+    for (const marker of requiredTrustMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
   }
 }
 
