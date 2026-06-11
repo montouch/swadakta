@@ -63,6 +63,7 @@ const requiredPortalMarkers = [
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",
   "renderReceiverApplications",
+  "saveReceiverProfileSetup",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
@@ -76,7 +77,11 @@ const requiredAssistantMarkers = [
   "assistant-quick-action",
   "Workflow-aware guide",
   "renderActionLinks",
+  "renderConversation",
 ];
+const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
+const requiredBriefHtmlMarkers = ["brief-freeform", "Ask AI to organize", "brief-place-intelligence"];
+const requiredBriefScriptMarkers = ["brief-ai-organize", "loadPlaceIntelligence"];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
   "Wise stays hidden as a fallback rail",
@@ -168,6 +173,7 @@ const requiredRobotsMarkers = [
   "Disallow: /auth",
   "Disallow: /resolution",
 ];
+const requiredFaviconMarkers = ['rel="icon" href="/favicon.svg"', 'rel="manifest" href="/site.webmanifest"'];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
   "SUPABASE_URL",
@@ -333,6 +339,24 @@ for (const marker of requiredAssistantMarkers) {
     fail(failures, `Local assistant flow is missing marker ${marker}`);
   }
 }
+const localAiPreferences = await readLocal("ai-preferences.js");
+for (const marker of requiredAiPreferenceMarkers) {
+  if (!localAiPreferences.includes(marker)) {
+    fail(failures, `Local ai-preferences.js is missing marker ${marker}`);
+  }
+}
+const localBriefHtml = await readLocal("brief.html");
+const localBriefScript = await readLocal("stitch-brief.js");
+for (const marker of requiredBriefHtmlMarkers) {
+  if (!localBriefHtml.includes(marker)) {
+    fail(failures, `Local brief page is missing marker ${marker}`);
+  }
+}
+for (const marker of requiredBriefScriptMarkers) {
+  if (!localBriefScript.includes(marker)) {
+    fail(failures, `Local brief flow is missing marker ${marker}`);
+  }
+}
 
 const localReadinessApi = await readLocal("api/ops/readiness.js");
 for (const marker of requiredReadinessApiMarkers) {
@@ -431,6 +455,14 @@ for (const marker of requiredRobotsMarkers) {
     fail(failures, `Local robots.txt is missing marker ${marker}`);
   }
 }
+const favicon = await readLocal("favicon.svg");
+if (!favicon.includes("Swadakta") || !favicon.includes("linearGradient")) {
+  fail(failures, "Local favicon.svg is missing Swadakta mark metadata");
+}
+const manifest = await readLocal("site.webmanifest");
+if (!manifest.includes('"name": "Swadakta"') || !manifest.includes("/favicon.svg")) {
+  fail(failures, "Local site.webmanifest is missing favicon metadata");
+}
 
 for (const page of requiredPages) {
   const { response, text, urlPath } = await fetchPage(page);
@@ -440,6 +472,11 @@ for (const page of requiredPages) {
   }
 
   pass(`${urlPath} returned 200`);
+  for (const marker of requiredFaviconMarkers) {
+    if (!text.includes(marker)) {
+      fail(failures, `${page} does not include favicon marker ${marker}`);
+    }
+  }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
       fail(failures, `${page} does not reference app-data.js?v=${expectedVersion}`);
@@ -450,6 +487,19 @@ for (const page of requiredPages) {
   }
   if (page === "/portal" && !text.includes("receiver-application-form")) {
     fail(failures, `${page} does not include receiver application form`);
+  }
+  if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
+    fail(failures, `${page} does not reference ai-preferences.js?v=1`);
+  }
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=7")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=7`);
+  }
+  if (page === "/brief") {
+    for (const marker of requiredBriefHtmlMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing brief marker ${marker}`);
+      }
+    }
   }
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=2")) {
     fail(failures, `${page} does not reference admin-ops.js?v=2`);
@@ -463,8 +513,8 @@ for (const page of requiredPages) {
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=8")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=8`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=3")) {
-    fail(failures, `${page} does not reference assistant.js?v=3`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=4")) {
+    fail(failures, `${page} does not reference assistant.js?v=4`);
   }
   if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
     fail(failures, `${page} does not reference resolution.js?v=2`);
@@ -528,6 +578,30 @@ for (const marker of requiredRobotsMarkers) {
   } else {
     pass(`Production robots.txt contains ${marker}`);
   }
+}
+
+const { response: faviconResponse, text: faviconText } = await fetchText("/favicon.svg");
+if (faviconResponse.status !== 200) {
+  fail(failures, `favicon.svg returned ${faviconResponse.status}`);
+} else {
+  pass("favicon.svg returned 200");
+}
+if (!faviconText.includes("Swadakta") || !faviconText.includes("linearGradient")) {
+  fail(failures, "Production favicon.svg is missing Swadakta mark metadata");
+} else {
+  pass("Production favicon.svg contains Swadakta mark metadata");
+}
+
+const { response: manifestResponse, text: manifestText } = await fetchText("/site.webmanifest");
+if (manifestResponse.status !== 200) {
+  fail(failures, `site.webmanifest returned ${manifestResponse.status}`);
+} else {
+  pass("site.webmanifest returned 200");
+}
+if (!manifestText.includes('"name": "Swadakta"') || !manifestText.includes("/favicon.svg")) {
+  fail(failures, "Production site.webmanifest is missing favicon metadata");
+} else {
+  pass("Production site.webmanifest contains favicon metadata");
 }
 
 if (isLocalBaseUrl()) {
@@ -615,11 +689,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=3");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=4");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=3 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=4 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=3 returned 200");
+  pass("assistant.js?v=4 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {
@@ -627,6 +701,34 @@ for (const marker of requiredAssistantMarkers) {
     fail(failures, `Production assistant.js is missing marker ${marker}`);
   } else {
     pass(`Production assistant.js contains ${marker}`);
+  }
+}
+
+const { response: aiPreferenceResponse, text: aiPreferenceText } = await fetchText("/ai-preferences.js?v=1");
+if (aiPreferenceResponse.status !== 200) {
+  fail(failures, `ai-preferences.js?v=1 returned ${aiPreferenceResponse.status}`);
+} else {
+  pass("ai-preferences.js?v=1 returned 200");
+}
+for (const marker of requiredAiPreferenceMarkers) {
+  if (!aiPreferenceText.includes(marker)) {
+    fail(failures, `Production ai-preferences.js is missing marker ${marker}`);
+  } else {
+    pass(`Production ai-preferences.js contains ${marker}`);
+  }
+}
+
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=7");
+if (briefScriptResponse.status !== 200) {
+  fail(failures, `stitch-brief.js?v=7 returned ${briefScriptResponse.status}`);
+} else {
+  pass("stitch-brief.js?v=7 returned 200");
+}
+for (const marker of requiredBriefScriptMarkers) {
+  if (!briefScriptText.includes(marker)) {
+    fail(failures, `Production brief flow is missing marker ${marker}`);
+  } else {
+    pass(`Production brief flow contains ${marker}`);
   }
 }
 

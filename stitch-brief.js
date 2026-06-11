@@ -4,6 +4,7 @@
   const submitButton = document.querySelector("#brief-submit");
   const gateTitle = document.querySelector("#brief-gate-title");
   const gateCopy = document.querySelector("#brief-gate-copy");
+  const aiOrganizeButton = document.querySelector("#brief-ai-organize");
   const corridorSummary = document.querySelector("#brief-corridor-summary");
   const corridorRoute = document.querySelector("#brief-corridor-route");
   const corridorCopy = document.querySelector("#brief-corridor-copy");
@@ -11,12 +12,23 @@
   const corridorLogistics = document.querySelector("#brief-corridor-logistics");
   const corridorRisk = document.querySelector("#brief-corridor-risk");
   const corridorChecks = document.querySelector("#brief-corridor-checks");
+  const placePanel = document.querySelector("#brief-place-intelligence");
+  const placeTitle = document.querySelector("#brief-place-title");
+  const placeCopy = document.querySelector("#brief-place-copy");
+  const placeWeather = document.querySelector("#brief-place-weather");
+  const placeRisk = document.querySelector("#brief-place-risk");
+  const placeAlertLink = document.querySelector("#brief-place-alert-link");
+  const placeUpdated = document.querySelector("#brief-place-updated");
+  const placeRefreshButton = document.querySelector("#brief-place-refresh");
   const corridorStorageKey = "swadakta_corridor_context";
 
   if (!form || !window.SwadaktaData) return;
 
   let accountCanPost = false;
   let corridorContext = {};
+  let placeIntelligence = null;
+  let placeTimer = 0;
+  let placeRequestId = 0;
   const directionLabels = {
     origin_to_destination: "From client country to work country",
     destination_to_origin: "From work country back to client country",
@@ -106,6 +118,182 @@
         "'": "&#39;",
       })[character],
     );
+  }
+
+  function weatherCodeLabel(code) {
+    const numericCode = Number(code);
+    if (numericCode === 0) return "Clear";
+    if ([1, 2, 3].includes(numericCode)) return "Cloudy";
+    if ([45, 48].includes(numericCode)) return "Fog";
+    if ([51, 53, 55, 56, 57].includes(numericCode)) return "Drizzle";
+    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(numericCode)) return "Rain";
+    if ([71, 73, 75, 77, 85, 86].includes(numericCode)) return "Snow";
+    if ([95, 96, 99].includes(numericCode)) return "Storm risk";
+    return "Weather";
+  }
+
+  function placeSearchQuery() {
+    const location = value("#brief-location");
+    const destination = value("#brief-destination-country");
+    if (!location || /^(remote|online|digital|virtual)$/i.test(location)) return "";
+    return [location, destination].filter(Boolean).join(", ");
+  }
+
+  function weatherPlanningNotes({ temperature, wind, precipitationChance, weatherCode } = {}) {
+    const notes = [];
+    if (Number(precipitationChance) >= 60 || [61, 63, 65, 80, 81, 82, 95, 96, 99].includes(Number(weatherCode))) {
+      notes.push("Rain or storms may slow travel, outdoor proof, loading, or delivery.");
+    }
+    if (Number(wind) >= 35) notes.push("High wind: ask for safer timing and clearer media proof.");
+    if (Number(temperature) >= 32) notes.push("Heat planning: allow water, shade, and realistic field timing.");
+    if (Number(temperature) <= 5) notes.push("Cold weather: confirm travel, opening hours, and receiver safety.");
+    if (!notes.length) {
+      notes.push("Normal field conditions from the current forecast. Still confirm local access, opening hours, and receiver safety.");
+    }
+    return notes;
+  }
+
+  function renderPlaceIntelligence(data = null, state = "ready") {
+    if (!placePanel) return;
+    const query = placeSearchQuery();
+
+    if (!query) {
+      placeIntelligence = null;
+      if (placeTitle) placeTitle.textContent = "Enter a physical task location";
+      if (placeCopy) placeCopy.textContent = "Weather and alert guidance is useful for site visits, shopping, pickup, delivery, and outdoor proof. Digital-only work can skip this.";
+      if (placeWeather) placeWeather.textContent = "Not needed yet";
+      if (placeRisk) placeRisk.textContent = "No field note yet";
+      if (placeAlertLink) {
+        placeAlertLink.href = "rules.html";
+        placeAlertLink.textContent = "Check item rules";
+        placeAlertLink.removeAttribute("target");
+        placeAlertLink.removeAttribute("rel");
+      }
+      if (placeUpdated) placeUpdated.textContent = "Enter a city or town to load place intelligence.";
+      return;
+    }
+
+    if (state === "loading") {
+      if (placeTitle) placeTitle.textContent = `Checking ${query}`;
+      if (placeWeather) placeWeather.textContent = "Loading forecast...";
+      if (placeRisk) placeRisk.textContent = "Checking field conditions";
+      if (placeUpdated) placeUpdated.textContent = "Using Open-Meteo geocoding and forecast data.";
+      return;
+    }
+
+    if (!data) {
+      if (placeTitle) placeTitle.textContent = `Place brief for ${query}`;
+      if (placeCopy) placeCopy.textContent = "Forecast could not be loaded yet. Keep the job flexible and confirm local conditions before assigning receiver work.";
+      if (placeWeather) placeWeather.textContent = "Forecast unavailable";
+      if (placeRisk) placeRisk.textContent = "Manual local check needed";
+      if (placeAlertLink) {
+        placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${query} official weather alerts`)}`;
+        placeAlertLink.textContent = "Search official alerts";
+        placeAlertLink.target = "_blank";
+        placeAlertLink.rel = "noopener";
+      }
+      if (placeUpdated) placeUpdated.textContent = "Weather lookup can be retried before posting.";
+      return;
+    }
+
+    const temp = Number(data.temperature);
+    const wind = Number(data.wind);
+    const rain = Number(data.precipitationChance);
+    const weather = weatherCodeLabel(data.weatherCode);
+    const notes = weatherPlanningNotes({
+      temperature: temp,
+      wind,
+      precipitationChance: rain,
+      weatherCode: data.weatherCode,
+    });
+
+    if (placeTitle) placeTitle.textContent = `${data.name}, ${data.country}`;
+    if (placeCopy) placeCopy.textContent = "Use this as a rough field brief before assigning work. The receiver still confirms access, safety, and official local alerts.";
+    if (placeWeather) placeWeather.textContent = `${Math.round(temp)}C, ${weather}, ${Math.round(wind)} km/h wind`;
+    if (placeRisk) placeRisk.textContent = `${rain || 0}% rain risk. ${notes[0]}`;
+    if (placeAlertLink) {
+      placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${data.name} ${data.country} official alerts weather travel`)}`;
+      placeAlertLink.textContent = "Search official alerts";
+      placeAlertLink.target = "_blank";
+      placeAlertLink.rel = "noopener";
+    }
+    if (placeUpdated) {
+      placeUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}. Forecast is a planning aid, not a legal or safety clearance.`;
+    }
+  }
+
+  function placeIntelligenceSummary() {
+    if (!placeIntelligence) return "";
+    const notes = weatherPlanningNotes({
+      temperature: placeIntelligence.temperature,
+      wind: placeIntelligence.wind,
+      precipitationChance: placeIntelligence.precipitationChance,
+      weatherCode: placeIntelligence.weatherCode,
+    });
+    return [
+      `Place intelligence: ${placeIntelligence.name}, ${placeIntelligence.country}`,
+      `Weather now: ${Math.round(Number(placeIntelligence.temperature))}C, ${weatherCodeLabel(placeIntelligence.weatherCode)}, ${Math.round(Number(placeIntelligence.wind))} km/h wind, ${Number(placeIntelligence.precipitationChance) || 0}% daily rain probability.`,
+      `Planning note: ${notes.join(" ")}`,
+      "Receiver must still check official local alerts, access, opening hours, and safety before field work.",
+    ].join("\n");
+  }
+
+  async function loadPlaceIntelligence() {
+    const query = placeSearchQuery();
+    const requestId = ++placeRequestId;
+    if (!query) {
+      renderPlaceIntelligence(null);
+      return;
+    }
+
+    renderPlaceIntelligence(null, "loading");
+
+    try {
+      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+      const geocodeResponse = await fetch(geocodeUrl);
+      if (!geocodeResponse.ok) throw new Error("Location lookup failed.");
+      const geocode = await geocodeResponse.json();
+      const match = geocode.results?.[0];
+      if (!match || requestId !== placeRequestId) {
+        renderPlaceIntelligence(null);
+        return;
+      }
+
+      const forecastUrl = new URL("https://api.open-meteo.com/v1/forecast");
+      forecastUrl.searchParams.set("latitude", match.latitude);
+      forecastUrl.searchParams.set("longitude", match.longitude);
+      forecastUrl.searchParams.set("current", "temperature_2m,precipitation,weather_code,wind_speed_10m");
+      forecastUrl.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max");
+      forecastUrl.searchParams.set("timezone", "auto");
+      const forecastResponse = await fetch(forecastUrl.toString());
+      if (!forecastResponse.ok) throw new Error("Forecast lookup failed.");
+      const forecast = await forecastResponse.json();
+      if (requestId !== placeRequestId) return;
+
+      placeIntelligence = {
+        name: match.name || value("#brief-location"),
+        country: match.country || value("#brief-destination-country") || "",
+        latitude: match.latitude,
+        longitude: match.longitude,
+        timezone: match.timezone || forecast.timezone || "",
+        temperature: forecast.current?.temperature_2m ?? forecast.daily?.temperature_2m_max?.[0] ?? 0,
+        wind: forecast.current?.wind_speed_10m ?? 0,
+        weatherCode: forecast.current?.weather_code ?? forecast.daily?.weather_code?.[0] ?? 0,
+        precipitation: forecast.current?.precipitation ?? 0,
+        precipitationChance: forecast.daily?.precipitation_probability_max?.[0] ?? 0,
+      };
+      renderPlaceIntelligence(placeIntelligence);
+    } catch (error) {
+      if (requestId === placeRequestId) {
+        placeIntelligence = null;
+        renderPlaceIntelligence(null);
+      }
+    }
+  }
+
+  function schedulePlaceIntelligence() {
+    window.clearTimeout(placeTimer);
+    placeTimer = window.setTimeout(loadPlaceIntelligence, 650);
   }
 
   function labelFromMap(map, value, fallback = "Not set") {
@@ -257,6 +445,7 @@
     const original = button.innerHTML;
     const now = new Date().toISOString();
     const selectedService = value("#brief-service-type");
+    const freeformBrief = value("#brief-freeform");
     const proof = value("#brief-proof");
     const items = value("#brief-items");
     const location = value("#brief-location");
@@ -288,7 +477,7 @@
         logistics_mode: logisticsMode,
         goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [selectedService, proof, corridorContext.notes].filter(Boolean).join("\n\n"),
+        notes: [freeformBrief, selectedService, proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
@@ -340,5 +529,38 @@
   });
 
   applyCorridorContext();
+  loadPlaceIntelligence();
   refreshPostingGate();
+
+  ["#brief-location", "#brief-destination-country"].forEach((selector) => {
+    const input = document.querySelector(selector);
+    input?.addEventListener("input", schedulePlaceIntelligence);
+    input?.addEventListener("change", loadPlaceIntelligence);
+  });
+
+  placeRefreshButton?.addEventListener("click", loadPlaceIntelligence);
+
+  if (aiOrganizeButton) {
+    aiOrganizeButton.addEventListener("click", () => {
+      const freeformBrief = value("#brief-freeform");
+      const route = [value("#brief-origin-country"), value("#brief-destination-country")].filter(Boolean).join(" to ");
+      const context = [
+        freeformBrief,
+        route ? `Route: ${route}` : "",
+        value("#brief-location") ? `Location: ${value("#brief-location")}` : "",
+        placeIntelligenceSummary(),
+        value("#brief-items") ? `Items: ${value("#brief-items")}` : "",
+        value("#brief-proof") ? `Proof: ${value("#brief-proof")}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n");
+      const prompt = context || "Help me create a Swadakta job brief. Ask for route, task, proof, media, payment, lawful-goods checks, timeline, and receiver fit.";
+      const url = new URL("assistant.html", window.location.href);
+      url.searchParams.set("context", "brief");
+      url.searchParams.set("task", "Improve my paid brief");
+      url.searchParams.set("links", "brief,corridor,rules,payments");
+      url.searchParams.set("prompt", prompt.slice(0, 1800));
+      window.location.href = url.toString();
+    });
+  }
 })();

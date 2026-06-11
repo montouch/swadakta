@@ -158,8 +158,50 @@
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
         }
+
+        .brief-simple-form {
+            background: rgba(255, 255, 255, 0.74);
+            border: 1px solid rgba(255, 255, 255, 0.58);
+            border-radius: 2rem;
+            box-shadow: 0 28px 80px rgba(48, 52, 150, 0.1);
+            padding: clamp(1rem, 3vw, 2rem);
+        }
+
+        .brief-simple-form > section.glass-panel {
+            background: transparent;
+            border: 0;
+            border-radius: 0;
+            box-shadow: none;
+            backdrop-filter: none;
+            padding: clamp(1rem, 2vw, 1.5rem) 0;
+            border-bottom: 1px solid rgba(199, 196, 215, 0.34);
+        }
+
+        .brief-simple-form > section.glass-panel:last-of-type {
+            border-bottom: 0;
+        }
+
+        .brief-step-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .brief-step-title span {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 999px;
+            display: grid;
+            place-items: center;
+            background: rgba(70, 72, 212, 0.1);
+            color: #4648d4;
+        }
     </style>
-</head>
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="application-name" content="Swadakta" /></head>
 <body class="font-body-md text-body-md">
 <!-- Background Decorative Elements -->
 <div class="mesh-gradient"></div>
@@ -179,12 +221,24 @@
         </a>
 </nav>
 <!-- Content Canvas -->
-<main class="pt-32 pb-section-gap px-margin-mobile md:px-0 flex justify-center">
-<div class="w-full max-w-2xl">
+<main class="pt-28 pb-section-gap px-margin-mobile md:px-margin-desktop flex justify-center">
+<div class="w-full max-w-6xl">
 <!-- Header Section -->
-<header class="text-center mb-16">
-<h1 class="font-display-lg text-headline-lg md:text-display-lg text-on-surface mb-4">Create Your Brief</h1>
-<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto">Provide the details of your global concierge request. Paid posting unlocks after account verification.</p>
+<header class="mb-8 grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-end">
+<div>
+<p class="font-label-md text-label-md text-primary uppercase tracking-[0.18em]">Give a job</p>
+<h1 class="font-display-lg text-headline-lg md:text-display-lg text-on-surface mt-2 mb-3">Tell Swadakta what you need.</h1>
+<p class="font-body-lg text-body-lg text-secondary max-w-3xl">Write it naturally. The app will organize the route, proof, payment, media, and safety checks into a job brief.</p>
+<p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>AI is off. You can still fill the brief normally and submit it for Swadakta review after verification.</p>
+</div>
+<aside class="glass-panel rounded-3xl p-5">
+<div class="flex items-center justify-between gap-3">
+<p class="font-label-md text-label-md text-primary uppercase tracking-[0.14em]">AI organizes</p>
+<button class="h-9 px-4 rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
+</div>
+<p class="font-body-md text-on-surface-variant mt-2">Messy details are okay. Add links, photos, deadlines, budget, and what proof you want. Protected actions stay gated until verification and payment evidence are ready.</p>
+<p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>Use the short fields below. The site still works without AI.</p>
+</aside>
 </header>
 <section class="glass-panel rounded-3xl p-6 md:p-8 mb-8" id="brief-verification-gate" aria-live="polite">
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
@@ -232,12 +286,30 @@
 </div>
 </div>
 </section>
-<form class="space-y-8" id="client-brief-form">
-<section class="glass-panel rounded-3xl p-8 md:p-10">
-<div class="flex items-center gap-3 mb-8">
-<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-<span class="material-symbols-outlined">account_circle</span>
+<form class="brief-simple-form space-y-2" id="client-brief-form">
+<section class="glass-panel">
+<div class="brief-step-title">
+<span class="material-symbols-outlined">auto_awesome</span>
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Start here</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Describe the job in plain language</h2>
 </div>
+</div>
+<textarea class="sunken-input w-full p-4 rounded-2xl text-body-md resize-none" id="brief-freeform" name="brief_freeform" placeholder="Example: I need someone in Nairobi to visit a building site this week, record a clear video, ask the contractor three questions, upload photos, and send a short voice note. I want payment held until proof is accepted." rows="5"></textarea>
+<div class="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+<div class="flex flex-wrap gap-2 text-sm text-on-surface-variant">
+<span class="rounded-full bg-white/70 px-3 py-1">Photos</span>
+<span class="rounded-full bg-white/70 px-3 py-1">Video</span>
+<span class="rounded-full bg-white/70 px-3 py-1">Voice note</span>
+<span class="rounded-full bg-white/70 px-3 py-1">Receipt</span>
+<span class="rounded-full bg-white/70 px-3 py-1">Milestones</span>
+</div>
+<button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" data-ai-only id="brief-ai-organize" type="button">Ask AI to organize</button>
+</div>
+</section>
+<section class="glass-panel rounded-3xl p-8 md:p-10">
+<div class="brief-step-title">
+<span class="material-symbols-outlined">account_circle</span>
 <h2 class="font-headline-sm text-headline-sm text-on-surface">Client Contact</h2>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -261,10 +333,8 @@
 </section>
 <!-- Section 1: Task Core -->
 <section class="glass-panel rounded-3xl p-8 md:p-10">
-<div class="flex items-center gap-3 mb-8">
-<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<div class="brief-step-title">
 <span class="material-symbols-outlined">map</span>
-</div>
 <h2 class="font-headline-sm text-headline-sm text-on-surface">Route &amp; Context</h2>
 </div>
 <div class="grid grid-cols-1 gap-6">
@@ -272,6 +342,34 @@
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-location">Task Location / Destination</label>
 <input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-location" name="task_location" placeholder="e.g., London, Lagos, Guangzhou, Adelaide, or remote" required="" type="text"/>
 </div>
+<section class="rounded-[1.5rem] bg-white/64 border border-outline-variant/30 p-5" id="brief-place-intelligence" aria-live="polite">
+<div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-3xl">partly_cloudy_day</span>
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Place brief</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-place-title">Enter a task location</h3>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-place-copy">Swadakta will show weather, field-work planning notes, and where to check official local alerts before a receiver accepts the job.</p>
+</div>
+</div>
+<button class="inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" id="brief-place-refresh" type="button">Refresh</button>
+</div>
+<div class="mt-5 grid gap-3 md:grid-cols-3">
+<article class="rounded-2xl bg-white/70 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-on-surface-variant">Weather now</p>
+<strong class="block font-label-md text-on-surface mt-1" id="brief-place-weather">Waiting for location</strong>
+</article>
+<article class="rounded-2xl bg-white/70 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-on-surface-variant">Job planning</p>
+<strong class="block font-label-md text-on-surface mt-1" id="brief-place-risk">No field note yet</strong>
+</article>
+<article class="rounded-2xl bg-white/70 border border-outline-variant/30 p-4">
+<p class="font-label-sm text-on-surface-variant">Local alerts</p>
+<a class="block font-label-md text-primary mt-1 underline underline-offset-4" id="brief-place-alert-link" href="rules.html">Check official alerts</a>
+</article>
+</div>
+<p class="mt-4 font-label-sm text-on-surface-variant" id="brief-place-updated">Weather data will load automatically for physical locations.</p>
+</section>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-service-type">Service Type</label>
 <select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-service-type" name="service_type">
@@ -294,10 +392,8 @@
 </section>
 <!-- Section 2: Logistics & Documentation -->
 <section class="glass-panel rounded-3xl p-8 md:p-10">
-<div class="flex items-center gap-3 mb-8">
-<div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<div class="brief-step-title">
 <span class="material-symbols-outlined">inventory_2</span>
-</div>
 <h2 class="font-headline-sm text-headline-sm text-on-surface">Goods &amp; Logistics</h2>
 </div>
 <div class="space-y-6">
@@ -319,11 +415,9 @@
 </section>
 <!-- Section 3: Verification & Proof -->
 <section class="glass-panel rounded-3xl p-8 md:p-10">
-<div class="flex items-center gap-3 mb-8">
-<div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
+<div class="brief-step-title">
 <span class="material-symbols-outlined">verified</span>
-</div>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">Verification Details</h2>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Proof needed</h2>
 </div>
 <div class="space-y-6">
 <div class="space-y-2">
@@ -334,10 +428,8 @@
 </section>
 <!-- Section 4: Payments & Escrow -->
 <section class="glass-panel rounded-3xl p-8 md:p-10">
-<div class="flex items-center gap-3 mb-8">
-<div class="w-10 h-10 rounded-xl bg-tertiary/10 flex items-center justify-center text-tertiary">
+<div class="brief-step-title">
 <span class="material-symbols-outlined">payments</span>
-</div>
 <h2 class="font-headline-sm text-headline-sm text-on-surface">Payments &amp; Funds Protection</h2>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -379,7 +471,7 @@
                         </label>
 </div>
 <button class="primary-glass-button w-full h-16 rounded-2xl text-white font-bold text-headline-sm flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed" id="brief-submit" type="submit" disabled>
-                        Submit Brief
+                        Create brief for AI triage
                         <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
 </button>
 <p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="brief-status" role="status"></p>
@@ -408,5 +500,6 @@
 </div>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=43"></script>
-<script src="stitch-brief.js?v=5"></script>
+<script src="ai-preferences.js?v=1"></script>
+<script src="stitch-brief.js?v=7"></script>
 </body></html>

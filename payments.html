@@ -71,7 +71,10 @@
         font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
       }
     </style>
-  </head>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="application-name" content="Swadakta" /></head>
   <body class="min-h-screen font-body text-on-surface antialiased">
     <header class="sticky top-0 z-50 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/76 backdrop-blur-3xl border-b border-white/30">
       <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
@@ -140,6 +143,80 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20">
+        <div class="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
+          <article class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <div class="flex items-center justify-between gap-4">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Money desk</p>
+                <h2 class="mt-2 font-display text-3xl font-extrabold">Protected funds overview</h2>
+              </div>
+              <span class="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary">
+                <span class="material-symbols-outlined">shield_lock</span>
+              </span>
+            </div>
+            <div class="mt-6 rounded-[1.5rem] bg-sky-300/70 p-5 text-white shadow-[0_24px_60px_rgba(56,189,248,0.18)]">
+              <p class="font-label text-sm uppercase tracking-[0.16em] opacity-90">Current protected balance</p>
+              <strong class="mt-4 block font-display text-4xl font-extrabold">AUD 0.00</strong>
+              <p class="mt-3 text-sm opacity-90">Funds only appear here after provider confirmation, receipt matching, or milestone authorization.</p>
+            </div>
+            <div class="mt-5 grid grid-cols-4 gap-3 text-center text-xs font-label text-on-surface-variant">
+              <a class="grid gap-2 rounded-2xl bg-white/72 border border-outline-variant/35 p-3" href="corridor.html">
+                <span class="material-symbols-outlined mx-auto text-primary">add</span>
+                Quote
+              </a>
+              <a class="grid gap-2 rounded-2xl bg-white/72 border border-outline-variant/35 p-3" href="tracking.html">
+                <span class="material-symbols-outlined mx-auto text-primary">download</span>
+                Proof
+              </a>
+              <a class="grid gap-2 rounded-2xl bg-white/72 border border-outline-variant/35 p-3" href="payments.html#estimate">
+                <span class="material-symbols-outlined mx-auto text-primary">receipt_long</span>
+                Receipt
+              </a>
+              <a class="grid gap-2 rounded-2xl bg-white/72 border border-outline-variant/35 p-3" href="resolution.html">
+                <span class="material-symbols-outlined mx-auto text-primary">gavel</span>
+                Issue
+              </a>
+            </div>
+          </article>
+          <article class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment events</p>
+                <h2 class="mt-2 font-display text-3xl font-extrabold">Milestones, payouts, and receipts</h2>
+              </div>
+              <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" href="tracking.html">See tracking</a>
+            </div>
+            <div class="mt-6 grid gap-3">
+              <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4 flex items-center gap-4">
+                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">payments</span></span>
+                <div class="min-w-0 flex-1">
+                  <strong class="block">Client deposit</strong>
+                  <p class="text-sm text-on-surface-variant">Provider confirmation before receiver assignment.</p>
+                </div>
+                <span class="font-label text-sm text-primary">Pending</span>
+              </div>
+              <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4 flex items-center gap-4">
+                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">task_alt</span></span>
+                <div class="min-w-0 flex-1">
+                  <strong class="block">Proof milestone</strong>
+                  <p class="text-sm text-on-surface-variant">Photos, video, receipt, or report unlock staged release.</p>
+                </div>
+                <span class="font-label text-sm text-on-surface-variant">Locked</span>
+              </div>
+              <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4 flex items-center gap-4">
+                <span class="grid h-12 w-12 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">account_balance_wallet</span></span>
+                <div class="min-w-0 flex-1">
+                  <strong class="block">Receiver payout</strong>
+                  <p class="text-sm text-on-surface-variant">Released only after proof, dispute, and provider checks pass.</p>
+                </div>
+                <span class="font-label text-sm text-on-surface-variant">Protected</span>
+              </div>
+            </div>
+          </article>
         </div>
       </section>
 

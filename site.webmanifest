@@ -1,0 +1,17 @@
+{
+  "name": "Swadakta",
+  "short_name": "Swadakta",
+  "description": "Global corridor concierge for trusted jobs, proof, payments, and receiver work.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#faf8ff",
+  "theme_color": "#4648d4",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

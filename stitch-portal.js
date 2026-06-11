@@ -44,6 +44,19 @@
   const receiverApplicationStatus = document.querySelector("#receiver-application-status");
   const receiverApplicationList = document.querySelector("#receiver-application-list");
   const receiverApplicationSummary = document.querySelector("#receiver-application-summary");
+  const receiverProfileForm = document.querySelector("#receiver-profile-form");
+  const receiverProfilePhotoInput = document.querySelector("#receiver-profile-photo");
+  const receiverProfilePreview = document.querySelector("#receiver-profile-preview");
+  const receiverProfileStatus = document.querySelector("#receiver-profile-status");
+  const receiverProfileStrength = document.querySelector("#receiver-profile-strength");
+  const receiverPublicPhoto = document.querySelector("#receiver-public-photo");
+  const receiverPublicName = document.querySelector("#receiver-public-name");
+  const receiverPublicHeadline = document.querySelector("#receiver-public-headline");
+  const receiverPublicLocation = document.querySelector("#receiver-public-location");
+  const receiverPublicLanguages = document.querySelector("#receiver-public-languages");
+  const receiverPublicProof = document.querySelector("#receiver-public-proof");
+  const receiverPublicAbout = document.querySelector("#receiver-public-about");
+  const receiverPublicVerification = document.querySelector("#receiver-public-verification");
   const authShell = form.closest("main");
 
   if (!form || !window.SwadaktaData) return;
@@ -56,6 +69,7 @@
   const ACCOUNT_HOME_PATH = "/portal.html#home";
   const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
   const ACCOUNT_HOME_EMAIL_KEY = "swadakta_account_home_email";
+  const RECEIVER_PROFILE_SETUP_KEY = "swadakta_receiver_profile_setup";
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
   const PROVIDER_LABELS = {
     smile_id: "Smile ID",
@@ -619,6 +633,158 @@
     receiverApplicationStatus.className = `md:col-span-2 font-label-md text-label-md min-h-6 ${tone || "text-on-surface-variant"}`.trim();
   }
 
+  function setReceiverProfileStatus(message, tone = "") {
+    if (!receiverProfileStatus) return;
+    receiverProfileStatus.textContent = message;
+    receiverProfileStatus.className = `md:col-span-2 font-label-md text-label-md min-h-6 ${tone || "text-on-surface-variant"}`.trim();
+  }
+
+  function receiverProfileInitials(profile = {}) {
+    const name = profile.full_name || field("#receiver-full-name")?.value || signedInEmail || "Swadakta";
+    return String(name)
+      .split(/[\s@.]+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0]?.toUpperCase() || "")
+      .join("") || "SW";
+  }
+
+  function readReceiverProfileSetup() {
+    try {
+      return JSON.parse(localStorage.getItem(RECEIVER_PROFILE_SETUP_KEY) || "{}");
+    } catch {
+      localStorage.removeItem(RECEIVER_PROFILE_SETUP_KEY);
+      return {};
+    }
+  }
+
+  function writeReceiverProfileSetup(setup = {}) {
+    const next = { ...readReceiverProfileSetup(), ...setup, updated_at: new Date().toISOString() };
+    localStorage.setItem(RECEIVER_PROFILE_SETUP_KEY, JSON.stringify(next));
+    return next;
+  }
+
+  function renderReceiverProfileAvatar(node, setup = {}, profile = {}) {
+    if (!node) return;
+    if (setup.photo_data_url) {
+      node.innerHTML = `<img alt="" class="h-full w-full object-cover" src="${escapeHtml(setup.photo_data_url)}"/>`;
+      return;
+    }
+    node.textContent = receiverProfileInitials(profile);
+  }
+
+  function receiverProfileSetupFromForm() {
+    return {
+      headline: field("#receiver-profile-headline")?.value.trim() || "",
+      location: field("#receiver-profile-location")?.value.trim() || "",
+      bio: field("#receiver-profile-bio")?.value.trim() || "",
+      languages: field("#receiver-profile-languages")?.value.trim() || "",
+      proof_tools: field("#receiver-profile-tools")?.value.trim() || "",
+    };
+  }
+
+  function receiverProfileSetupNote(setup = {}) {
+    const lines = [
+      setup.headline ? `Receiver headline: ${setup.headline}` : "",
+      setup.location ? `Receiver current base: ${setup.location}` : "",
+      setup.languages ? `Languages: ${setup.languages}` : "",
+      setup.proof_tools ? `Proof tools: ${setup.proof_tools}` : "",
+      setup.bio ? `Receiver work bio: ${setup.bio}` : "",
+      "Receiver profile photo must match provider ID/selfie verification before paid public trust signals unlock.",
+    ].filter(Boolean);
+    return lines.join("\n");
+  }
+
+  function fillReceiverProfileSetup(profile = {}) {
+    if (!receiverProfileForm) return;
+    const setup = readReceiverProfileSetup();
+    const headline = field("#receiver-profile-headline");
+    const location = field("#receiver-profile-location");
+    const bio = field("#receiver-profile-bio");
+    const languages = field("#receiver-profile-languages");
+    const proofTools = field("#receiver-profile-tools");
+    if (headline && !headline.value) headline.value = setup.headline || "";
+    if (location && !location.value) location.value = setup.location || profile.kenya_base || profile.country || "";
+    if (bio && !bio.value) bio.value = setup.bio || "";
+    if (languages && !languages.value) languages.value = setup.languages || "";
+    if (proofTools && !proofTools.value) proofTools.value = setup.proof_tools || "Photos, video, voice notes, receipts";
+    renderReceiverProfileSetup(profile);
+  }
+
+  function renderReceiverProfileSetup(profile = {}) {
+    if (!receiverProfileForm) return;
+    const setup = { ...readReceiverProfileSetup(), ...receiverProfileSetupFromForm() };
+    const name = field("#receiver-full-name")?.value.trim() || profile.full_name || signedInEmail || "Your public profile";
+    const verified = profile.identity_verification_status === "verified";
+    const hasCoreProfile = Boolean(setup.headline && setup.location && setup.bio);
+    const score = verified ? 55 : hasCoreProfile ? 35 : 25;
+
+    renderReceiverProfileAvatar(receiverProfilePreview, setup, { ...profile, full_name: name });
+    renderReceiverProfileAvatar(receiverPublicPhoto, setup, { ...profile, full_name: name });
+    if (receiverPublicName) receiverPublicName.textContent = name;
+    if (receiverPublicHeadline) receiverPublicHeadline.textContent = setup.headline || "Add headline and proof tools";
+    if (receiverPublicLocation) receiverPublicLocation.textContent = setup.location || profile.kenya_base || profile.country || "Not set";
+    if (receiverPublicLanguages) receiverPublicLanguages.textContent = setup.languages || "Not set";
+    if (receiverPublicProof) receiverPublicProof.textContent = setup.proof_tools || "Photos, video, receipts";
+    if (receiverPublicAbout) receiverPublicAbout.textContent = setup.bio || "Save a short work bio so clients can understand your reliability before assignment.";
+    if (receiverPublicVerification) {
+      receiverPublicVerification.textContent = verified
+        ? "ID/selfie verification recorded. Job-specific gates still apply."
+        : "ID/selfie verification required before paid jobs";
+    }
+    if (receiverProfileStrength) {
+      receiverProfileStrength.textContent = `${score}% ${verified ? "verified" : "starter"} provenance`;
+      receiverProfileStrength.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        verified ? "bg-emerald-50 text-emerald-700" : hasCoreProfile ? "bg-primary-container/10 text-primary" : "bg-amber-50 text-amber-700"
+      }`.trim();
+    }
+  }
+
+  async function saveReceiverProfileSetup(event) {
+    event?.preventDefault();
+    const setup = writeReceiverProfileSetup(receiverProfileSetupFromForm());
+    renderReceiverProfileSetup({});
+    setReceiverProfileStatus("Profile setup saved. Verification is still required before paid receiver work unlocks.", "text-primary");
+
+    if (!signedInEmail) return;
+    const receiverNotes = field("#receiver-notes")?.value.trim() || "";
+    const profileNotes = [receiverNotes, receiverProfileSetupNote(setup)].filter(Boolean).join("\n\n");
+    try {
+      const payload = {
+        account_role: roleIntent() === "client" ? "both" : roleIntent(),
+        profile_notes: profileNotes,
+        onboarding_status: "profile_started",
+      };
+      if (setup.location) {
+        payload.country = setup.location;
+        payload.kenya_base = setup.location;
+      }
+      await window.SwadaktaData.saveAccountProfile(payload);
+      setReceiverProfileStatus("Profile setup saved to your account. Complete provider ID/selfie verification before paid work.", "text-primary");
+    } catch (error) {
+      setReceiverProfileStatus("Profile saved locally. Account sync can retry after the connection settles.", "text-primary");
+    }
+  }
+
+  function handleReceiverProfilePhoto(file) {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setReceiverProfileStatus("Choose an image file for the profile photo.", "text-error");
+      return;
+    }
+    if (file.size > 1.5 * 1024 * 1024) {
+      setReceiverProfileStatus("Use a smaller photo for now. Proper profile storage will handle larger files later.", "text-error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      writeReceiverProfileSetup({ photo_data_url: String(reader.result || "") });
+      renderReceiverProfileSetup({});
+      setReceiverProfileStatus("Photo preview saved locally. It must match ID/selfie verification before clients rely on it.", "text-primary");
+    });
+    reader.readAsDataURL(file);
+  }
+
   function populateReceiverApplication(profile = {}) {
     if (!receiverApplicationForm) return;
     field("#receiver-full-name").value = profile.full_name || "";
@@ -626,6 +792,7 @@
     field("#receiver-base").value = profile.kenya_base || profile.country || "";
     field("#receiver-regions").value = profile.kenya_base || profile.country || "";
     field("#receiver-notes").value = profile.profile_notes || "";
+    fillReceiverProfileSetup(profile);
   }
 
   function receiverApplicationPayload() {
@@ -1153,6 +1320,18 @@
       });
     });
   }
+
+  if (receiverProfileForm) {
+    receiverProfileForm.addEventListener("submit", saveReceiverProfileSetup);
+    receiverProfileForm.querySelectorAll("input, textarea").forEach((input) => {
+      if (input.type !== "file") input.addEventListener("input", () => renderReceiverProfileSetup({}));
+    });
+    fillReceiverProfileSetup({});
+  }
+
+  receiverProfilePhotoInput?.addEventListener("change", () => {
+    handleReceiverProfilePhoto(receiverProfilePhotoInput.files?.[0]);
+  });
 
   if (receiverApplicationForm) {
     receiverApplicationForm.addEventListener("submit", async (event) => {

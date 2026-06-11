@@ -24,6 +24,7 @@
   };
 
   function setTaskByLabel(label) {
+    if (!task) return;
     const wanted = String(label || "").trim().toLowerCase();
     const option = [...task.options].find((item) => item.textContent.trim().toLowerCase() === wanted);
     if (option) task.value = option.value;
@@ -40,6 +41,50 @@
         return `<a class="rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-center font-label text-sm text-primary hover:border-primary" href="${href}">${label}</a>`;
       })
       .join("");
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character],
+    );
+  }
+
+  function answerToHtml(value) {
+    return escapeHtml(value).replace(/\n/g, "<br>");
+  }
+
+  function renderAssistantMessage(message, tone = "normal") {
+    if (!output) return;
+    const toneClass = tone === "thinking" ? "opacity-70" : "";
+    output.innerHTML = `
+      <article class="max-w-[760px] rounded-3xl rounded-tl-md bg-white/78 border border-outline-variant/30 p-4 ${toneClass}">
+        <div class="flex items-start gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-white text-xs font-bold">AI</span>
+          <p class="text-sm leading-6 text-on-surface-variant">${answerToHtml(message)}</p>
+        </div>
+      </article>`;
+    output.scrollTop = output.scrollHeight;
+  }
+
+  function renderConversation(userMessage, assistantMessage) {
+    if (!output) return;
+    output.innerHTML = `
+      <article class="ml-auto max-w-[720px] rounded-3xl rounded-tr-md bg-primary text-white p-4">
+        <p class="text-sm leading-6">${answerToHtml(userMessage || task.value)}</p>
+      </article>
+      <article class="max-w-[760px] rounded-3xl rounded-tl-md bg-white/78 border border-outline-variant/30 p-4">
+        <div class="flex items-start gap-3">
+          <span class="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-primary text-white text-xs font-bold">AI</span>
+          <p class="text-sm leading-6 text-on-surface-variant">${answerToHtml(assistantMessage)}</p>
+        </div>
+      </article>`;
+    output.scrollTop = output.scrollHeight;
   }
 
   function contextLabel() {
@@ -147,12 +192,13 @@
     }
 
     if (incomingPrompt) {
-      output.textContent = "Issue context loaded. Ask AI when you are ready for a draft, checklist, or next safe step.";
+      renderAssistantMessage("Issue context loaded. Ask AI when you are ready for a draft, checklist, or next safe step.");
     }
     renderActionLinks((params.get("links") || "").split(","));
   }
 
   function selectedLinkKeys() {
+    if (!task) return ["portal", "corridor", "verification"];
     const selected = task.value.toLowerCase();
     const text = `${selected} ${prompt.value}`.toLowerCase();
     if (/blocker|risk|stuck|law|restricted/.test(text)) return ["rules", "payments", "trust"];
@@ -168,19 +214,20 @@
     button.addEventListener("click", () => {
       setTaskByLabel(button.dataset.task);
       prompt.value = button.dataset.prompt || "";
-      output.textContent = "Quick action loaded. Ask AI for a draft, checklist, or next safe step.";
+      renderAssistantMessage("Quick action loaded. Ask AI for a draft, checklist, or next safe step.");
       renderActionLinks((button.dataset.links || "").split(","));
     });
   });
 
-  run.addEventListener("click", async () => {
+  run?.addEventListener("click", async () => {
     run.disabled = true;
-    output.textContent = "Thinking...";
+    const userPrompt = prompt.value.trim() || task.value;
+    renderConversation(userPrompt, "Thinking...");
     renderActionLinks(selectedLinkKeys());
     try {
       const session = await window.SwadaktaData.getSession();
       if (!session.session?.access_token) {
-        output.textContent = `${fallbackAnswer()}\n\nSign in for live protected AI.`;
+        renderConversation(userPrompt, `${fallbackAnswer()}\n\nSign in for live protected AI.`);
         return;
       }
       const result = await withTimeout(
@@ -191,9 +238,12 @@
           context: { page: "assistant", source: params.get("source") || params.get("context") || "" },
         }),
       );
-      output.textContent = result.data?.output || fallbackAnswer();
+      renderConversation(userPrompt, result.data?.output || fallbackAnswer());
     } catch (error) {
-      output.textContent = `${fallbackAnswer()}\n\nLive AI did not respond quickly, so this safe guide stayed local. Try again after checking the account session or admin AI readiness.`;
+      renderConversation(
+        userPrompt,
+        `${fallbackAnswer()}\n\nLive AI did not respond quickly, so this safe guide stayed local. Try again after checking the account session or admin AI readiness.`,
+      );
     } finally {
       run.disabled = false;
     }
