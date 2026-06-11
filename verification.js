@@ -8,11 +8,22 @@
   const requestList = document.querySelector("#verification-request-list");
   const modeLabel = document.querySelector("#verification-mode-label");
   const routeCopy = document.querySelector("#verification-route-copy");
+  const routeName = document.querySelector("#verification-route-name");
+  const routeAction = document.querySelector("#verification-route-action");
   const requirementsList = document.querySelector("#verification-requirements-list");
+  const boundaryCopy = document.querySelector("#verification-boundary-copy");
+  const accountGate = document.querySelector("#verification-account-gate");
+  const postingGate = document.querySelector("#verification-posting-gate");
+  const workGate = document.querySelector("#verification-work-gate");
 
   if (!form || !window.SwadaktaData) return;
 
   const params = new URLSearchParams(window.location.search);
+  const PROVIDER_LABELS = {
+    smile_id: "Smile ID",
+    sumsub: "Sumsub",
+    youverify: "Youverify",
+  };
   const AFRICA_COUNTRIES = new Set([
     "algeria",
     "angola",
@@ -136,6 +147,12 @@
     statusPill.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label text-sm ${tone}`.trim();
   }
 
+  function setGate(element, label, tone = "text-on-surface-variant") {
+    if (!element) return;
+    element.textContent = label;
+    element.className = `mt-2 block font-label ${tone}`.trim();
+  }
+
   function setEnabled(enabled) {
     form.querySelectorAll("input, select, textarea, button").forEach((control) => {
       control.disabled = !enabled;
@@ -163,6 +180,7 @@
     if (!normalized) {
       return {
         provider: "sumsub",
+        name: "Country needed",
         copy: "Enter your current country so Swadakta can choose the best route. Sumsub is the broad default until a country-specific route is clear.",
         requirements,
       };
@@ -171,6 +189,7 @@
     if (YOUVERIFY_COUNTRIES.has(normalized)) {
       return {
         provider: "youverify",
+        name: "Youverify selected Africa route",
         copy: "Recommended: Youverify for selected West African identity checks. If the provider cannot complete the check, Swadakta escalates it as an exception.",
         requirements,
       };
@@ -179,6 +198,7 @@
     if (AFRICA_COUNTRIES.has(normalized)) {
       return {
         provider: "smile_id",
+        name: "Smile ID Africa-first route",
         copy: "Recommended: Smile ID for Africa-first identity coverage across eligible African corridor work.",
         requirements,
       };
@@ -187,6 +207,7 @@
     if (GLOBAL_STANDARD_COUNTRIES.has(normalized)) {
       return {
         provider: "sumsub",
+        name: "Sumsub global route",
         copy: "Recommended: Sumsub for wider international coverage across Australia, USA, Europe, China, and other global corridors.",
         requirements,
       };
@@ -195,6 +216,7 @@
     requirements.push("Provider coverage check before accepting paid receiver work");
     return {
       provider: "sumsub",
+      name: "Sumsub fallback route",
       copy: "Recommended: Sumsub as the global fallback route. Manual review is only used if provider coverage, local law, or document mismatch blocks automation.",
       requirements,
     };
@@ -204,14 +226,53 @@
     return USER_SELECTABLE_PROVIDERS.has(value) ? value : fallback;
   }
 
-  function updateProviderRoute({ setProvider = false } = {}) {
-    const route = providerRoute(field("#verify-country").value, field("#verify-reason").value);
-    if (routeCopy) routeCopy.textContent = route.copy;
-    if (requirementsList) {
-      requirementsList.innerHTML = route.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+  function providerActionCopy(request = null) {
+    if (!request) return "Save your profile and request verification to prepare the provider check.";
+    if (request.status === "verified") return "Provider evidence is recorded. Paid posting and eligible receiver work can unlock.";
+    if (request.provider_link) return "Open the provider link and complete the ID, document, and selfie/liveness steps.";
+    if (request.status === "submitted") return "The check is with the provider. Swadakta waits for the provider result before unlocking access.";
+    if (request.status === "manual_review") return "Exception review is active. A provider route should still be tried unless coverage or law blocks it.";
+    if (request.status === "failed" || request.status === "expired") return "Retry with clear ID images and matching details, or switch provider only if coverage failed.";
+    return "Request saved. Swadakta prepares or attaches the provider link next.";
+  }
+
+  function renderGates(profile = {}, request = null, signedIn = true) {
+    const status = request?.status || profile?.identity_verification_status || "not_started";
+    const verified = status === "verified" || profile?.identity_verification_status === "verified";
+
+    if (!signedIn) {
+      setGate(accountGate, "Sign in first", "text-on-surface-variant");
+      setGate(postingGate, "Locked", "text-on-surface-variant");
+      setGate(workGate, "Locked", "text-on-surface-variant");
+      return;
     }
+
+    setGate(accountGate, "Open", "text-primary");
+    setGate(postingGate, verified ? "Unlocked" : "Verify ID", verified ? "text-emerald-700" : "text-primary");
+    setGate(workGate, verified ? "Unlocked" : "Verify ID", verified ? "text-emerald-700" : "text-primary");
+  }
+
+  function updateProviderRoute({ setProvider = false, request = null } = {}) {
+    const route = providerRoute(field("#verify-country").value, field("#verify-reason").value);
     if (setProvider && !providerTouched) {
       field("#verify-provider").value = route.provider;
+    }
+    const selectedProvider = safeProvider(field("#verify-provider").value || route.provider, route.provider);
+    const providerName = PROVIDER_LABELS[selectedProvider] || formatStatus(selectedProvider);
+    if (routeCopy) routeCopy.textContent = route.copy;
+    if (routeName) {
+      routeName.textContent =
+        selectedProvider === route.provider
+          ? route.name
+          : `${providerName} selected; recommended route is ${PROVIDER_LABELS[route.provider] || formatStatus(route.provider)}`;
+    }
+    if (routeAction) routeAction.textContent = providerActionCopy(request);
+    if (boundaryCopy) {
+      boundaryCopy.textContent =
+        "AI can explain next steps and draft friendly messages. It cannot mark an ID verified, release money, assign paid work, or override provider evidence.";
+    }
+    if (requirementsList) {
+      requirementsList.innerHTML = route.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
   }
 
@@ -323,6 +384,9 @@
       providerLink.hidden = true;
       providerLink.removeAttribute("href");
     }
+
+    renderGates(profile, request, true);
+    updateProviderRoute({ request });
   }
 
   async function refresh() {
@@ -334,13 +398,14 @@
         populate({});
         setPill("Sign in required", "bg-error-container text-on-error-container");
         summaryCopy.textContent = "Sign in or create an account before requesting verification.";
-        signInLink.href = `portal.html#home`;
+        signInLink.href = `/portal#home`;
         renderRequests([]);
+        renderGates({}, null, false);
         return;
       }
 
       setEnabled(true);
-      signInLink.href = "portal.html#home";
+      signInLink.href = "/portal#home";
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
       populate(profile);

@@ -81,12 +81,12 @@
     <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
       <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
       <nav class="hidden md:flex items-center gap-7 text-sm font-label text-on-surface-variant">
-        <a class="hover:text-primary" href="portal.html#home">Account</a>
+        <a class="hover:text-primary" href="/portal#home">Account</a>
         <a class="hover:text-primary" href="corridor.html">Choose corridor</a>
         <a class="hover:text-primary" href="tracking.html">Track request</a>
         <a class="text-primary border-b-2 border-primary" href="verification.html">Verify ID</a>
       </nav>
-      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-[0_16px_36px_rgba(70,72,212,0.22)]" href="portal.html">Sign in</a>
+      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-[0_16px_36px_rgba(70,72,212,0.22)]" href="/portal#home">Sign in</a>
     </header>
 
     <main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-section-gap">
@@ -114,8 +114,25 @@
               <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-error-container text-on-error-container font-label text-sm" id="verification-status-pill">Sign in required</span>
             </div>
             <div class="mt-6 flex flex-col sm:flex-row gap-3">
-              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-label font-bold" href="portal.html" id="verification-sign-in">Sign in to verify</a>
+              <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-label font-bold" href="/portal#home" id="verification-sign-in">Sign in to verify</a>
               <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/76 border border-outline-variant/50 text-primary font-label font-bold" href="#" id="verification-provider-link" hidden target="_blank" rel="noopener">Open provider check</a>
+            </div>
+            <div class="mt-6 grid gap-3 sm:grid-cols-3" aria-label="Verification gates">
+              <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+                <span class="text-xs font-label uppercase tracking-[0.14em] text-on-surface-variant">Account</span>
+                <strong class="mt-2 block font-label text-primary" id="verification-account-gate">Sign in first</strong>
+                <p class="mt-1 text-xs text-on-surface-variant">You can enter the portal before ID verification.</p>
+              </article>
+              <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+                <span class="text-xs font-label uppercase tracking-[0.14em] text-on-surface-variant">Paid posting</span>
+                <strong class="mt-2 block font-label text-on-surface-variant" id="verification-posting-gate">Locked</strong>
+                <p class="mt-1 text-xs text-on-surface-variant">Paid briefs unlock after provider verification.</p>
+              </article>
+              <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+                <span class="text-xs font-label uppercase tracking-[0.14em] text-on-surface-variant">Paid work</span>
+                <strong class="mt-2 block font-label text-on-surface-variant" id="verification-work-gate">Locked</strong>
+                <p class="mt-1 text-xs text-on-surface-variant">Receiver jobs unlock after provider verification.</p>
+              </article>
             </div>
           </div>
         </div>
@@ -228,7 +245,9 @@
           <div class="mt-5 grid gap-4">
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">Recommended route</strong>
+              <span class="mt-2 inline-flex rounded-full bg-primary/10 px-3 py-1 text-xs font-label text-primary" id="verification-route-name">Choose country</span>
               <p class="mt-1 text-sm text-on-surface-variant" id="verification-route-copy">Enter your current country to see the recommended provider route.</p>
+              <p class="mt-2 text-xs font-label text-primary" id="verification-route-action">Save your profile to prepare the route.</p>
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">Expected checks</strong>
@@ -241,6 +260,10 @@
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">Provider logic</strong>
               <p class="mt-1 text-sm text-on-surface-variant">Smile ID for Africa-first checks, Sumsub for broad global WebSDK coverage, and Youverify for selected African checks. If a provider cannot support the document or country, the case is escalated as an exception instead of making the user wait by default.</p>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">Automation boundary</strong>
+              <p class="mt-1 text-sm text-on-surface-variant" id="verification-boundary-copy">AI can explain the next step and draft messages, but it cannot mark an ID verified, release money, assign paid work, or override provider evidence.</p>
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">What happens after request?</strong>
@@ -259,6 +282,6 @@
 
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=41"></script>
-    <script src="verification.js?v=3"></script>
+    <script src="verification.js?v=4"></script>
   </body>
 </html>

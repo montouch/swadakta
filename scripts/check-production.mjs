@@ -29,6 +29,11 @@ const requiredPortalMarkers = [
   "setSignedInShell",
   "Account is open. Verification is only required before paid posting",
 ];
+const requiredVerificationMarkers = [
+  "providerActionCopy",
+  "Automation boundary",
+  "release money, assign paid work",
+];
 const requiredAdminOpsMarkers = [
   "requestFlags",
   "Protected decisions are not delegated to AI",
@@ -191,6 +196,14 @@ for (const marker of requiredPortalMarkers) {
   }
 }
 
+const localVerification = await readLocal("verification.js");
+const localVerificationHtml = await readLocal("verification.html");
+for (const marker of requiredVerificationMarkers) {
+  if (!localVerification.includes(marker) && !localVerificationHtml.includes(marker)) {
+    fail(failures, `Local verification flow is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -228,6 +241,9 @@ for (const page of requiredPages) {
   }
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=1")) {
     fail(failures, `${page} does not reference admin-ops.js?v=1`);
+  }
+  if (page === "/verification" && !text.includes("verification.js?v=4")) {
+    fail(failures, `${page} does not reference verification.js?v=4`);
   }
 }
 
