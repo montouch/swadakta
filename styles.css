@@ -1299,7 +1299,7 @@ output {
 
 .admin-toolbar {
   display: grid;
-  grid-template-columns: minmax(180px, 0.28fr) minmax(240px, 1fr) auto;
+  grid-template-columns: minmax(150px, 0.22fr) minmax(150px, 0.22fr) minmax(150px, 0.22fr) minmax(240px, 1fr) auto;
   gap: 1rem;
   align-items: end;
   padding: 1rem;

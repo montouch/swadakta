@@ -6,6 +6,8 @@ const modeBadge = document.querySelector("#mode-badge");
 const refreshRequests = document.querySelector("#refresh-requests");
 const signOutButton = document.querySelector("#sign-out");
 const statusFilter = document.querySelector("#status-filter");
+const paymentFilter = document.querySelector("#payment-filter");
+const sensitiveFilter = document.querySelector("#sensitive-filter");
 const searchRequests = document.querySelector("#search-requests");
 
 let requests = [];
@@ -108,10 +110,17 @@ function renderSupportingLinks(request) {
 
 function getFilteredRequests() {
   const selectedStatus = statusFilter.value;
+  const selectedPayment = paymentFilter.value;
+  const selectedSensitive = sensitiveFilter.value;
   const query = searchRequests.value.trim().toLowerCase();
 
   return requests.filter((request) => {
     const matchesStatus = selectedStatus === "all" || request.status === selectedStatus;
+    const matchesPayment = selectedPayment === "all" || request.payment_status === selectedPayment;
+    const matchesSensitive =
+      selectedSensitive === "all" ||
+      (selectedSensitive === "sensitive" && request.sensitive_documents_expected) ||
+      (selectedSensitive === "standard" && !request.sensitive_documents_expected);
     const searchable = [
       request.request_code,
       request.client_name,
@@ -122,19 +131,40 @@ function getFilteredRequests() {
       request.australia_location,
       request.local_contact_name,
       request.local_contact_phone,
+      request.contact_preference,
+      request.contact_window,
+      Array.isArray(request.supporting_links) ? request.supporting_links.join(" ") : "",
       request.notes,
     ]
       .join(" ")
       .toLowerCase();
-    return matchesStatus && (!query || searchable.includes(query));
+    return matchesStatus && matchesPayment && matchesSensitive && (!query || searchable.includes(query));
   });
 }
 
 function updateMetrics() {
-  document.querySelector("#metric-new").textContent = requests.filter((item) => item.status === "new").length;
-  document.querySelector("#metric-active").textContent = requests.filter((item) =>
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const soon = new Date(today);
+  soon.setDate(today.getDate() + 3);
+  const activeRequests = requests.filter((item) =>
     ["quoted", "paid", "in_progress", "waiting_client"].includes(item.status),
+  );
+
+  document.querySelector("#metric-new").textContent = requests.filter((item) => item.status === "new").length;
+  document.querySelector("#metric-active").textContent = activeRequests.length;
+  document.querySelector("#metric-awaiting-payment").textContent = requests.filter((item) =>
+    ["invoice_sent", "unquoted"].includes(item.payment_status) && ["new", "quoted"].includes(item.status),
   ).length;
+  document.querySelector("#metric-due-soon").textContent = requests.filter((item) => {
+    if (!item.payment_due_at || ["paid", "refunded"].includes(item.payment_status)) {
+      return false;
+    }
+
+    const dueDate = new Date(`${item.payment_due_at}T00:00:00`);
+    return dueDate >= today && dueDate <= soon;
+  }).length;
+  document.querySelector("#metric-sensitive").textContent = requests.filter((item) => item.sensitive_documents_expected).length;
   document.querySelector("#metric-completed").textContent = requests.filter((item) => item.status === "completed").length;
 }
 
@@ -514,6 +544,8 @@ signOutButton.addEventListener("click", async () => {
   await loadRequests();
 });
 statusFilter.addEventListener("change", renderRequests);
+paymentFilter.addEventListener("change", renderRequests);
+sensitiveFilter.addEventListener("change", renderRequests);
 searchRequests.addEventListener("input", renderRequests);
 
 loadRequests();

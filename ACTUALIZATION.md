@@ -66,6 +66,7 @@ Minimum production checklist:
 - WhatsApp number filled
 - First request submitted from the live URL
 - Admin dashboard can see and update the request
+- Admin dashboard filters by status, payment state, and sensitive-document risk
 - Admin can add quote amount, payment link, report link, and proof links
 - Public intake requires client permission, scope, terms, and privacy consent
 - Public intake can capture supporting links and sensitive-document needs without asking for raw files

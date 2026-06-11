@@ -7,7 +7,7 @@
     <meta name="description" content="Operations dashboard for Swadakta Diaspora Concierge service requests." />
     <meta name="robots" content="noindex,nofollow" />
     <meta name="theme-color" content="#0f332c" />
-    <link rel="stylesheet" href="styles.css?v=7" />
+    <link rel="stylesheet" href="styles.css?v=8" />
   </head>
   <body class="admin-body">
     <header class="admin-header">
@@ -45,6 +45,18 @@
             <small>Active</small>
           </div>
           <div>
+            <span id="metric-awaiting-payment">0</span>
+            <small>Awaiting pay</small>
+          </div>
+          <div>
+            <span id="metric-due-soon">0</span>
+            <small>Due soon</small>
+          </div>
+          <div>
+            <span id="metric-sensitive">0</span>
+            <small>Sensitive</small>
+          </div>
+          <div>
             <span id="metric-completed">0</span>
             <small>Completed</small>
           </div>
@@ -80,9 +92,28 @@
             <option value="cancelled">Cancelled</option>
           </select>
         </label>
+        <label class="field-group" for="payment-filter">
+          Payment
+          <select id="payment-filter">
+            <option value="all">All payments</option>
+            <option value="unquoted">Unquoted</option>
+            <option value="invoice_sent">Invoice sent</option>
+            <option value="deposit_paid">Deposit paid</option>
+            <option value="paid">Paid</option>
+            <option value="refunded">Refunded</option>
+          </select>
+        </label>
+        <label class="field-group" for="sensitive-filter">
+          Document risk
+          <select id="sensitive-filter">
+            <option value="all">All jobs</option>
+            <option value="sensitive">Sensitive</option>
+            <option value="standard">Standard</option>
+          </select>
+        </label>
         <label class="field-group" for="search-requests">
           Search
-          <input id="search-requests" type="search" placeholder="Name, code, location, WhatsApp" />
+          <input id="search-requests" type="search" placeholder="Name, code, location, contact, link" />
         </label>
         <span class="mode-badge" id="mode-badge">Checking backend...</span>
       </section>
@@ -92,6 +123,6 @@
 
     <script src="app-config.js?v=3"></script>
     <script src="app-data.js?v=7"></script>
-    <script src="admin.js?v=7"></script>
+    <script src="admin.js?v=8"></script>
   </body>
 </html>
