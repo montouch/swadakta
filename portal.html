@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;950&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=26" />
+    <link rel="stylesheet" href="styles.css?v=27" />
   </head>
   <body class="portal-body">
     <header class="site-header" aria-label="Portal navigation">
@@ -30,7 +30,7 @@
         <a href="index.html#pricing">Pricing</a>
       </nav>
       <button class="ai-desk-trigger" type="button" data-ai-desk-open>AI Desk</button>
-      <a class="header-action" href="index.html#intake">Start brief</a>
+      <a class="header-action" href="#account">Log in</a>
     </header>
 
     <main class="portal-shell" id="top">
@@ -48,29 +48,57 @@
       <section class="portal-hero" aria-labelledby="portal-title">
         <div>
           <p class="eyebrow">Swadakta Account</p>
-          <h1 id="portal-title">One account for getting jobs done and getting work.</h1>
+          <h1 id="portal-title">Log in once. Get help or get work.</h1>
           <p>
             Sign in once, choose whether you are a client, a job seeker, or both, then Swadakta
             shows the right next steps. If your country or operating base changes, verification
             can be requested again before paid, sensitive, or location-specific work proceeds.
           </p>
         </div>
-        <div class="portal-choice-grid" aria-label="Swadakta portal choices">
-          <a class="portal-choice" href="#account">
-            <span>01</span>
-            <strong>Create or open account</strong>
-            <small>One login, then choose client, job seeker, or both.</small>
-          </a>
-          <a class="portal-choice" href="#client">
-            <span>02</span>
-            <strong>Request help</strong>
-            <small>Start a brief or track client jobs linked to your email.</small>
-          </a>
-          <a class="portal-choice" href="#partner">
-            <span>03</span>
-            <strong>Apply for work</strong>
-            <small>Get vetted, add coverage, then receive assigned jobs.</small>
-          </a>
+        <div class="portal-visual-stack">
+          <div class="portal-preview-card" aria-label="Account dashboard preview">
+            <div class="portal-preview-topbar">
+              <span></span>
+              <span></span>
+              <span></span>
+              <strong>Account desk</strong>
+            </div>
+            <div class="portal-preview-grid">
+              <div>
+                <small>Account mode</small>
+                <strong>Client + job seeker</strong>
+              </div>
+              <div>
+                <small>Mobile backup</small>
+                <strong>Required on create</strong>
+              </div>
+              <div>
+                <small>ID status</small>
+                <strong>Queued before paid work</strong>
+              </div>
+              <div>
+                <small>Next action</small>
+                <strong>Finish profile</strong>
+              </div>
+            </div>
+          </div>
+          <div class="portal-choice-grid" aria-label="Swadakta portal choices">
+            <a class="portal-choice" href="#account">
+              <span>01</span>
+              <strong>Create or open account</strong>
+              <small>One login, then choose client, job seeker, or both.</small>
+            </a>
+            <a class="portal-choice" href="#client">
+              <span>02</span>
+              <strong>Request help</strong>
+              <small>Start a brief or track client jobs linked to your email.</small>
+            </a>
+            <a class="portal-choice" href="#partner">
+              <span>03</span>
+              <strong>Apply for work</strong>
+              <small>Get vetted, add coverage, then receive assigned jobs.</small>
+            </a>
+          </div>
         </div>
       </section>
 
@@ -83,6 +111,12 @@
             When creating an account, add a mobile or WhatsApp backup number so Swadakta can reach
             you for urgent proof, payment, delivery, or verification issues.
           </p>
+          <ul class="account-mini-flow" aria-label="Account setup steps">
+            <li><strong>1</strong><span>Email and password</span></li>
+            <li><strong>2</strong><span>Mobile or WhatsApp backup</span></li>
+            <li><strong>3</strong><span>Client, job seeker, or both</span></li>
+            <li><strong>4</strong><span>ID verification when required</span></li>
+          </ul>
         </div>
         <form class="tracking-panel portal-login-form account-entry-form" id="client-login-form">
           <div class="account-auth-toggle" role="radiogroup" aria-label="Account action">
