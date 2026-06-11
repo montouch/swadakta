@@ -1134,6 +1134,30 @@ output {
   line-height: 1.5;
 }
 
+.safety-note {
+  border: 1px solid rgba(21, 62, 255, 0.22);
+  background: #eef3ff;
+  color: var(--deep);
+  padding: 1rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.safety-note strong {
+  font-size: 0.92rem;
+}
+
+.safety-note ul {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.safety-note li + li {
+  margin-top: 0.35rem;
+}
+
 .tracking-section {
   display: grid;
   grid-template-columns: minmax(0, 0.78fr) minmax(320px, 1fr);
