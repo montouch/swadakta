@@ -4,6 +4,8 @@
   const FIELD_UPDATE_STORAGE_KEY = "swadakta_field_updates";
   const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
   const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
+  const PROOF_BUCKET = "swadakta-proof";
+  const MAX_STANDARD_UPLOAD_BYTES = 6 * 1024 * 1024;
   let supabaseClientPromise = null;
 
   function config() {
@@ -51,6 +53,33 @@
   function createFundMilestoneCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `FM-${token}`;
+  }
+
+  function safeStorageSegment(value, fallback = "file") {
+    const clean = String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80);
+
+    return clean || fallback;
+  }
+
+  function proofFileKind(file) {
+    const type = String(file?.type || "").toLowerCase();
+
+    if (type.startsWith("image/")) {
+      return "photo";
+    }
+    if (type.startsWith("video/")) {
+      return "video";
+    }
+    if (type === "application/pdf") {
+      return "pdf";
+    }
+
+    return "file";
   }
 
   function createUuid() {
@@ -962,6 +991,67 @@
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
+  async function uploadProofFiles(requestCode, files = []) {
+    const uploadFiles = Array.from(files || []).filter(Boolean);
+
+    if (!uploadFiles.length) {
+      return { data: [], mode: "none" };
+    }
+
+    const supabase = await getSupabase();
+    if (!supabase) {
+      throw new Error("Proof file upload requires the live Supabase-backed site. Add proof links in demo mode.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const user = sessionData.session?.user;
+    if (!user?.id) {
+      throw new Error("Sign in before uploading proof files.");
+    }
+
+    const oversized = uploadFiles.find((file) => file.size > MAX_STANDARD_UPLOAD_BYTES);
+    if (oversized) {
+      throw new Error(`${oversized.name} is larger than 6MB. Compress it or use a Drive/Dropbox link for now.`);
+    }
+
+    const normalizedCode = safeStorageSegment(requestCode || "request", "request");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const uploads = [];
+
+    for (const file of uploadFiles) {
+      const name = safeStorageSegment(file.name, "proof-file");
+      const path = `${user.id}/${normalizedCode}/${timestamp}-${crypto.randomUUID()}-${name}`;
+      const { data, error } = await supabase.storage.from(PROOF_BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type || "application/octet-stream",
+        upsert: false,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      const signed = await supabase.storage.from(PROOF_BUCKET).createSignedUrl(data.path, 60 * 60 * 24 * 7);
+      if (signed.error) {
+        throw signed.error;
+      }
+
+      uploads.push({
+        name: file.name,
+        kind: proofFileKind(file),
+        path: data.path,
+        signed_url: signed.data?.signedUrl || "",
+        size: file.size,
+      });
+    }
+
+    return { data: uploads, mode: "supabase" };
+  }
+
   async function getAccountProfile() {
     const supabase = await getSupabase();
 
@@ -1433,6 +1523,7 @@
     createFundMilestone,
     updateFundMilestone,
     submitAssignedJobUpdate,
+    uploadProofFiles,
     updatePartnerApplication,
     getAccountProfile,
     saveAccountProfile,

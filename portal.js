@@ -969,6 +969,11 @@ function renderPartnerAccount(email, applications, jobs = []) {
               </label>
             </div>
             <label class="field-group">
+              Upload proof files
+              <input name="proof_files" type="file" accept="image/*,video/*,application/pdf" multiple />
+              <small class="proof-upload-note">Photos, short video, and PDF receipts up to 6MB each. Larger files should be shared as a link for now.</small>
+            </label>
+            <label class="field-group">
               Field update
               <textarea name="update_text" rows="3" placeholder="Progress, blocker, reference number, receipt note, or completion summary" required></textarea>
             </label>
@@ -1363,13 +1368,23 @@ if (partnerAccountPanel) {
       return;
     }
 
-    statusElement.textContent = "Sending update...";
+    statusElement.textContent = "Preparing proof update...";
 
     try {
+      const uploaded = await window.SwadaktaData.uploadProofFiles(
+        form.dataset.requestCode,
+        form.querySelector('input[name="proof_files"]')?.files || [],
+      );
+      const uploadedLinks = (uploaded.data || []).map((item) => item.signed_url).filter(Boolean);
+      const uploadedSummary = (uploaded.data || [])
+        .map((item) => `${item.kind || "file"}: ${item.name}`)
+        .join("; ");
+      statusElement.textContent = uploadedLinks.length ? "Files uploaded. Sending update..." : "Sending update...";
+
       const result = await window.SwadaktaData.submitAssignedJobUpdate(form.dataset.requestCode, {
         field_status: formData.get("field_status"),
-        update_text: updateText,
-        proof_links: parseProofLinks(formData.get("proof_links")),
+        update_text: uploadedSummary ? `${updateText}\n\nUploaded proof: ${uploadedSummary}` : updateText,
+        proof_links: [...parseProofLinks(formData.get("proof_links")), ...uploadedLinks],
       });
       form.reset();
       statusElement.textContent = result.data?.update_code

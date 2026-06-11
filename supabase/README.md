@@ -15,6 +15,7 @@ The schema creates:
 - `account_profiles`: signed-in client/receiver profile records linked to Supabase Auth users, including account-level ID verification status
 - `field_updates`: receiver-submitted proof/update notes for assigned jobs
 - `fund_milestones`: admin-controlled funds-protection and staged release records
+- private `swadakta-proof` Storage bucket for receiver proof uploads
 - receiver ID verification fields on `partner_applications`, defaulting to Smile ID
 - Consent fields for local-contact permission, professional-scope acceptance, terms acceptance, and privacy acceptance
 - Contact preference, contact window, supporting links, and sensitive-document flags
@@ -37,6 +38,10 @@ The schema creates:
   - a receiver cannot be marked `Vetted` unless ID consent is true and ID status is `verified`
   - a service request cannot be assigned to a receiver unless that receiver is vetted and ID-verified
   - receiver assigned-job functions only return work for vetted and ID-verified receivers
+- Proof upload gates:
+  - signed-in receivers can upload photos, short videos, and PDF receipts to `swadakta-proof`
+  - the bucket is private, capped at 6MB per file for standard uploads, and stores files under the user's auth ID folder
+  - admins can read proof files through RLS; public clients only see client-safe proof links/reports exposed by admin
 - private helper functions under `app_private`
 
 Admin activation:

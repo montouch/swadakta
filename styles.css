@@ -1143,6 +1143,13 @@ output {
   line-height: 1.5;
 }
 
+.proof-upload-note {
+  margin-top: 0.35rem;
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
 .safety-note {
   border: 1px solid rgba(21, 62, 255, 0.22);
   background: #eef3ff;
