@@ -180,8 +180,23 @@
 <!-- Header Section -->
 <header class="text-center mb-16">
 <h1 class="font-display-lg text-headline-lg md:text-display-lg text-on-surface mb-4">Create Your Brief</h1>
-<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto">Provide the details of your global concierge request. Our network of verified experts will review and respond within 24 hours.</p>
+<p class="font-body-lg text-body-lg text-secondary max-w-lg mx-auto">Provide the details of your global concierge request. Paid posting unlocks after account verification.</p>
 </header>
+<section class="glass-panel rounded-3xl p-6 md:p-8 mb-8" id="brief-verification-gate" aria-live="polite">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface" id="brief-gate-title">Checking account access</h2>
+<p class="font-body-md text-on-surface-variant mt-1" id="brief-gate-copy">You can draft the brief, but posting paid work requires a signed-in verified account.</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3">
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="portal.html#home" id="brief-gate-account-link">Open account</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/75 border border-outline-variant/50 text-primary font-bold" href="verification.html?reason=paid_work" id="brief-gate-verification-link">Verify ID</a>
+</div>
+</div>
+</section>
 <form class="space-y-8" id="client-brief-form">
 <section class="glass-panel rounded-3xl p-8 md:p-10">
 <div class="flex items-center gap-3 mb-8">
@@ -220,7 +235,7 @@
 <div class="grid grid-cols-1 gap-6">
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-location">Task Location / Destination</label>
-<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-location" name="task_location" placeholder="e.g., Nairobi, Kenya or London, UK" required="" type="text"/>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-location" name="task_location" placeholder="e.g., London, Lagos, Guangzhou, Adelaide, or remote" required="" type="text"/>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-service-type">Service Type</label>
@@ -238,7 +253,7 @@
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-destination-country">Destination country</label>
-<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-destination-country" name="destination_country" placeholder="Kenya" type="text"/>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-destination-country" name="destination_country" placeholder="United Kingdom" type="text"/>
 </div>
 </div>
 </section>
@@ -324,7 +339,7 @@
                             I confirm that the details provided are accurate and comply with the <a class="text-primary underline" href="terms.html">Global Logistics Compliance Guidelines</a>. I understand that misrepresentation may lead to account suspension.
                         </label>
 </div>
-<button class="primary-glass-button w-full h-16 rounded-2xl text-white font-bold text-headline-sm flex items-center justify-center gap-3 group" type="submit">
+<button class="primary-glass-button w-full h-16 rounded-2xl text-white font-bold text-headline-sm flex items-center justify-center gap-3 group disabled:opacity-50 disabled:cursor-not-allowed" id="brief-submit" type="submit" disabled>
                         Submit Brief
                         <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">send</span>
 </button>
@@ -354,5 +369,5 @@
 </div>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=36"></script>
-<script src="stitch-brief.js?v=1"></script>
+<script src="stitch-brief.js?v=2"></script>
 </body></html>

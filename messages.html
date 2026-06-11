@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Messages & Media | Swadakta</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4648d4",
+              surface: "#faf8ff",
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "outline-variant": "#c7c4d7"
+            },
+            fontFamily: { display: ["Manrope"], body: ["Inter"], label: ["Geist"] }
+          }
+        }
+      };
+    </script>
+    <style>
+      body { background: radial-gradient(circle at 20% 0%, rgba(96,99,238,.16), transparent 35%), #faf8ff; }
+      .glass-panel { background: rgba(255,255,255,.74); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,.48); box-shadow: 0 26px 70px rgba(48,52,150,.11); }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface">
+    <header class="h-20 px-4 md:px-12 flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <a class="text-on-surface-variant hover:text-primary font-label" href="portal.html#home">Account home</a>
+    </header>
+    <main class="max-w-5xl mx-auto px-4 md:px-12 py-14">
+      <section class="glass-panel rounded-[2rem] p-6 md:p-10">
+        <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Job room</p>
+        <h1 class="font-display text-4xl md:text-5xl font-extrabold mt-3">Messages, media, voice notes, and calls.</h1>
+        <p class="text-on-surface-variant mt-4 max-w-3xl">
+          This is the controlled communication hub for active jobs. The production room will attach to a request code and allow client, receiver, AI, and admin-safe messages with proof uploads.
+        </p>
+        <div class="mt-8 grid gap-4 md:grid-cols-2">
+          <article class="rounded-2xl bg-white/70 border border-outline-variant/40 p-5">
+            <span class="material-symbols-outlined text-primary text-3xl">chat</span>
+            <h2 class="font-display text-xl font-bold mt-3">Text and updates</h2>
+            <p class="text-on-surface-variant mt-2">Use job-safe messages for clarifications, proof requests, and receiver updates.</p>
+          </article>
+          <article class="rounded-2xl bg-white/70 border border-outline-variant/40 p-5">
+            <span class="material-symbols-outlined text-primary text-3xl">perm_media</span>
+            <h2 class="font-display text-xl font-bold mt-3">Photos, video, documents</h2>
+            <p class="text-on-surface-variant mt-2">Upload proof files to the request so they can be reviewed before milestone release.</p>
+          </article>
+          <article class="rounded-2xl bg-white/70 border border-outline-variant/40 p-5">
+            <span class="material-symbols-outlined text-primary text-3xl">mic</span>
+            <h2 class="font-display text-xl font-bold mt-3">Voice notes</h2>
+            <p class="text-on-surface-variant mt-2">Voice notes will be supported for field context where typing is slow.</p>
+          </article>
+          <article class="rounded-2xl bg-white/70 border border-outline-variant/40 p-5">
+            <span class="material-symbols-outlined text-primary text-3xl">videocam</span>
+            <h2 class="font-display text-xl font-bold mt-3">Video call requests</h2>
+            <p class="text-on-surface-variant mt-2">Calls should be scheduled or requested from inside the job so proof and decisions stay tied to the request.</p>
+          </article>
+        </div>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="tracking.html">Open tracking</a>
+          <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/75 border border-outline-variant/50 text-primary font-bold" href="assistant.html">Ask AI</a>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

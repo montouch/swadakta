@@ -7,7 +7,7 @@
 
   function safeNextPath() {
     const params = new URLSearchParams(window.location.search);
-    const raw = params.get("next") || "/portal";
+    const raw = params.get("next") || "/portal.html#home";
 
     try {
       const target = new URL(raw, window.location.origin);
@@ -19,6 +19,12 @@
         "/index.html",
         "/portal",
         "/portal.html",
+        "/assistant",
+        "/assistant.html",
+        "/corridor",
+        "/corridor.html",
+        "/messages",
+        "/messages.html",
         "/verification",
         "/verification.html",
         "/brief",
@@ -33,11 +39,14 @@
         "/admin-verification.html",
       ]);
       if (!allowedPaths.has(target.pathname)) {
-        return "/portal";
+        return "/portal.html#home";
+      }
+      if ((target.pathname === "/portal" || target.pathname === "/portal.html") && !target.hash) {
+        target.hash = "home";
       }
       return `${target.pathname}${target.search}${target.hash}`;
     } catch {
-      return "/portal";
+      return "/portal.html#home";
     }
   }
 

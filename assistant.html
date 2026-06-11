@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Swadakta AI Assistant</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4648d4",
+              tertiary: "#8127cf",
+              surface: "#faf8ff",
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "outline-variant": "#c7c4d7"
+            },
+            fontFamily: { display: ["Manrope"], body: ["Inter"], label: ["Geist"] }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background:
+          radial-gradient(circle at 12% 8%, rgba(96, 99, 238, 0.18), transparent 32%),
+          radial-gradient(circle at 86% 14%, rgba(129, 39, 207, 0.14), transparent 30%),
+          #faf8ff;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.48);
+        box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface">
+    <header class="h-20 px-4 md:px-12 flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="flex items-center gap-4 text-sm font-label">
+        <a class="text-on-surface-variant hover:text-primary" href="portal.html#home">Account home</a>
+        <a class="text-on-surface-variant hover:text-primary" href="verification.html">Verification</a>
+      </nav>
+    </header>
+    <main class="max-w-4xl mx-auto px-4 md:px-12 py-14">
+      <section class="glass-panel rounded-[2rem] p-6 md:p-10">
+        <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Swadakta AI</p>
+        <h1 class="font-display text-4xl md:text-5xl font-extrabold mt-3">Ask what to do next.</h1>
+        <p class="text-on-surface-variant mt-4 max-w-2xl">
+          The assistant can explain the flow, draft messages, improve briefs, predict blockers, and route you to verification, payments, or tracking. It cannot approve ID, release money, or assign jobs by itself.
+        </p>
+        <div class="mt-8 grid gap-4">
+          <select class="h-12 px-4 rounded-xl bg-white/70 border border-outline-variant/40" id="assistant-task">
+            <option>Explain my next step</option>
+            <option>What happens after verification is requested?</option>
+            <option>Draft a message for this job</option>
+            <option>Improve my paid brief</option>
+            <option>Predict blockers</option>
+          </select>
+          <textarea class="min-h-36 p-4 rounded-xl bg-white/70 border border-outline-variant/40 resize-none" id="assistant-prompt" placeholder="Ask Swadakta AI anything about your account, verification, paid job, receiver work, proof, payments, or messages."></textarea>
+          <button class="h-12 rounded-full bg-primary text-white font-bold" id="assistant-run" type="button">Ask AI</button>
+          <pre class="min-h-48 whitespace-pre-wrap rounded-2xl bg-white/70 border border-outline-variant/40 p-4 text-sm text-on-surface-variant" id="assistant-output">Ask a question to begin.</pre>
+        </div>
+      </section>
+    </main>
+    <script src="app-config.js?v=4"></script>
+    <script src="app-data.js?v=36"></script>
+    <script src="assistant.js?v=1"></script>
+  </body>
+</html>

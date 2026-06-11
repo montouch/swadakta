@@ -237,18 +237,85 @@
 <!-- Footer Links -->
 <div class="pt-4 text-center">
 <p class="font-body-md text-on-surface-variant text-[14px]">
-                        Need a task done now? <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="brief.html">Start a brief</a>
+                        Need a task done now? <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="corridor.html">Choose a corridor</a>
 </p>
 </div>
 </form>
 <section class="mt-8 hidden" id="account-profile-card" aria-live="polite"></section>
 <div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3" id="account-next-actions" hidden>
-<a class="glass-panel rounded-2xl p-4 font-label-md text-primary" href="brief.html">Create a client brief</a>
+<a class="glass-panel rounded-2xl p-4 font-label-md text-primary" href="corridor.html">Choose corridor</a>
 <a class="glass-panel rounded-2xl p-4 font-label-md text-tertiary" href="verification.html?reason=receiver_work">Get verified for work</a>
 <button class="glass-panel rounded-2xl p-4 font-label-md text-on-surface-variant text-left" id="account-sign-out" type="button">Sign out</button>
 </div>
 </div>
 </main>
+<section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="home" hidden>
+<div class="max-w-[1120px] mx-auto space-y-6">
+<div class="glass-panel p-8 md:p-10 rounded-[2rem]">
+<div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-6">
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.18em]">Account home</p>
+<h1 class="font-display-lg text-headline-lg text-on-surface mt-2">What do you want to do next?</h1>
+<p class="font-body-md text-on-surface-variant mt-3 max-w-2xl">Use one account to request help, receive paid work, message around active jobs, manage verification, and ask Swadakta AI for guidance.</p>
+<p class="font-label-md text-on-surface-variant mt-4">Signed in as <span class="text-primary font-bold" id="account-home-email">your account</span></p>
+</div>
+<div class="flex flex-wrap gap-3">
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="account-home-verification-pill">Checking verification</span>
+<button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="account-home-sign-out" type="button">Sign out</button>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="corridor.html">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">add_task</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Post a job</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Choose a corridor, add files and proof requirements, then submit a paid brief after verification.</p>
+</a>
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="tracking.html">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">travel_explore</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Track requests</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Open submitted jobs, check payment state, view proof, and follow milestones.</p>
+</a>
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="verification.html?reason=receiver_work">
+<span class="material-symbols-outlined text-tertiary text-4xl group-hover:scale-110 transition-transform">badge</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Get paid work</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Verify ID, set your country coverage, and unlock receiver or field work.</p>
+</a>
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="messages.html">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">forum</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Messages & media</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Text, upload photos, send voice notes, and request video calls for active jobs.</p>
+</a>
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="verification.html">
+<span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">verified_user</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Verification</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Account access is open now. Verification unlocks paid posting, paid work, and sensitive jobs.</p>
+</a>
+<a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="assistant.html">
+<span class="material-symbols-outlined text-tertiary text-4xl group-hover:scale-110 transition-transform">auto_awesome</span>
+<h2 class="font-headline-sm text-headline-sm mt-4">AI assistant</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Ask what to do next, draft messages, improve briefs, and predict blockers.</p>
+</a>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+<article class="glass-panel rounded-3xl p-6">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">My requests</p>
+<strong class="block text-4xl font-display-lg text-primary mt-2" id="account-home-request-count">0</strong>
+<p class="font-body-md text-on-surface-variant mt-2" id="account-home-request-copy">No request data loaded yet.</p>
+</article>
+<article class="glass-panel rounded-3xl p-6">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Assigned work</p>
+<strong class="block text-4xl font-display-lg text-primary mt-2" id="account-home-job-count">0</strong>
+<p class="font-body-md text-on-surface-variant mt-2" id="account-home-job-copy">Verification is required before receiving paid work.</p>
+</article>
+<article class="glass-panel rounded-3xl p-6">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Verification requests</p>
+<strong class="block text-4xl font-display-lg text-primary mt-2" id="account-home-verification-count">0</strong>
+<p class="font-body-md text-on-surface-variant mt-2" id="account-home-next-copy">Create your account profile, then verify when you are ready to transact.</p>
+</article>
+</div>
+</div>
+</section>
 <section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="work">
 <div class="max-w-[920px] mx-auto glass-panel p-8 md:p-10 rounded-[2rem]">
 <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
@@ -346,5 +413,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=36"></script>
-<script src="stitch-portal.js?v=3"></script>
+<script src="stitch-portal.js?v=5"></script>
 </body></html>

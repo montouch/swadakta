@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Choose Corridor | Swadakta</title>
+    <meta
+      name="description"
+      content="Choose the countries, route, service type, and proof standard before creating a verified Swadakta paid brief."
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              primary: "#4648d4",
+              "primary-container": "#6063ee",
+              surface: "#faf8ff",
+              "surface-container": "#eaedff",
+              "surface-container-low": "#f2f3ff",
+              tertiary: "#8127cf",
+              secondary: "#576065",
+              "outline-variant": "#c7c4d7",
+              error: "#ba1a1a"
+            },
+            fontFamily: {
+              display: ["Manrope"],
+              body: ["Inter"],
+              label: ["Geist"]
+            },
+            spacing: {
+              "margin-mobile": "16px",
+              "margin-desktop": "48px",
+              "container-max": "1180px"
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background:
+          radial-gradient(circle at 12% 8%, rgba(96, 99, 238, 0.18), transparent 32%),
+          radial-gradient(circle at 86% 14%, rgba(129, 39, 207, 0.14), transparent 30%),
+          #faf8ff;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.48);
+        box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
+      }
+      .sunken-input {
+        background: rgba(218, 226, 253, 0.34);
+        border: 1px solid rgba(118, 117, 134, 0.14);
+      }
+      .sunken-input:focus {
+        background: rgba(218, 226, 253, 0.55);
+        border-color: #4648d4;
+        outline: none;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 420, "GRAD" 0, "opsz" 24;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen font-body text-on-surface">
+    <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
+      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="hidden md:flex items-center gap-7 text-sm font-label text-on-surface-variant">
+        <a class="hover:text-primary" href="portal.html">Account</a>
+        <a class="text-primary border-b-2 border-primary" href="corridor.html">Corridors</a>
+        <a class="hover:text-primary" href="verification.html">Verify ID</a>
+        <a class="hover:text-primary" href="assistant.html">AI Assistant</a>
+      </nav>
+      <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-[0_16px_36px_rgba(70,72,212,0.22)]" href="portal.html">Sign in</a>
+    </header>
+
+    <main class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-16 md:py-24">
+      <section class="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] items-start">
+        <div class="space-y-6">
+          <div class="inline-flex items-center gap-2 rounded-full bg-white/70 border border-outline-variant/40 px-4 py-2 text-primary font-label text-sm">
+            <span class="material-symbols-outlined text-[18px]">route</span>
+            Corridor first
+          </div>
+          <div>
+            <h1 class="font-display text-4xl md:text-6xl font-extrabold leading-tight">Where does the work need to happen?</h1>
+            <p class="mt-5 text-lg text-on-surface-variant max-w-2xl">
+              Choose the countries and type of help first. Swadakta then routes you to a paid brief, verification, or a safer fallback path.
+            </p>
+          </div>
+          <div class="glass-panel rounded-[2rem] p-6 grid gap-4">
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-primary">verified_user</span>
+              <p class="text-sm text-on-surface-variant">You can create an account without ID verification. Posting paid work or receiving paid work requires verification.</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-primary">payments</span>
+              <p class="text-sm text-on-surface-variant">High-value, sensitive, or cross-border work stays behind quote, compliance, and milestone controls.</p>
+            </div>
+            <div class="flex gap-3">
+              <span class="material-symbols-outlined text-primary">forum</span>
+              <p class="text-sm text-on-surface-variant">Once a job exists, client and receiver communicate through a controlled job room with media and call requests.</p>
+            </div>
+          </div>
+        </div>
+
+        <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-6" id="corridor-form">
+          <div class="grid gap-5 md:grid-cols-2">
+            <label class="space-y-2">
+              <span class="font-label text-sm text-on-surface-variant ml-1">Client country</span>
+              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-origin" name="origin_country" placeholder="Australia" required />
+            </label>
+            <label class="space-y-2">
+              <span class="font-label text-sm text-on-surface-variant ml-1">Work / destination country</span>
+              <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-destination" name="destination_country" placeholder="United Kingdom" required />
+            </label>
+          </div>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">City, town, or online context</span>
+            <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-location" name="task_location" placeholder="London, Lagos, Guangzhou, Adelaide, remote..." required />
+          </label>
+          <div class="grid gap-5 md:grid-cols-2">
+            <label class="space-y-2">
+              <span class="font-label text-sm text-on-surface-variant ml-1">Direction</span>
+              <select class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-direction" name="service_direction">
+                <option value="origin_to_destination">From client country to work country</option>
+                <option value="destination_to_origin">From work country back to client country</option>
+                <option value="two_way">Both ways</option>
+                <option value="local_in_country">Local work inside one country</option>
+                <option value="digital_global">Digital / virtual only</option>
+              </select>
+            </label>
+            <label class="space-y-2">
+              <span class="font-label text-sm text-on-surface-variant ml-1">Service type</span>
+              <select class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-service" name="service_type">
+                <option>Logistics & Delivery</option>
+                <option>Verification & Inspection</option>
+                <option>Market Research</option>
+                <option>Legal & Compliance Concierge</option>
+                <option>Personal Shopping</option>
+                <option>Virtual Assistant</option>
+              </select>
+            </label>
+          </div>
+          <label class="space-y-2">
+            <span class="font-label text-sm text-on-surface-variant ml-1">What do you need done?</span>
+            <textarea class="sunken-input w-full p-4 rounded-xl resize-none" id="corridor-notes" rows="4" placeholder="Short version is enough. You can add photos, documents, payment preferences, and proof requirements on the brief page."></textarea>
+          </label>
+          <div class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4">
+            <strong class="font-label text-primary">Next step</strong>
+            <p class="mt-1 text-sm text-on-surface-variant" id="corridor-next-copy">This will open the paid brief page. If your account is not verified yet, the brief will stay locked until verification is complete.</p>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2">
+            <button class="inline-flex h-13 min-h-13 px-6 py-4 items-center justify-center rounded-2xl bg-primary text-white font-label font-bold shadow-[0_18px_42px_rgba(70,72,212,0.22)]" type="submit">
+              Continue to paid brief
+            </button>
+            <a class="inline-flex h-13 min-h-13 px-6 py-4 items-center justify-center rounded-2xl bg-white/76 border border-outline-variant/50 text-primary font-label font-bold" href="portal.html">
+              Open account first
+            </a>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script src="corridor.js?v=1"></script>
+  </body>
+</html>
