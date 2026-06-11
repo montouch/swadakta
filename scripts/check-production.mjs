@@ -29,6 +29,7 @@ const requiredAppDataMarkers = [
 const requiredPortalMarkers = [
   "setSignedInShell",
   "rememberAccountHome",
+  "forceAccountHomeRoute",
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",
   "renderReceiverApplications",

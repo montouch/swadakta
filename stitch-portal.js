@@ -36,7 +36,7 @@
   let accountProviderTouched = false;
   let accountRenderVersion = 0;
   let signOutRequested = false;
-  const ACCOUNT_HOME_PATH = "/portal#home";
+  const ACCOUNT_HOME_PATH = "/portal.html#home";
   const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
   const ACCOUNT_HOME_EMAIL_KEY = "swadakta_account_home_email";
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
@@ -119,6 +119,14 @@
 
   function accountHomeUrl() {
     return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
+  }
+
+  function forceAccountHomeRoute(email = "") {
+    rememberAccountHome(email);
+    const homeUrl = accountHomeUrl();
+    window.setTimeout(() => {
+      window.location.replace(homeUrl);
+    }, 250);
   }
 
   function rememberAccountHome(email = "") {
@@ -759,6 +767,8 @@
           account_role: accountRole,
           onboarding_status: "started",
         }).catch(() => {});
+        setStatus("Signed in. Taking you to your account home now.", "text-primary");
+        forceAccountHomeRoute(signedInUserEmail);
         return;
       }
       if (shouldOpenWorkspace) {
