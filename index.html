@@ -19,7 +19,7 @@
     <link rel="sitemap" href="/sitemap.xml" />
     <link rel="preload" href="assets/saas-burst.png" as="image" />
     <link rel="preload" href="assets/saas-objects.png" as="image" />
-    <link rel="stylesheet" href="styles.css?v=5" />
+    <link rel="stylesheet" href="styles.css?v=6" />
   </head>
   <body>
     <header class="site-header" aria-label="Primary navigation">
@@ -451,6 +451,22 @@
             <textarea id="notes" name="notes" rows="4" placeholder="Tell us what needs to happen in Kenya, who is involved, and what proof you need." required></textarea>
           </label>
 
+          <fieldset class="field-group consent-group">
+            <legend>Client permission</legend>
+            <label>
+              <input id="permission-contact" name="contactPermission" type="checkbox" required />
+              I have permission to ask Swadakta to contact any local person, vendor, office, or site contact I provide.
+            </label>
+            <label>
+              <input id="scope-acceptance" name="professionalBoundaryAccepted" type="checkbox" required />
+              I understand Swadakta coordinates, verifies, and reports; it does not replace licensed legal, survey, valuation, tax, or financial advice.
+            </label>
+            <label>
+              <input id="terms-acceptance" name="termsAccepted" type="checkbox" required />
+              I agree to the <a href="terms.html" target="_blank" rel="noreferrer">Terms</a> and <a href="privacy.html" target="_blank" rel="noreferrer">Privacy Policy</a>.
+            </label>
+          </fieldset>
+
           <div class="form-actions">
             <button class="button button-primary" type="submit" id="submit-request">
               <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -555,7 +571,7 @@
     </footer>
 
     <script src="app-config.js?v=3"></script>
-    <script src="app-data.js?v=5"></script>
-    <script src="script.js?v=5"></script>
+    <script src="app-data.js?v=6"></script>
+    <script src="script.js?v=6"></script>
   </body>
 </html>

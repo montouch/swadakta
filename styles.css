@@ -747,6 +747,44 @@ textarea {
   accent-color: var(--blue);
 }
 
+.consent-group {
+  gap: 0.65rem;
+  padding: 0;
+  border: 0;
+}
+
+.consent-group legend {
+  margin-bottom: 0.1rem;
+}
+
+.consent-group label {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.65rem;
+  align-items: start;
+  padding: 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--muted);
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.consent-group input {
+  width: 1rem;
+  min-height: 1rem;
+  margin-top: 0.18rem;
+  accent-color: var(--blue);
+}
+
+.consent-group a {
+  color: var(--blue);
+  font-weight: 900;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 .range-line {
   display: grid;
   grid-template-columns: 1fr auto;

@@ -57,6 +57,10 @@
       payment_due_at: null,
       client_report_url: "",
       proof_links: [],
+      contact_permission: false,
+      professional_boundary_accepted: false,
+      terms_accepted_at: null,
+      privacy_accepted_at: null,
       created_at: now,
       updated_at: now,
       ...payload,
@@ -103,6 +107,10 @@
       hours_estimate: payload.hours_estimate,
       estimate_aud: payload.estimate_aud,
       notes: payload.notes,
+      contact_permission: payload.contact_permission,
+      professional_boundary_accepted: payload.professional_boundary_accepted,
+      terms_accepted_at: payload.terms_accepted_at,
+      privacy_accepted_at: payload.privacy_accepted_at,
     };
   }
 

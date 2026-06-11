@@ -17,6 +17,7 @@ Completed:
 - Supabase security advisors show one remaining launch hardening item: enable leaked-password protection in Auth.
 - Public client intake insert was verified with the publishable key.
 - Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
+- Required client permission, scope, terms, and privacy consent fields were added to Supabase and enforced by RLS.
 
 Admin activation status:
 
@@ -65,6 +66,7 @@ Minimum production checklist:
 - First request submitted from the live URL
 - Admin dashboard can see and update the request
 - Admin can add quote amount, payment link, report link, and proof links
+- Public intake requires client permission, scope, terms, and privacy consent
 - Client tracking can find a request by request code plus original email/WhatsApp
 - Privacy, terms, robots, sitemap, and security-contact files are live
 - Admin routes are blocked from search indexing
@@ -86,6 +88,7 @@ Use these statuses:
 For every job, capture:
 
 - Client brief
+- Stored client consent status
 - Location and deadline
 - Agreed fee
 - Proof requirements

@@ -64,6 +64,29 @@ function formatCurrency(amount, currency = "AUD") {
   return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(amount)}`;
 }
 
+function formatConsentStatus(request) {
+  const hasConsent =
+    request.contact_permission &&
+    request.professional_boundary_accepted &&
+    request.terms_accepted_at &&
+    request.privacy_accepted_at;
+
+  if (hasConsent) {
+    return "Complete";
+  }
+
+  if (
+    request.contact_permission ||
+    request.professional_boundary_accepted ||
+    request.terms_accepted_at ||
+    request.privacy_accepted_at
+  ) {
+    return "Partial";
+  }
+
+  return "Legacy or missing";
+}
+
 function getFilteredRequests() {
   const selectedStatus = statusFilter.value;
   const query = searchRequests.value.trim().toLowerCase();
@@ -184,6 +207,7 @@ function renderRequestCardV2(request) {
   const clientBase = request.client_base || request.australia_location || "Not specified";
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const quoteCurrency = request.quote_currency || request.preferred_currency || "AUD";
+  const consentStatus = formatConsentStatus(request);
 
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
@@ -207,6 +231,7 @@ function renderRequestCardV2(request) {
         <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>
         <div><dt>Quote</dt><dd>${escapeHtml(formatCurrency(request.quote_amount, quoteCurrency))}</dd></div>
         <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
+        <div><dt>Consent</dt><dd>${escapeHtml(consentStatus)}</dd></div>
         <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>
       </dl>
 

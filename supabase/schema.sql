@@ -38,6 +38,10 @@ create table if not exists public.service_requests (
   payment_due_at date,
   client_report_url text,
   proof_links text[] not null default array[]::text[],
+  contact_permission boolean not null default false,
+  professional_boundary_accepted boolean not null default false,
+  terms_accepted_at timestamptz,
+  privacy_accepted_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -53,6 +57,10 @@ alter table public.service_requests add column if not exists payment_link text;
 alter table public.service_requests add column if not exists payment_due_at date;
 alter table public.service_requests add column if not exists client_report_url text;
 alter table public.service_requests add column if not exists proof_links text[] not null default array[]::text[];
+alter table public.service_requests add column if not exists contact_permission boolean not null default false;
+alter table public.service_requests add column if not exists professional_boundary_accepted boolean not null default false;
+alter table public.service_requests add column if not exists terms_accepted_at timestamptz;
+alter table public.service_requests add column if not exists privacy_accepted_at timestamptz;
 
 update public.service_requests
 set client_base = australia_location
@@ -146,6 +154,10 @@ with check (
   and urgency in ('standard', 'priority', 'same-day')
   and hours_estimate between 1 and 80
   and estimate_aud >= 0
+  and contact_permission = true
+  and professional_boundary_accepted = true
+  and terms_accepted_at is not null
+  and privacy_accepted_at is not null
   and status = 'new'
   and payment_status = 'unquoted'
 );
@@ -187,7 +199,11 @@ grant insert (
   report_pack,
   hours_estimate,
   estimate_aud,
-  notes
+  notes,
+  contact_permission,
+  professional_boundary_accepted,
+  terms_accepted_at,
+  privacy_accepted_at
 ) on public.service_requests to anon, authenticated;
 
 grant select on public.service_requests to authenticated;

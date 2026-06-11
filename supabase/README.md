@@ -12,8 +12,9 @@ The schema creates:
 
 - `service_requests`: public intake requests
 - `admin_users`: approved admin users
+- Consent fields for local-contact permission, professional-scope acceptance, terms acceptance, and privacy acceptance
 - RLS policies:
-  - anonymous users can insert new service requests
+  - anonymous users can insert new service requests only with required consent fields
   - only approved authenticated admins can read and update requests
 - Public request tracking:
   - clients can look up limited status/report/payment details with request code plus original email or WhatsApp

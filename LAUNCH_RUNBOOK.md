@@ -52,20 +52,22 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 ## 4. First Paid Job Workflow
 
 1. Client submits the public intake form.
-2. Admin reviews the request and confirms missing details by WhatsApp or email.
-3. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-4. Client pays through the agreed provider.
-5. Admin sets status to `paid` after confirmation.
-6. Kenya-side operator executes the task.
-7. Admin adds proof links, report URL, and final notes.
-8. Admin sets status to `completed`.
-9. Client tracks status with request code plus original email or WhatsApp.
+2. Admin confirms consent status is `Complete`.
+3. Admin reviews the request and confirms missing details by WhatsApp or email.
+4. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
+5. Client pays through the agreed provider.
+6. Admin sets status to `paid` after confirmation.
+7. Kenya-side operator executes the task.
+8. Admin adds proof links, report URL, and final notes.
+9. Admin sets status to `completed`.
+10. Client tracks status with request code plus original email or WhatsApp.
 
 ## 5. Launch Readiness Checklist
 
 - `swadakta.com` connected to Vercel.
 - `www.swadakta.com` redirects to the apex domain.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
+- Intake consent is required and visible as `Complete` in admin for new requests.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.
 - Stripe and PayPal accounts are created and verified.

@@ -10,6 +10,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Admin operations dashboard at `admin.html`
 - Request status, payment status, operator notes, and client report workflow
 - Quote amount, payment link, due date, report URL, and proof-link workflow
+- Required client permission, scope, terms, and privacy consent capture
 - Client-safe request tracking by request code plus email/WhatsApp
 - Copy-ready client updates and WhatsApp draft
 - Generated hero image in `assets/diaspora-concierge-hero.png`

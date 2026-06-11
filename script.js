@@ -92,6 +92,11 @@ function buildBrief() {
   const selectedTask = taskType.options[taskType.selectedIndex].text;
   const selectedUrgency = urgency.options[urgency.selectedIndex].text;
   const reports = getReportItems().join(", ") || "basic written update";
+  const permissions = [
+    document.querySelector("#permission-contact").checked ? "local contact permission confirmed" : "local contact permission pending",
+    document.querySelector("#scope-acceptance").checked ? "service scope accepted" : "service scope pending",
+    document.querySelector("#terms-acceptance").checked ? "terms and privacy accepted" : "terms and privacy pending",
+  ].join(", ");
 
   return [
     "Swadakta Diaspora Concierge Brief",
@@ -108,11 +113,17 @@ function buildBrief() {
     `Estimated hours: ${hours.value}`,
     `Report pack: ${reports}`,
     `Estimated fee: ${estimateOutput.textContent}`,
+    `Permissions: ${permissions}`,
     `Notes: ${notes}`,
   ].join("\n");
 }
 
 function buildPayload() {
+  const acceptedAt = new Date().toISOString();
+  const contactPermission = document.querySelector("#permission-contact").checked;
+  const professionalBoundaryAccepted = document.querySelector("#scope-acceptance").checked;
+  const termsAccepted = document.querySelector("#terms-acceptance").checked;
+
   return {
     client_name: document.querySelector("#client-name").value.trim(),
     email: document.querySelector("#email").value.trim(),
@@ -130,6 +141,10 @@ function buildPayload() {
     hours_estimate: Number(hours.value),
     estimate_aud: Number(estimateOutput.dataset.amount || calculateEstimate()),
     notes: document.querySelector("#notes").value.trim(),
+    contact_permission: contactPermission,
+    professional_boundary_accepted: professionalBoundaryAccepted,
+    terms_accepted_at: termsAccepted ? acceptedAt : null,
+    privacy_accepted_at: termsAccepted ? acceptedAt : null,
   };
 }
 
