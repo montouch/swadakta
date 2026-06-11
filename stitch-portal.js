@@ -24,6 +24,10 @@
   const accountHomeJobCopy = document.querySelector("#account-home-job-copy");
   const accountHomeVerificationCount = document.querySelector("#account-home-verification-count");
   const accountHomeNextCopy = document.querySelector("#account-home-next-copy");
+  const receiverApplicationForm = document.querySelector("#receiver-application-form");
+  const receiverApplicationStatus = document.querySelector("#receiver-application-status");
+  const receiverApplicationList = document.querySelector("#receiver-application-list");
+  const receiverApplicationSummary = document.querySelector("#receiver-application-summary");
   const authShell = form.closest("main");
 
   if (!form || !window.SwadaktaData) return;
@@ -32,7 +36,18 @@
   let accountProviderTouched = false;
   let accountRenderVersion = 0;
   let signOutRequested = false;
+  const ACCOUNT_HOME_PATH = "/portal#home";
+  const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
+  const ACCOUNT_HOME_EMAIL_KEY = "swadakta_account_home_email";
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
+  const RECEIVER_CATEGORY_LABELS = {
+    property_checks: "Property and site checks",
+    documents: "Documents and government errands",
+    shopping_delivery: "Shopping and delivery",
+    sourcing: "Sourcing and supplier quotes",
+    family_support: "Family support errands",
+    business_support: "Business support",
+  };
   const AFRICA_COUNTRIES = new Set([
     "algeria",
     "angola",
@@ -99,11 +114,41 @@
   }
 
   function accountRedirect() {
-    return new URL("/portal#home", window.location.origin).href;
+    return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
   }
 
   function accountHomeUrl() {
-    return new URL("/portal#home", window.location.origin).href;
+    return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
+  }
+
+  function rememberAccountHome(email = "") {
+    try {
+      sessionStorage.setItem(ACCOUNT_HOME_OPEN_KEY, String(Date.now() + 2 * 60 * 1000));
+      if (email) sessionStorage.setItem(ACCOUNT_HOME_EMAIL_KEY, email);
+    } catch {}
+  }
+
+  function clearRememberedAccountHome() {
+    try {
+      sessionStorage.removeItem(ACCOUNT_HOME_OPEN_KEY);
+      sessionStorage.removeItem(ACCOUNT_HOME_EMAIL_KEY);
+    } catch {}
+  }
+
+  function shouldOpenRememberedAccountHome() {
+    try {
+      return Number(sessionStorage.getItem(ACCOUNT_HOME_OPEN_KEY) || 0) > Date.now();
+    } catch {
+      return false;
+    }
+  }
+
+  function rememberedAccountHomeEmail() {
+    try {
+      return sessionStorage.getItem(ACCOUNT_HOME_EMAIL_KEY) || "";
+    } catch {
+      return "";
+    }
   }
 
   function setAccountState(state) {
@@ -126,6 +171,14 @@
       openAccountWorkspace();
       return;
     }
+
+    form.hidden = true;
+    if (authShell) {
+      authShell.hidden = true;
+    }
+    accountHome.hidden = false;
+    accountHome.removeAttribute("hidden");
+    setAccountState("signed-in");
 
     const nextUrl = new URL(window.location.href);
     nextUrl.hash = "home";
@@ -150,6 +203,7 @@
   function setSignedInShell(email = "", profile = {}) {
     setAccountState("signed-in");
     signedInEmail = email || profile.email || signedInEmail;
+    rememberAccountHome(signedInEmail);
     form.hidden = true;
     if (authShell) {
       authShell.hidden = true;
@@ -181,6 +235,16 @@
   }
 
   function setSignedOutShell() {
+    if (!signOutRequested && shouldOpenRememberedAccountHome()) {
+      const rememberedEmail = rememberedAccountHomeEmail();
+      if (rememberedEmail) {
+        setSignedInShell(rememberedEmail, {});
+        openAccountHome();
+        setStatus("Account home is opening. Profile details can finish loading in the background.", "text-primary");
+        return;
+      }
+    }
+
     setAccountState("signed-out");
     form.hidden = false;
     if (authShell) {
@@ -244,6 +308,91 @@
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
+  function receiverApplicationCategories() {
+    if (!receiverApplicationForm) return [];
+    return Array.from(receiverApplicationForm.querySelectorAll('input[name="receiver_category"]:checked')).map(
+      (input) => input.value,
+    );
+  }
+
+  function setReceiverApplicationStatus(message, tone = "") {
+    if (!receiverApplicationStatus) return;
+    receiverApplicationStatus.textContent = message;
+    receiverApplicationStatus.className = `md:col-span-2 font-label-md text-label-md min-h-6 ${tone || "text-on-surface-variant"}`.trim();
+  }
+
+  function populateReceiverApplication(profile = {}) {
+    if (!receiverApplicationForm) return;
+    field("#receiver-full-name").value = profile.full_name || "";
+    field("#receiver-whatsapp").value = profile.whatsapp || "";
+    field("#receiver-base").value = profile.kenya_base || profile.country || "";
+    field("#receiver-regions").value = profile.kenya_base || profile.country || "";
+    field("#receiver-notes").value = profile.profile_notes || "";
+  }
+
+  function receiverApplicationPayload() {
+    const categories = receiverApplicationCategories();
+    return {
+      full_name: field("#receiver-full-name")?.value.trim() || "",
+      email: signedInEmail,
+      whatsapp: field("#receiver-whatsapp")?.value.trim() || "",
+      kenya_base: field("#receiver-base")?.value.trim() || "",
+      service_regions: field("#receiver-regions")?.value.trim() || "",
+      service_categories: categories,
+      availability: field("#receiver-availability")?.value || "flexible",
+      transport_access: field("#receiver-transport")?.value || "mixed",
+      notes: field("#receiver-notes")?.value.trim() || "",
+      id_verification_consent: Boolean(field("#receiver-id-consent")?.checked),
+      proof_standard_consent: Boolean(field("#receiver-proof-consent")?.checked),
+    };
+  }
+
+  function renderReceiverApplications(applications = [], jobs = []) {
+    if (!receiverApplicationList) return;
+
+    if (receiverApplicationSummary) {
+      receiverApplicationSummary.textContent = applications.length
+        ? `${applications.length} receiver application${applications.length === 1 ? "" : "s"}`
+        : "No application yet";
+    }
+
+    if (!applications.length) {
+      receiverApplicationList.innerHTML = `
+        <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+          <p class="font-label-md text-on-surface">No receiver application yet</p>
+          <p class="font-body-md text-on-surface-variant text-sm mt-1">Apply once your coverage and proof standards are clear. Verification and vetting still happen before paid jobs.</p>
+        </article>`;
+      return;
+    }
+
+    receiverApplicationList.innerHTML = applications
+      .map((application) => {
+        const categories = Array.isArray(application.service_categories)
+          ? application.service_categories.map((category) => RECEIVER_CATEGORY_LABELS[category] || category).join(", ")
+          : application.service_categories || "Coverage categories pending";
+        const score = Number(application.provenance_score ?? 25);
+        const scoreTone = score >= 80 ? "text-emerald-700" : score >= 55 ? "text-primary" : "text-amber-700";
+        const assignedCount = jobs.filter((job) => job.assigned_partner_id === application.id).length;
+        return `
+          <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <strong class="font-label-md text-on-surface">${escapeHtml(application.partner_code || "Receiver application")}</strong>
+                <p class="font-body-md text-on-surface-variant text-sm mt-1">${escapeHtml(application.kenya_base || "Base pending")} - ${escapeHtml(categories)}</p>
+              </div>
+              <span class="rounded-full bg-primary-container/10 px-3 py-1 text-primary font-label-sm">${escapeHtml(formatStatus(application.status || "new"))}</span>
+            </div>
+            <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+              <span><strong class="${scoreTone}">${escapeHtml(score)}%</strong><br/><small class="text-on-surface-variant">Provenance</small></span>
+              <span><strong class="text-on-surface">${escapeHtml(formatStatus(application.identity_verification_status || "not_started"))}</strong><br/><small class="text-on-surface-variant">ID status</small></span>
+              <span><strong class="text-on-surface">${escapeHtml(assignedCount)}</strong><br/><small class="text-on-surface-variant">Assigned</small></span>
+            </div>
+            <p class="font-body-md text-on-surface-variant text-sm mt-4">Next: complete provider verification, keep proof consent current, and wait for Swadakta to vet coverage before assignment.</p>
+          </article>`;
+      })
+      .join("");
+  }
+
   function normalizeCountry(value) {
     return String(value || "")
       .trim()
@@ -290,6 +439,7 @@
   }
 
   function handOffToAccountHome(email, profile = {}, renderVersion = nextAccountRenderVersion()) {
+    rememberAccountHome(email);
     setSignedInShell(email, profile);
     openAccountHome();
     setStatus("Signed in. Opening your account home.", "text-primary");
@@ -332,15 +482,17 @@
     if (!accountHome) return;
     renderAccountHome(profile);
 
-    const [requestsResult, jobsResult, verificationResult] = await Promise.allSettled([
+    const [requestsResult, jobsResult, verificationResult, applicationsResult] = await Promise.allSettled([
       window.SwadaktaData.listMyRequests(),
       window.SwadaktaData.listMyAssignedJobs(),
       window.SwadaktaData.listMyIdentityVerificationRequests(),
+      window.SwadaktaData.listMyPartnerApplications(),
     ]);
 
     const requests = requestsResult.status === "fulfilled" ? requestsResult.value.data || [] : [];
     const jobs = jobsResult.status === "fulfilled" ? jobsResult.value.data || [] : [];
     const verifications = verificationResult.status === "fulfilled" ? verificationResult.value.data || [] : [];
+    const applications = applicationsResult.status === "fulfilled" ? applicationsResult.value.data || [] : [];
 
     if (accountHomeRequestCount) accountHomeRequestCount.textContent = String(requests.length);
     if (accountHomeRequestCopy) {
@@ -355,6 +507,7 @@
         : "Verify ID and set coverage before accepting paid receiver work.";
     }
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
+    renderReceiverApplications(applications, jobs);
   }
 
   function setVerificationEnabled(enabled) {
@@ -454,6 +607,14 @@
   async function showCurrentAccount({ autoOpen = false, fallbackEmail = "", renderVersion = nextAccountRenderVersion() } = {}) {
     let email = "";
     try {
+      if (shouldOpenRememberedAccountHome()) {
+        const rememberedEmail = rememberedAccountHomeEmail();
+        if (rememberedEmail) {
+          setSignedInShell(rememberedEmail, {});
+          openAccountHome();
+        }
+      }
+
       const sessionResult = await window.SwadaktaData.getSession();
       email = sessionResult.session?.user?.email || "";
       if (!isCurrentAccountRender(renderVersion)) {
@@ -469,6 +630,17 @@
           setVerificationPill("Account open", "bg-primary-container/10 text-primary");
           setVerificationStatus("Account is open. Reload if profile details do not appear immediately.", "text-primary");
           return;
+        }
+        if (shouldOpenRememberedAccountHome()) {
+          const rememberedEmail = rememberedAccountHomeEmail();
+          if (rememberedEmail) {
+            setSignedInShell(rememberedEmail, {});
+            openAccountHome();
+            setVerificationEnabled(true);
+            setVerificationPill("Account opening", "bg-primary-container/10 text-primary");
+            setVerificationStatus("Account home is open while the secure session finishes loading.", "text-primary");
+            return;
+          }
         }
         setSignedOutShell();
         await refreshVerificationWorkspace(null);
@@ -503,6 +675,7 @@
         </div>`;
       if (nextActions) nextActions.hidden = false;
       populateVerificationProfile(profile);
+      populateReceiverApplication(profile);
       await Promise.allSettled([refreshAccountHome(profile), refreshVerificationWorkspace(profile)]);
       if (!isCurrentAccountRender(renderVersion)) {
         return;
@@ -578,6 +751,7 @@
         const signInResult = await window.SwadaktaData.signInWithPassword(email, password);
         const signedInUserEmail = signInResult.user?.email || signInResult.session?.user?.email || email;
         signedInEmail = signedInUserEmail;
+        rememberAccountHome(signedInUserEmail);
         const signedInRenderVersion = nextAccountRenderVersion();
         handOffToAccountHome(signedInUserEmail, { account_role: accountRole }, signedInRenderVersion);
         window.SwadaktaData.saveAccountProfile({
@@ -649,6 +823,66 @@
     });
   }
 
+  if (receiverApplicationForm) {
+    receiverApplicationForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const payload = receiverApplicationPayload();
+
+      if (!signedInEmail) {
+        setReceiverApplicationStatus("Sign in before applying for receiver work.", "text-error");
+        return;
+      }
+      if (!payload.service_categories.length) {
+        setReceiverApplicationStatus("Choose at least one work category.", "text-error");
+        return;
+      }
+      if (!payload.id_verification_consent || !payload.proof_standard_consent) {
+        setReceiverApplicationStatus("Accept ID verification and proof standards before applying.", "text-error");
+        return;
+      }
+
+      const button = receiverApplicationForm.querySelector('button[type="submit"]');
+      const original = button?.textContent || "";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "Submitting...";
+      }
+      setReceiverApplicationStatus("Submitting receiver application...");
+
+      try {
+        await window.SwadaktaData.saveAccountProfile({
+          account_role: "both",
+          full_name: payload.full_name,
+          whatsapp: payload.whatsapp,
+          country: payload.kenya_base,
+          kenya_base: payload.kenya_base,
+          profile_notes: payload.notes,
+          onboarding_status: "needs_review",
+        }).catch(() => {});
+        const result = await window.SwadaktaData.createPartnerApplication(payload);
+        setReceiverApplicationStatus(
+          `Receiver application ${result.data?.partner_code || ""} saved. Complete verification before paid jobs can be assigned.`,
+          "text-primary",
+        );
+        const [applicationsResult, jobsResult] = await Promise.allSettled([
+          window.SwadaktaData.listMyPartnerApplications(),
+          window.SwadaktaData.listMyAssignedJobs(),
+        ]);
+        renderReceiverApplications(
+          applicationsResult.status === "fulfilled" ? applicationsResult.value.data || [] : [result.data],
+          jobsResult.status === "fulfilled" ? jobsResult.value.data || [] : [],
+        );
+      } catch (error) {
+        setReceiverApplicationStatus(error.message || "Could not save receiver application.", "text-error");
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      }
+    });
+  }
+
   if (googleButton) {
     const enabled = Boolean(window.SWADAKTA_CONFIG?.authProviders?.google);
     googleButton.hidden = !enabled;
@@ -686,6 +920,7 @@
     try {
       await window.SwadaktaData.signOut();
       signedInEmail = "";
+      clearRememberedAccountHome();
       if (profileCard) profileCard.hidden = true;
       if (nextActions) nextActions.hidden = true;
       setSignedOutShell();

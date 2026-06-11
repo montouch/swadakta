@@ -27,7 +27,10 @@ const requiredAppDataMarkers = [
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
+  "rememberAccountHome",
   "Account is open. Verification is only required before paid posting",
+  "receiverApplicationPayload",
+  "renderReceiverApplications",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
@@ -238,6 +241,9 @@ for (const page of requiredPages) {
   }
   if (page === "/portal" && expectedStitchPortalVersion && !text.includes(`stitch-portal.js?v=${expectedStitchPortalVersion}`)) {
     fail(failures, `${page} does not reference stitch-portal.js?v=${expectedStitchPortalVersion}`);
+  }
+  if (page === "/portal" && !text.includes("receiver-application-form")) {
+    fail(failures, `${page} does not include receiver application form`);
   }
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=1")) {
     fail(failures, `${page} does not reference admin-ops.js?v=1`);

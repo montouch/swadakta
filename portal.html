@@ -325,6 +325,91 @@
 <p class="font-body-md text-on-surface-variant mt-2" id="account-home-next-copy">Create your account profile, then verify when you are ready to transact.</p>
 </article>
 </div>
+<section class="glass-panel rounded-[2rem] p-6 md:p-8" id="receiver-application-panel">
+<div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-5">
+<div>
+<p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Receiver side</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-2">Apply for paid corridor work</h2>
+<p class="font-body-md text-on-surface-variant mt-3 max-w-2xl">Tell Swadakta where you can operate, what jobs you can handle, and how you will submit proof. Verification and vetting still gate paid assignments.</p>
+</div>
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
+<form class="grid grid-cols-1 md:grid-cols-2 gap-5" id="receiver-application-form">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-full-name">Full name</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-full-name" name="full_name" placeholder="Name clients and Swadakta can verify" type="text" autocomplete="name" required/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-whatsapp">Mobile / WhatsApp</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-whatsapp" name="whatsapp" placeholder="+254..." type="tel" autocomplete="tel" required/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-base">Current base</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-base" name="kenya_base" placeholder="Nairobi, Adelaide, Guangzhou..." type="text" required/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-regions">Coverage areas</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-regions" name="service_regions" placeholder="Cities, estates, counties, countries" type="text" required/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-availability">Availability</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-availability" name="availability">
+<option value="flexible">Flexible</option>
+<option value="weekdays">Weekdays</option>
+<option value="weekends">Weekends</option>
+<option value="evenings">Evenings</option>
+<option value="case_by_case">Case by case</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-transport">Transport access</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="receiver-transport" name="transport_access">
+<option value="mixed">Mixed</option>
+<option value="public_transport">Public transport</option>
+<option value="motorbike">Motorbike</option>
+<option value="car">Car</option>
+<option value="ride_hailing">Ride hailing</option>
+</select>
+</div>
+<fieldset class="md:col-span-2 rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<legend class="font-label-md text-label-md text-on-surface-variant px-1">Work categories</legend>
+<div class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="property_checks"/>Property and site checks</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="documents"/>Documents and government errands</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="shopping_delivery"/>Shopping and delivery</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="sourcing"/>Sourcing and supplier quotes</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="family_support"/>Family support errands</label>
+<label class="flex items-start gap-3 rounded-xl bg-white/70 p-3 font-body-md text-sm"><input class="mt-1" name="receiver_category" type="checkbox" value="business_support"/>Business support</label>
+</div>
+</fieldset>
+<label class="space-y-2 md:col-span-2">
+<span class="font-label-md text-label-md text-on-surface-variant ml-1">Receiver notes</span>
+<textarea class="w-full p-4 rounded-xl sunken-input font-body-md text-on-surface resize-none" id="receiver-notes" name="notes" placeholder="Experience, languages, limits, proof tools, video call availability, and anything Swadakta should know before assigning work." rows="4"></textarea>
+</label>
+<div class="md:col-span-2 grid gap-3">
+<label class="flex items-start gap-3 rounded-2xl bg-white/60 border border-outline-variant/30 p-4 text-sm text-on-surface-variant">
+<input class="mt-1" id="receiver-id-consent" type="checkbox" required/>
+<span>I understand ID verification is required before any paid or sensitive receiver work is assigned.</span>
+</label>
+<label class="flex items-start gap-3 rounded-2xl bg-white/60 border border-outline-variant/30 p-4 text-sm text-on-surface-variant">
+<input class="mt-1" id="receiver-proof-consent" type="checkbox" required/>
+<span>I agree to send clear proof: photos, video, receipts, voice notes, and written updates where the job requires it.</span>
+</label>
+</div>
+<div class="md:col-span-2 flex flex-col sm:flex-row gap-3">
+<button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-tertiary text-white font-bold shadow-[0px_16px_32px_rgba(129,39,207,0.18)]" type="submit">Apply for receiver work</button>
+<a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="/verification?reason=receiver_work">Open verification</a>
+</div>
+<p class="md:col-span-2 font-label-md text-label-md text-on-surface-variant min-h-6" id="receiver-application-status" role="status"></p>
+</form>
+<div class="rounded-[1.5rem] bg-white/60 border border-outline-variant/30 p-5">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Application status</h3>
+<p class="font-body-md text-on-surface-variant mt-2">Swadakta uses a provenance score that starts at 25%. Good verified work, proof quality, and reviews raise it; missed updates or poor reviews lower trust.</p>
+<div class="mt-5 grid gap-3" id="receiver-application-list" aria-live="polite"></div>
+</div>
+</div>
+</section>
 </div>
 </section>
 <section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="work">
@@ -424,5 +509,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=41"></script>
-<script src="stitch-portal.js?v=12"></script>
+<script src="stitch-portal.js?v=14"></script>
 </body></html>
