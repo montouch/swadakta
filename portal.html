@@ -297,6 +297,44 @@
 </div>
 </div>
 </div>
+<section class="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-5" aria-labelledby="account-home-verification-title">
+<article class="glass-panel rounded-3xl p-6">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Verification path</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="account-home-verification-title">Account is open first</h2>
+<p class="font-body-md text-on-surface-variant mt-2" id="account-home-verification-summary">Provider verification unlocks paid actions. You can still explore, save your profile, and prepare briefs now.</p>
+</div>
+</div>
+<div class="mt-5 flex flex-col sm:flex-row gap-3">
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="account-home-verification-action" href="verification.html">Open verification</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" href="assistant.html?context=verification">Ask AI what to do</a>
+</div>
+</article>
+<article class="glass-panel rounded-3xl p-6">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Access gates</p>
+<div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+<div class="rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<span class="font-label-sm text-on-surface-variant">Account home</span>
+<strong class="block font-label-md text-primary mt-1" id="account-home-gate-account">Open</strong>
+</div>
+<div class="rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<span class="font-label-sm text-on-surface-variant">Paid posting</span>
+<strong class="block font-label-md text-primary mt-1" id="account-home-gate-posting">Verify ID</strong>
+</div>
+<div class="rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<span class="font-label-sm text-on-surface-variant">Paid receiver work</span>
+<strong class="block font-label-md text-primary mt-1" id="account-home-gate-work">Verify ID</strong>
+</div>
+<div class="rounded-2xl bg-white/60 border border-outline-variant/30 p-4">
+<span class="font-label-sm text-on-surface-variant">Sensitive jobs</span>
+<strong class="block font-label-md text-primary mt-1" id="account-home-gate-sensitive">Verify ID</strong>
+</div>
+</div>
+<p class="font-body-md text-on-surface-variant text-sm mt-4">AI can guide and draft. Provider evidence or founder approval is still required for ID approval, money release, refunds, and assignments.</p>
+</article>
+</section>
 <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
 <a class="glass-panel rounded-3xl p-6 hover:bg-white/90 transition-colors group" href="corridor.html">
 <span class="material-symbols-outlined text-primary text-4xl group-hover:scale-110 transition-transform">add_task</span>
@@ -547,5 +585,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=43"></script>
-<script src="stitch-portal.js?v=20"></script>
+<script src="stitch-portal.js?v=21"></script>
 </body></html>

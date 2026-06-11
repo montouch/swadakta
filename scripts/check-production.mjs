@@ -54,6 +54,8 @@ const requiredPortalMarkers = [
   "forceAccountHomeRoute",
   "showContinueHomeButton",
   "renderPaymentReturnPanel",
+  "renderAccountHomeVerification",
+  "Provider verification unlocks paid posting",
   "Payment returned successfully",
   "Account is open. Verification is only required before paid posting",
   "receiverApplicationPayload",

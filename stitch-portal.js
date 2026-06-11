@@ -34,6 +34,12 @@
   const accountHomeJobCopy = document.querySelector("#account-home-job-copy");
   const accountHomeVerificationCount = document.querySelector("#account-home-verification-count");
   const accountHomeNextCopy = document.querySelector("#account-home-next-copy");
+  const accountHomeVerificationSummary = document.querySelector("#account-home-verification-summary");
+  const accountHomeVerificationAction = document.querySelector("#account-home-verification-action");
+  const accountHomeGateAccount = document.querySelector("#account-home-gate-account");
+  const accountHomeGatePosting = document.querySelector("#account-home-gate-posting");
+  const accountHomeGateWork = document.querySelector("#account-home-gate-work");
+  const accountHomeGateSensitive = document.querySelector("#account-home-gate-sensitive");
   const receiverApplicationForm = document.querySelector("#receiver-application-form");
   const receiverApplicationStatus = document.querySelector("#receiver-application-status");
   const receiverApplicationList = document.querySelector("#receiver-application-list");
@@ -51,6 +57,12 @@
   const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
   const ACCOUNT_HOME_EMAIL_KEY = "swadakta_account_home_email";
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
+  const PROVIDER_LABELS = {
+    smile_id: "Smile ID",
+    sumsub: "Sumsub",
+    youverify: "Youverify",
+    manual: "Manual exception",
+  };
   const RECEIVER_CATEGORY_LABELS = {
     property_checks: "Property and site checks",
     documents: "Documents and government errands",
@@ -479,6 +491,87 @@
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
+  function providerLabel(value) {
+    return PROVIDER_LABELS[value] || formatStatus(value || "sumsub");
+  }
+
+  function latestVerificationRequest(requests = []) {
+    return [...requests].sort((first, second) => {
+      const secondTime = new Date(second.updated_at || second.created_at || 0).getTime();
+      const firstTime = new Date(first.updated_at || first.created_at || 0).getTime();
+      return secondTime - firstTime;
+    })[0] || null;
+  }
+
+  function verificationDisplayStatus(profile = {}, request = null) {
+    const profileStatus = profile.identity_verification_status || "not_started";
+    return request?.status || profileStatus;
+  }
+
+  function accountIsVerified(profile = {}, request = null) {
+    return profile.identity_verification_status === "verified" || request?.status === "verified";
+  }
+
+  function verificationPillTone(status, verified) {
+    if (verified) return "bg-emerald-100 text-emerald-700";
+    if (["failed", "expired", "rejected"].includes(status)) return "bg-error-container text-on-error-container";
+    if (["requested", "link_sent", "submitted", "manual_review"].includes(status)) {
+      return "bg-primary-container/10 text-primary";
+    }
+    return "bg-white/70 text-on-surface-variant";
+  }
+
+  function setAccountHomeGate(element, label, tone = "text-primary") {
+    if (!element) return;
+    element.textContent = label;
+    element.className = `block font-label-md mt-1 ${tone}`.trim();
+  }
+
+  function renderAccountHomeVerification(profile = {}, requests = []) {
+    const request = latestVerificationRequest(requests);
+    const status = verificationDisplayStatus(profile, request);
+    const verified = accountIsVerified(profile, request);
+    const provider = request?.provider || profile.identity_verification_provider || recommendedProviderForCountry(profile.country || "");
+    const providerName = providerLabel(provider);
+
+    setHomeVerificationPill(
+      verified ? "Verified account" : `${formatStatus(status)} verification`,
+      verificationPillTone(status, verified),
+    );
+
+    if (accountHomeVerificationSummary) {
+      if (verified) {
+        accountHomeVerificationSummary.textContent =
+          "Your provider evidence is recorded. Eligible paid posting, receiver work, and sensitive workflows can unlock when each corridor also passes payment, proof, and rules checks.";
+      } else if (request?.provider_link) {
+        accountHomeVerificationSummary.textContent = `${providerName} is ready. Open the provider check and complete the ID, document, and selfie or liveness steps there.`;
+      } else if (request) {
+        accountHomeVerificationSummary.textContent = `Your ${providerName} verification request is saved as ${formatStatus(status)}. Swadakta waits for provider evidence before unlocking paid actions; manual review is only an exception fallback.`;
+      } else {
+        accountHomeVerificationSummary.textContent =
+          "Provider verification unlocks paid posting, paid receiver work, and sensitive jobs. You can still explore, save your profile, and prepare briefs now.";
+      }
+    }
+
+    if (accountHomeVerificationAction) {
+      const href = request?.provider_link || `verification.html?provider=${encodeURIComponent(provider)}&reason=account_required`;
+      accountHomeVerificationAction.href = href;
+      accountHomeVerificationAction.textContent = request?.provider_link ? "Open provider check" : "Open verification";
+      if (request?.provider_link) {
+        accountHomeVerificationAction.target = "_blank";
+        accountHomeVerificationAction.rel = "noopener";
+      } else {
+        accountHomeVerificationAction.removeAttribute("target");
+        accountHomeVerificationAction.removeAttribute("rel");
+      }
+    }
+
+    setAccountHomeGate(accountHomeGateAccount, "Open", "text-primary");
+    setAccountHomeGate(accountHomeGatePosting, verified ? "Unlocked" : "Verify ID", verified ? "text-emerald-700" : "text-primary");
+    setAccountHomeGate(accountHomeGateWork, verified ? "Unlocked" : "Verify ID", verified ? "text-emerald-700" : "text-primary");
+    setAccountHomeGate(accountHomeGateSensitive, verified ? "Eligible by ID" : "Verify ID", verified ? "text-emerald-700" : "text-primary");
+  }
+
   function receiverApplicationCategories() {
     if (!receiverApplicationForm) return [];
     return Array.from(receiverApplicationForm.querySelectorAll('input[name="receiver_category"]:checked')).map(
@@ -635,14 +728,10 @@
   function renderAccountHome(profile = {}, { email = "" } = {}) {
     if (!accountHome) return;
     const displayEmail = email || profile.email || signedInEmail || "your account";
-    const verificationStatus = profile.identity_verification_status || "not_started";
-    const verified = verificationStatus === "verified";
+    const verified = profile.identity_verification_status === "verified";
 
     if (accountHomeEmail) accountHomeEmail.textContent = displayEmail;
-    setHomeVerificationPill(
-      verified ? "Verified account" : `${formatStatus(verificationStatus)} verification`,
-      verified ? "bg-emerald-100 text-emerald-700" : "bg-primary-container/10 text-primary",
-    );
+    renderAccountHomeVerification(profile, []);
 
     if (accountHomeNextCopy) {
       accountHomeNextCopy.textContent = verified
@@ -680,6 +769,18 @@
         : "Verify ID and set coverage before accepting paid receiver work.";
     }
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
+    renderAccountHomeVerification(profile, verifications);
+    if (accountHomeNextCopy) {
+      const latestRequest = latestVerificationRequest(verifications);
+      const verified = accountIsVerified(profile, latestRequest);
+      accountHomeNextCopy.textContent = verified
+        ? "ID is approved. Payment, proof, corridor rules, and receiver vetting still apply per job."
+        : latestRequest?.provider_link
+          ? "Open the provider check to finish ID, document, and selfie/liveness steps."
+          : latestRequest
+            ? "Verification is queued. Watch for the provider link or provider result before paid actions unlock."
+            : "Create your account profile, then request verification when you are ready to transact.";
+    }
     renderReceiverApplications(applications, jobs);
   }
 
@@ -983,7 +1084,10 @@
             provider: safeProvider(field("#account-verification-provider")?.value, "sumsub"),
             user_notes: field("#account-verification-notes")?.value || "",
           });
-          setVerificationStatus("Verification request saved. Swadakta will show the provider check or provider instructions when ready.", "text-primary");
+          setVerificationStatus(
+            "Verification request saved. Your account stays open while the provider route prepares; paid posting and receiver work unlock only after provider evidence is verified.",
+            "text-primary",
+          );
         } else {
           setVerificationStatus("Profile saved.", "text-primary");
         }
