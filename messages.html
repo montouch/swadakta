@@ -40,6 +40,12 @@
         <p class="text-on-surface-variant mt-4 max-w-3xl">
           This is the controlled communication hub for active jobs. The production room will attach to a request code and allow client, receiver, AI, and admin-safe messages with proof uploads.
         </p>
+        <div class="mt-6 rounded-2xl bg-white/70 border border-outline-variant/40 p-5 hidden" id="message-context-card">
+          <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Linked request</p>
+          <h2 class="font-display text-2xl font-bold mt-2" id="message-request-code">Request code</h2>
+          <p class="text-on-surface-variant mt-2" id="message-contact-copy">This job room is connected to the contact used on the brief.</p>
+          <a class="inline-flex h-11 mt-4 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="message-tracking-link" href="tracking.html">Back to tracking</a>
+        </div>
         <div class="mt-8 grid gap-4 md:grid-cols-2">
           <article class="rounded-2xl bg-white/70 border border-outline-variant/40 p-5">
             <span class="material-symbols-outlined text-primary text-3xl">chat</span>
@@ -68,5 +74,6 @@
         </div>
       </section>
     </main>
+    <script src="messages.js?v=1"></script>
   </body>
 </html>

@@ -6,6 +6,8 @@
   const title = document.querySelector("#tracking-title");
   const codeLabel = document.querySelector("#tracking-code-label");
   const assignee = document.querySelector("#tracking-assignee");
+  const messageLink = document.querySelector("#tracking-message-link");
+  const jobRoomLink = document.querySelector("#tracking-job-room-link");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -20,6 +22,15 @@
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
   }
 
+  function updateJobRoomLinks(code = codeInput.value.trim(), contact = contactInput.value.trim()) {
+    const url = new URL("messages.html", window.location.href);
+    if (code) url.searchParams.set("code", code.toUpperCase());
+    if (contact) url.searchParams.set("contact", contact);
+    const href = `${url.pathname}${url.search}`;
+    if (messageLink) messageLink.href = href;
+    if (jobRoomLink) jobRoomLink.href = href;
+  }
+
   function renderRequest(request) {
     if (!request) {
       setResult("No matching request found. Check the code and contact used on the original brief.", "text-error");
@@ -27,6 +38,7 @@
     }
 
     const code = request.request_code || codeInput.value.trim().toUpperCase();
+    updateJobRoomLinks(code, contactInput.value.trim());
     const task = request.task_location || request.kenya_location || request.destination_country || "Global corridor request";
     const status = formatStatus(request.status);
     const payment = formatStatus(request.payment_status || request.funds_status || "not_collected");
@@ -60,5 +72,6 @@
   const params = new URLSearchParams(window.location.search);
   if (params.get("code")) codeInput.value = params.get("code");
   if (params.get("contact")) contactInput.value = params.get("contact");
+  updateJobRoomLinks();
   if (codeInput.value && contactInput.value) lookup();
 })();

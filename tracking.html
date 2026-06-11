@@ -152,14 +152,14 @@
 <p class="text-on-surface-variant font-body-md" id="tracking-assignee">Payment, proof, milestones, and receiver updates appear after lookup.</p>
 </div>
 <div class="flex gap-4">
-<button class="glass-panel px-6 py-3 rounded-xl font-label-md flex items-center gap-2 hover:bg-white transition-all">
+<a class="glass-panel px-6 py-3 rounded-xl font-label-md flex items-center gap-2 hover:bg-white transition-all" id="tracking-message-link" href="messages.html">
 <span class="material-symbols-outlined text-[20px]">support_agent</span>
                     Request update
-                </button>
-<button class="bg-primary text-white px-8 py-3 rounded-xl font-label-md shadow-xl hover:shadow-primary/20 transition-all flex items-center gap-2">
+                </a>
+<a class="bg-primary text-white px-8 py-3 rounded-xl font-label-md shadow-xl hover:shadow-primary/20 transition-all flex items-center gap-2" id="tracking-payment-link" href="#payment-state">
 <span class="material-symbols-outlined text-[20px]">verified</span>
                     View payment status
-</button>
+</a>
 </div>
 </div>
 <form class="glass-panel p-6 rounded-3xl mb-12 grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-4 items-end" id="tracking-form">
@@ -223,7 +223,7 @@
 <!-- Details Grid: Quote & Milestones -->
 <div class="lg:col-span-2 space-y-8">
 <!-- Details Card -->
-<div class="glass-panel p-8 rounded-3xl">
+<div class="glass-panel p-8 rounded-3xl" id="payment-state">
 <h3 class="font-headline-sm mb-6 flex items-center gap-2">
 <span class="material-symbols-outlined text-primary">payments</span>
                         Quote &amp; Payment State
@@ -322,24 +322,25 @@
                         Media &amp; Reports
                     </h3>
 <div class="grid grid-cols-2 gap-4">
-<div class="relative aspect-square rounded-2xl overflow-hidden border border-white/40 shadow-inner group">
-<img class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" data-alt="A high-resolution professional photograph of a luxury real estate development project at sunset. The image shows sleek, modern architecture with glass facades reflecting the golden sky. The lighting is soft and cinematic, emphasizing clean lines and premium materials. This creates a professional and trustworthy visual for asset verification services." src="https://lh3.googleusercontent.com/aida-public/AB6AXuC0gMYOQYXnPmyPAsKJed9hHQv7w9jA5geb8-R6MeGFrvur2xVeG6fDQbSd23i3dKyPzPyQhFMpmFcQ4MpTakInDyriKoH5WXCHEYYSz1yoOPeBWHjL0ua9w0eS2G5oZbt98O2RuRIfOEDIm_XB4r6JIrE0aYpd7Y9Up1-Hb2U-GKKrxTJoHaGvRJxi0UMnEeZeeA9T3kCquRwIkJAYk7nshQremIcKYEBPof0JxmSaf52FrExPQCFbBfIikQ1wvQhQ74Sm4A0bWeoA"/>
-<div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
+<div class="aspect-square rounded-2xl border border-white/40 shadow-inner bg-surface-container-high flex flex-col items-center justify-center text-center p-4">
+<span class="material-symbols-outlined text-primary text-4xl">photo_camera</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter mt-2">Photos</span>
+<small class="text-on-surface-variant mt-1">After lookup</small>
 </div>
-<div class="relative aspect-square rounded-2xl overflow-hidden border border-white/40 shadow-inner group">
-<img class="object-cover w-full h-full group-hover:scale-110 transition-transform duration-500" data-alt="A detailed aerial drone view of an urban construction site with scaffolding and structural foundations visible. The lighting is clear, daylight high-key style, showcasing transparency and progress. The overall color palette is dominated by neutral greys and clean whites, aligning with a high-end corporate concierge aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD_O4qSfvt6WV0U5nYewEIZVXi45G-gziVOPJWk62scBbWzsrQEBQ2RghAgFBTELpILPAXXNIYHLRscoLip-7DQUthK_5WstVIA0AE1Z04AkR5tUQWS2N0ekrOuDBdjI1TdU6si2WVqet308g5KDdoykrscpf8Sh9UBZKa6p4HOmdOSc4KXOkyewfSba4S8n96lYzUCItSxObBBYtliKlAaRjTWgtUPvFnQI3HIpEihHzk-L5kLMrs1M5lnNNaKo1x-ydfDETQryv4E"/>
-<div class="absolute inset-0 bg-black/20 group-hover:bg-black/0 transition-colors"></div>
+<div class="aspect-square rounded-2xl border border-white/40 shadow-inner bg-surface-container-high flex flex-col items-center justify-center text-center p-4">
+<span class="material-symbols-outlined text-primary text-4xl">videocam</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter mt-2">Video / voice</span>
+<small class="text-on-surface-variant mt-1">Job room</small>
 </div>
-<div class="relative aspect-square rounded-2xl overflow-hidden border border-white/40 shadow-inner group flex items-center justify-center bg-surface-container-high">
-<div class="text-center">
-<span class="material-symbols-outlined text-primary block mb-1">picture_as_pdf</span>
-<span class="text-[10px] font-bold uppercase tracking-tighter">Proof_Pack.pdf</span>
+<div class="aspect-square rounded-2xl border border-white/40 shadow-inner bg-surface-container-high flex flex-col items-center justify-center text-center p-4">
+<span class="material-symbols-outlined text-primary text-4xl">picture_as_pdf</span>
+<span class="text-[10px] font-bold uppercase tracking-tighter mt-2">Documents</span>
+<small class="text-on-surface-variant mt-1">Proof pack</small>
 </div>
-</div>
-<button class="relative aspect-square rounded-2xl overflow-hidden border border-dashed border-outline-variant hover:bg-white/50 transition-colors flex flex-col items-center justify-center gap-2">
+<a class="aspect-square rounded-2xl overflow-hidden border border-dashed border-outline-variant hover:bg-white/50 transition-colors flex flex-col items-center justify-center gap-2 text-center" id="tracking-job-room-link" href="messages.html">
 <span class="material-symbols-outlined text-outline">add_circle</span>
-<span class="text-[10px] font-bold">ADD NEW</span>
-</button>
+<span class="text-[10px] font-bold">OPEN JOB ROOM</span>
+</a>
 </div>
 </div>
 <!-- Review Section (Disabled) -->
@@ -380,5 +381,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=38"></script>
-<script src="stitch-tracking.js?v=2"></script>
+<script src="stitch-tracking.js?v=3"></script>
 </body></html>
