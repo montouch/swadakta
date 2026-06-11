@@ -37,3 +37,5 @@ Then open:
 ## Go live
 
 See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, admin, Vercel, payments, domain, and pilot launch checklist.
+
+See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, Wise, and bank-transfer launch workflow.
