@@ -65,9 +65,10 @@ The target operating model is 90/10: AI/autopilot should complete most routine b
 Autopilot-safe actions:
 
 - Classify active, pilot, unsupported, and blocked lanes.
-- Generate or prepare non-sending payment requests for Stripe, PayPal, or Wise when the quote and client preference support it.
+- Generate or prepare non-sending payment requests for Stripe and PayPal when the quote and client preference support it; keep Wise as a hidden admin fallback after simpler rails fail or do not fit.
 - Set quote due dates, routine release-condition wording, self-service status, and founder-review flags.
 - Draft client messages, receiver briefs, missing-information asks, proof-review summaries, and receipt-reconciliation checklists.
+- Check pasted Wise/bank receipt or statement text against quote amount, currency, request code, provider reference, payer, and date, then save a draft note for founder review.
 - Save internal notes explaining what it did and why a protected decision is still needed.
 
 Protected actions:
@@ -160,7 +161,8 @@ Launch rails:
 
 - Stripe for card payments in supported currencies.
 - PayPal for invoice/order flow where clients prefer it.
-- Wise or bank transfer for international transfers where settlement and receipt trails are clearer.
+- Bank transfer for international transfers where settlement and receipt trails are clearer.
+- Wise only as an admin fallback when Stripe, PayPal, M-Pesa, or normal bank transfer is unsuitable or has failed.
 - M-Pesa through Safaricom Daraja for KES collection after business PayBill/Till, API credentials, and callback configuration are ready.
 
 Milestone release rule:

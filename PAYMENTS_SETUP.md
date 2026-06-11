@@ -8,9 +8,9 @@ Swadakta should stay quote-first at launch. Each request can vary by travel, acc
 
 1. Stripe Payment Links for card payments and deposits.
 2. PayPal invoices for clients who prefer PayPal or need a familiar invoice workflow.
-3. Wise Business payment links or account details for international transfers where card fees or currency conversion matter.
-4. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
-5. Bank transfer or manual payment references only when the client and operator have a clear receipt trail.
+3. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
+4. Bank transfer or manual payment references only when the client and operator have a clear receipt trail.
+5. Wise Business payment links or account details only as an admin fallback when Stripe, PayPal, M-Pesa, or normal bank transfer is unsuitable or has failed.
 6. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
 
 ## Funds Protection and Milestones
@@ -177,7 +177,7 @@ PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` qu
 
 ## Wise
 
-Use Wise when a diaspora client wants international transfer, local account details, or lower-friction multi-currency handling. Wise documents Business payment links and payment requests:
+Use Wise only as a back-office fallback when the lower-labour options fail or do not fit the client: Stripe card checkout, PayPal order/invoice, M-Pesa for KES, or normal bank transfer. Do not present Wise as a normal public payment preference because it adds manual reconciliation work. Wise documents Business payment links and payment requests:
 
 - https://wise.com/help/articles/4qr3kkvIQlHNiD8BegEB4u/getting-paid-to-your-wise-business-by-payment-link
 - https://wise.com/us/business/receive-money
@@ -187,7 +187,7 @@ Wise's public API does not create Wise payment links for online checkout. Wise's
 - https://docs.wise.com/guides/product/partner/business-account-support
 - https://docs.wise.com/api-reference/balance-statement
 
-Swadakta therefore uses Wise as a prepared payment-request/reference rail:
+Swadakta therefore uses Wise as a prepared fallback payment-request/reference rail:
 
 - `POST /api/payments/wise-payment-request`
 
@@ -196,7 +196,7 @@ The endpoint:
 - Requires a signed-in Supabase admin session.
 - Verifies the user exists in `admin_users`.
 - Requires a positive quote amount.
-- Uses a Wise Business payment link or receive-details URL configured in Vercel.
+- Uses a Wise Business payment link or receive-details URL configured in Vercel only when admin intentionally opens the fallback route.
 - Generates a Swadakta Wise provider reference such as `WISE-SW-123ABC-20260611190000`.
 - Sets the admin form to `Payment: Invoice sent` and `Funds: Payment link sent`.
 - Copies a client-ready Wise message with amount, link, and reference.
@@ -217,20 +217,21 @@ Admin workflow:
 1. Create or reuse a Wise Business payment link in Wise.
 2. Add that link to Vercel as `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`.
 3. Quote the request in an allowed Wise settlement currency.
-4. Click `Prepare Wise request`.
+4. In admin, click `Fallback Wise request` only if the request is already on a bank/manual-transfer fallback route or is a legacy Wise request.
 5. Review the payment link and provider reference populated in admin.
 6. Click `Save update`.
 7. Send the copied Wise message to the client.
 8. Mark funds paid only after a Wise receipt, statement line, or bank-side confirmation matches the amount, sender, date, and Swadakta reference.
 
-Use Wise for larger site visits, supplier deposits, monthly retainers, or cross-border clients who prefer bank-style settlement. Use Stripe or PayPal when the client needs card checkout, and M-Pesa for KES phone-prompt collections.
+Use Wise for larger site visits, supplier deposits, monthly retainers, or cross-border clients only when the normal rails are a bad fit. Use Stripe or PayPal when the client can pay through checkout, M-Pesa for KES phone-prompt collections, and bank transfer when a normal receipt trail is simpler.
 
 AI boundary:
 
-- AI can recommend Wise as the payment route when card checkout is not ideal.
-- AI can prepare the Wise client message and reconciliation checklist.
+- AI can recommend Wise only as a fallback after simpler rails are unsuitable, unavailable, failed, or too costly for the specific job.
+- After admin intentionally invokes the fallback, AI can help prepare the Wise client message and reconciliation checklist.
 - AI can compare uploaded receipt text against the request amount, currency, payer, date, and Swadakta reference once file upload/receipt parsing exists.
-- AI/autopilot can save the Wise link/reference as `Invoice sent` and write internal reconciliation notes.
+- The admin fallback workflow can save the Wise link/reference as `Invoice sent` and write internal reconciliation notes.
+- Admin can click `AI receipt check`, paste Wise/bank receipt or statement text, and let the system draft matched/missing/suspicious evidence into release notes.
 - AI cannot mark Wise funds as paid, assign a receiver because of a Wise receipt, or release any milestone without provider-grade evidence or founder approval.
 - Wise payment status should stay `Invoice sent` / `Payment link sent` until a receipt, statement line, or bank-side confirmation has been reviewed.
 
@@ -317,6 +318,7 @@ Future Kenya payment work:
 - Treat client payment confirmation and receiver payout release as separate protected decisions.
 - Require founder review before any milestone release involving high-value goods, unsupported corridors, customs uncertainty, identity mismatch, or a dispute.
 - Keep payment links HTTP/HTTPS only; Supabase rejects unsafe links.
+- Use `AI receipt check` for Wise or bank-transfer evidence, then review the drafted note against the original secure receipt/statement before changing payment status.
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
 - Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.
 - Record operator payout, field costs, and payment fees in admin before marking a job profitable; the founder margin should stay visible on every quoted request.

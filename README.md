@@ -40,13 +40,14 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Stripe webhook payment confirmation that updates request payment state without releasing funds
 - Admin-only PayPal order generation through a Vercel Function
 - Admin-only PayPal capture that confirms paid funds without releasing receiver payouts
-- Admin-only Wise payment request preparation for international transfer links and references
+- Admin-only Wise fallback request preparation for cases where card, PayPal, M-Pesa, or normal bank transfer is unsuitable
 - Wise payment references stay invoice-sent until receipt or statement reconciliation confirms cleared funds
 - Admin-only M-Pesa STK Push for KES collections through Safaricom Daraja
 - M-Pesa callback confirmation that records receipts without releasing receiver payouts
 - Guarded Swadakta Ops AI through Supabase Edge Function plus Vercel Function fallback
 - Founder-only AI operations drafts with protected-action guardrails for funds, ID, receiver assignment, cross-border compliance, and external messages
 - Safe autopilot action in admin for routine triage, payment-request prep, quote readiness, due dates, proof checklists, and internal notes
+- AI receipt check for Wise/bank-transfer evidence that writes an internal reconciliation note without changing money status
 - 90/10 operations boundary: AI/autopilot handles routine work, founder/admin approves protected money, identity, assignment, legal/customs, dispute, and outbound-message decisions
 - Autopilot route classification for active lanes, pilot lanes, unsupported corridors, physical-item logistics, and founder escalation
 - Client and receiver portals show client-safe required checks and proof requirements so delivery expectations are visible
@@ -79,6 +80,6 @@ Then open:
 
 See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the Supabase, founder console, Vercel, payments, domain, corridor, and pilot launch checklist.
 
-See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, Wise, M-Pesa, and bank-transfer launch workflow.
+See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, M-Pesa, bank-transfer, and Wise fallback launch workflow.
 
 See [IDENTITY_VERIFICATION.md](IDENTITY_VERIFICATION.md) for the Smile ID-first Africa verification workflow plus wider global verification options.

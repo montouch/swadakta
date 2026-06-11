@@ -79,7 +79,7 @@ const paymentMethodLabels = {
   discuss: "Recommend after quote",
   card: "Card or Stripe link",
   paypal: "PayPal invoice or link",
-  wise: "Wise transfer",
+  wise: "Wise fallback transfer",
   mpesa: "M-Pesa STK or Paybill",
   bank: "Bank transfer or manual receipt",
 };

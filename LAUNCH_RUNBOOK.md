@@ -43,16 +43,16 @@ Start with quote-based payment links, then automate later.
   - Business operations support retainer
 - Keep custom quote jobs as one-off payment links until pricing stabilizes.
 - Add PayPal Business as a backup option for clients who prefer PayPal or cards through PayPal. PayPal's Kenya business page describes online payments for businesses: https://www.paypal.com/ke/business
-- Keep Wise or bank transfer available for clients who need local transfer rails.
+- Keep bank transfer available for clients who need transfer rails; keep Wise hidden as an admin fallback after simpler payment routes are unsuitable or fail.
 - Never request card numbers through WhatsApp, email, or the intake form.
 - In admin, paste the final payment URL into the request's payment link field before sending the client update.
-- For Wise, create or reuse the Wise Business payment link in Wise, add it to Vercel as `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`, then use the admin `Prepare Wise request` button. AI may draft the Wise message and reconciliation checklist, but it must not mark Wise funds paid or release milestones.
+- For Wise fallback, create or reuse the Wise Business payment link in Wise, add it to Vercel as `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`, then use the admin `Fallback Wise request` button only on manual-transfer fallback jobs. AI may draft the Wise message and reconciliation checklist, but it must not mark Wise funds paid or release milestones.
 
 Automation later:
 
 - Configure `STRIPE_SECRET_KEY` and `PUBLIC_BASE_URL` in Vercel, then use the admin `Generate Stripe checkout` button for quoted `AUD`, `USD`, `GBP`, and `EUR` jobs.
 - Configure `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and optionally `PAYPAL_ENVIRONMENT`, then use the admin `Generate PayPal order` and `Capture PayPal order` buttons when PayPal is the better client payment route.
-- Configure `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`, then use the admin `Prepare Wise request` button for international transfer clients.
+- Configure `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`, then use the admin `Fallback Wise request` button only when other payment routes are not suitable.
 - Configure Stripe to send successful Checkout events to `https://swadakta.com/api/payments/stripe-webhook`, with `STRIPE_WEBHOOK_SECRET` and a server-only Supabase key stored in Vercel.
 - Store provider transaction IDs on the request record after payment confirmation.
 
@@ -125,6 +125,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Admin tracks protected funds, provider references, and milestone releases before paying receivers.
 - Wise and bank-transfer receipts require receipt/statement review before the admin marks funds paid; AI can draft the checklist but cannot make the protected money decision.
 - Use `Run safe autopilot` on request cards for routine admin work. It may prepare supported payment requests, save internal notes, set due dates, and route low-risk active-lane work forward; it still pauses at money confirmation, ID approval, receiver assignment, compliance/legal uncertainty, outbound messages, and milestone release.
+- Use `AI receipt check` after a Wise/bank-transfer receipt is received. Paste the receipt or statement text, review the drafted evidence checklist, save the request, then change payment status only after founder/admin verification.
 - ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
 - Smile ID is the default Africa verification provider; Persona, Sumsub, or Stripe Identity can cover wider global verification after provider setup.
 - M-Pesa/Daraja is now represented in the app as a Kenya payment rail; use sandbox/test mode until the business PayBill/Till/API access and callback URLs are approved for live collection.

@@ -51,7 +51,7 @@ const paymentMethodLabels = {
   discuss: "Recommend after quote",
   card: "Card or Stripe link",
   paypal: "PayPal invoice or link",
-  wise: "Wise transfer",
+  wise: "Wise fallback transfer",
   mpesa: "M-Pesa STK or Paybill",
   bank: "Bank transfer or manual receipt",
 };
@@ -684,6 +684,19 @@ function isClosedRequest(request) {
 
 function isPaymentOpen(request) {
   return !["deposit_paid", "paid", "refunded"].includes(request.payment_status);
+}
+
+function isManualTransferFallback(request) {
+  const preference = String(request.payment_method_preference || "").toLowerCase();
+  const reference = String(request.payment_reference || "").toLowerCase();
+  const link = String(request.payment_link || "").toLowerCase();
+
+  return (
+    preference === "bank" ||
+    preference === "wise" ||
+    reference.includes("wise-") ||
+    link.includes("wise.com")
+  );
 }
 
 function isPaymentOverdue(request) {
@@ -1802,6 +1815,13 @@ function renderRequestCardV2(request) {
   const clientReview = request.client_review_score
     ? `${request.client_review_score}/5${request.client_review_note ? ` - ${request.client_review_note}` : ""}`
     : "Not reviewed";
+  const manualTransferFallback = isManualTransferFallback(request);
+  const manualTransferActions = manualTransferFallback
+    ? `
+          <button class="button button-secondary create-wise-request" type="button">Fallback Wise request</button>
+          <button class="button button-secondary reconcile-payment-receipt" type="button">AI receipt check</button>
+        `
+    : "";
 
   return `
     <article class="request-card" data-id="${escapeHtml(request.id)}">
@@ -2072,7 +2092,7 @@ function renderRequestCardV2(request) {
           <button class="button button-secondary run-safe-autopilot" type="button">Run safe autopilot</button>
           <button class="button button-secondary create-stripe-checkout" type="button">Generate Stripe checkout</button>
           <button class="button button-secondary create-paypal-order" type="button">Generate PayPal order</button>
-          <button class="button button-secondary create-wise-request" type="button">Prepare Wise request</button>
+          ${manualTransferActions}
           <button class="button button-secondary capture-paypal-order" type="button">Capture PayPal order</button>
           <button class="button button-secondary create-mpesa-stk" type="button">Send M-Pesa STK</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
@@ -2829,6 +2849,118 @@ function appendAutopilotNote(existing, lines) {
   return [String(existing || "").trim(), block].filter(Boolean).join("\n\n");
 }
 
+function appendInternalAuditBlock(existing, title, body) {
+  const stamp = new Intl.DateTimeFormat("en-AU", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date());
+  const block = [`[${title} ${stamp}]`, String(body || "").trim()].filter(Boolean).join("\n");
+
+  return [String(existing || "").trim(), block].filter(Boolean).join("\n\n");
+}
+
+function normalizedEvidenceText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9.]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function compactEvidenceKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function amountEvidenceNeedles(amount) {
+  const numeric = Number(amount || 0);
+  if (!Number.isFinite(numeric) || numeric <= 0) {
+    return [];
+  }
+
+  const rounded = Math.round(numeric);
+  return [
+    String(rounded),
+    numeric.toFixed(2),
+    new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(rounded),
+    new Intl.NumberFormat("en-AU", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(numeric),
+  ].map(compactEvidenceKey);
+}
+
+function evidenceIncludesAny(compactText, values) {
+  return values.some((value) => {
+    const key = compactEvidenceKey(value);
+    return key && compactText.includes(key);
+  });
+}
+
+function buildDeterministicReceiptCheck(request, payload, receiptText, aiError = "") {
+  const compactText = compactEvidenceKey(receiptText);
+  const readableText = normalizedEvidenceText(receiptText);
+  const amountNeedles = amountEvidenceNeedles(payload.quote_amount);
+  const checks = [
+    {
+      label: "Request code",
+      passed: evidenceIncludesAny(compactText, [request.request_code]),
+      detail: request.request_code || "not set",
+    },
+    {
+      label: "Provider reference",
+      passed: payload.payment_reference
+        ? evidenceIncludesAny(compactText, [payload.payment_reference])
+        : false,
+      detail: payload.payment_reference || "not set",
+    },
+    {
+      label: "Currency",
+      passed: payload.quote_currency ? readableText.includes(String(payload.quote_currency).toLowerCase()) : false,
+      detail: payload.quote_currency || "not set",
+    },
+    {
+      label: "Amount",
+      passed: amountNeedles.length ? amountNeedles.some((needle) => compactText.includes(needle)) : false,
+      detail: payload.quote_amount ? formatMoney(payload.quote_amount, payload.quote_currency) : "not quoted",
+    },
+    {
+      label: "Client/sender name",
+      passed: evidenceIncludesAny(compactText, [request.client_name, request.email]),
+      detail: request.client_name || request.email || "not set",
+    },
+    {
+      label: "Dated evidence",
+      passed: /\b20\d{2}\b|\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b/.test(readableText),
+      detail: "receipt or statement date visible",
+    },
+  ];
+  const matched = checks.filter((check) => check.passed);
+  const missing = checks.filter((check) => !check.passed);
+  const criticalMatches = checks
+    .filter((check) => ["Request code", "Provider reference", "Currency", "Amount"].includes(check.label))
+    .filter((check) => check.passed).length;
+  const verdict =
+    criticalMatches >= 3
+      ? "Likely match, but founder/admin must still verify against Wise/bank statement before marking paid."
+      : "Needs review; do not mark paid until the missing evidence is resolved.";
+
+  return [
+    "Receipt reconciliation draft",
+    `Verdict: ${verdict}`,
+    aiError ? `AI service fallback: ${aiError}` : "",
+    "",
+    "Matched evidence:",
+    ...(matched.length ? matched.map((check) => `- ${check.label}: ${check.detail}`) : ["- None"]),
+    "",
+    "Missing or unclear evidence:",
+    ...(missing.length ? missing.map((check) => `- ${check.label}: expected ${check.detail}`) : ["- None"]),
+    "",
+    "Founder approval required: marking payment paid, setting protected funds, assigning a receiver based on this receipt, or releasing any milestone.",
+    "Store the receipt screenshot, Wise PDF, or bank statement line as a secure proof link before changing money status.",
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+}
+
 function isRoutineAutopilotClearable(request, payload) {
   const riskyGoods = !["none", "general_goods", "clothing_household"].includes(payload.goods_category);
   const riskyLogistics = ["postal_courier", "airport_handoff"].includes(payload.logistics_mode);
@@ -2952,9 +3084,7 @@ async function prepareAutopilotPaymentRoute(request, form, payload, notes) {
   }
 
   if (method === "wise") {
-    const result = await window.SwadaktaData.createWisePaymentRequest(request, payload);
-    clientMessage = applyWisePaymentRequestResult(form, result);
-    notes.push("Prepared a Wise payment request and kept funds as unconfirmed.");
+    notes.push("Left Wise as an intentional admin fallback; use it only after Stripe, PayPal, M-Pesa, or bank transfer is unsuitable or has failed.");
     return clientMessage;
   }
 
@@ -2996,6 +3126,72 @@ async function runSafeAutopilot(request, form, statusElement) {
 
   statusElement.textContent = `Autopilot saved ${Math.max(notes.length, 1)} safe action${notes.length === 1 ? "" : "s"}. Protected decisions still need founder/admin approval.`;
   await loadRequests();
+}
+
+async function reconcilePaymentReceipt(request, form, statusElement) {
+  const payload = formPayload(form);
+
+  if (!payload.quote_amount) {
+    statusElement.textContent = "Add a quote amount before checking receipt evidence.";
+    return;
+  }
+
+  const receiptText = window.prompt(
+    "Paste Wise/bank receipt text or statement line. Do not paste card numbers, passwords, PINs, or one-time codes.",
+  );
+
+  if (!receiptText) {
+    statusElement.textContent = "Receipt check cancelled.";
+    return;
+  }
+
+  statusElement.textContent = "Checking receipt evidence...";
+
+  const context = {
+    protected_action_boundary:
+      "Draft only. Do not mark paid, set protected funds, assign a receiver, or release/refund money.",
+    request_code: request.request_code,
+    client_name: request.client_name,
+    email: request.email,
+    payment_method_preference: request.payment_method_preference,
+    quote_amount: payload.quote_amount,
+    quote_currency: payload.quote_currency,
+    payment_status: payload.payment_status,
+    funds_status: payload.funds_status,
+    payment_reference: payload.payment_reference,
+    payment_link: payload.payment_link,
+    proof_links: payload.proof_links,
+    release_notes: payload.release_notes,
+  };
+
+  let output = "";
+  try {
+    const result = await window.SwadaktaData.assist({
+      role: "admin",
+      task:
+        "Reconcile this Wise or bank-transfer receipt/statement evidence against the Swadakta request. Return a concise checklist of matched, missing, and suspicious fields. End with Founder approval required for any paid status or release decision.",
+      draft: receiptText,
+      context,
+    });
+    output = result.data?.output || "";
+  } catch (error) {
+    output = buildDeterministicReceiptCheck(request, payload, receiptText, error.message || "AI unavailable.");
+  }
+
+  if (!output) {
+    output = buildDeterministicReceiptCheck(request, payload, receiptText, "AI returned no text.");
+  }
+
+  const releaseNotesInput = form.querySelector('[name="release_notes"]');
+  if (releaseNotesInput) {
+    releaseNotesInput.value = appendInternalAuditBlock(
+      payload.release_notes,
+      "Receipt check",
+      `${output}\n\nNo money status was changed by this check.`,
+    );
+  }
+
+  statusElement.textContent = "Receipt check added to release notes. Review before saving.";
 }
 
 function applyMpesaStkResult(form, result) {
@@ -3542,6 +3738,25 @@ requestBoard.addEventListener("click", async (event) => {
       await generateWisePaymentRequest(request, form, statusElement);
     } catch (error) {
       statusElement.textContent = error.message || "Wise request prep failed.";
+    }
+    return;
+  }
+
+  const receiptButton = event.target.closest(".reconcile-payment-receipt");
+  if (receiptButton) {
+    const form = receiptButton.closest(".request-update-form");
+    const card = receiptButton.closest(".request-card");
+    const request = getRequestByCard(card);
+    const statusElement = form.querySelector(".copy-status");
+
+    if (!request) {
+      return;
+    }
+
+    try {
+      await reconcilePaymentReceipt(request, form, statusElement);
+    } catch (error) {
+      statusElement.textContent = error.message || "Receipt check failed.";
     }
     return;
   }
