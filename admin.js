@@ -101,6 +101,48 @@ function formatCurrency(amount, currency = "AUD") {
   return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(amount)}`;
 }
 
+function toMoneyNumber(value) {
+  const number = Number(value || 0);
+  return Number.isFinite(number) && number > 0 ? number : 0;
+}
+
+function formatMoney(amount, currency = "AUD") {
+  return `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(toMoneyNumber(amount))}`;
+}
+
+function calculateFounderMargin(source) {
+  const revenue = toMoneyNumber(source.quote_amount);
+  const directCosts =
+    toMoneyNumber(source.operator_payout) +
+    toMoneyNumber(source.field_costs) +
+    toMoneyNumber(source.payment_processing_fee);
+  const amount = revenue - directCosts;
+  const percent = revenue ? Math.round((amount / revenue) * 100) : null;
+
+  return { amount, directCosts, percent, revenue };
+}
+
+function formatFounderMargin(source) {
+  const currency = source.quote_currency || source.preferred_currency || "AUD";
+  const margin = calculateFounderMargin(source);
+
+  if (!margin.revenue) {
+    return "Add quote";
+  }
+
+  const amount = `${currency} ${new Intl.NumberFormat("en-AU", { maximumFractionDigits: 0 }).format(margin.amount)}`;
+  const label =
+    margin.percent < 0
+      ? "loss"
+      : margin.percent < 30
+        ? "low"
+        : margin.percent < 50
+          ? "watch"
+          : "strong";
+
+  return `${amount} (${margin.percent}% ${label})`;
+}
+
 function formatConsentStatus(request) {
   const hasConsent =
     request.contact_permission &&
@@ -181,6 +223,9 @@ function getFilteredRequests() {
       budgetRangeLabels[request.budget_range] || request.budget_range,
       proofPriorityLabels[request.proof_priority] || request.proof_priority,
       referralSourceLabels[request.referral_source] || request.referral_source,
+      request.operator_payout,
+      request.field_costs,
+      request.payment_processing_fee,
       Array.isArray(request.supporting_links) ? request.supporting_links.join(" ") : "",
       request.notes,
     ]
@@ -213,6 +258,10 @@ function updateMetrics() {
     return dueDate >= today && dueDate <= soon;
   }).length;
   document.querySelector("#metric-sensitive").textContent = requests.filter((item) => item.sensitive_documents_expected).length;
+  document.querySelector("#metric-margin-risk").textContent = requests.filter((item) => {
+    const margin = calculateFounderMargin(item);
+    return margin.revenue > 0 && margin.percent < 30;
+  }).length;
   document.querySelector("#metric-completed").textContent = requests.filter((item) => item.status === "completed").length;
 }
 
@@ -309,6 +358,7 @@ function renderRequestCardV2(request) {
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
   const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
   const referralSource = referralSourceLabels[request.referral_source] || request.referral_source || "Not sure";
+  const founderMargin = formatFounderMargin(request);
   const consentStatus = formatConsentStatus(request);
   const contactPreference = request.contact_preference || "whatsapp";
   const sensitiveDocuments = request.sensitive_documents_expected ? "Yes" : "No";
@@ -342,6 +392,7 @@ function renderRequestCardV2(request) {
         <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
         <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>
         <div><dt>Quote</dt><dd>${escapeHtml(formatCurrency(request.quote_amount, quoteCurrency))}</dd></div>
+        <div><dt>Founder margin</dt><dd>${escapeHtml(founderMargin)}</dd></div>
         <div><dt>Payment due</dt><dd>${escapeHtml(request.payment_due_at || "Not set")}</dd></div>
         <div><dt>Consent</dt><dd>${escapeHtml(consentStatus)}</dd></div>
         <div><dt>Created</dt><dd>${formatDate(request.created_at)}</dd></div>
@@ -379,6 +430,20 @@ function renderRequestCardV2(request) {
           <label class="field-group">
             Payment due
             <input name="payment_due_at" type="date" value="${escapeHtml(request.payment_due_at || "")}" />
+          </label>
+        </div>
+        <div class="field-row">
+          <label class="field-group">
+            Operator payout
+            <input name="operator_payout" type="number" min="0" step="1" value="${escapeHtml(request.operator_payout || "")}" placeholder="Same currency as quote" />
+          </label>
+          <label class="field-group">
+            Field costs
+            <input name="field_costs" type="number" min="0" step="1" value="${escapeHtml(request.field_costs || "")}" placeholder="Travel, fees, supplies" />
+          </label>
+          <label class="field-group">
+            Payment fees
+            <input name="payment_processing_fee" type="number" min="0" step="1" value="${escapeHtml(request.payment_processing_fee || "")}" placeholder="Processor or FX fees" />
           </label>
         </div>
         <label class="field-group">
@@ -490,6 +555,9 @@ function formPayload(form) {
     quote_currency: formData.get("quote_currency"),
     payment_link: safeHttpUrl(formData.get("payment_link")),
     payment_due_at: formData.get("payment_due_at") || null,
+    operator_payout: toMoneyNumber(formData.get("operator_payout")),
+    field_costs: toMoneyNumber(formData.get("field_costs")),
+    payment_processing_fee: toMoneyNumber(formData.get("payment_processing_fee")),
     client_report_url: safeHttpUrl(formData.get("client_report_url")),
     proof_links: proofLinks,
   };
@@ -580,6 +648,7 @@ function buildOperatorBrief(request, form) {
   const localContact = [request.local_contact_name, request.local_contact_phone].filter(Boolean).join(" / ") || "Not provided";
   const consentStatus = formatConsentStatus(request);
   const quoteLine = payload.quote_amount ? formatCurrency(payload.quote_amount, payload.quote_currency) : "Not quoted";
+  const founderMargin = formatFounderMargin(payload);
   const paymentMethod =
     paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Recommend after quote";
   const budgetRange = budgetRangeLabels[request.budget_range] || request.budget_range || "Not sure yet";
@@ -605,6 +674,7 @@ function buildOperatorBrief(request, form) {
     `Sensitive documents expected: ${request.sensitive_documents_expected ? "Yes" : "No"}`,
     `Report pack required: ${reports}`,
     `Quote: ${quoteLine}`,
+    `Founder economics: ${founderMargin}; operator payout ${formatMoney(payload.operator_payout, payload.quote_currency)}; field costs ${formatMoney(payload.field_costs, payload.quote_currency)}; payment fees ${formatMoney(payload.payment_processing_fee, payload.quote_currency)}.`,
     "",
     "Client notes:",
     request.notes || "No notes provided.",

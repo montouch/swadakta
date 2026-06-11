@@ -54,5 +54,6 @@ Use Wise for larger site visits, supplier deposits, or monthly retainers where b
 - Keep payment links HTTP/HTTPS only; Supabase rejects unsafe links.
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
 - Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.
+- Record operator payout, field costs, and payment fees in admin before marking a job profitable; the founder margin should stay visible on every quoted request.
 - Store receipts, payment screenshots, or processor confirmations in the proof/report pack, not in public tracking text.
 - For refunds, update `Payment` to `Refunded` and add a short internal note explaining the reason, amount, and date.

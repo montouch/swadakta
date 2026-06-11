@@ -64,13 +64,14 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 4. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
 6. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, and safety wording.
-7. Client pays through the agreed provider.
-8. Admin sets status to `paid` after confirmation.
-9. Admin copies the operator brief and sends it to the assigned Kenya-side operator.
-10. Kenya-side operator executes the task.
-11. Admin adds proof links, report URL, and final notes.
-12. Admin sets status to `completed`.
-13. Client tracks status with request code plus original email or WhatsApp.
+7. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
+8. Client pays through the agreed provider.
+9. Admin sets status to `paid` after confirmation.
+10. Admin copies the operator brief and sends it to the assigned Kenya-side operator.
+11. Kenya-side operator executes the task.
+12. Admin adds proof links, report URL, and final notes.
+13. Admin sets status to `completed`.
+14. Client tracks status with request code plus original email or WhatsApp.
 
 ## 5. Launch Readiness Checklist
 
@@ -79,6 +80,7 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures budget comfort, proof priority, and lead source for quoting and early marketing feedback.
+- Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin magic link works for `swadakta111@gmail.com`.
 - Stripe and PayPal accounts are created and verified.

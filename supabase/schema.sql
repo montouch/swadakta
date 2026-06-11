@@ -44,6 +44,9 @@ create table if not exists public.service_requests (
   quote_currency text not null default 'AUD',
   payment_link text,
   payment_due_at date,
+  operator_payout integer not null default 0,
+  field_costs integer not null default 0,
+  payment_processing_fee integer not null default 0,
   client_report_url text,
   proof_links text[] not null default array[]::text[],
   contact_permission boolean not null default false,
@@ -71,6 +74,9 @@ alter table public.service_requests add column if not exists quote_amount intege
 alter table public.service_requests add column if not exists quote_currency text not null default 'AUD';
 alter table public.service_requests add column if not exists payment_link text;
 alter table public.service_requests add column if not exists payment_due_at date;
+alter table public.service_requests add column if not exists operator_payout integer not null default 0;
+alter table public.service_requests add column if not exists field_costs integer not null default 0;
+alter table public.service_requests add column if not exists payment_processing_fee integer not null default 0;
 alter table public.service_requests add column if not exists client_report_url text;
 alter table public.service_requests add column if not exists proof_links text[] not null default array[]::text[];
 alter table public.service_requests add column if not exists contact_permission boolean not null default false;
@@ -145,6 +151,27 @@ begin
   ) then
     alter table public.service_requests
       add constraint service_requests_payment_link_check check (coalesce(payment_link, '') = '' or payment_link ~* '^https?://[^[:space:]]+$');
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_operator_payout_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_operator_payout_check check (operator_payout >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_field_costs_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_field_costs_check check (field_costs >= 0);
+  end if;
+
+  if not exists (
+    select 1 from pg_constraint where conname = 'service_requests_payment_processing_fee_check'
+  ) then
+    alter table public.service_requests
+      add constraint service_requests_payment_processing_fee_check check (payment_processing_fee >= 0);
   end if;
 
   if not exists (
@@ -328,6 +355,9 @@ grant update (
   quote_currency,
   payment_link,
   payment_due_at,
+  operator_payout,
+  field_costs,
+  payment_processing_fee,
   client_report_url,
   proof_links
 ) on public.service_requests to authenticated;
