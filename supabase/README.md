@@ -17,4 +17,8 @@ The schema creates:
   - only approved authenticated admins can read and update requests
 - private helper functions under `app_private`
 
-After running the schema, sign in once from `admin.html`, copy your user ID from Supabase Authentication, then run the commented `insert into public.admin_users` statement at the bottom of `schema.sql`.
+Admin activation:
+
+- Magic link sent to `swadakta111@gmail.com`.
+- Supabase auth user added to `public.admin_users` as `owner`.
+- Open the magic link from the inbox, then return to `admin.html`.

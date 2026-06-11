@@ -17,13 +17,12 @@ Completed:
 - Security advisors are clean.
 - Public client intake insert was verified with the publishable key.
 
-Admin activation still required:
+Admin activation status:
 
-1. Open `admin.html`.
-2. Send a magic link to `swadakta111@gmail.com`.
-3. Open the magic link in the same browser.
-4. In Supabase Authentication > Users, copy that user's UUID.
-5. Run the admin insert shown at the bottom of `supabase/schema.sql`, replacing the placeholder UUID.
+- Magic link sent to `swadakta111@gmail.com`.
+- Supabase auth user created.
+- Admin user added as `owner`.
+- Remaining step: open the magic link from the email inbox, then return to `admin.html`.
 
 Important: use the Supabase publishable key in the browser. Never put a secret/service-role key in `app-config.js`.
 
