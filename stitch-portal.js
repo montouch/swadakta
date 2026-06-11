@@ -761,8 +761,9 @@
 
   function renderReceiverProfileAvatar(node, setup = {}, profile = {}) {
     if (!node) return;
-    if (setup.photo_data_url) {
-      node.innerHTML = `<img alt="" class="h-full w-full object-cover" src="${escapeHtml(setup.photo_data_url)}"/>`;
+    const photoSource = setup.photo_data_url || setup.photo_signed_url || "";
+    if (photoSource) {
+      node.innerHTML = `<img alt="" class="h-full w-full object-cover" src="${escapeHtml(photoSource)}"/>`;
       return;
     }
     node.textContent = receiverProfileInitials(profile);
@@ -784,7 +785,9 @@
       setup.location ? `Receiver current base: ${setup.location}` : "",
       setup.languages ? `Languages: ${setup.languages}` : "",
       setup.proof_tools ? `Proof tools: ${setup.proof_tools}` : "",
+      setup.photo_path ? `Profile photo uploaded privately: ${setup.photo_path}` : "",
       setup.proof_sample_name ? `Proof sample attached locally: ${setup.proof_sample_name}` : "",
+      setup.proof_sample_path ? `Proof sample uploaded privately: ${setup.proof_sample_path}` : "",
       setup.bio ? `Receiver work bio: ${setup.bio}` : "",
       "Receiver profile photo must match provider ID/selfie verification before paid public trust signals unlock.",
       "Current base changes should trigger provider or Swadakta safety re-check before assignment.",
@@ -802,8 +805,8 @@
     if (setup.bio) score += 10;
     if (setup.languages) score += 5;
     if (setup.proof_tools) score += 5;
-    if (setup.photo_data_url) score += 10;
-    if (setup.proof_sample_name) score += 5;
+    if (setup.photo_data_url || setup.photo_path) score += 10;
+    if (setup.proof_sample_name || setup.proof_sample_path) score += 5;
     if (verified) score += 30;
     return Math.min(100, score);
   }
@@ -834,7 +837,9 @@
     if (languages && !languages.value) languages.value = setup.languages || "";
     if (proofTools && !proofTools.value) proofTools.value = setup.proof_tools || "Photos, video, voice notes, receipts";
     if (receiverProofSampleName && setup.proof_sample_name) {
-      receiverProofSampleName.textContent = `${setup.proof_sample_name} saved locally. Secure upload and review comes before public trust use.`;
+      receiverProofSampleName.textContent = setup.proof_sample_path
+        ? `${setup.proof_sample_name} uploaded privately. Review comes before public trust use.`
+        : `${setup.proof_sample_name} saved locally. Secure upload and review comes before public trust use.`;
     }
     renderReceiverProfileSetup(profile);
   }
@@ -912,6 +917,24 @@
       setReceiverProfileStatus("Photo preview saved locally. It must match ID/selfie verification before clients rely on it.", "text-primary");
     });
     reader.readAsDataURL(file);
+
+    if (signedInEmail && window.SwadaktaData.uploadAccountMedia) {
+      window.SwadaktaData.uploadAccountMedia("receiver-profile-photo", file)
+        .then((result) => {
+          const media = result.data || {};
+          writeReceiverProfileSetup({
+            photo_name: media.name || file.name,
+            photo_path: media.path || "",
+            photo_signed_url: media.signed_url || "",
+            photo_uploaded_at: media.uploaded_at || new Date().toISOString(),
+          });
+          renderReceiverProfileSetup({});
+          setReceiverProfileStatus("Photo uploaded privately. Provider ID/selfie matching is still required before paid jobs.", "text-primary");
+        })
+        .catch(() => {
+          setReceiverProfileStatus("Photo preview is saved locally. Secure upload can retry after sign-in/session is ready.", "text-primary");
+        });
+    }
   }
 
   function handleReceiverProofSample(file) {
@@ -921,7 +944,7 @@
       setReceiverProfileStatus("Choose an image, video, or PDF proof sample.", "text-error");
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
+    if (file.size > 6 * 1024 * 1024) {
       setReceiverProfileStatus("Use a smaller sample for now. Secure storage will handle larger proof later.", "text-error");
       return;
     }
@@ -935,6 +958,27 @@
     }
     renderReceiverProfileSetup({});
     setReceiverProfileStatus("Proof sample noted locally. Real provenance rises only after reviewed work and verified identity.", "text-primary");
+
+    if (signedInEmail && window.SwadaktaData.uploadAccountMedia) {
+      window.SwadaktaData.uploadAccountMedia("receiver-proof-sample", file)
+        .then((result) => {
+          const media = result.data || {};
+          writeReceiverProfileSetup({
+            proof_sample_name: media.name || file.name,
+            proof_sample_path: media.path || "",
+            proof_sample_signed_url: media.signed_url || "",
+            proof_sample_uploaded_at: media.uploaded_at || new Date().toISOString(),
+          });
+          if (receiverProofSampleName) {
+            receiverProofSampleName.textContent = `${media.name || file.name} uploaded privately. Review comes before public trust use.`;
+          }
+          renderReceiverProfileSetup({});
+          setReceiverProfileStatus("Proof sample uploaded privately. It still needs review before it raises public trust.", "text-primary");
+        })
+        .catch(() => {
+          setReceiverProfileStatus("Proof sample is saved locally. Secure upload can retry after sign-in/session is ready.", "text-primary");
+        });
+    }
   }
 
   function populateReceiverApplication(profile = {}) {

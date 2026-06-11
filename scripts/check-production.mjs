@@ -47,6 +47,7 @@ const requiredAppDataMarkers = [
   "createMpesaStkPush",
   "createResolutionCase",
   "exchangeAuthCodeForSession",
+  "uploadAccountMedia",
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
@@ -67,6 +68,7 @@ const requiredPortalMarkers = [
   "renderAccountSetupChecklist",
   "receiverProfileScore",
   "Base change check needed",
+  "Photo uploaded privately",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",

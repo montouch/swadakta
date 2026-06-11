@@ -1535,6 +1535,68 @@
     return { data: uploads, mode: "supabase" };
   }
 
+  async function uploadAccountMedia(purpose, file) {
+    if (!file) {
+      return { data: null, mode: "none" };
+    }
+
+    const supabase = await getSupabase();
+    if (!supabase) {
+      throw new Error("Profile media upload requires the live Supabase-backed site. The preview can stay local for now.");
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const user = sessionData.session?.user;
+    if (!user?.id) {
+      throw new Error("Sign in before uploading account media.");
+    }
+
+    if (file.size > MAX_STANDARD_UPLOAD_BYTES) {
+      throw new Error(`${file.name} is larger than 6MB. Compress it before uploading as profile media.`);
+    }
+
+    const kind = proofFileKind(file);
+    if (kind === "file") {
+      throw new Error("Profile media must be an image, video, or PDF.");
+    }
+
+    const safePurpose = safeStorageSegment(purpose || "profile-media", "profile-media");
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const name = safeStorageSegment(file.name, "profile-media");
+    const path = `${user.id}/account-profile/${safePurpose}/${timestamp}-${crypto.randomUUID()}-${name}`;
+    const { data, error } = await supabase.storage.from(PROOF_BUCKET).upload(path, file, {
+      cacheControl: "3600",
+      contentType: file.type || "application/octet-stream",
+      upsert: false,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    const signed = await supabase.storage.from(PROOF_BUCKET).createSignedUrl(data.path, 60 * 60 * 24 * 7);
+    if (signed.error) {
+      throw signed.error;
+    }
+
+    return {
+      data: {
+        name: file.name,
+        kind,
+        path: data.path,
+        signed_url: signed.data?.signedUrl || "",
+        size: file.size,
+        content_type: file.type || "application/octet-stream",
+        uploaded_at: new Date().toISOString(),
+      },
+      mode: "supabase",
+    };
+  }
+
   async function getAccountProfile() {
     const supabase = await getSupabase();
 
@@ -2475,6 +2537,7 @@
     updateFundMilestone,
     submitAssignedJobUpdate,
     uploadProofFiles,
+    uploadAccountMedia,
     updatePartnerApplication,
     getAccountProfile,
     saveAccountProfile,
