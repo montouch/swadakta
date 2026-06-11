@@ -50,6 +50,7 @@ const requiredAppDataMarkers = [
 const requiredPortalMarkers = [
   "setSignedInShell",
   "rememberAccountHome",
+  "normalizePortalHomeHash",
   "forceAccountHomeRoute",
   "showContinueHomeButton",
   "renderPaymentReturnPanel",
@@ -75,6 +76,7 @@ const requiredTrackingMarkers = [
   "tracking-resolution-link",
   "renderResolutionCases",
   "tracking-resolution-cases",
+  "renderPaymentReturnHint",
 ];
 const requiredResolutionPageMarkers = [
   "Resolution Center",
@@ -390,8 +392,8 @@ for (const page of requiredPages) {
   if (page === "/verification" && !text.includes("verification.js?v=4")) {
     fail(failures, `${page} does not reference verification.js?v=4`);
   }
-  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=7")) {
-    fail(failures, `${page} does not reference stitch-tracking.js?v=7`);
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=8")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=8`);
   }
   if (page === "/assistant" && !text.includes("assistant.js?v=2")) {
     fail(failures, `${page} does not reference assistant.js?v=2`);
@@ -535,11 +537,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=7");
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=8");
 if (trackingResponse.status !== 200) {
-  fail(failures, `stitch-tracking.js?v=7 returned ${trackingResponse.status}`);
+  fail(failures, `stitch-tracking.js?v=8 returned ${trackingResponse.status}`);
 } else {
-  pass("stitch-tracking.js?v=7 returned 200");
+  pass("stitch-tracking.js?v=8 returned 200");
 }
 
 for (const marker of requiredTrackingMarkers) {

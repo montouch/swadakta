@@ -64,6 +64,10 @@
       "source": "/auth(.*)",
       "headers": [
         {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
         }
@@ -72,6 +76,10 @@
     {
       "source": "/portal(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
@@ -82,6 +90,10 @@
       "source": "/brief(.*)",
       "headers": [
         {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
         }
@@ -90,6 +102,10 @@
     {
       "source": "/tracking(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
@@ -100,6 +116,10 @@
       "source": "/verification(.*)",
       "headers": [
         {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
         }
@@ -108,6 +128,10 @@
     {
       "source": "/assistant(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
@@ -118,6 +142,10 @@
       "source": "/messages(.*)",
       "headers": [
         {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"
         }
@@ -126,6 +154,10 @@
     {
       "source": "/resolution(.*)",
       "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
         {
           "key": "X-Robots-Tag",
           "value": "noindex, nofollow"

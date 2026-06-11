@@ -45,6 +45,7 @@
   let signedInEmail = "";
   let accountProviderTouched = false;
   let accountRenderVersion = 0;
+  let accountHomeForceToken = 0;
   let signOutRequested = false;
   const ACCOUNT_HOME_PATH = "/portal.html#home";
   const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
@@ -165,9 +166,22 @@
     return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
   }
 
-  function addReturnParams(url, code, contact) {
+  function normalizePortalHomeHash() {
+    const params = new URLSearchParams(window.location.search);
+    if (window.location.hash !== "#work" || params.get("view") === "work") return;
+
+    const nextUrl = new URL(window.location.href);
+    nextUrl.hash = "home";
+    window.history.replaceState(null, "", nextUrl);
+  }
+
+  function addReturnParams(url, code, contact, paymentState) {
     if (code) url.searchParams.set("code", code);
     if (contact) url.searchParams.set("contact", contact);
+    if (paymentState) {
+      url.searchParams.set("source", "payment_return");
+      url.searchParams.set("payment", paymentState);
+    }
     return url.href;
   }
 
@@ -209,13 +223,28 @@
     }
 
     if (paymentReturnTrackingLink) {
-      paymentReturnTrackingLink.href = addReturnParams(new URL("tracking.html", window.location.href), requestCode, contact);
+      paymentReturnTrackingLink.href = addReturnParams(
+        new URL("tracking.html", window.location.href),
+        requestCode,
+        contact,
+        state,
+      );
     }
     if (paymentReturnMessagesLink) {
-      paymentReturnMessagesLink.href = addReturnParams(new URL("messages.html", window.location.href), requestCode, contact);
+      paymentReturnMessagesLink.href = addReturnParams(
+        new URL("messages.html", window.location.href),
+        requestCode,
+        contact,
+        state,
+      );
     }
     if (paymentReturnResolutionLink) {
-      paymentReturnResolutionLink.href = addReturnParams(new URL("resolution.html", window.location.href), requestCode, contact);
+      paymentReturnResolutionLink.href = addReturnParams(
+        new URL("resolution.html", window.location.href),
+        requestCode,
+        contact,
+        state,
+      );
     }
   }
 
@@ -230,21 +259,25 @@
 
   function forceAccountHomeRoute(email = "") {
     rememberAccountHome(email);
+    normalizePortalHomeHash();
+    const forceToken = ++accountHomeForceToken;
 
-    window.setTimeout(() => {
-      if (isAccountHomeOpen()) {
-        return;
-      }
+    [250, 1200, 3000].forEach((delay) => {
+      window.setTimeout(() => {
+        if (forceToken !== accountHomeForceToken || signOutRequested || isAccountHomeOpen()) {
+          return;
+        }
 
-      if (accountHome) {
-        setSignedInShell(email || signedInEmail, {});
-        openAccountHome();
-        return;
-      }
+        if (accountHome) {
+          setSignedInShell(email || signedInEmail, {});
+          openAccountHome();
+          return;
+        }
 
-      const homeUrl = accountHomeUrl();
-      window.location.replace(homeUrl);
-    }, 1200);
+        const homeUrl = accountHomeUrl();
+        window.location.replace(homeUrl);
+      }, delay);
+    });
   }
 
   function rememberAccountHome(email = "") {
@@ -565,7 +598,8 @@
   }
 
   function signedInDestination() {
-    return window.location.hash === "#work" ? "work" : "home";
+    const params = new URLSearchParams(window.location.search);
+    return params.get("view") === "work" ? "work" : "home";
   }
 
   function openSignedInDestination() {
@@ -1074,6 +1108,7 @@
   async function signOutCurrentAccount(button) {
     if (button) button.disabled = true;
     signOutRequested = true;
+    accountHomeForceToken += 1;
     nextAccountRenderVersion();
     try {
       await window.SwadaktaData.signOut();
@@ -1102,6 +1137,7 @@
   }
 
   renderPaymentReturnPanel();
+  normalizePortalHomeHash();
   updateMode();
   setVerificationEnabled(false);
   setAccountState("checking");

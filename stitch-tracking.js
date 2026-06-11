@@ -28,6 +28,12 @@
   const resolutionOpenLink = document.querySelector("#tracking-resolution-open-link");
   const reportSummary = document.querySelector("#tracking-report-summary");
   const mediaLinks = document.querySelector("#tracking-media-links");
+  const returnHint = document.querySelector("#tracking-return-hint");
+  const returnIcon = document.querySelector("#tracking-return-icon");
+  const returnEyebrow = document.querySelector("#tracking-return-eyebrow");
+  const returnTitle = document.querySelector("#tracking-return-title");
+  const returnCopy = document.querySelector("#tracking-return-copy");
+  const returnPortalLink = document.querySelector("#tracking-return-portal-link");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -54,6 +60,12 @@
     "partially_released",
     "released",
   ]);
+  const paymentReturnLabels = {
+    success: { icon: "verified", eyebrow: "Stripe checkout", title: "Payment return received" },
+    cancelled: { icon: "undo", eyebrow: "Stripe checkout", title: "Payment was not completed" },
+    "paypal-success": { icon: "verified", eyebrow: "PayPal order", title: "PayPal approval returned" },
+    "paypal-cancelled": { icon: "undo", eyebrow: "PayPal order", title: "PayPal was not completed" },
+  };
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
@@ -247,6 +259,42 @@
       if (contact) resolutionUrl.searchParams.set("contact", contact);
       resolutionLink.href = `${resolutionUrl.pathname}${resolutionUrl.search}`;
       if (resolutionOpenLink) resolutionOpenLink.href = resolutionLink.href;
+    }
+  }
+
+  function renderPaymentReturnHint(params) {
+    if (!returnHint) return;
+
+    const source = String(params.get("source") || "").toLowerCase();
+    const paymentState = String(params.get("payment") || "").toLowerCase();
+    const details = paymentReturnLabels[paymentState];
+    const code = String(params.get("code") || codeInput.value || "")
+      .trim()
+      .toUpperCase();
+    const contact = String(params.get("contact") || contactInput.value || "").trim();
+
+    if (source !== "payment_return" && !details) {
+      returnHint.classList.add("hidden");
+      return;
+    }
+
+    returnHint.classList.remove("hidden");
+    if (returnIcon) returnIcon.textContent = details?.icon || "lock";
+    if (returnEyebrow) returnEyebrow.textContent = details?.eyebrow || "Payment return";
+    if (returnTitle) returnTitle.textContent = details?.title || "Unlock request tracking";
+    if (returnCopy) {
+      returnCopy.textContent = contact
+        ? "Tracking will open automatically with the contact already provided. Provider confirmation still controls protected-funds status."
+        : code
+          ? "Request code is prefilled from the payment return. Enter the email or WhatsApp used on the brief, then open the request so payment and proof details stay private."
+          : "Enter the request code and original email or WhatsApp from the brief to unlock tracking.";
+    }
+    if (returnPortalLink) {
+      const portalUrl = new URL("portal.html", window.location.href);
+      if (paymentState) portalUrl.searchParams.set("payment", paymentState);
+      if (code) portalUrl.searchParams.set("request_code", code);
+      if (contact) portalUrl.searchParams.set("contact", contact);
+      returnPortalLink.href = `${portalUrl.pathname}${portalUrl.search}`;
     }
   }
 
@@ -576,14 +624,28 @@
     lookup();
   });
 
+  const params = new URLSearchParams(window.location.search);
   for (const input of [codeInput, contactInput]) {
-    input.addEventListener("input", () => updateJobRoomLinks());
-    input.addEventListener("change", () => updateJobRoomLinks());
+    input.addEventListener("input", () => {
+      updateJobRoomLinks();
+      renderPaymentReturnHint(params);
+    });
+    input.addEventListener("change", () => {
+      updateJobRoomLinks();
+      renderPaymentReturnHint(params);
+    });
   }
 
-  const params = new URLSearchParams(window.location.search);
   if (params.get("code")) codeInput.value = params.get("code");
   if (params.get("contact")) contactInput.value = params.get("contact");
+  renderPaymentReturnHint(params);
   updateJobRoomLinks();
+  if (
+    codeInput.value &&
+    !contactInput.value &&
+    String(params.get("source") || "").toLowerCase() === "payment_return"
+  ) {
+    setResult("Enter the email or WhatsApp used on the brief to unlock this payment return.", "text-primary");
+  }
   if (codeInput.value && contactInput.value) lookup();
 })();

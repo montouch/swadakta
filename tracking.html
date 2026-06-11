@@ -188,6 +188,19 @@
 <button class="bg-primary text-white h-12 px-6 rounded-xl font-label-md shadow-xl hover:shadow-primary/20 transition-all" type="submit">Open</button>
 <p class="md:col-span-3 font-label-md text-label-md text-on-surface-variant min-h-6" id="tracking-result" role="status"></p>
 </form>
+<section class="glass-panel p-5 rounded-3xl mb-12 hidden" id="tracking-return-hint" aria-live="polite">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="flex items-start gap-4">
+<span class="material-symbols-outlined text-primary text-3xl" id="tracking-return-icon">lock</span>
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.18em]" id="tracking-return-eyebrow">Payment return</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface" id="tracking-return-title">Unlock request tracking</h2>
+<p class="font-body-md text-on-surface-variant mt-2" id="tracking-return-copy">Enter the email or WhatsApp used on the brief, then open the request.</p>
+</div>
+</div>
+<a class="inline-flex min-h-11 px-5 items-center justify-center rounded-xl bg-white/70 border border-white/50 text-primary font-label-md" id="tracking-return-portal-link" href="portal.html">Back to account</a>
+</div>
+</section>
 <!-- Status Timeline -->
 <div class="glass-panel p-8 rounded-3xl mb-12">
 <div class="relative flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
@@ -448,5 +461,5 @@ Open secure payment link
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=43"></script>
-<script src="stitch-tracking.js?v=7"></script>
+<script src="stitch-tracking.js?v=8"></script>
 </body></html>
