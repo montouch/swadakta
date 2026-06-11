@@ -38,7 +38,7 @@
         <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Job room</p>
         <h1 class="font-display text-4xl md:text-5xl font-extrabold mt-3">Messages, media, voice notes, and calls.</h1>
         <p class="text-on-surface-variant mt-4 max-w-3xl">
-          This is the controlled communication hub for active jobs. The production room will attach to a request code and allow client, receiver, AI, and admin-safe messages with proof uploads.
+          This is the controlled communication hub for active jobs. Signed-in receivers can submit proof updates to the request; clients can keep drafts, ask questions, and request calls without moving money or release decisions.
         </p>
         <div class="mt-6 rounded-2xl bg-white/70 border border-outline-variant/40 p-5 hidden" id="message-context-card">
           <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Linked request</p>
@@ -69,6 +69,22 @@
           </article>
         </div>
         <form class="mt-8 grid gap-5 rounded-3xl bg-white/72 border border-outline-variant/40 p-5" id="message-draft-form">
+          <div class="grid gap-4 md:grid-cols-[0.8fr_1.2fr]">
+            <label class="grid gap-2">
+              <span class="font-label text-sm text-on-surface-variant">Receiver update status</span>
+              <select class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 text-on-surface outline-none focus:border-primary" id="message-field-status">
+                <option value="progress">Progress update</option>
+                <option value="blocked">Blocked</option>
+                <option value="completed">Completed milestone</option>
+                <option value="needs_admin">Needs admin</option>
+                <option value="safety_issue">Safety issue</option>
+              </select>
+            </label>
+            <div class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">
+              <p class="font-label text-sm text-on-surface">Proof guardrail</p>
+              <p class="mt-1 text-sm text-on-surface-variant" id="message-live-status">Sign in as the assigned verified receiver to upload proof directly. Otherwise this saves as a local draft.</p>
+            </div>
+          </div>
           <div class="grid gap-2">
             <label class="font-label text-sm text-on-surface-variant" for="message-draft">Job update</label>
             <textarea class="min-h-32 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 text-on-surface outline-none focus:border-primary" id="message-draft" placeholder="Write the job update, proof question, receiver note, or decision that should stay with this request."></textarea>
@@ -97,9 +113,13 @@
               <audio class="mt-4 w-full" id="message-voice-playback" controls hidden></audio>
             </div>
           </div>
+          <label class="grid gap-2">
+            <span class="font-label text-sm text-on-surface-variant">Existing proof links</span>
+            <textarea class="min-h-24 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 text-on-surface outline-none focus:border-primary" id="message-proof-links" placeholder="Optional: paste Drive, Dropbox, provider, receipt, or document links, one per line."></textarea>
+          </label>
           <div class="grid gap-3" id="message-media-list" aria-live="polite"></div>
           <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" type="submit">Save job-room draft</button>
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" id="message-submit" type="submit">Submit proof update</button>
             <p class="min-h-6 text-sm text-on-surface-variant font-label" id="message-draft-status" role="status"></p>
           </div>
         </form>
@@ -109,6 +129,9 @@
         </div>
       </section>
     </main>
-    <script src="messages.js?v=2"></script>
+    <script src="app-config.js?v=4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app-data.js?v=41"></script>
+    <script src="messages.js?v=3"></script>
   </body>
 </html>

@@ -14,12 +14,13 @@ const htmlFiles = [
   "assistant.html",
   "auth.html",
   "brief.html",
+  "messages.html",
   "portal.html",
   "tracking.html",
   "verification.html",
 ];
 
-const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/verification", "/admin-ops"];
+const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/messages", "/verification", "/admin-ops"];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -41,6 +42,11 @@ const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
   "Wise stays hidden as a fallback rail",
   "AI can explain and draft updates",
+];
+const requiredMessagesMarkers = [
+  "submitLiveReceiverUpdate",
+  "uploadProofFiles",
+  "Live proof submit is only for the assigned verified receiver",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -220,6 +226,14 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
+const localMessages = await readLocal("messages.js");
+const localMessagesHtml = await readLocal("messages.html");
+for (const marker of requiredMessagesMarkers) {
+  if (!localMessages.includes(marker) && !localMessagesHtml.includes(marker)) {
+    fail(failures, `Local messages flow is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -266,6 +280,9 @@ for (const page of requiredPages) {
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=5")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=5`);
+  }
+  if (page === "/messages" && !text.includes("messages.js?v=3")) {
+    fail(failures, `${page} does not reference messages.js?v=3`);
   }
 }
 
@@ -366,6 +383,21 @@ for (const marker of requiredTrackingMarkers) {
     fail(failures, `Production stitch-tracking.js is missing marker ${marker}`);
   } else {
     pass(`Production stitch-tracking.js contains ${marker}`);
+  }
+}
+
+const { response: messagesResponse, text: messagesText } = await fetchText("/messages.js?v=3");
+if (messagesResponse.status !== 200) {
+  fail(failures, `messages.js?v=3 returned ${messagesResponse.status}`);
+} else {
+  pass("messages.js?v=3 returned 200");
+}
+
+for (const marker of requiredMessagesMarkers) {
+  if (!messagesText.includes(marker)) {
+    fail(failures, `Production messages.js is missing marker ${marker}`);
+  } else {
+    pass(`Production messages.js contains ${marker}`);
   }
 }
 
