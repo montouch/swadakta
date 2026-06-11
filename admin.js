@@ -226,7 +226,7 @@ function renderRequestCard(request) {
       <dl class="request-details">
         <div><dt>WhatsApp</dt><dd>${escapeHtml(request.whatsapp)}</dd></div>
         <div><dt>Email</dt><dd>${escapeHtml(request.email || "Not provided")}</dd></div>
-        <div><dt>Client base</dt><dd>${escapeHtml(request.australia_location || "Not specified")}</dd></div>
+        <div><dt>Client base</dt><dd>${escapeHtml(request.client_base || request.australia_location || "Not specified")}</dd></div>
         <div><dt>Urgency</dt><dd>${escapeHtml(request.urgency)}</dd></div>
         <div><dt>Reports</dt><dd>${escapeHtml(reports || "Basic update")}</dd></div>
         <div><dt>Estimate</dt><dd>${formatCurrency(request.estimate_aud)}</dd></div>

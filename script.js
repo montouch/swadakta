@@ -165,7 +165,7 @@ function buildBrief() {
     `Report pack: ${reports}`,
     `Supporting links: ${supportingLinks.join(", ") || "None provided"}`,
     `Sensitive documents expected: ${sensitiveDocuments}`,
-    `Estimated fee: ${estimateOutput.textContent}`,
+    `AUD planning estimate: ${estimateOutput.textContent}`,
     `Permissions: ${permissions}`,
     `Notes: ${notes}`,
   ].join("\n");
@@ -228,7 +228,7 @@ function showSubmissionSuccess(result) {
   submissionStatus.innerHTML = `
     <strong>${modeText}</strong>
     <span>Tracking ID: ${code}</span>
-    <span>Planning estimate: ${estimateOutput.textContent}. Final quote follows review.</span>
+    <span>AUD planning estimate: ${estimateOutput.textContent}. Final quote follows review in the preferred quote currency.</span>
     <a class="status-link" href="#tracking">Track this request</a>
     ${
       whatsappLink
