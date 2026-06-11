@@ -242,22 +242,91 @@
 </div>
 </form>
 <section class="mt-8 hidden" id="account-profile-card" aria-live="polite"></section>
-<div class="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3" id="account-next-actions" hidden>
+<div class="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3" id="account-next-actions" hidden>
 <a class="glass-panel rounded-2xl p-4 font-label-md text-primary" href="brief.html">Create a client brief</a>
 <a class="glass-panel rounded-2xl p-4 font-label-md text-tertiary" href="#work">Apply for paid work</a>
+<button class="glass-panel rounded-2xl p-4 font-label-md text-on-surface-variant text-left" id="account-sign-out" type="button">Sign out</button>
 </div>
 </div>
 </main>
 <section class="px-margin-mobile md:px-margin-desktop pb-section-gap" id="work">
-<div class="max-w-[760px] mx-auto glass-panel p-8 md:p-10 rounded-[2rem]">
-<div class="flex items-center gap-3 mb-6">
+<div class="max-w-[920px] mx-auto glass-panel p-8 md:p-10 rounded-[2rem]">
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-5 mb-8">
+<div class="flex items-center gap-3">
 <span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
 <div>
-<h2 class="font-headline-lg text-headline-sm text-on-surface">Get verified for corridor jobs</h2>
-<p class="font-body-md text-on-surface-variant">Paid work requires identity checks, mobile backup, proof standards, and corridor coverage.</p>
+<h2 class="font-headline-lg text-headline-sm text-on-surface">Account verification</h2>
+<p class="font-body-md text-on-surface-variant">One verified account can request help, receive work, or do both.</p>
 </div>
 </div>
-<a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="mailto:swadakta111@gmail.com?subject=Swadakta%20job%20seeker%20verification">Request verification</a>
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="verification-pill">Sign in required</span>
+</div>
+<form class="grid grid-cols-1 md:grid-cols-2 gap-5" id="account-verification-form">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-full-name">Full legal name</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-full-name" name="full_name" placeholder="Name on your ID" type="text" autocomplete="name"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-work-phone">Mobile / WhatsApp</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-work-phone" name="whatsapp" placeholder="+61 431 455 174" type="tel" autocomplete="tel"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-country">Current country</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-country" name="country" placeholder="Australia" type="text" autocomplete="country-name"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-kenya-base">Kenya / corridor base</label>
+<input class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-kenya-base" name="kenya_base" placeholder="Nairobi, Mombasa, Adelaide, Guangzhou..." type="text"/>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-preferred-currency">Preferred currency</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-preferred-currency" name="preferred_currency">
+<option>AUD</option>
+<option>KES</option>
+<option>USD</option>
+<option>GBP</option>
+<option>EUR</option>
+<option>CNY</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-provider">Verification provider</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-verification-provider" name="provider">
+<option value="smile_id">Smile ID</option>
+<option value="sumsub">Sumsub</option>
+<option value="youverify">Youverify</option>
+<option value="manual">Manual review</option>
+</select>
+</div>
+<div class="space-y-2 md:col-span-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-notes">Corridor coverage / notes</label>
+<textarea class="w-full p-4 rounded-xl sunken-input font-body-md text-on-surface resize-none" id="account-verification-notes" name="profile_notes" placeholder="What countries, cities, errands, sourcing, deliveries, admin work, or receiver jobs can you handle?" rows="4"></textarea>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-reason">Verification reason</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-verification-reason" name="reason">
+<option value="account_required">General account verification</option>
+<option value="paid_work">Paid work access</option>
+<option value="receiver_work">Receiver / field work</option>
+<option value="sensitive_job">Sensitive task access</option>
+<option value="high_value_job">High-value task access</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-work-role">Working mode</label>
+<select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-work-role" name="account_role">
+<option value="client">Client only</option>
+<option value="receiver">Job seeker only</option>
+<option value="both">Client and job seeker</option>
+</select>
+</div>
+<div class="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
+<button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold shadow-[0px_16px_32px_rgba(70,72,212,0.18)]" data-action="request" type="submit">Save and request verification</button>
+<button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" data-action="save" type="submit">Save profile only</button>
+</div>
+<p class="md:col-span-2 font-label-md text-label-md text-on-surface-variant min-h-6" id="account-verification-status" role="status"></p>
+</form>
+<div class="mt-8 grid gap-3" id="verification-request-list" aria-live="polite"></div>
 </div>
 </section>
 <!-- Simple Footer -->
@@ -273,5 +342,5 @@
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=36"></script>
-<script src="stitch-portal.js?v=1"></script>
+<script src="stitch-portal.js?v=2"></script>
 </body></html>

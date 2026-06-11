@@ -298,7 +298,7 @@ begin
     select 1 from pg_constraint where conname = 'account_profiles_preferred_currency_check'
   ) then
     alter table public.account_profiles
-      add constraint account_profiles_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+      add constraint account_profiles_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES', 'CNY'));
   end if;
 
   if not exists (
@@ -306,7 +306,7 @@ begin
   ) then
     alter table public.account_profiles
       add constraint account_profiles_onboarding_status_check check (
-        onboarding_status in ('started', 'profile_complete', 'needs_review', 'verified')
+        onboarding_status in ('started', 'account_created', 'signed_in', 'profile_complete', 'needs_review', 'verification_requested', 'verified')
       );
   end if;
 
@@ -417,14 +417,14 @@ begin
     select 1 from pg_constraint where conname = 'service_requests_preferred_currency_check'
   ) then
     alter table public.service_requests
-      add constraint service_requests_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+      add constraint service_requests_preferred_currency_check check (preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES', 'CNY'));
   end if;
 
   if not exists (
     select 1 from pg_constraint where conname = 'service_requests_quote_currency_check'
   ) then
     alter table public.service_requests
-      add constraint service_requests_quote_currency_check check (quote_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES'));
+      add constraint service_requests_quote_currency_check check (quote_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES', 'CNY'));
   end if;
 
   if not exists (
@@ -1016,7 +1016,7 @@ with check (
     coalesce(array_length(supporting_links, 1), 0) = 0
     or array_to_string(supporting_links, E'\n') ~* '^https?://[^\n]+(\nhttps?://[^\n]+)*$'
   )
-  and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES')
+  and preferred_currency in ('AUD', 'USD', 'GBP', 'EUR', 'KES', 'CNY')
   and service_package in ('quote_first', 'quick_errand', 'site_visit', 'registry_errand', 'family_support', 'shopping_sourcing', 'monthly_retainer', 'business_ops')
   and payment_method_preference in ('discuss', 'card', 'paypal', 'wise', 'mpesa', 'bank')
   and job_value_band in ('unsure', 'under_500', '500_2000', '2000_10000', '10000_plus')
@@ -1131,7 +1131,7 @@ revoke truncate, references, trigger on table public.service_requests from anon,
 revoke truncate, references, trigger on table public.partner_applications from anon, authenticated;
 revoke insert, update, delete, truncate, references, trigger on table public.field_updates from anon, authenticated;
 revoke delete, truncate, references, trigger on table public.fund_milestones from anon, authenticated;
-revoke delete, truncate, references, trigger on table public.account_profiles from anon, authenticated;
+revoke insert, update, delete, truncate, references, trigger on table public.account_profiles from anon, authenticated;
 
 grant select on public.account_profiles to authenticated;
 grant insert (
@@ -1143,6 +1143,7 @@ grant insert (
   country,
   kenya_base,
   preferred_currency,
+  identity_verification_provider,
   profile_notes,
   onboarding_status
 ) on public.account_profiles to authenticated;
@@ -1154,6 +1155,7 @@ grant update (
   country,
   kenya_base,
   preferred_currency,
+  identity_verification_provider,
   profile_notes,
   onboarding_status
 ) on public.account_profiles to authenticated;

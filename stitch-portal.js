@@ -8,8 +8,15 @@
   const resetButton = document.querySelector("#account-password-reset");
   const profileCard = document.querySelector("#account-profile-card");
   const nextActions = document.querySelector("#account-next-actions");
+  const signOutButton = document.querySelector("#account-sign-out");
+  const verificationForm = document.querySelector("#account-verification-form");
+  const verificationStatus = document.querySelector("#account-verification-status");
+  const verificationPill = document.querySelector("#verification-pill");
+  const verificationList = document.querySelector("#verification-request-list");
 
   if (!form || !window.SwadaktaData) return;
+
+  let signedInEmail = "";
 
   function authMode() {
     return form.querySelector('input[name="account-auth-mode"]:checked')?.value || "sign_in";
@@ -34,7 +41,141 @@
     phoneGroup.hidden = !creating;
     phoneInput.disabled = !creating;
     phoneInput.required = creating;
+    document.querySelector("#client-login-password").autocomplete = creating ? "new-password" : "current-password";
     submit.firstChild.textContent = creating ? "Create account " : "Sign in ";
+  }
+
+  function field(id) {
+    return document.querySelector(id);
+  }
+
+  function setVerificationStatus(message, tone = "") {
+    if (!verificationStatus) return;
+    verificationStatus.textContent = message;
+    verificationStatus.className = `md:col-span-2 font-label-md text-label-md min-h-6 ${tone}`.trim();
+  }
+
+  function setVerificationPill(label, tone = "bg-primary-container/10 text-primary") {
+    if (!verificationPill) return;
+    verificationPill.textContent = label;
+    verificationPill.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${tone}`.trim();
+  }
+
+  function escapeHtml(value) {
+    return String(value || "").replace(/[&<>"']/g, (character) =>
+      ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;",
+      })[character],
+    );
+  }
+
+  function formatStatus(value) {
+    return String(value || "not_started")
+      .replaceAll("_", " ")
+      .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function syncRoleInputs(role = "client") {
+    const safeRole = ["client", "receiver", "both"].includes(role) ? role : "client";
+    const roleMap = { client: "#client", receiver: "#seeker", both: "#both" };
+    const roleRadio = field(roleMap[safeRole]);
+    if (roleRadio) roleRadio.checked = true;
+    const workRole = field("#account-work-role");
+    if (workRole) workRole.value = safeRole;
+  }
+
+  function setVerificationEnabled(enabled) {
+    if (!verificationForm) return;
+    verificationForm.querySelectorAll("input, select, textarea, button").forEach((control) => {
+      control.disabled = !enabled;
+    });
+  }
+
+  function profilePayload() {
+    const selectedRole = field("#account-work-role")?.value || roleIntent();
+    return {
+      account_role: selectedRole,
+      full_name: field("#account-full-name")?.value.trim() || "",
+      whatsapp: field("#account-work-phone")?.value.trim() || phoneInput.value.trim(),
+      country: field("#account-country")?.value.trim() || "",
+      kenya_base: field("#account-kenya-base")?.value.trim() || "",
+      preferred_currency: field("#account-preferred-currency")?.value || "AUD",
+      profile_notes: field("#account-verification-notes")?.value.trim() || "",
+      identity_verification_provider: field("#account-verification-provider")?.value || "smile_id",
+      onboarding_status: selectedRole === "client" ? "profile_complete" : "needs_review",
+    };
+  }
+
+  function populateVerificationProfile(profile = {}) {
+    if (!verificationForm) return;
+    field("#account-full-name").value = profile.full_name || "";
+    field("#account-work-phone").value = profile.whatsapp || "";
+    field("#account-country").value = profile.country || "";
+    field("#account-kenya-base").value = profile.kenya_base || "";
+    field("#account-preferred-currency").value = profile.preferred_currency || "AUD";
+    field("#account-verification-provider").value = profile.identity_verification_provider || "smile_id";
+    field("#account-verification-notes").value = profile.profile_notes || "";
+    syncRoleInputs(profile.account_role || roleIntent());
+  }
+
+  function renderVerificationRequests(requests = []) {
+    if (!verificationList) return;
+    if (!requests.length) {
+      verificationList.innerHTML = `
+        <article class="rounded-2xl border border-outline-variant/30 bg-white/60 p-4">
+          <p class="font-label-md text-on-surface">No verification request yet</p>
+          <p class="font-body-md text-on-surface-variant text-sm mt-1">Save your profile and request verification when you are ready.</p>
+        </article>`;
+      return;
+    }
+
+    verificationList.innerHTML = requests
+      .map(
+        (request) => `
+          <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4 grid gap-3 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <strong class="font-label-md text-on-surface">${escapeHtml(request.request_code || "Verification")}</strong>
+                <span class="rounded-full bg-primary-container/10 px-3 py-1 text-primary font-label-sm">${escapeHtml(formatStatus(request.status))}</span>
+              </div>
+              <p class="font-body-md text-on-surface-variant text-sm mt-2">${escapeHtml(formatStatus(request.reason))} via ${escapeHtml(formatStatus(request.provider))}</p>
+              ${request.admin_notes ? `<p class="font-body-md text-on-surface text-sm mt-2">${escapeHtml(request.admin_notes)}</p>` : ""}
+              ${request.provider_link ? `<a class="inline-flex mt-3 text-primary font-label-md underline" href="${escapeHtml(request.provider_link)}" target="_blank" rel="noopener">Open verification link</a>` : ""}
+            </div>
+            <span class="font-label-sm text-on-surface-variant">${escapeHtml(request.updated_at ? new Date(request.updated_at).toLocaleDateString() : "")}</span>
+          </article>`,
+      )
+      .join("");
+  }
+
+  async function refreshVerificationWorkspace(profile = null) {
+    if (!verificationForm) return;
+    try {
+      const sessionResult = await window.SwadaktaData.getSession();
+      signedInEmail = sessionResult.session?.user?.email || "";
+      if (!signedInEmail) {
+        setVerificationEnabled(false);
+        setVerificationPill("Sign in required", "bg-error-container text-on-error-container");
+        setVerificationStatus("Sign in or create an account before requesting verification.");
+        renderVerificationRequests([]);
+        return;
+      }
+
+      setVerificationEnabled(true);
+      const currentProfile = profile || (await window.SwadaktaData.getAccountProfile()).data || {};
+      populateVerificationProfile(currentProfile);
+      const statusLabel = formatStatus(currentProfile.identity_verification_status || "not_started");
+      setVerificationPill(statusLabel, currentProfile.identity_verification_status === "verified" ? "bg-emerald-100 text-emerald-700" : "bg-primary-container/10 text-primary");
+      setVerificationStatus("Profile loaded. Verification requests stay pending until Swadakta or the provider confirms them.", "text-primary");
+      const requests = await window.SwadaktaData.listMyIdentityVerificationRequests();
+      renderVerificationRequests(requests.data || []);
+    } catch (error) {
+      setVerificationStatus(error.message || "Could not load verification workspace.", "text-error");
+    }
   }
 
   async function showCurrentAccount() {
@@ -43,7 +184,10 @@
       const email = sessionResult.session?.user?.email || "";
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
-      if (!email && !profile.email) return;
+      if (!email && !profile.email) {
+        await refreshVerificationWorkspace(null);
+        return;
+      }
 
       profileCard.hidden = false;
       profileCard.className = "mt-8 glass-panel p-6 rounded-3xl";
@@ -57,12 +201,17 @@
           </div>
         </div>`;
       if (nextActions) nextActions.hidden = false;
+      populateVerificationProfile(profile);
+      await refreshVerificationWorkspace(profile);
     } catch {
       // The account card is only a convenience; auth errors are shown on submit.
     }
   }
 
   form.addEventListener("change", updateMode);
+  if (field("#account-work-role")) {
+    field("#account-work-role").addEventListener("change", (event) => syncRoleInputs(event.target.value));
+  }
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -85,7 +234,7 @@
             account_role: accountRole,
             backup_phone: backupPhone,
             whatsapp: backupPhone,
-            onboarding_status: "account_created",
+            onboarding_status: "started",
             identity_verification_status: "not_started",
           });
         }
@@ -100,7 +249,7 @@
         await window.SwadaktaData.saveAccountProfile({
           email,
           account_role: accountRole,
-          onboarding_status: "signed_in",
+          onboarding_status: "started",
         });
         setStatus("Signed in. Your Swadakta account is ready.", "text-primary");
       }
@@ -112,6 +261,44 @@
       updateMode();
     }
   });
+
+  if (verificationForm) {
+    verificationForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const button = event.submitter || verificationForm.querySelector('button[type="submit"]');
+      const action = button?.dataset.action || "request";
+      const original = button?.textContent || "";
+
+      if (button) {
+        button.disabled = true;
+        button.textContent = action === "request" ? "Requesting..." : "Saving...";
+      }
+      setVerificationStatus(action === "request" ? "Saving profile and queuing verification..." : "Saving profile...");
+
+      try {
+        const saved = await window.SwadaktaData.saveAccountProfile(profilePayload());
+        syncRoleInputs(saved.data?.account_role || profilePayload().account_role);
+        if (action === "request") {
+          await window.SwadaktaData.requestAccountIdentityVerification({
+            reason: field("#account-verification-reason")?.value || "account_required",
+            provider: field("#account-verification-provider")?.value || "smile_id",
+            user_notes: field("#account-verification-notes")?.value || "",
+          });
+          setVerificationStatus("Verification request queued. Swadakta will send or update the provider link once reviewed.", "text-primary");
+        } else {
+          setVerificationStatus("Profile saved.", "text-primary");
+        }
+        await showCurrentAccount();
+      } catch (error) {
+        setVerificationStatus(error.message || "Could not save account details.", "text-error");
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = original;
+        }
+      }
+    });
+  }
 
   if (googleButton) {
     const enabled = Boolean(window.SWADAKTA_CONFIG?.authProviders?.google);
@@ -143,6 +330,25 @@
     });
   }
 
+  if (signOutButton) {
+    signOutButton.addEventListener("click", async () => {
+      signOutButton.disabled = true;
+      try {
+        await window.SwadaktaData.signOut();
+        signedInEmail = "";
+        profileCard.hidden = true;
+        if (nextActions) nextActions.hidden = true;
+        setStatus("Signed out.", "text-primary");
+        await refreshVerificationWorkspace(null);
+      } catch (error) {
+        setStatus(error.message || "Could not sign out.", "text-error");
+      } finally {
+        signOutButton.disabled = false;
+      }
+    });
+  }
+
   updateMode();
+  setVerificationEnabled(false);
   showCurrentAccount();
 })();
