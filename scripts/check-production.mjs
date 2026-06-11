@@ -15,13 +15,25 @@ const htmlFiles = [
   "auth.html",
   "brief.html",
   "messages.html",
+  "payments.html",
   "portal.html",
   "trust.html",
   "tracking.html",
   "verification.html",
 ];
 
-const requiredPages = ["/", "/portal", "/auth", "/brief", "/tracking", "/messages", "/verification", "/trust", "/admin-ops"];
+const requiredPages = [
+  "/",
+  "/portal",
+  "/auth",
+  "/brief",
+  "/tracking",
+  "/messages",
+  "/verification",
+  "/trust",
+  "/payments",
+  "/admin-ops",
+];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -56,6 +68,13 @@ const requiredTrustMarkers = [
   "AI cannot mark ID verified, release money, assign paid work",
   "Receiver provenance starts at 25%",
   "Restricted goods",
+];
+const requiredPaymentsMarkers = [
+  "Payments & Pricing",
+  "Estimate a launch quote",
+  "Founder margin is built into each quote",
+  "Wise stays hidden as fallback",
+  "Swadakta is not currently a licensed escrow provider",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -250,6 +269,13 @@ for (const marker of requiredTrustMarkers) {
   }
 }
 
+const localPaymentsHtml = await readLocal("payments.html");
+for (const marker of requiredPaymentsMarkers) {
+  if (!localPaymentsHtml.includes(marker)) {
+    fail(failures, `Local payments page is missing marker ${marker}`);
+  }
+}
+
 const localAdminOps = await readLocal("admin-ops.js");
 for (const marker of requiredAdminOpsMarkers) {
   if (!localAdminOps.includes(marker)) {
@@ -302,6 +328,13 @@ for (const page of requiredPages) {
   }
   if (page === "/trust") {
     for (const marker of requiredTrustMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
+  }
+  if (page === "/payments") {
+    for (const marker of requiredPaymentsMarkers) {
       if (!text.includes(marker)) {
         fail(failures, `${page} is missing marker ${marker}`);
       }

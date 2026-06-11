@@ -9,6 +9,7 @@ https://www.swadakta.com/* https://swadakta.com/:splat 301
 /brief /brief.html 200
 /corridor /corridor.html 200
 /messages /messages.html 200
+/payments /payments.html 200
 /portal /portal.html 200
 /privacy /privacy.html 200
 /terms /terms.html 200
