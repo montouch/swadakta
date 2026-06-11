@@ -404,6 +404,7 @@ function renderRequestCardV2(request) {
         <div class="form-actions">
           <button class="button button-primary" type="submit">Save update</button>
           <button class="button button-secondary copy-update" type="button">Copy client update</button>
+          <button class="button button-secondary copy-quote" type="button">Copy quote</button>
           <button class="button button-secondary copy-operator" type="button">Copy operator brief</button>
           <span class="copy-status" role="status"></span>
         </div>
@@ -540,6 +541,36 @@ function buildClientUpdate(request, form) {
     .join("\n");
 }
 
+function buildQuoteMessage(request, form) {
+  const payload = formPayload(form);
+  const quoteLine = payload.quote_amount ? formatCurrency(payload.quote_amount, payload.quote_currency) : "Quote pending";
+  const paymentMethod =
+    paymentMethodLabels[request.payment_method_preference] || request.payment_method_preference || "Secure payment link";
+  const dueLine = payload.payment_due_at
+    ? `Please pay by ${payload.payment_due_at} so we can reserve the Kenya-side work window.`
+    : "We will confirm the payment window before work starts.";
+  const paymentLine = payload.payment_link
+    ? `Payment link: ${payload.payment_link}`
+    : "Payment link: Not issued yet. We will send the secure link after confirming the quote.";
+  const proofPriority = proofPriorityLabels[request.proof_priority] || request.proof_priority || "Balanced proof pack";
+  const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "photos, receipts, and written update";
+
+  return [
+    `Hi ${request.client_name || "there"},`,
+    "",
+    `Swadakta quote for request ${request.request_code}: ${quoteLine}.`,
+    `Task: ${taskLabels[request.task_type] || request.task_type} in ${request.kenya_location}, Kenya.`,
+    `Preferred payment route: ${paymentMethod}.`,
+    dueLine,
+    paymentLine,
+    "",
+    `Proof plan: ${proofPriority}. Report pack: ${reports}.`,
+    "Please pay only through the link above or another channel confirmed by Swadakta. Do not send card numbers, PINs, passwords, or one-time codes by WhatsApp, email, or the intake form.",
+    "The quote covers the approved brief only. Any extra travel, document fees, vendor costs, or scope changes will be confirmed before extra work starts.",
+    "Terms: https://swadakta.com/terms",
+  ].join("\n");
+}
+
 function buildOperatorBrief(request, form) {
   const payload = formPayload(form);
   const reports = Array.isArray(request.report_pack) ? request.report_pack.join(", ") : "Basic update";
@@ -634,7 +665,7 @@ requestBoard.addEventListener("submit", async (event) => {
 });
 
 requestBoard.addEventListener("click", async (event) => {
-  const button = event.target.closest(".copy-update, .copy-operator");
+  const button = event.target.closest(".copy-update, .copy-quote, .copy-operator");
   if (!button) {
     return;
   }
@@ -647,7 +678,9 @@ requestBoard.addEventListener("click", async (event) => {
   if (request) {
     const text = button.classList.contains("copy-operator")
       ? buildOperatorBrief(request, form)
-      : buildClientUpdate(request, form);
+      : button.classList.contains("copy-quote")
+        ? buildQuoteMessage(request, form)
+        : buildClientUpdate(request, form);
     await copyText(text, statusElement);
   }
 });

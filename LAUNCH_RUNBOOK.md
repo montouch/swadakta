@@ -63,13 +63,14 @@ Swadakta handles names, contact details, task notes, Kenya local contacts, docum
 3. Admin reviews the request, supporting links, contact preference, and sensitive-document flag.
 4. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 5. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-6. Client pays through the agreed provider.
-7. Admin sets status to `paid` after confirmation.
-8. Admin copies the operator brief and sends it to the assigned Kenya-side operator.
-9. Kenya-side operator executes the task.
-10. Admin adds proof links, report URL, and final notes.
-11. Admin sets status to `completed`.
-12. Client tracks status with request code plus original email or WhatsApp.
+6. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, and safety wording.
+7. Client pays through the agreed provider.
+8. Admin sets status to `paid` after confirmation.
+9. Admin copies the operator brief and sends it to the assigned Kenya-side operator.
+10. Kenya-side operator executes the task.
+11. Admin adds proof links, report URL, and final notes.
+12. Admin sets status to `completed`.
+13. Client tracks status with request code plus original email or WhatsApp.
 
 ## 5. Launch Readiness Checklist
 

@@ -13,6 +13,7 @@ A launch-ready MVP for a global diaspora concierge and virtual assistant service
 - Request status, payment status, operator notes, and client report workflow
 - HTTP/HTTPS-only validation for supporting, payment, report, and proof links
 - Quote amount, payment link, due date, report URL, and proof-link workflow
+- Admin quote-message generator for payment links, proof scope, and payment safety wording
 - Required client permission, scope, terms, and privacy consent capture
 - Contact preference, payment preference, budget comfort, proof priority, lead source, contact window, sensitive-document flag, and supporting-link capture
 - Client-safe request tracking by request code plus email/WhatsApp

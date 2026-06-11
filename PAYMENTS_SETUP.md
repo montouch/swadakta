@@ -28,6 +28,7 @@ Suggested first links:
 
 For one-off jobs, create a new link after quoting, paste it into the admin `Payment link` field, set `Payment` to `Invoice sent`, and set a payment due date.
 Use the intake budget comfort field as a guide, not as a binding price cap; the final quote should still reflect travel, access, urgency, and proof requirements.
+Use the admin `Copy quote` action to send a consistent quote message that includes the amount, payment link, due date, proof plan, scope boundary, and card-data safety warning.
 
 ## PayPal
 
@@ -52,5 +53,6 @@ Use Wise for larger site visits, supplier deposits, or monthly retainers where b
 - Do not hold client construction or family-support funds as an informal escrow.
 - Keep payment links HTTP/HTTPS only; Supabase rejects unsafe links.
 - Mark `Payment` as `Invoice sent` when a link is issued, `Deposit paid` when partial payment is confirmed, and `Paid` only when the agreed amount is cleared.
+- Send quote/payment messages from the admin `Copy quote` template so every client receives the same safety and scope wording.
 - Store receipts, payment screenshots, or processor confirmations in the proof/report pack, not in public tracking text.
 - For refunds, update `Payment` to `Refunded` and add a short internal note explaining the reason, amount, and date.
