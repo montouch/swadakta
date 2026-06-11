@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Swadakta Admin Dashboard</title>
+    <meta name="description" content="Operations dashboard for Swadakta Diaspora Concierge service requests." />
+    <meta name="theme-color" content="#0f332c" />
+    <link rel="stylesheet" href="styles.css?v=2" />
+  </head>
+  <body class="admin-body">
+    <header class="admin-header">
+      <a class="brand admin-brand" href="index.html" aria-label="Back to Swadakta site">
+        <span class="brand-mark" aria-hidden="true">S</span>
+        <span>
+          <strong>Swadakta</strong>
+          <small>Operations Desk</small>
+        </span>
+      </a>
+      <nav class="admin-nav" aria-label="Admin actions">
+        <a href="index.html#intake">Client intake</a>
+        <button class="header-action" type="button" id="refresh-requests">Refresh</button>
+        <button class="header-action" type="button" id="sign-out" hidden>Sign out</button>
+      </nav>
+    </header>
+
+    <main class="admin-shell">
+      <section class="admin-hero" aria-labelledby="admin-title">
+        <div>
+          <p class="eyebrow">Operations</p>
+          <h1 id="admin-title">Request queue and client delivery desk.</h1>
+          <p>
+            Track new briefs, quote work, assign operators, log internal notes, and prepare
+            client-ready updates from one place.
+          </p>
+        </div>
+        <div class="admin-metrics" aria-label="Request metrics">
+          <div>
+            <span id="metric-new">0</span>
+            <small>New</small>
+          </div>
+          <div>
+            <span id="metric-active">0</span>
+            <small>Active</small>
+          </div>
+          <div>
+            <span id="metric-completed">0</span>
+            <small>Completed</small>
+          </div>
+        </div>
+      </section>
+
+      <section class="admin-card auth-card" id="auth-card" hidden>
+        <div>
+          <h2>Admin sign-in</h2>
+          <p>Enter an approved admin email. Supabase will send a magic link.</p>
+        </div>
+        <form id="auth-form" class="auth-form">
+          <label class="field-group" for="admin-email">
+            Admin email
+            <input id="admin-email" name="adminEmail" type="email" value="swadakta111@gmail.com" autocomplete="email" required />
+          </label>
+          <button class="button button-primary" type="submit">Send magic link</button>
+          <p class="copy-status" id="auth-status" role="status"></p>
+        </form>
+      </section>
+
+      <section class="admin-toolbar" aria-label="Request filters">
+        <label class="field-group" for="status-filter">
+          Status
+          <select id="status-filter">
+            <option value="all">All requests</option>
+            <option value="new">New</option>
+            <option value="quoted">Quoted</option>
+            <option value="paid">Paid</option>
+            <option value="in_progress">In progress</option>
+            <option value="waiting_client">Waiting client</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </label>
+        <label class="field-group" for="search-requests">
+          Search
+          <input id="search-requests" type="search" placeholder="Name, code, location, WhatsApp" />
+        </label>
+        <span class="mode-badge" id="mode-badge">Checking backend...</span>
+      </section>
+
+      <section class="request-board" id="request-board" aria-live="polite"></section>
+    </main>
+
+    <script src="app-config.js?v=3"></script>
+    <script src="app-data.js?v=3"></script>
+    <script src="admin.js?v=3"></script>
+  </body>
+</html>
