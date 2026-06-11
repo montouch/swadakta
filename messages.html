@@ -68,12 +68,47 @@
             <p class="text-on-surface-variant mt-2">Calls should be scheduled or requested from inside the job so proof and decisions stay tied to the request.</p>
           </article>
         </div>
+        <form class="mt-8 grid gap-5 rounded-3xl bg-white/72 border border-outline-variant/40 p-5" id="message-draft-form">
+          <div class="grid gap-2">
+            <label class="font-label text-sm text-on-surface-variant" for="message-draft">Job update</label>
+            <textarea class="min-h-32 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 text-on-surface outline-none focus:border-primary" id="message-draft" placeholder="Write the job update, proof question, receiver note, or decision that should stay with this request."></textarea>
+          </div>
+          <div class="grid gap-4 md:grid-cols-2">
+            <label class="rounded-2xl border border-outline-variant/50 bg-white/80 p-4 cursor-pointer">
+              <span class="material-symbols-outlined text-primary align-middle">attach_file</span>
+              <span class="font-label text-on-surface ml-2">Attach proof media</span>
+              <input class="mt-3 block w-full text-sm text-on-surface-variant" id="message-media" type="file" multiple accept="image/*,video/*,audio/*,.pdf,.doc,.docx" />
+            </label>
+            <div class="rounded-2xl border border-outline-variant/50 bg-white/80 p-4">
+              <div class="flex flex-wrap gap-3">
+                <button class="inline-flex h-11 px-4 items-center justify-center rounded-full bg-primary text-white font-bold" id="message-record-voice" type="button">
+                  <span class="material-symbols-outlined text-[20px] mr-2">mic</span>
+                  Record voice
+                </button>
+                <button class="inline-flex h-11 px-4 items-center justify-center rounded-full bg-white border border-outline-variant/60 text-primary font-bold" id="message-stop-voice" type="button" hidden>
+                  <span class="material-symbols-outlined text-[20px] mr-2">stop_circle</span>
+                  Stop
+                </button>
+                <button class="inline-flex h-11 px-4 items-center justify-center rounded-full bg-white border border-outline-variant/60 text-primary font-bold" id="message-video-call" type="button">
+                  <span class="material-symbols-outlined text-[20px] mr-2">videocam</span>
+                  Request call
+                </button>
+              </div>
+              <audio class="mt-4 w-full" id="message-voice-playback" controls hidden></audio>
+            </div>
+          </div>
+          <div class="grid gap-3" id="message-media-list" aria-live="polite"></div>
+          <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" type="submit">Save job-room draft</button>
+            <p class="min-h-6 text-sm text-on-surface-variant font-label" id="message-draft-status" role="status"></p>
+          </div>
+        </form>
         <div class="mt-8 flex flex-wrap gap-3">
           <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="tracking.html">Open tracking</a>
           <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/75 border border-outline-variant/50 text-primary font-bold" href="assistant.html">Ask AI</a>
         </div>
       </section>
     </main>
-    <script src="messages.js?v=1"></script>
+    <script src="messages.js?v=2"></script>
   </body>
 </html>
