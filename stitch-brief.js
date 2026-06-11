@@ -133,10 +133,27 @@
     return "Weather";
   }
 
+  function normalizedPlaceText(value) {
+    return String(value || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function locationLooksSpecific(location, destination) {
+    const cleanLocation = normalizedPlaceText(location);
+    const cleanDestination = normalizedPlaceText(destination);
+    if (!cleanLocation || !cleanDestination) return Boolean(cleanLocation);
+    return cleanLocation.includes(cleanDestination) || String(location || "").includes(",");
+  }
+
   function placeSearchQuery() {
     const location = value("#brief-location");
     const destination = value("#brief-destination-country");
     if (!location || /^(remote|online|digital|virtual)$/i.test(location)) return "";
+    if (locationLooksSpecific(location, destination)) return location;
     return [location, destination].filter(Boolean).join(", ");
   }
 
