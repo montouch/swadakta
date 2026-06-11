@@ -291,6 +291,209 @@ function renderProvenanceSeal(provenance, { subtle = false, title = "Provenance 
   `;
 }
 
+function hasCompleteProfile(profile) {
+  if (!profile) {
+    return false;
+  }
+
+  return Boolean(
+    profile.onboarding_status === "profile_complete" ||
+      (profile.full_name && profile.whatsapp && (profile.country || profile.kenya_base)),
+  );
+}
+
+function strongestIdentityStatus(profile, applications = []) {
+  const statuses = [
+    profile?.identity_verification_status || "not_started",
+    ...applications.map((application) => application.identity_verification_status || "not_started"),
+  ];
+  const priority = {
+    verified: 6,
+    submitted: 5,
+    manual_review: 4,
+    link_sent: 3,
+    not_started: 2,
+    expired: 1,
+    failed: 0,
+  };
+
+  return statuses.sort((a, b) => (priority[b] ?? 0) - (priority[a] ?? 0))[0] || "not_started";
+}
+
+function identityStatusText(status) {
+  return identityStatusLabels[status] || verificationStatusLabels[status] || status || "Not started";
+}
+
+function renderStepChecklist(title, intro, steps, actions = []) {
+  const stepItems = steps
+    .map((step) => {
+      const state = step.state || "pending";
+      return `
+        <li class="onboarding-step is-${escapeHtml(state)}">
+          <span class="step-marker" aria-hidden="true"></span>
+          <div>
+            <strong>${escapeHtml(step.title)}</strong>
+            <p>${escapeHtml(step.detail)}</p>
+          </div>
+        </li>
+      `;
+    })
+    .join("");
+
+  const actionItems = actions
+    .filter((action) => action.href)
+    .map(
+      (action) =>
+        `<a class="button ${escapeHtml(action.primary ? "button-primary" : "button-secondary")}" href="${escapeHtml(action.href)}">${escapeHtml(action.label)}</a>`,
+    )
+    .join("");
+
+  return `
+    <section class="account-onboarding" aria-label="${escapeHtml(title)}">
+      <div class="onboarding-copy">
+        <p class="eyebrow">Next steps</p>
+        <h3>${escapeHtml(title)}</h3>
+        <p>${escapeHtml(intro)}</p>
+      </div>
+      <ol class="onboarding-list">
+        ${stepItems}
+      </ol>
+      ${actionItems ? `<div class="onboarding-actions">${actionItems}</div>` : ""}
+    </section>
+  `;
+}
+
+function renderClientOnboarding(email, requests = [], profile = null) {
+  const profileComplete = hasCompleteProfile(profile);
+  const identityStatus = strongestIdentityStatus(profile);
+  const hasRequest = requests.length > 0;
+  const hasQuotedRequest = requests.some((request) => ["quoted", "paid", "in_progress", "waiting_client", "completed"].includes(request.status));
+  const hasPaymentPath = requests.some((request) =>
+    ["invoice_sent", "deposit_paid", "paid"].includes(request.payment_status) || safeHttpUrl(request.payment_link),
+  );
+  const hasCompleted = requests.some((request) => request.status === "completed");
+  const hasReview = requests.some((request) => request.client_review_score);
+
+  return renderStepChecklist(
+    "Client account path",
+    "Use this side when you need a job done, want a quote, or need proof from another country.",
+    [
+      {
+        state: email ? "done" : "current",
+        title: "Open account",
+        detail: email ? `Signed in as ${email}.` : "Use the client email field to open your account.",
+      },
+      {
+        state: profileComplete ? "done" : "current",
+        title: "Save profile",
+        detail: profileComplete
+          ? "Your name, contact, base, and currency context are saved."
+          : "Add your name, WhatsApp, country/base, and preferred currency so Swadakta can quote cleanly.",
+      },
+      {
+        state: identityStatus === "verified" ? "done" : ["submitted", "manual_review", "link_sent"].includes(identityStatus) ? "current" : "blocked",
+        title: "Verify identity",
+        detail:
+          identityStatus === "verified"
+            ? "Your account ID is verified for paid or sensitive work."
+            : `Current ID status: ${identityStatusText(identityStatus)}. Verification is required before paid, sensitive, title, family-authority, or high-value work proceeds.`,
+      },
+      {
+        state: hasRequest ? "done" : "current",
+        title: "Submit a brief",
+        detail: hasRequest
+          ? `${requests.length} request${requests.length === 1 ? "" : "s"} linked to this account.`
+          : "Create the first brief with route, task location, budget comfort, proof requirements, and contact permission.",
+      },
+      {
+        state: hasPaymentPath ? "done" : hasQuotedRequest ? "current" : "pending",
+        title: "Approve quote and payment route",
+        detail: hasPaymentPath
+          ? "A payment route or provider reference exists on at least one request."
+          : hasQuotedRequest
+            ? "Review the quote, proof plan, payment link, and funds-protection wording before work starts."
+            : "Swadakta will quote first; do not send money through informal channels.",
+      },
+      {
+        state: hasReview ? "done" : hasCompleted ? "current" : "pending",
+        title: "Track proof and review",
+        detail: hasReview
+          ? "Your review is recorded and helps the receiver provenance score."
+          : hasCompleted
+            ? "Review the completed job so the receiver score reflects the real result."
+            : "Track status, reports, proof, and milestones from this portal once work is active.",
+      },
+    ],
+    [
+      { label: "Start a brief", href: "index.html#intake", primary: !hasRequest },
+      { label: "Track by code", href: "index.html#tracking" },
+    ],
+  );
+}
+
+function renderReceiverOnboarding(email, applications = [], jobs = [], profile = null) {
+  const profileComplete = hasCompleteProfile(profile);
+  const identityStatus = strongestIdentityStatus(profile, applications);
+  const hasApplication = applications.length > 0;
+  const vettedApplication = applications.some((application) => application.status === "vetted");
+  const activeJobs = jobs.filter((job) => ["paid", "in_progress", "waiting_client"].includes(job.status));
+  const completedJobs = jobs.filter((job) => job.status === "completed");
+
+  return renderStepChecklist(
+    "Receiver job path",
+    "Use this side when you want to receive Swadakta jobs, submit proof, or manage assigned field work.",
+    [
+      {
+        state: email ? "done" : "current",
+        title: "Open account",
+        detail: email ? `Signed in as ${email}.` : "Use the receiver email field to open your account.",
+      },
+      {
+        state: profileComplete ? "done" : "current",
+        title: "Save worker profile",
+        detail: profileComplete
+          ? "Your profile is saved for matching, contact, and verification context."
+          : "Add name, WhatsApp, country/base, coverage areas, and work notes before expecting jobs.",
+      },
+      {
+        state: hasApplication ? "done" : "current",
+        title: "Apply for receiver work",
+        detail: hasApplication
+          ? `${applications.length} receiver application${applications.length === 1 ? "" : "s"} linked to this account.`
+          : "Complete the application so Swadakta can review regions, categories, proof standards, and availability.",
+      },
+      {
+        state: identityStatus === "verified" ? "done" : ["submitted", "manual_review", "link_sent"].includes(identityStatus) ? "current" : "blocked",
+        title: "Complete ID verification",
+        detail:
+          identityStatus === "verified"
+            ? "ID verification is complete."
+            : `Current ID status: ${identityStatusText(identityStatus)}. Paid jobs are blocked until ID is verified by Swadakta or an approved provider.`,
+      },
+      {
+        state: vettedApplication ? "done" : identityStatus === "verified" && hasApplication ? "current" : "blocked",
+        title: "Become vetted",
+        detail: vettedApplication
+          ? "You can be considered for assigned jobs."
+          : "Admin must review identity, references, proof standards, and coverage before marking you vetted.",
+      },
+      {
+        state: activeJobs.length ? "current" : completedJobs.length ? "done" : "pending",
+        title: "Submit proof on jobs",
+        detail: activeJobs.length
+          ? `${activeJobs.length} active assigned job${activeJobs.length === 1 ? "" : "s"} need timely updates, receipts, and proof.`
+          : completedJobs.length
+            ? `${completedJobs.length} completed job${completedJobs.length === 1 ? "" : "s"} recorded.`
+            : "Assigned jobs appear here only after payment, ID verification, vetting, and admin routing are complete.",
+      },
+    ],
+    [
+      { label: "Apply for jobs", href: "#partner", primary: !hasApplication },
+      { label: "Read field update rules", href: "#partner" },
+    ],
+  );
+}
+
 function reviewScoreOptions(current = "5") {
   const options = [
     ["5", "5 - Excellent"],
@@ -826,6 +1029,7 @@ function renderClientAccount(email, requests, profile) {
     clientAccountPanel.innerHTML = `
       <strong>Signed in as ${escapeHtml(email)}</strong>
       ${renderProvenanceSeal(clientProvenance(profile, requests), { subtle: true, title: "Client Seal" })}
+      ${renderClientOnboarding(email, requests, profile)}
       <span>No client requests are linked to this email yet.</span>
     `;
     return;
@@ -867,11 +1071,12 @@ function renderClientAccount(email, requests, profile) {
   clientAccountPanel.innerHTML = `
     <strong>Signed in as ${escapeHtml(email)}</strong>
     ${renderProvenanceSeal(provenance, { subtle: true, title: "Client Seal" })}
+    ${renderClientOnboarding(email, requests, profile)}
     <div class="account-list">${items}</div>
   `;
 }
 
-function renderPartnerAccount(email, applications, jobs = []) {
+function renderPartnerAccount(email, applications, jobs = [], profile = null) {
   if (!partnerAccountPanel) {
     return;
   }
@@ -879,6 +1084,7 @@ function renderPartnerAccount(email, applications, jobs = []) {
   if (!applications.length && !jobs.length) {
     partnerAccountPanel.innerHTML = `
       <strong>Signed in as ${escapeHtml(email)}</strong>
+      ${renderReceiverOnboarding(email, applications, jobs, profile)}
       <span>No receiver applications or assigned jobs are linked to this email yet.</span>
     `;
     return;
@@ -991,6 +1197,7 @@ function renderPartnerAccount(email, applications, jobs = []) {
 
   partnerAccountPanel.innerHTML = `
     <strong>Signed in as ${escapeHtml(email)}</strong>
+    ${renderReceiverOnboarding(email, applications, jobs, profile)}
     ${
       applications.length
         ? `<span>Receiver application status</span><div class="account-list">${applicationItems}</div>`
@@ -1037,7 +1244,7 @@ async function loadAccountPanels() {
       jobs: assignedJobs,
     };
     renderClientAccount(email, currentPortalContext.requests, currentPortalContext.profile);
-    renderPartnerAccount(email, currentPortalContext.applications, currentPortalContext.jobs);
+    renderPartnerAccount(email, currentPortalContext.applications, currentPortalContext.jobs, currentPortalContext.profile);
     renderAccountProfile(email, currentPortalContext.profile);
     setAccountStatus({
       email,
@@ -1190,6 +1397,13 @@ if (accountProfileCard) {
         profile: result.data || currentPortalContext.profile,
       };
       renderAccountProfile(email, currentPortalContext.profile);
+      renderClientAccount(email, currentPortalContext.requests, currentPortalContext.profile);
+      renderPartnerAccount(
+        email,
+        currentPortalContext.applications,
+        currentPortalContext.jobs,
+        currentPortalContext.profile,
+      );
     } catch (error) {
       statusElement.textContent = error.message || "Could not save profile.";
     }

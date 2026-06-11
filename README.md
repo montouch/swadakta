@@ -10,6 +10,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Email magic-link account creation/opening for clients, receivers, and admins
 - Portal account status and sign-out controls
 - Signed-in account profiles for role, name, WhatsApp, country/base, service coverage, and preferred currency
+- Role-aware client and receiver onboarding checklists inside the portal
 - Account-level ID verification tracking for all clients, receivers, and mixed-role users
 - Global corridor intake for origin country, destination country, service direction, task location, logistics mode, goods category, and compliance acknowledgement
 - Persisted route status, compliance flags, required checks, and proof requirements for each request
