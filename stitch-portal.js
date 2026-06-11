@@ -121,12 +121,32 @@
     return new URL(ACCOUNT_HOME_PATH, window.location.origin).href;
   }
 
+  function isAccountHomeOpen() {
+    return Boolean(
+      accountHome &&
+        !accountHome.hidden &&
+        document.body.classList.contains("is-account-signed-in") &&
+        getComputedStyle(accountHome).display !== "none",
+    );
+  }
+
   function forceAccountHomeRoute(email = "") {
     rememberAccountHome(email);
-    const homeUrl = accountHomeUrl();
+
     window.setTimeout(() => {
+      if (isAccountHomeOpen()) {
+        return;
+      }
+
+      if (accountHome) {
+        setSignedInShell(email || signedInEmail, {});
+        openAccountHome();
+        return;
+      }
+
+      const homeUrl = accountHomeUrl();
       window.location.replace(homeUrl);
-    }, 250);
+    }, 1200);
   }
 
   function rememberAccountHome(email = "") {
@@ -216,7 +236,10 @@
     if (authShell) {
       authShell.hidden = true;
     }
-    if (accountHome) accountHome.hidden = false;
+    if (accountHome) {
+      accountHome.hidden = false;
+      accountHome.removeAttribute("hidden");
+    }
     renderAccountHome(profile, { email });
     setVerificationEnabled(true);
     setVerificationPill("Account open", "bg-primary-container/10 text-primary");
@@ -244,7 +267,7 @@
 
   function setSignedOutShell() {
     if (!signOutRequested && shouldOpenRememberedAccountHome()) {
-      const rememberedEmail = rememberedAccountHomeEmail();
+      const rememberedEmail = signedInEmail || rememberedAccountHomeEmail();
       if (rememberedEmail) {
         setSignedInShell(rememberedEmail, {});
         openAccountHome();
@@ -692,7 +715,7 @@
         openSignedInDestination();
       }
     } catch (error) {
-      const displayEmail = email || fallbackEmail;
+      const displayEmail = email || fallbackEmail || rememberedAccountHomeEmail();
       if (displayEmail && isCurrentAccountRender(renderVersion)) {
         setSignedInShell(displayEmail, {});
         if (autoOpen || window.location.hash === "#work" || window.location.hash === "#home") openSignedInDestination();
