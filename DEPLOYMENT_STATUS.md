@@ -8,7 +8,7 @@ Last checked: June 11, 2026
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
 - Projects listed in that team: none
 - Chrome is logged into Vercel for this team.
-- Vercel's normal GitHub import flow is waiting for the Vercel GitHub app to be installed/authorized.
+- Vercel's normal GitHub import flow is waiting at **Continue with GitHub**, which starts GitHub/Vercel authorization before the repo can be imported.
 - Local `.vercel/project.json`: not present
 - `vercel` CLI on PATH: not present
 - Vercel connector deployment response: deployment requires `vercel deploy` from the project root or a Git integration that deploys on push.
@@ -21,9 +21,9 @@ Last checked: June 11, 2026
 
 ## Fastest Go-Live Path
 
-1. In Vercel, click **Install** for the GitHub application.
+1. In Vercel, click **Continue with GitHub** on the New Project screen.
 2. Authorize access to `montouch/swadakta` only, if GitHub offers repository-level selection.
-3. Import `montouch/swadakta`.
+3. Import `montouch/swadakta` from the Git repository list.
 4. Use the repo root as the project root.
 5. Framework preset: Other/static.
 6. Build command: leave empty.
@@ -52,6 +52,6 @@ After linking, `.vercel/project.json` should exist locally but should not be com
 
 ## Fallback Path
 
-If GitHub app authorization is not approved, create a manual Vercel deployment by uploading a clean static folder that contains only the public site files. This can get the domain live, but future updates will need manual redeploys until Git integration is connected.
+If GitHub app authorization is not approved, create a manual Vercel deployment by uploading a clean static folder that contains only the public site files. This can get the domain live, but future updates will need manual redeploys until Git integration is connected. Avoid the Vercel **clone from URL** flow for this project because it attempts to create a duplicate Git repository instead of importing the existing `montouch/swadakta` repo.
 
 Cloudflare Pages is also ready as a fallback because the repo includes `_headers` and `_redirects`. Cloudflare Direct Upload can publish the static assets from the dashboard, then `swadakta.com` can be attached from the Pages project's **Custom domains** tab. Cloudflare's docs note that Direct Upload projects cannot be switched to Git integration later, so prefer Git import when automatic deployments are available.

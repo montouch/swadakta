@@ -5,7 +5,7 @@ This is the practical go-live checklist for turning the current MVP into a paid 
 ## 1. Domain and Vercel
 
 - `swadakta.com` is purchased in Cloudflare under `swadakta111@gmail.com`.
-- Vercel is logged in, but project import is waiting on Vercel GitHub app authorization.
+- Vercel is logged in, but project import is waiting on the **Continue with GitHub** authorization step.
 - In Vercel, open the Swadakta project, go to Settings, then Domains, and add `swadakta.com`.
 - Add `www.swadakta.com` as a second domain and redirect it to the apex domain.
 - Follow the DNS records Vercel shows for the registrar. Vercel's domain docs explain that the dashboard displays the required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
