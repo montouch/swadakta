@@ -8,13 +8,16 @@ Last checked: June 13, 2026
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
 - Project: `swadakta`
 - Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
-- Latest production deployment: `dpl_6pAJQhrByR2SAdF95sy6RmQ3Mehy`
-- Latest production app commit verified: `40d7f89` (`Add account-wide ID verification and auth redirect fix`)
-- Git integration is connected to `montouch/swadakta` on `main`; pushes deploy automatically.
+- Latest production deployment observed: `dpl_9YfbtmfqCG5oPnFzadpEK6VzPXQJ`
+- Latest production app commit verified: `30063c9` (`Add founder action launch pack`)
+- Latest GitHub `main` commit locally: `10eb86a` (`Trigger deployment for pilot script`)
+- Production is currently stale until Vercel deploys commit `10eb86a` or newer. The repo contains release marker `2026-06-13-first-paid-pilot-script-v1`, but production still serves the earlier release.
+- Git integration is connected to `montouch/swadakta` on `main`, but the two latest pushes (`5c38efe` and `10eb86a`) did not create a new Vercel deployment during the latest check.
 - Chrome is logged into Vercel for this team.
-- Local `.vercel/project.json`: not present
-- `vercel` CLI on PATH: not present
-- Vercel connector can inspect deployments, but the local `vercel` CLI is still not installed.
+- Local `.vercel/project.json`: present locally and ignored by Git.
+- `vercel` CLI on PATH: not present.
+- A temporary Vercel CLI install was tested under `%TEMP%`, but `whoami`/`deploy` hung without useful output. Use the Vercel dashboard first for manual redeploy and Git-setting checks.
+- Vercel connector can inspect deployments, but its deploy helper only returns CLI instructions in this environment.
 - Current deployed serverless shape is 12 Node functions. Vercel's Node.js runtime builds `/api` files as functions, so `scripts/check-production.mjs` now guards that budget before deploy; keep shared helpers in `lib/` instead of adding extra files under `api/`. Reference: https://vercel.com/docs/functions/runtimes/node-js
 - June 13, 2026 note: Sumsub webhook handling is folded into `/api/identity/start-verification` and exposed by a Vercel rewrite from `/api/identity/sumsub-webhook`, so ID verification automation does not add a 13th function.
 - `release.json` is the production freshness marker. If `scripts/check-production.mjs` reports that `/release.json` is missing or that `release_id` does not match the repo, production is stale even if the public pages still load.
@@ -55,6 +58,27 @@ vercel deploy --prod
 ```
 
 After linking, `.vercel/project.json` should exist locally but should not be committed.
+
+## Current Deployment Recovery
+
+Use this when production health says the release is stale:
+
+1. Open the Vercel project deployment page:
+   - https://vercel.com/brownriley37-2646s-projects/swadakta/deployments
+2. Confirm whether a deployment exists for commit `10eb86a`.
+3. If it does not exist, open Vercel project Git settings and confirm:
+   - Git repository is `montouch/swadakta`.
+   - Production branch is `main`.
+   - Auto-deploy is enabled for production branch pushes.
+   - There is no ignored-build-step rule blocking the latest commits.
+4. If Git settings look correct, manually trigger a production redeploy from the dashboard or reconnect the GitHub integration.
+5. After deployment is `READY`, run:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
+```
+
+Production is current only when `https://swadakta.com/release.json` reports `2026-06-13-first-paid-pilot-script-v1` or a newer release.
 
 ## Fallback Notes
 

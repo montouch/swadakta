@@ -2,6 +2,8 @@
 
 This is the real-world setup checklist for making Swadakta usable as a paid service. The website can run the workflow, but the founder must complete these items before scaling paid jobs.
 
+For the shortest founder-facing action board, use [REAL_WORLD_LAUNCH_BOARD.md](REAL_WORLD_LAUNCH_BOARD.md) first, then come back here for the detailed operating checklist.
+
 ## Launch Position
 
 Use Swadakta first as a quote-first concierge and verified-operator marketplace. Do not market it as a bank, remittance provider, legal service, customs broker, licensed escrow service, or guaranteed delivery company.
