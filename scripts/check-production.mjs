@@ -708,8 +708,10 @@ const requiredFinalUxSupportPageMarkers = [
   ['auth.html', 'data-final-ux-shell="support-auth"'],
   ['auth.html', "styles.css?v=29"],
   ['privacy.html', 'data-final-ux-shell="support-policy"'],
+  ['privacy.html', 'data-stitch-source="support_policy_swadakta_final_ux_coverage"'],
   ['privacy.html', "styles.css?v=29"],
   ['terms.html', 'data-final-ux-shell="support-policy"'],
+  ['terms.html', 'data-stitch-source="support_terms_swadakta_final_ux_coverage"'],
   ['terms.html', "styles.css?v=29"],
 ];
 const requiredSupportCssMarkers = [
