@@ -1,7 +1,7 @@
 {
-  "release_id": "2026-06-13-job-acceptance-gate-v1",
-  "release_name": "Job acceptance gate for rules and brief flow",
-  "description": "Adds quote-eligible, evidence-first, founder-review, and refuse gates to rules pre-checks, then carries payment and receiver gates into the brief.",
+  "release_id": "2026-06-13-admin-acceptance-gate-v1",
+  "release_name": "Admin acceptance gate for protected operations",
+  "description": "Shows quote-eligible, evidence-first, founder-review, and refusal gates inside admin operations before payment routing, receiver assignment, or AI automation.",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

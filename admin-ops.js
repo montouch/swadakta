@@ -268,11 +268,88 @@
     return request.task_location || request.kenya_location || request.service_package || "Request";
   }
 
+  function requestComplianceFlags(request = {}) {
+    return Array.isArray(request.compliance_flags)
+      ? request.compliance_flags.map((flag) => String(flag || "").trim()).filter(Boolean)
+      : [];
+  }
+
+  function acceptanceStatusFromNotes(request = {}) {
+    const text = String(request.notes || "").toLowerCase();
+    if (text.includes("acceptance gate: do not accept") || text.includes("refuse unless")) return "refuse";
+    if (text.includes("acceptance gate: founder review") || text.includes("founder review before quote")) return "founder_review";
+    if (text.includes("acceptance gate: evidence first") || text.includes("quote only after route evidence")) return "evidence_before_quote";
+    if (text.includes("acceptance gate: quote eligible")) return "quote_eligible";
+    return "";
+  }
+
+  function acceptanceGate(request = {}) {
+    const flags = requestComplianceFlags(request);
+    const flag = flags.find((value) => value.startsWith("rules_acceptance_"));
+    const status = flag ? flag.replace("rules_acceptance_", "") : acceptanceStatusFromNotes(request);
+    const meta = {
+      quote_eligible: {
+        status: "quote_eligible",
+        label: "Quote eligible",
+        title: "Normal quote-first flow",
+        tone: "bg-emerald-500/10 text-emerald-700",
+        lane: "ai_routine",
+        next: "Proceed with normal quote, provider payment evidence, verified receiver, proof, and milestone controls.",
+        payment: "Payment request after quote approval.",
+        receiver: "Receiver assignment after ID and protected payment evidence.",
+        hardStops: ["Do not release money before proof review."],
+      },
+      evidence_before_quote: {
+        status: "evidence_before_quote",
+        label: "Evidence first",
+        title: "Quote only after route evidence",
+        tone: "bg-amber-400/20 text-amber-800",
+        lane: "provider_evidence",
+        next: "Collect route, carrier/local access, item description, value, and proof requirements before payment starts.",
+        payment: "Payment request after route evidence and quote approval.",
+        receiver: "Receiver can apply, but assignment waits for ID, payment evidence, and proof plan.",
+        hardStops: ["Do not start work from a vague item description.", "Do not bypass carrier/customs restrictions."],
+      },
+      founder_review: {
+        status: "founder_review",
+        label: "Founder review",
+        title: "Founder review before quote or payment",
+        tone: "bg-primary/10 text-primary",
+        lane: "founder_gate",
+        next: "Pause quote/payment until identity, authority, lawful route, proof, provider evidence, and release conditions are explicit.",
+        payment: "Quote/payment link only after review.",
+        receiver: "Only vetted and verified receivers after proof plan approval.",
+        hardStops: [
+          "Do not collect money until route and scope are approved.",
+          "Do not use Wise/bank fallback unless normal rails are unsuitable.",
+          "Do not release funds without proof and dispute check.",
+        ],
+      },
+      refuse: {
+        status: "refuse",
+        label: "Do not accept",
+        title: "Refuse unless a lawful specialist route is proven",
+        tone: "bg-error-container text-on-error-container",
+        lane: "founder_gate",
+        next: "Do not quote, collect payment, buy, ship, pick up, or assign a receiver until a qualified lawful route is proven outside the normal marketplace flow.",
+        payment: "No payment request.",
+        receiver: "No receiver assignment.",
+        hardStops: ["No quote.", "No payment collection.", "No receiver assignment.", "No informal carriage or purchase."],
+      },
+    }[status];
+
+    return meta || null;
+  }
+
   function requestFlags(request) {
     const flags = [];
     const requestMargin = margin(request);
     const economics = quoteEconomics(request);
+    const gate = acceptanceGate(request);
 
+    if (gate?.status === "refuse") flags.push(["Do not accept", "acceptance_refuse"]);
+    if (gate?.status === "founder_review") flags.push(["Acceptance founder review", "acceptance_founder"]);
+    if (gate?.status === "evidence_before_quote") flags.push(["Evidence before quote", "acceptance_evidence"]);
     if (request.admin_review_required) flags.push(["Founder review", "admin"]);
     if (request.route_status && request.route_status !== "active") flags.push([`Route ${formatStatus(request.route_status)}`, "route"]);
     if (riskyCompliance.has(request.compliance_status)) flags.push([formatStatus(request.compliance_status), "compliance"]);
@@ -293,6 +370,9 @@
   }
 
   function nextAction(request, flags) {
+    const gate = acceptanceGate(request);
+    if (gate && gate.status !== "quote_eligible") return gate.next;
+
     const kinds = new Set(flags.map(([, kind]) => kind));
     if (kinds.has("margin")) return quoteEconomicsNextStep(request);
     if (kinds.has("money")) return "Review protected money state, costs, and milestone release conditions before any payout.";
@@ -309,6 +389,10 @@
 
   function automationLane(request) {
     const kinds = requestFlagKinds(request);
+    const gate = acceptanceGate(request);
+    if (gate?.lane === "founder_gate") return "founder_gate";
+    if (gate?.lane === "provider_evidence") return "provider_evidence";
+
     if (
       request.admin_review_required ||
       request.sensitive_documents_expected ||
@@ -928,12 +1012,16 @@
 
   function copyQuoteText(request, flags) {
     const topMatch = matchRecommendations(request)[0];
+    const gate = acceptanceGate(request);
     return [
       `Swadakta request ${request.request_code}`,
       `Client: ${request.client_name || "Client"}`,
       `Route: ${routeLabel(request)}`,
       `Task: ${taskLabel(request)}`,
       `Status: ${formatStatus(request.status)} / payment ${formatStatus(request.payment_status)}`,
+      gate
+        ? `Acceptance gate: ${gate.title}. Payment gate: ${gate.payment}. Receiver gate: ${gate.receiver}.`
+        : "Acceptance gate: not carried from rules pre-check.",
       `Quote: ${formatMoney(request.quote_amount, request.quote_currency || request.preferred_currency || "AUD")}`,
       `Funds guard: ${formatStatus(request.funds_status || "not_collected")}`,
       `Internal economics - do not send to client: ${quoteEconomicsLine(request)}`,
@@ -943,6 +1031,38 @@
       `Founder note: ${nextAction(request, flags)}`,
       "Protected decisions are not delegated to AI: paid status, ID approval, assignment, and payout release require provider evidence or founder/admin approval.",
     ].join("\n");
+  }
+
+  function renderAcceptanceGatePanel(request) {
+    const gate = acceptanceGate(request);
+    if (!gate) return "";
+
+    const hardStops = gate.hardStops
+      .map((stop) => `<li class="rounded-2xl bg-white/62 px-3 py-2">${escapeHtml(stop)}</li>`)
+      .join("");
+
+    return `
+      <section class="mt-5 rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+        <div class="grid gap-4 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div>
+            <p class="font-label text-xs uppercase tracking-[0.18em] text-tertiary">Acceptance gate</p>
+            <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(gate.title)}</h3>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(gate.next)}</p>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">AI can summarize and chase evidence for this gate, but it cannot quote, collect, assign, refuse, or release money when provider evidence or founder approval is required.</p>
+          </div>
+          <span class="inline-flex min-h-10 items-center justify-center rounded-full px-4 font-label text-sm font-bold ${gate.tone}">
+            ${escapeHtml(gate.label)}
+          </span>
+        </div>
+        <div class="mt-4 grid gap-2 text-sm text-on-surface-variant md:grid-cols-2">
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Payment gate</strong>${escapeHtml(gate.payment)}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Receiver gate</strong>${escapeHtml(gate.receiver)}</span>
+        </div>
+        <ul class="mt-3 grid gap-2 text-xs leading-5 text-on-surface-variant md:grid-cols-2">
+          ${hardStops}
+        </ul>
+      </section>
+    `;
   }
 
   function paymentResultMessage(rail, result) {
@@ -1060,8 +1180,10 @@
               `<span class="rounded-full px-3 py-1 font-label text-xs ${
                 kind === "payment" || kind === "margin" || kind === "money"
                   ? "bg-amber-400/20 text-amber-800"
-                  : kind === "identity" || kind === "compliance"
+                  : kind === "identity" || kind === "compliance" || kind === "acceptance_refuse"
                     ? "bg-error-container text-on-error-container"
+                    : kind.startsWith("acceptance")
+                      ? "bg-amber-400/20 text-amber-800"
                     : "bg-primary/10 text-primary"
               }">${escapeHtml(label)}</span>`,
           )
@@ -1095,6 +1217,7 @@
           <a class="rounded-full border border-outline-variant/50 bg-white/72 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" href="tracking.html">Open tracking</a>
           <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" data-ai-only href="assistant.html">Ask AI</a>
         </div>
+        ${renderAcceptanceGatePanel(request)}
         ${renderMatchRecommendations(request)}
         ${renderFounderEconomicsGuard(request)}
         ${renderPaymentRoutePanel(request)}

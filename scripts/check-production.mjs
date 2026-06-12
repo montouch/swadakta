@@ -567,6 +567,13 @@ const requiredCorridorScriptMarkers = [
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
+  "acceptanceGate",
+  "renderAcceptanceGatePanel",
+  "rules_acceptance_",
+  "Acceptance gate",
+  "Payment gate",
+  "Receiver gate",
+  "Do not accept",
   "renderResolutionCases",
   "handlePaymentRoute",
   "payment-route",
@@ -1514,8 +1521,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=8")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=8`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=9")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=9`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
@@ -1849,11 +1856,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=8");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=9");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=8 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=9 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=8 returned 200");
+  pass("admin-ops.js?v=9 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {
