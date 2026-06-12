@@ -46,6 +46,13 @@ const requiredPages = [
   "/admin-ops",
   "/admin-verification",
 ];
+const paymentProviderEndpoints = [
+  "/api/payments/stripe-webhook",
+  "/api/payments/mpesa-callback",
+  "/api/payments/paypal-capture",
+  "/api/payments/paystack-webhook",
+  "/api/payments/flutterwave-webhook",
+];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -922,12 +929,12 @@ if (isLocalBaseUrl()) {
     }
   }
 
-  for (const webhookPath of ["/api/payments/paystack-webhook", "/api/payments/flutterwave-webhook"]) {
-    const { response } = await fetchText(webhookPath);
+  for (const paymentEndpoint of paymentProviderEndpoints) {
+    const { response } = await fetchText(paymentEndpoint);
     if (response.status !== 405) {
-      fail(failures, `${webhookPath} should reject GET with 405, got ${response.status}`);
+      fail(failures, `${paymentEndpoint} should reject GET with 405, got ${response.status}`);
     } else {
-      pass(`${webhookPath} rejects GET with 405`);
+      pass(`${paymentEndpoint} rejects GET with 405`);
     }
   }
 }
