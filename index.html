@@ -1,554 +1,476 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>Swadakta | Trusted Corridor Help</title>
-    <meta
-      name="description"
-      content="Swadakta helps people post trusted tasks across Africa and global corridors, receive verified offers, protect provider-confirmed payments, track proof, and apply for paid receiver work."
-    />
-    <meta name="theme-color" content="#4648d4" />
-    <link rel="canonical" href="https://swadakta.com/" />
-    <meta property="og:title" content="Swadakta | Trusted Corridor Help" />
-    <meta property="og:description" content="Post tasks for verified receivers across Africa and global corridors, or verify one account to receive paid work." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://swadakta.com/" />
-    <meta property="og:image" content="https://swadakta.com/assets/saas-burst.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Swadakta | Trusted Corridor Help" />
-    <meta name="twitter:description" content="Trusted tasks, verified receivers, protected payments, proof tracking, and one account for both client and work-seeker roles." />
-    <meta name="twitter:image" content="https://swadakta.com/assets/saas-burst.png" />
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=Inter:wght@400;500;600&amp;family=Geist:wght@500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
-      rel="stylesheet"
-    />
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              primary: "#4648d4",
-              tertiary: "#8127cf",
-              ink: "#131b2e",
-              muted: "#464554",
-              line: "#c7c4d7",
-              surface: "#faf8ff",
-              mint: "#0f8f7f",
-              sky: "#2f80ed",
-              gold: "#a46a00",
-              night: "#10172a"
-            },
-            fontFamily: {
-              display: ["Manrope", "sans-serif"],
-              body: ["Inter", "sans-serif"],
-              label: ["Geist", "sans-serif"]
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Swadakta | Ethical Global Corridor Concierge</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Manrope:wght@600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary": "#000000",
+                        "on-secondary-fixed": "#091d2b",
+                        "secondary-fixed-dim": "#b5c9db",
+                        "on-primary": "#ffffff",
+                        "on-surface": "#1b1b1e",
+                        "primary": "#000105",
+                        "on-tertiary-fixed-variant": "#005234",
+                        "inverse-primary": "#bcc5ee",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed-variant": "#3c4568",
+                        "surface": "#fbf8fc",
+                        "on-primary-container": "#7983a9",
+                        "secondary-container": "#d1e5f8",
+                        "outline-variant": "#c6c6cf",
+                        "error-container": "#ffdad6",
+                        "primary-fixed-dim": "#bcc5ee",
+                        "surface-variant": "#e4e2e5",
+                        "outline": "#76767f",
+                        "inverse-surface": "#303033",
+                        "secondary": "#4e6170",
+                        "surface-tint": "#545d81",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#45464e",
+                        "inverse-on-surface": "#f3f0f3",
+                        "surface-container-highest": "#e4e2e5",
+                        "tertiary-fixed-dim": "#4ddf9d",
+                        "surface-container-low": "#f6f3f6",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-bright": "#fbf8fc",
+                        "on-secondary-fixed-variant": "#364958",
+                        "on-secondary-container": "#546777",
+                        "on-error-container": "#93000a",
+                        "tertiary-fixed": "#6efcb7",
+                        "on-primary-fixed": "#101a3a",
+                        "surface-dim": "#dcd9dc",
+                        "on-tertiary-container": "#009763",
+                        "surface-container": "#f0edf0",
+                        "on-background": "#1b1b1e",
+                        "tertiary-container": "#002112",
+                        "secondary-fixed": "#d1e5f8",
+                        "primary-container": "#101a3a",
+                        "error": "#ba1a1a",
+                        "primary-fixed": "#dce1ff",
+                        "surface-container-high": "#eae7eb",
+                        "on-error": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "background": "#fbf8fc"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "xs": "4px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "64px",
+                        "xl": "40px",
+                        "unit": "4px",
+                        "sm": "8px",
+                        "lg": "24px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "body-lg": ["Inter"],
+                        "label-sm": ["Inter"],
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "headline-xl": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "0", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "600"}]
+                    }
+                }
             }
-          }
         }
-      };
     </script>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-
-      html,
-      body {
-        max-width: 100%;
-        overflow-x: clip;
-      }
-
-      body {
-        background:
-          radial-gradient(circle at 78% 4%, rgba(99, 102, 241, 0.18), transparent 28rem),
-          radial-gradient(circle at 8% 18%, rgba(15, 143, 127, 0.12), transparent 20rem),
-          linear-gradient(180deg, #f6f7ff 0%, #fbfbff 45%, #ffffff 100%);
-        color: #131b2e;
-        font-family: Inter, system-ui, sans-serif;
-        letter-spacing: 0;
-      }
-
-      [hidden] {
-        display: none !important;
-      }
-
-      .section-shell {
-        width: min(1180px, calc(100% - 32px));
-        margin-inline: auto;
-      }
-
-      .glass {
-        border: 1px solid rgba(255, 255, 255, 0.72);
-        background: rgba(255, 255, 255, 0.78);
-        box-shadow: 0 24px 70px rgba(43, 47, 127, 0.09);
-        backdrop-filter: blur(22px);
-      }
-
-      .panel {
-        border: 1px solid rgba(199, 196, 215, 0.46);
-        background: rgba(255, 255, 255, 0.86);
-      }
-
-      .label {
-        font-family: Geist, Inter, sans-serif;
-        font-size: 0.76rem;
-        font-weight: 700;
-        letter-spacing: 0;
-        text-transform: uppercase;
-      }
-
-      .button {
-        display: inline-flex;
-        min-height: 3rem;
-        align-items: center;
-        justify-content: center;
-        gap: 0.55rem;
-        border-radius: 999px;
-        padding: 0.82rem 1.16rem;
-        font-weight: 800;
-        line-height: 1.1;
-        text-align: center;
-        transition:
-          transform 160ms ease,
-          box-shadow 160ms ease,
-          background 160ms ease;
-      }
-
-      .button:hover {
-        transform: translateY(-1px);
-      }
-
-      .button-primary {
-        background: linear-gradient(180deg, #6366f1 0%, #4648d4 100%);
-        color: #ffffff;
-        box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.34),
-          0 18px 36px rgba(70, 72, 212, 0.24);
-      }
-
-      .button-secondary {
-        border: 1px solid rgba(199, 196, 215, 0.72);
-        background: rgba(255, 255, 255, 0.92);
-        color: #4648d4;
-      }
-
-      .icon-button {
-        display: inline-flex;
-        min-height: 2.75rem;
-        align-items: center;
-        justify-content: center;
-        gap: 0.45rem;
-        border-radius: 999px;
-        padding: 0.68rem 0.92rem;
-        font-weight: 800;
-      }
-
-      .material-symbols-outlined {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        max-width: 1.35em;
-        overflow: hidden;
-        line-height: 1;
-        letter-spacing: 0;
-        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
-      }
-
-      .orbital-object {
-        filter: drop-shadow(0 32px 46px rgba(70, 72, 212, 0.24));
-      }
-
-      .role-card,
-      .step-card,
-      .service-card,
-      .trust-chip {
-        min-width: 0;
-        border-radius: 1.25rem;
-      }
-
-      .role-card:focus-within,
-      .role-card:hover,
-      .service-card:hover {
-        border-color: rgba(70, 72, 212, 0.32);
-        box-shadow: 0 18px 42px rgba(43, 47, 127, 0.08);
-      }
-
-      @media (max-width: 760px) {
-        .section-shell {
-          width: min(100% - 28px, 1180px);
+<style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 4px 30px rgba(16, 26, 58, 0.05);
         }
-
-        .button {
-          width: 100%;
+        .inner-glow {
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.4);
         }
-      }
+        .text-glow {
+            text-shadow: 0 0 20px rgba(110, 252, 183, 0.3);
+        }
+            * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        main,
+        section,
+        .max-w-3xl {
+            min-width: 0;
+        }
+        .swadakta-hero-copy {
+            max-width: 100%;
+            overflow-wrap: break-word;
+        }
+        @media (max-width: 767px) {
+            .swadakta-hero-title,
+            .swadakta-hero-copy {
+                width: min(342px, calc(100vw - 32px)) !important;
+                max-width: 342px !important;
+            }
+            .swadakta-hero-title {
+                overflow-wrap: break-word;
+                font-size: 2.35rem !important;
+                line-height: 1.12 !important;
+            }
+            .swadakta-hero-copy {
+                font-size: 0.94rem !important;
+                line-height: 1.55 !important;
+            }
+            .swadakta-mobile-bottom-nav {
+                left: 0 !important;
+                right: 0 !important;
+                width: min(100vw, 390px) !important;
+                max-width: 390px !important;
+                display: grid !important;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
     </style>
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <link rel="manifest" href="/site.webmanifest" />
-    <meta name="application-name" content="Swadakta" />
-  </head>
-  <body class="min-h-screen pb-24 antialiased md:pb-0">
-    <header class="sticky top-0 z-50 border-b border-white/70 bg-surface/84 backdrop-blur-2xl">
-      <div class="section-shell flex h-20 items-center justify-between gap-4">
-        <a class="inline-flex min-h-10 items-center gap-3 font-display text-2xl font-extrabold text-primary" href="/" aria-label="Swadakta home">
-          <img class="h-9 w-9" src="assets/swadakta-brand-mark.svg" alt="" />
-          Swadakta
-        </a>
-        <nav class="hidden items-center gap-2 font-label text-sm text-muted lg:flex" aria-label="Main navigation">
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="#how-it-works">How it works</a>
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="payments.html">Payments</a>
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="trust.html">Trust</a>
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="rules.html">Rules</a>
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="assistant.html">AI</a>
-          <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="portal.html">Sign in</a>
-        </nav>
-        <a class="button button-primary min-h-11 px-5 text-sm" href="portal.html">Open account</a>
-      </div>
-    </header>
+<!-- Swadakta production metadata layered onto the direct Google Stitch export. -->
+<meta name="description" content="Swadakta helps people get trusted jobs done across Africa and global corridors with verified receivers, milestone proof, payment clarity, and optional AI assistance." />
+<meta name="theme-color" content="#101A3A" />
+<link rel="canonical" href="https://swadakta.com/" />
+<meta property="og:title" content="Swadakta | Ethical Global Corridor Concierge" />
+<meta property="og:description" content="Swadakta helps people get trusted jobs done across Africa and global corridors with verified receivers, milestone proof, payment clarity, and optional AI assistance." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://swadakta.com/" />
+<meta property="og:image" content="https://swadakta.com/assets/saas-burst.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Swadakta | Ethical Global Corridor Concierge" />
+<meta name="twitter:description" content="Swadakta helps people get trusted jobs done across Africa and global corridors with verified receivers, milestone proof, payment clarity, and optional AI assistance." />
+<meta name="twitter:image" content="https://swadakta.com/assets/saas-burst.png" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="application-name" content="Swadakta" />
+</head>
+<body data-stitch-source="swadakta_home_final_ux_coverage" class="bg-background text-on-surface font-body-md selection:bg-tertiary-fixed selection:text-on-tertiary-fixed">
+<!-- Top Navigation Bar -->
+<nav class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-margin-mobile md:px-margin-desktop h-20 bg-surface/80 backdrop-blur-xl border-b border-white/20 shadow-sm">
+<div class="flex items-center gap-md">
+<span class="font-headline-md text-headline-md font-bold text-primary">Swadakta</span>
+</div>
+<div class="hidden md:flex items-center gap-xl">
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-md" href="/">Home</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md" href="portal.html#jobs-board">Marketplace</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md" href="brief.html">Concierge</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md" href="verification.html">Verification</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label-md" href="trust.html">Trust</a>
+</div>
+<div class="flex items-center gap-md">
+<a class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-surface-container transition-colors" href="portal.html" aria-label="Open account">account_circle</a>
 
-    <main>
-      <section class="section-shell grid gap-10 py-12 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:py-16">
-        <div class="max-w-3xl">
-          <span class="label inline-flex rounded-full border border-line/50 bg-white/76 px-4 py-2 text-primary">
-            Africa-wide and global corridor help
-          </span>
-          <h1 class="mt-6 font-display text-5xl font-extrabold leading-[1.03] text-ink md:text-6xl">
-            Trusted help there, without being there.
-          </h1>
-          <p class="mt-5 max-w-2xl text-lg leading-8 text-muted">
-            Post errands, sourcing, proof visits, deliveries, document tasks, and local support across Africa and major global corridors. Verified receivers handle the work while Swadakta keeps proof, payments, and rules in order.
-          </p>
-          <div class="mt-7 grid gap-3 sm:flex sm:flex-wrap">
-            <a class="button button-primary" href="corridor.html">
-              <span class="material-symbols-outlined text-[20px]">add_task</span>
-              Get a job done
-            </a>
-            <a class="button button-secondary" href="verification.html?reason=receiver_work&amp;role=receiver">
-              <span class="material-symbols-outlined text-[20px]">work</span>
-              Get paid work
-            </a>
-            <a class="button button-secondary" href="tracking.html">
-              <span class="material-symbols-outlined text-[20px]">travel_explore</span>
-              Track request
-            </a>
-          </div>
-          <div class="mt-6 grid gap-2 text-sm text-muted sm:grid-cols-3">
-            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-mint"></span>ID-gated paid work</span>
-            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-sky"></span>Quote-first payment</span>
-            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-gold"></span>Proof before release</span>
-          </div>
-        </div>
+</div>
+</nav>
+<main class="relative pt-20 overflow-x-hidden">
+<!-- Hero Section -->
+<section class="relative min-h-[calc(100vh-80px)] flex items-center px-margin-mobile md:px-margin-desktop py-12 md:py-16 overflow-hidden">
+<div class="absolute inset-0 -z-10 bg-gradient-to-br from-secondary-container/20 via-background to-tertiary-fixed/10"></div>
+<!-- Animated Background Placeholder -->
 
-        <aside class="relative min-h-[520px] overflow-hidden rounded-[2rem] border border-white/70 bg-[#eef2ff]/72 p-5 shadow-[0_28px_80px_rgba(70,72,212,0.12)]">
-          <div class="absolute right-0 top-0 h-36 w-36 rounded-bl-[5rem] bg-primary/12"></div>
-          <img class="orbital-object absolute right-4 top-6 h-48 w-48 object-contain md:right-8 md:h-56 md:w-56" src="assets/saas-burst.png" alt="Blue crystalline Swadakta corridor object" />
-          <div class="relative z-10 max-w-[320px] rounded-[1.35rem] border border-white/74 bg-white/72 p-5 backdrop-blur-2xl">
-            <p class="label text-primary">Start a request</p>
-            <h2 class="mt-2 font-display text-2xl font-extrabold">Corridor preview</h2>
-            <div class="mt-5 grid gap-3">
-              <div class="panel rounded-2xl p-4">
-                <p class="label text-muted">From</p>
-                <p class="mt-1 font-bold">Australia</p>
-              </div>
-              <div class="panel rounded-2xl p-4">
-                <p class="label text-muted">To / in-country</p>
-                <p class="mt-1 font-bold">Kenya, Ghana, Nigeria, South Africa...</p>
-              </div>
-              <div class="grid gap-3 sm:grid-cols-2">
-                <div class="panel rounded-2xl p-4">
-                  <p class="label text-muted">Task</p>
-                  <p class="mt-1 font-bold">Proof visit</p>
-                </div>
-                <div class="panel rounded-2xl p-4">
-                  <p class="label text-muted">Proof</p>
-                  <p class="mt-1 font-bold">Photos + receipt</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="relative z-10 mt-5 grid gap-3 md:grid-cols-2">
-            <div class="glass rounded-2xl p-4">
-              <div class="flex items-center justify-between gap-3">
-                <span class="label text-muted">Receiver fit</span>
-                <span class="rounded-full bg-mint/10 px-3 py-1 text-xs font-bold text-mint">84%</span>
-              </div>
-              <p class="mt-3 text-sm leading-6 text-muted">Verification, location fit, proof plan, reviews, and availability shape who gets offered the work.</p>
-            </div>
-            <div class="glass rounded-2xl p-4">
-              <div class="flex items-center justify-between gap-3">
-                <span class="label text-muted">Money gate</span>
-                <span class="rounded-full bg-sky/10 px-3 py-1 text-xs font-bold text-sky">Protected</span>
-              </div>
-              <p class="mt-3 text-sm leading-6 text-muted">Milestones move only after provider confirmation and proof review.</p>
-            </div>
-          </div>
-        </aside>
-      </section>
+<div class="max-w-3xl z-10">
+<div class="inline-flex items-center gap-xs px-3 py-1 bg-tertiary-fixed/20 border border-tertiary-fixed/30 rounded-full mb-lg">
+<span class="material-symbols-outlined text-[16px] text-on-tertiary-container" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="font-label-sm text-on-tertiary-container uppercase tracking-wider">Ethically Managed Corridors</span>
+</div>
+<h1 class="swadakta-hero-title font-headline-xl text-headline-xl text-primary-container mb-md leading-tight">
+                    Your ethical guide to <br/><span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-container to-secondary">global corridors.</span>
+</h1>
+<p class="swadakta-hero-copy font-body-lg text-body-lg text-secondary mb-xl max-w-xl">
+                    Post trusted tasks across Africa and abroad. Receivers handle proof and updates.
+                </p>
+<div class="flex flex-wrap gap-md">
+<a class="px-lg py-md bg-primary-container text-on-primary rounded-lg font-bold inner-glow hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-sm" href="brief.html">
+                        Get a job done
+                        <span class="material-symbols-outlined">arrow_forward</span>
+</a>
+<a class="px-lg py-md bg-secondary-container border border-outline-variant text-on-secondary-container rounded-lg font-bold hover:bg-surface-container-high transition-colors" href="portal.html#jobs-board">
+                        Find work
+                    </a>
+</div>
+</div>
+<!-- Floating Hero Card -->
+<div class="hidden lg:block absolute right-margin-desktop top-1/2 -translate-y-1/2 w-[440px] h-[520px] rounded-3xl glass-card p-lg overflow-hidden border-white/40">
+<div class="relative w-full h-64 rounded-2xl overflow-hidden mb-lg">
+<img class="w-full h-full object-cover" data-alt="A professional, close-up shot of two diverse people shaking hands in a high-tech, sunlit office in Nairobi. The lighting is soft and golden, reflecting off high-definition glass partitions. The overall aesthetic is clean, premium, and trustworthy, with a soft sky blue and deep navy color palette that feels like a modern SaaS environment." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCIotc4XHaxNVniF_rFjeVAbiuD1zVGF8LE4c6RsFN8L77pxI2FsgodGSqW9dFIY2KUz_q03HERVAvcSOkE7udN11iPTIE4x-H4mYZNR_drsVv9cnjqKAi2YbW4vZYket2gJmXDU316ySvb60FWoEAJuE6zuIm6xOCcTYwi8N90HcoyzazoaMvR096MKDPM_baDOvQ9RTN6s1rRAh7w3YBbMgiK3vPsCyyDDjQqbGvgYGLXKthfDe_ymlHcCa-V4sSw1sDKLUwjor0y"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/60 to-transparent"></div>
+<div class="absolute bottom-md left-md">
+<span class="font-label-sm text-white px-2 py-1 bg-on-tertiary-container/80 rounded-md backdrop-blur-md">Featured Corridor: Lagos to London</span>
+</div>
+</div>
+<div class="space-y-md">
+<h3 class="font-headline-md text-headline-md text-primary-container">Active Verification</h3>
+<div class="flex gap-sm">
+<div class="w-2 h-2 rounded-full bg-tertiary-fixed animate-pulse"></div>
+<p class="font-body-md text-on-surface-variant">42 Verified receivers currently active in the West African corridor.</p>
+</div>
+<div class="p-md bg-surface-container-low rounded-xl flex items-center justify-between border border-white/20">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">history</span>
+<span class="font-label-md text-on-surface-variant">Average turnaround</span>
+</div>
+<span class="font-bold text-primary-container">4.2 Hours</span>
+</div>
+</div>
+</div>
+</section>
+<!-- "How work moves" - Bento Grid Layout -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop bg-surface-container-lowest">
+<div class="max-w-7xl mx-auto">
+<div class="text-center mb-20">
+<h2 class="font-headline-lg text-headline-lg text-primary-container mb-sm">How work moves</h2>
+<p class="text-secondary max-w-lg mx-auto">Seamless task management through our intelligent concierge marketplace.</p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-12 gap-lg h-auto md:h-[450px]">
+<!-- Step 1 -->
+<div class="md:col-span-4 glass-card rounded-3xl p-xl flex flex-col justify-between hover:translate-y-[-8px] transition-transform duration-300">
+<div>
+<div class="w-12 h-12 bg-secondary-container rounded-2xl flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined text-on-secondary-container">post_add</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary-container mb-md">Post brief</h3>
+<p class="text-on-surface-variant">Define your requirements in minutes. Our AI assistant helps clarify needs for global receivers.</p>
+</div>
+<div class="pt-lg border-t border-outline-variant/30 flex justify-between items-center">
+<span class="font-label-sm text-secondary uppercase tracking-widest">Step 01</span>
+<span class="font-bold text-primary-container">Start here</span>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="md:col-span-5 bg-on-secondary-fixed text-white rounded-3xl p-xl flex flex-col justify-between overflow-hidden relative group">
+<div class="absolute top-0 right-0 p-lg opacity-20 group-hover:opacity-40 transition-opacity">
+<span class="material-symbols-outlined text-[120px]">verified_user</span>
+</div>
+<div class="relative z-10">
+<div class="w-12 h-12 bg-tertiary-fixed text-on-tertiary-fixed rounded-2xl flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined">rate_review</span>
+</div>
+<h3 class="font-headline-md text-headline-md mb-md">Review verified offers</h3>
+<p class="text-secondary-fixed-dim">Browse profiles with verified provenance scores. Choose providers based on ethical ratings and performance.</p>
+</div>
+<div class="relative z-10 pt-lg border-t border-white/10 flex justify-between items-center">
+<span class="font-label-sm text-tertiary-fixed-dim uppercase tracking-widest">Step 02</span>
+<span class="material-symbols-outlined">trending_flat</span>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="md:col-span-3 glass-card rounded-3xl p-xl flex flex-col justify-between hover:translate-y-[-8px] transition-transform duration-300 border-primary/10">
+<div>
+<div class="w-12 h-12 bg-primary-container text-on-primary rounded-2xl flex items-center justify-center mb-lg">
+<span class="material-symbols-outlined">location_searching</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-primary-container mb-md">Track to completion</h3>
+<p class="text-on-surface-variant">Real-time milestones and secure payouts.</p>
+</div>
+<div class="pt-lg border-t border-outline-variant/30 flex justify-between items-center">
+<span class="font-label-sm text-secondary uppercase tracking-widest">Step 03</span>
+<span class="font-bold text-primary-container">Done</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Trust & Safety Section -->
+<section class="py-24 px-margin-mobile md:px-margin-desktop relative">
+<div class="absolute inset-0 bg-primary-container -z-10">
 
-      <section class="border-y border-line/35 bg-white/66 py-8" aria-label="Trust and payment safeguards">
-        <div class="section-shell grid gap-3 md:grid-cols-5">
-          <div class="trust-chip panel p-4">
-            <span class="material-symbols-outlined text-primary">badge</span>
-            <p class="mt-2 font-bold">ID verification</p>
-          </div>
-          <div class="trust-chip panel p-4">
-            <span class="material-symbols-outlined text-sky">request_quote</span>
-            <p class="mt-2 font-bold">Quote-first pricing</p>
-          </div>
-          <div class="trust-chip panel p-4">
-            <span class="material-symbols-outlined text-mint">account_balance_wallet</span>
-            <p class="mt-2 font-bold">Protected payment</p>
-          </div>
-          <div class="trust-chip panel p-4">
-            <span class="material-symbols-outlined text-gold">task_alt</span>
-            <p class="mt-2 font-bold">Milestone release</p>
-          </div>
-          <div class="trust-chip panel p-4">
-            <span class="material-symbols-outlined text-tertiary">gavel</span>
-            <p class="mt-2 font-bold">Lawful route checks</p>
-          </div>
-        </div>
-      </section>
+</div>
+<div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-xl items-center">
+<div class="text-white">
+<h2 class="font-headline-lg text-headline-lg mb-lg">Trust is our currency</h2>
+<p class="font-body-lg text-secondary-fixed-dim mb-xl">We've built an infrastructure of psychological safety for the global labor market. No shortcuts, just pure provenance.</p>
+<div class="space-y-lg">
+<div class="flex gap-md">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-tertiary-fixed/20 flex items-center justify-center border border-tertiary-fixed/40">
+<span class="material-symbols-outlined text-tertiary-fixed">shield</span>
+</div>
+<div>
+<h4 class="font-headline-md text-md mb-xs">Protected Payments</h4>
+<p class="text-secondary-fixed-dim font-body-md">Funds move through provider-confirmed payment rails, with milestone release only after proof and user approval are recorded.</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-tertiary-fixed/20 flex items-center justify-center border border-tertiary-fixed/40">
+<span class="material-symbols-outlined text-tertiary-fixed">analytics</span>
+</div>
+<div>
+<h4 class="font-headline-md text-md mb-xs">Provenance Scores</h4>
+<p class="text-secondary-fixed-dim font-body-md">A dynamic reputation engine that tracks the historical integrity and success rate of every corridor receiver.</p>
+</div>
+</div>
+<div class="flex gap-md">
+<div class="flex-shrink-0 w-10 h-10 rounded-full bg-tertiary-fixed/20 flex items-center justify-center border border-tertiary-fixed/40">
+<span class="material-symbols-outlined text-tertiary-fixed">fingerprint</span>
+</div>
+<div>
+<h4 class="font-headline-md text-md mb-xs">Multistage ID Verification</h4>
+<p class="text-secondary-fixed-dim font-body-md">Biometric and document-level verification ensures every participant is who they say they are.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="relative">
+<div class="relative z-10 glass-card p-xl rounded-[2rem] border-white/20 bg-white/10 overflow-hidden">
+<div class="flex items-center gap-md mb-lg">
+<img class="w-16 h-16 rounded-full border-2 border-tertiary-fixed" data-alt="A portrait of a confident young professional man from Ghana, smiling warmly. He is outdoors in a vibrant, slightly blurred marketplace setting. The lighting is natural and bright, conveying warmth and reliability. High-definition details on his face and the subtle bokeh effect create a premium, human-centric feel for a trust-based platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAszLWgVVMKWLyuzynjilejg2XrTEfWu5kwrL2_zg_uflyMfKZAKQwH0TPPDWExJRb_qnkzPP0MJRtO1S_FRyELGtxxY7o4nhVVreHjGObxg9zRlevL1_NN8FpqzIlbNANybX4sJX-a0W6lXKAMJIbvVq0gB7gaexfoTPFrcgb6-UtKuBoDpxFu6ZO4egT7kYZTH4V6AmZqw81Tz03xqf_SU4MVWlGyS3RKBUM8bHk62rrFfvr3KKgyDQbtn7f0RHzpQosV72KiEb4n"/>
+<div>
+<h5 class="text-white font-bold">Kofi A.</h5>
+<p class="text-tertiary-fixed font-label-sm">Verified Receiver • Score 98.4</p>
+</div>
+</div>
+<div class="p-md bg-white/5 rounded-xl border border-white/10 mb-lg">
+<p class="text-secondary-fixed-dim italic">"Swadakta changed how I work. The provenance score allowed me to build trust with international clients instantly."</p>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="bg-white/5 p-sm rounded-lg border border-white/10 text-center">
+<span class="block text-white font-bold">124</span>
+<span class="text-xs text-secondary-fixed-dim">Tasks Done</span>
+</div>
+<div class="bg-white/5 p-sm rounded-lg border border-white/10 text-center">
+<span class="block text-white font-bold">100%</span>
+<span class="text-xs text-secondary-fixed-dim">Trust Rating</span>
+</div>
+</div>
+</div>
+<!-- Decorative shapes -->
+<div class="absolute -top-12 -right-12 w-64 h-64 bg-secondary rounded-full blur-[100px] opacity-30"></div>
+<div class="absolute -bottom-12 -left-12 w-48 h-48 bg-tertiary-fixed rounded-full blur-[80px] opacity-20"></div>
+</div>
+</div>
+</section>
+<!-- CTA Section -->
+<section class="py-32 px-margin-mobile md:px-margin-desktop text-center overflow-hidden relative">
 
-      <section class="section-shell py-14">
-        <div class="grid gap-5 md:grid-cols-3">
-          <article class="role-card panel p-5">
-            <span class="material-symbols-outlined text-3xl text-primary">shopping_bag</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">Client</h2>
-            <p class="mt-2 leading-7 text-muted">Post a task, choose where it happens, add photos or links, agree proof, and track completion.</p>
-            <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="corridor.html">Start a request</a>
-          </article>
-          <article class="role-card panel p-5">
-            <span class="material-symbols-outlined text-3xl text-mint">engineering</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">Receiver</h2>
-            <p class="mt-2 leading-7 text-muted">Create a real profile, verify your ID, choose your work areas, and make offers on suitable jobs.</p>
-            <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="verification.html?reason=receiver_work&amp;role=receiver">Apply for work</a>
-          </article>
-          <article class="role-card panel p-5">
-            <span class="material-symbols-outlined text-3xl text-tertiary">sync_alt</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">Both</h2>
-            <p class="mt-2 leading-7 text-muted">Use one account to request help when you need it and receive work when you are verified and available.</p>
-            <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="portal.html">Open account</a>
-          </article>
-        </div>
-        <p class="mt-5 rounded-2xl border border-primary/12 bg-primary/6 p-4 text-sm leading-6 text-muted">
-          Verification is not required just to create an account. It is required before paid posting, paid receiving, sensitive tasks, higher-value work, and location or identity changes that affect trust.
-        </p>
-      </section>
+<div class="max-w-3xl mx-auto relative z-10">
+<h2 class="font-headline-xl text-headline-xl text-primary-container mb-md">Ready to move work safely?</h2>
+<p class="font-body-lg text-secondary mb-xl">Join the ethical marketplace connecting global needs with verified local talent.</p>
+<div class="flex justify-center gap-md">
+<a class="px-xl py-lg bg-primary-container text-on-primary rounded-xl font-bold shadow-lg hover:shadow-primary-container/20 hover:-translate-y-1 transition-all" href="portal.html">
+                        Get Started Now
+                    </a>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer -->
+<footer class="w-full py-16 px-margin-mobile md:px-margin-desktop bg-on-secondary-fixed text-white flex flex-col md:flex-row justify-between">
+<div class="mb-lg md:mb-0 max-w-sm">
+<span class="font-headline-lg text-headline-lg text-white block mb-md">Swadakta</span>
+<p class="text-secondary-fixed-dim font-body-md mb-lg">Ethical concierge marketplace bridging global corridors through transparency and verified human labor.</p>
+<div class="space-y-sm">
+<a class="flex items-center gap-sm text-secondary-fixed-dim hover:text-white transition-colors" href="mailto:swadakta111@gmail.com">
+<span class="material-symbols-outlined text-[20px]">mail</span>
+                    swadakta111@gmail.com
+                </a>
+<a class="flex items-center gap-sm text-secondary-fixed-dim hover:text-white transition-colors" href="https://wa.me/61431455174">
+<span class="material-symbols-outlined text-[20px]">chat</span>
+                    WhatsApp +61431455174
+                </a>
+</div>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-xl">
+<div class="space-y-md">
+<h4 class="font-label-md text-white uppercase tracking-widest">Platform</h4>
+<nav class="flex flex-col gap-sm">
+<a class="text-secondary-fixed-dim hover:text-tertiary-fixed transition-colors font-label-sm" href="/">Home</a>
+<a class="text-secondary-fixed-dim hover:text-tertiary-fixed transition-colors font-label-sm" href="portal.html#jobs-board">Marketplace</a>
+<a class="text-secondary-fixed-dim hover:text-tertiary-fixed transition-colors font-label-sm" href="brief.html">Concierge</a>
+</nav>
+</div>
+<div class="space-y-md">
+<h4 class="font-label-md text-white uppercase tracking-widest">Legal</h4>
+<nav class="flex flex-col gap-sm">
+<a class="text-secondary-fixed-dim hover:text-tertiary-fixed transition-colors font-label-sm" href="privacy.html">Privacy Policy</a>
+<a class="text-secondary-fixed-dim hover:text-tertiary-fixed transition-colors font-label-sm" href="terms.html">Terms of Service</a>
+</nav>
+</div>
+<div class="space-y-md col-span-2 sm:col-span-1">
+<h4 class="font-label-md text-white uppercase tracking-widest">Social</h4>
+<div class="flex gap-md">
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">public</span>
+</button>
+<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+</div>
+<div class="w-full mt-16 pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center opacity-60">
+<p class="font-label-sm">© 2026 Swadakta. All rights reserved.</p>
+<p class="font-label-sm mt-md md:mt-0">Designed for the Global South Corridor.</p>
+</div>
+</footer>
+<!-- Bottom Navigation Bar (Mobile Only) -->
+<nav class="swadakta-mobile-bottom-nav md:hidden fixed bottom-0 left-0 w-full z-50 grid grid-cols-3 items-center px-4 py-2 bg-surface/80 backdrop-blur-xl border-t border-white/20 shadow-lg rounded-t-xl">
+<a class="flex flex-col items-center justify-center bg-primary-container text-on-primary-container rounded-full px-4 py-1" href="/">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-label-sm text-[10px]">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="messages.html">
+<span class="material-symbols-outlined">work_outline</span>
+<span class="font-label-sm text-[10px]">Job Room</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant" href="assistant.html">
+<span class="material-symbols-outlined">smart_toy</span>
+<span class="font-label-sm text-[10px]">AI</span>
+</a>
 
-      <section class="section-shell grid gap-8 pb-14 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
-        <div>
-          <p class="label text-primary">Receiver credibility</p>
-          <h2 class="mt-3 font-display text-4xl font-extrabold">Choose by trust signals, not just price.</h2>
-          <p class="mt-4 leading-8 text-muted">
-            Offers should be judged by verification status, provenance score, proof plan, reviews, route fit, and communication quality. Lowest price does not automatically win.
-          </p>
-          <a class="button button-secondary mt-6" href="trust.html">Read trust rules</a>
-        </div>
-        <div class="grid gap-4 md:grid-cols-[0.85fr_1fr]">
-          <article class="panel rounded-[1.5rem] p-5">
-            <div class="flex items-center gap-4">
-              <div class="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-xl font-extrabold text-primary">AN</div>
-              <div>
-                <h3 class="font-display text-xl font-extrabold">Verified receiver</h3>
-                <p class="text-sm text-muted">Nairobi, Kenya</p>
-              </div>
-            </div>
-            <div class="mt-5 rounded-2xl bg-mint/10 p-4">
-              <div class="flex items-center justify-between gap-3">
-                <span class="font-bold text-mint">Provenance seal</span>
-                <span class="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-mint">82%</span>
-              </div>
-              <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
-                <div class="h-full w-[82%] rounded-full bg-mint"></div>
-              </div>
-            </div>
-            <div class="mt-4 grid gap-2 text-sm text-muted">
-              <p><strong class="text-ink">ID:</strong> provider verified</p>
-              <p><strong class="text-ink">Proof quality:</strong> photos, receipts, voice notes</p>
-              <p><strong class="text-ink">Review:</strong> 4.8 after completed jobs</p>
-            </div>
-          </article>
-          <div class="grid gap-4">
-            <article class="service-card panel p-5">
-              <span class="material-symbols-outlined text-primary">local_offer</span>
-              <h3 class="mt-3 font-display text-xl font-extrabold">Verified offers</h3>
-              <p class="mt-2 text-sm leading-6 text-muted">Clients see safe offer comparisons without private receiver data, admin notes, or internal economics.</p>
-            </article>
-            <article class="service-card panel p-5">
-              <span class="material-symbols-outlined text-gold">rule</span>
-              <h3 class="mt-3 font-display text-xl font-extrabold">Proof plan first</h3>
-              <p class="mt-2 text-sm leading-6 text-muted">Receivers explain how they will prove the job before Swadakta assigns sensitive or paid work.</p>
-            </article>
-          </div>
-        </div>
-      </section>
+</nav>
+<script>
+        // Smooth scroll interaction
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                const target = document.querySelector(this.getAttribute('href'));
+                if (!target) return;
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
 
-      <section class="bg-night py-14 text-white" id="how-it-works">
-        <div class="section-shell">
-          <div class="max-w-2xl">
-            <p class="label text-[#9ee6d8]">How work moves</p>
-            <h2 class="mt-3 font-display text-4xl font-extrabold">A simple flow for serious tasks.</h2>
-            <p class="mt-4 leading-8 text-white/72">Every job should have a route, a quote, protected payment evidence, proof expectations, and a clear release condition.</p>
-          </div>
-          <div class="mt-8 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">01</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Post brief</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Route, item, task, budget, deadline, and proof.</p>
-            </article>
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">02</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Review offers</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Verification, provenance, proof plan, and fit.</p>
-            </article>
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">03</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Protect payment</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Provider confirmation before real work starts.</p>
-            </article>
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">04</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Do work</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Messages, media, voice notes, receipts, and reports.</p>
-            </article>
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">05</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Review proof</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Milestone release only after proof review.</p>
-            </article>
-            <article class="step-card border border-white/10 bg-white/8 p-4">
-              <strong class="text-[#9ee6d8]">06</strong>
-              <h3 class="mt-3 font-display text-lg font-extrabold">Rate outcome</h3>
-              <p class="mt-2 text-sm leading-6 text-white/66">Reviews feed receiver and client trust scores.</p>
-            </article>
-          </div>
-        </div>
-      </section>
+        // Simple parallax effect for glass cards
+        window.addEventListener('mousemove', (e) => {
+            const cards = document.querySelectorAll('.glass-card');
+            const mouseX = e.clientX / window.innerWidth;
+            const mouseY = e.clientY / window.innerHeight;
 
-      <section class="section-shell grid gap-8 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
-        <div>
-          <p class="label text-primary">Common work</p>
-          <h2 class="mt-3 font-display text-4xl font-extrabold">Start with practical jobs.</h2>
-          <p class="mt-4 leading-8 text-muted">
-            The safest launch work is clear, low-risk, proof-friendly, and easy to quote. Higher-value or restricted jobs stay gated until provider and founder checks are ready.
-          </p>
-          <a class="button button-secondary mt-6" href="rules.html">Check item rules</a>
-        </div>
-        <div class="grid gap-4 sm:grid-cols-2">
-          <article class="service-card panel p-5">
-            <span class="material-symbols-outlined text-primary">photo_camera</span>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Proof visits</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Site photos, videos, receipts, and clear reports.</p>
-          </article>
-          <article class="service-card panel p-5">
-            <span class="material-symbols-outlined text-mint">local_shipping</span>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Pickup and delivery</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Local handoffs, shopping, parcel checks, and recipient coordination.</p>
-          </article>
-          <article class="service-card panel p-5">
-            <span class="material-symbols-outlined text-sky">description</span>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Document runs</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Registry, office, compliance, title, school, and government errands.</p>
-          </article>
-          <article class="service-card panel p-5">
-            <span class="material-symbols-outlined text-gold">support_agent</span>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Virtual support</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Supplier research, customer replies, quotes, bookkeeping support, and admin work.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="section-shell pb-14">
-        <div class="grid gap-5 lg:grid-cols-[1fr_0.8fr] lg:items-center">
-          <div class="glass rounded-[1.6rem] p-6 md:p-8">
-            <p class="label text-primary">Optional AI helper</p>
-            <h2 class="mt-3 font-display text-4xl font-extrabold">Ask Swadakta AI when you want help, turn it off when you do not.</h2>
-            <p class="mt-4 max-w-2xl leading-8 text-muted">
-              AI can organize a messy brief, explain next steps, draft updates, summarize proof, and help you find the right page. It cannot verify ID, release or refund money, assign sensitive work, or override legal and payment rules.
-            </p>
-            <div class="mt-6 grid gap-3 sm:flex">
-              <a class="button button-primary" href="assistant.html">Ask AI</a>
-              <a class="button button-secondary" href="portal.html#account-setup">Set up account</a>
-            </div>
-          </div>
-          <aside class="panel rounded-[1.6rem] p-5">
-            <div class="flex items-center gap-3">
-              <span class="grid h-11 w-11 place-items-center rounded-full bg-primary text-white">
-                <span class="material-symbols-outlined">auto_awesome</span>
-              </span>
-              <div>
-                <p class="font-bold">Swadakta AI</p>
-                <p class="text-sm text-muted">Friendly, optional, guarded</p>
-              </div>
-            </div>
-            <div class="mt-5 grid gap-3">
-              <p class="rounded-2xl bg-primary/8 p-4 text-sm leading-6 text-muted">"Turn this WhatsApp request into a clean brief and list the missing details."</p>
-              <p class="rounded-2xl bg-mint/10 p-4 text-sm leading-6 text-muted">"Explain why this job needs verification before posting."</p>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <section class="section-shell pb-14">
-        <div class="rounded-[1.6rem] bg-[#eaf0ff] p-6 md:p-8">
-          <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
-            <div>
-              <p class="label text-primary">Ready when you are</p>
-              <h2 class="mt-2 font-display text-3xl font-extrabold">Open one account and choose your path.</h2>
-              <p class="mt-3 max-w-2xl leading-7 text-muted">Start as a client, receiver, or both. Swadakta keeps the flow simple and gates the serious parts only when money, identity, location, or sensitive work requires it.</p>
-            </div>
-            <div class="grid gap-3 sm:flex">
-              <a class="button button-primary" href="portal.html">Open account</a>
-              <a class="button button-secondary" href="tracking.html">Track request</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="border-t border-line/35 bg-white py-10">
-      <div class="section-shell grid gap-8 md:grid-cols-[1fr_auto]">
-        <div>
-          <strong class="font-display text-2xl font-extrabold">Swadakta</strong>
-          <p class="mt-3 max-w-md text-sm leading-6 text-muted">Trusted corridor help for practical tasks, proof-first work, verified receivers, and protected milestone payments.</p>
-          <div class="mt-4 grid gap-2 text-sm text-muted">
-            <a class="inline-flex min-h-8 items-center hover:text-primary" href="mailto:swadakta111@gmail.com">swadakta111@gmail.com</a>
-            <a class="inline-flex min-h-8 items-center hover:text-primary" href="https://wa.me/61431455174">WhatsApp: +61431455174</a>
-          </div>
-          <p class="mt-3 text-sm text-muted">&copy; 2026 Swadakta.</p>
-        </div>
-        <nav class="grid gap-2 text-sm text-muted sm:grid-cols-2 md:min-w-[320px]" aria-label="Footer navigation">
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="payments.html">Payments</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="rules.html">Rules</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="trust.html">Trust</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="verification.html">Verify ID</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="privacy.html">Privacy</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="terms.html">Terms</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="tracking.html">Track request</a>
-          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="portal.html">Sign in</a>
-        </nav>
-      </div>
-    </footer>
-
-    <nav class="fixed inset-x-3 bottom-3 z-50 grid grid-cols-3 gap-2 rounded-[1.25rem] border border-white/70 bg-white/88 p-2 shadow-[0_18px_44px_rgba(16,23,42,0.18)] backdrop-blur-2xl md:hidden" aria-label="Mobile quick actions">
-      <a class="icon-button bg-primary text-xs text-white" href="corridor.html">
-        <span class="material-symbols-outlined text-[18px]">add_circle</span>
-        Get job done
-      </a>
-      <a class="icon-button border border-line/60 bg-white text-xs text-primary" href="verification.html?reason=receiver_work&amp;role=receiver">
-        <span class="material-symbols-outlined text-[18px]">search</span>
-        Find work
-      </a>
-      <a class="icon-button border border-line/60 bg-white text-xs text-primary" href="assistant.html">
-        <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
-        AI
-      </a>
-    </nav>
-
-    <script src="assistant-dock.js?v=11"></script>
-  </body>
-</html>
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const cardX = rect.left + rect.width / 2;
+                const cardY = rect.top + rect.height / 2;
+                
+                const moveX = (e.clientX - cardX) / 50;
+                const moveY = (e.clientY - cardY) / 50;
+                
+                card.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+        });
+    </script>
+<script src="assistant-dock.js?v=11"></script>
+</body></html>
