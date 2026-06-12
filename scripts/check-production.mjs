@@ -257,6 +257,13 @@ const requiredAdminOpsMarkers = [
   "createPayPalOrder",
   "createMpesaStkPush",
   "createWisePaymentRequest",
+  "quoteEconomics",
+  "founder-economics-guard",
+  "Confidential founder economics",
+  "Minimum safe quote",
+  "Payment rails pause when internal economics are below floor",
+  "Payment route paused by internal economics guard",
+  "Payment buttons are locked by the internal economics guard",
   "renderOpsAutopilot",
   "opsAutopilotPrompt",
   "Swadakta daily operations autopilot brief",
@@ -724,8 +731,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=5")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=5`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=6")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=6`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
@@ -885,11 +892,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=5");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=6");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=5 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=6 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=5 returned 200");
+  pass("admin-ops.js?v=6 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {

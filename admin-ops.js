@@ -27,6 +27,15 @@
   const paidStatuses = new Set(["paid", "deposit_paid"]);
   const riskyCompliance = new Set(["needs_admin_review", "restricted", "permit_required", "prohibited"]);
   const checkoutCurrencies = new Set(["AUD", "USD", "GBP", "EUR"]);
+  const minimumFounderMarginRate = 0.3;
+  const minimumFounderReserveByCurrency = {
+    AUD: 25,
+    USD: 20,
+    GBP: 18,
+    EUR: 20,
+    KES: 2500,
+    CNY: 150,
+  };
 
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
@@ -85,6 +94,100 @@
     return String(value || fallback).trim().toUpperCase() || fallback;
   }
 
+  function founderReserveFloor(currency) {
+    return minimumFounderReserveByCurrency[normalizeCurrency(currency)] || 25;
+  }
+
+  function quoteEconomics(request) {
+    const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    const quote = Number(request.quote_amount || 0);
+    const operatorPayout = Number(request.operator_payout || 0);
+    const fieldCosts = Number(request.field_costs || 0);
+    const paymentFees = Number(request.payment_processing_fee || 0);
+    const directCosts = operatorPayout + fieldCosts + paymentFees;
+    const grossMargin = quote - directCosts;
+    const marginPercent = quote ? Math.round((grossMargin / quote) * 100) : null;
+    const reserveFloor = founderReserveFloor(currency);
+    const recommendedQuote = Math.max(
+      directCosts ? Math.ceil(directCosts / (1 - minimumFounderMarginRate)) : reserveFloor,
+      directCosts + reserveFloor,
+    );
+    const targetMargin = quote ? Math.max(reserveFloor, Math.ceil(quote * minimumFounderMarginRate)) : reserveFloor;
+    const hasCostPlan = operatorPayout > 0 || fieldCosts > 0 || paymentFees > 0;
+    let status = "safe";
+    let label = "Economics safe";
+    let tone = "bg-emerald-500/10 text-emerald-700";
+    let action = "Payment route can be prepared after provider evidence rules are still followed.";
+    let paymentSafe = true;
+    let flagLabel = "";
+
+    if (!quote) {
+      status = "not_priced";
+      label = "Quote not priced";
+      tone = "bg-white/70 text-on-surface-variant";
+      action = "Add a client quote and internal cost plan before payment routing.";
+      paymentSafe = false;
+    } else if (!hasCostPlan) {
+      status = "cost_plan_missing";
+      label = "Cost plan missing";
+      tone = "bg-amber-400/20 text-amber-800";
+      action = "Enter operator payout, field costs, and payment or FX fees before sending a payment route.";
+      paymentSafe = false;
+      flagLabel = "Cost plan missing";
+    } else if (grossMargin <= 0) {
+      status = "loss";
+      label = "Margin loss";
+      tone = "bg-error-container text-on-error-container";
+      action = "Stop payment routing. Raise the quote or lower costs before this job is accepted.";
+      paymentSafe = false;
+      flagLabel = "Margin loss";
+    } else if (quote < recommendedQuote) {
+      status = "below_floor";
+      label = "Below margin floor";
+      tone = "bg-amber-400/20 text-amber-800";
+      action = `Tighten the quote to at least ${formatMoney(recommendedQuote, currency)} or reduce costs before payment routing.`;
+      paymentSafe = false;
+      flagLabel = "Margin below floor";
+    } else if (marginPercent !== null && marginPercent < 40) {
+      status = "watch";
+      label = "Safe but watch";
+      tone = "bg-primary/10 text-primary";
+      action = "Quote clears the floor. Watch scope creep, extra travel, and FX/processor changes before release.";
+    }
+
+    return {
+      action,
+      currency,
+      directCosts,
+      fieldCosts,
+      flagLabel,
+      grossMargin,
+      hasCostPlan,
+      label,
+      marginPercent,
+      operatorPayout,
+      paymentFees,
+      paymentSafe,
+      quote,
+      recommendedQuote,
+      reserveFloor,
+      status,
+      targetMargin,
+      tone,
+    };
+  }
+
+  function quoteEconomicsLine(request) {
+    const economics = quoteEconomics(request);
+    const percent = economics.marginPercent === null ? "not set" : `${economics.marginPercent}%`;
+    return `${economics.label}: gross margin ${formatMoney(economics.grossMargin, economics.currency)} (${percent}); direct costs ${formatMoney(economics.directCosts, economics.currency)}; minimum safe quote ${formatMoney(economics.recommendedQuote, economics.currency)}.`;
+  }
+
+  function quoteEconomicsNextStep(request) {
+    const economics = quoteEconomics(request);
+    return `Internal economics: ${economics.label}. ${economics.action}`;
+  }
+
   function paymentRailLabel(rail) {
     return {
       stripe: "Stripe checkout",
@@ -108,8 +211,12 @@
   function paymentRailNote(request) {
     const rail = preferredPaymentRail(request);
     const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    const economics = quoteEconomics(request);
     if (!Number(request.quote_amount || 0)) {
       return "Add a quote amount before creating any payment route.";
+    }
+    if (!economics.paymentSafe) {
+      return `${economics.label}. Payment rails pause until the quote covers receiver payout, field costs, fees, and founder reserve.`;
     }
     if (rail === "mpesa") {
       return "Best fit for KES collection. Callback evidence must confirm payment before funds count as protected.";
@@ -127,6 +234,7 @@
     const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
     const hasQuote = Number(request.quote_amount || 0) > 0;
     if (!hasQuote) return false;
+    if (!quoteEconomics(request).paymentSafe) return false;
     if (rail === "stripe" || rail === "paypal") return checkoutCurrencies.has(currency);
     if (rail === "mpesa") return currency === "KES";
     return true;
@@ -151,6 +259,7 @@
   function requestFlags(request) {
     const flags = [];
     const requestMargin = margin(request);
+    const economics = quoteEconomics(request);
 
     if (request.admin_review_required) flags.push(["Founder review", "admin"]);
     if (request.route_status && request.route_status !== "active") flags.push([`Route ${formatStatus(request.route_status)}`, "route"]);
@@ -163,7 +272,8 @@
     if (request.funds_status === "disputed" || request.funds_status === "refund_pending") {
       flags.push([formatStatus(request.funds_status), "money"]);
     }
-    if (request.quote_amount && requestMargin <= 0) flags.push(["Margin risk", "margin"]);
+    if (economics.flagLabel) flags.push([economics.flagLabel, "margin"]);
+    if (request.quote_amount && requestMargin <= 0 && !economics.flagLabel) flags.push(["Margin risk", "margin"]);
     if (request.status === "in_progress" && !request.assigned_partner_id) flags.push(["No receiver assigned", "assignment"]);
     if (request.sensitive_documents_expected) flags.push(["Sensitive documents", "identity"]);
 
@@ -172,7 +282,8 @@
 
   function nextAction(request, flags) {
     const kinds = new Set(flags.map(([, kind]) => kind));
-    if (kinds.has("money") || kinds.has("margin")) return "Review protected money state, costs, and milestone release conditions before any payout.";
+    if (kinds.has("margin")) return quoteEconomicsNextStep(request);
+    if (kinds.has("money")) return "Review protected money state, costs, and milestone release conditions before any payout.";
     if (kinds.has("payment")) return "Confirm quote, send or regenerate payment route, and do not start paid work until provider evidence exists.";
     if (kinds.has("identity")) return "Send or review provider ID verification before paid, sensitive, or receiver work continues.";
     if (kinds.has("compliance") || kinds.has("route")) return "Check corridor legality, restricted goods, route coverage, and proof plan before assignment.";
@@ -601,6 +712,7 @@
       `Status: ${formatStatus(request.status)} / payment ${formatStatus(request.payment_status)}`,
       `Quote: ${formatMoney(request.quote_amount, request.quote_currency || request.preferred_currency || "AUD")}`,
       `Funds guard: ${formatStatus(request.funds_status || "not_collected")}`,
+      `Internal economics - do not send to client: ${quoteEconomicsLine(request)}`,
       topMatch
         ? `Top match: ${topMatch.partner.partner_code || topMatch.partner.full_name || "Partner"} (${topMatch.score}%, ${topMatch.eligibilityLabel}) - ${topMatch.reasons.join("; ")}`
         : "Top match: no partner applications loaded yet",
@@ -616,9 +728,44 @@
     return `${paymentRailLabel(rail)} prepared.${reference ? ` Reference: ${reference}.` : ""}${link} Provider confirmation is still required before funds are marked paid or released.`;
   }
 
+  function renderFounderEconomicsGuard(request) {
+    const economics = quoteEconomics(request);
+    const percent = economics.marginPercent === null ? "Not set" : `${economics.marginPercent}%`;
+
+    return `
+      <section class="founder-economics-guard mt-5 rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+        <div class="grid gap-4 xl:grid-cols-[1fr_auto] xl:items-start">
+          <div>
+            <p class="font-label text-xs uppercase tracking-[0.18em] text-tertiary">Confidential founder economics</p>
+            <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(economics.label)}</h3>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(economics.action)}</p>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">Keep this internal. Client-facing quotes should stay simple; founder margin, payout, field cost, and fee assumptions stay inside ops.</p>
+          </div>
+          <span class="inline-flex min-h-10 items-center justify-center rounded-full px-4 font-label text-sm font-bold ${economics.tone}">
+            ${escapeHtml(economics.label)}
+          </span>
+        </div>
+        <div class="mt-4 grid gap-2 text-sm text-on-surface-variant sm:grid-cols-2 xl:grid-cols-6">
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Quote</strong>${escapeHtml(formatMoney(economics.quote, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Direct costs</strong>${escapeHtml(formatMoney(economics.directCosts, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Gross margin</strong>${escapeHtml(formatMoney(economics.grossMargin, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Margin %</strong>${escapeHtml(percent)}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Floor target</strong>${escapeHtml(formatMoney(economics.targetMargin, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Minimum safe quote</strong>${escapeHtml(formatMoney(economics.recommendedQuote, economics.currency))}</span>
+        </div>
+        <div class="mt-3 grid gap-2 text-xs leading-5 text-on-surface-variant md:grid-cols-3">
+          <span class="rounded-2xl bg-white/60 p-3">Receiver payout: ${escapeHtml(formatMoney(economics.operatorPayout, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/60 p-3">Field costs: ${escapeHtml(formatMoney(economics.fieldCosts, economics.currency))}</span>
+          <span class="rounded-2xl bg-white/60 p-3">Processor/FX fees: ${escapeHtml(formatMoney(economics.paymentFees, economics.currency))}</span>
+        </div>
+      </section>
+    `;
+  }
+
   function renderPaymentRoutePanel(request) {
     const preferredRail = preferredPaymentRail(request);
     const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
+    const economics = quoteEconomics(request);
     const rails = ["stripe", "paypal", "mpesa", "wise"];
     const buttons = rails
       .map((rail) => {
@@ -640,7 +787,7 @@
             <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Payment route</p>
             <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(paymentRailLabel(preferredRail))}</h3>
             <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(paymentRailNote(request))}</p>
-            <p class="mt-2 text-xs text-on-surface-variant">Quote ${escapeHtml(formatMoney(request.quote_amount, currency))}. AI can draft payment wording, but it cannot mark funds paid, refund, release, or override provider evidence.</p>
+            <p class="mt-2 text-xs text-on-surface-variant">Quote ${escapeHtml(formatMoney(request.quote_amount, currency))}. ${economics.paymentSafe ? "Internal economics cleared for payment-route preparation." : "Payment rails pause when internal economics are below floor or cost data is missing."} AI can draft payment wording, but it cannot mark funds paid, refund, release, or override provider evidence.</p>
           </div>
           <label class="grid gap-2 font-label text-sm text-on-surface-variant lg:min-w-[18rem]">
             M-Pesa phone
@@ -650,6 +797,11 @@
         <div class="mt-4 flex flex-wrap gap-2">
           ${buttons}
         </div>
+        ${
+          economics.paymentSafe
+            ? ""
+            : `<p class="mt-3 rounded-2xl bg-amber-400/12 p-3 text-xs leading-5 text-amber-800">Payment buttons are locked by the internal economics guard. Resolve the quote, payout, field-cost, and fee plan first.</p>`
+        }
         <p class="payment-route-status mt-3 min-h-6 text-sm text-on-surface-variant" role="status"></p>
       </section>
     `;
@@ -658,6 +810,7 @@
   function renderRequest(request) {
     const flags = requestFlags(request);
     const requestMargin = margin(request);
+    const economics = quoteEconomics(request);
     const currency = request.quote_currency || request.preferred_currency || "AUD";
     const flagBadges = flags.length
       ? flags
@@ -691,7 +844,7 @@
             <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Status</strong>${escapeHtml(formatStatus(request.status))}</span>
             <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Payment</strong>${escapeHtml(formatStatus(request.payment_status))}</span>
             <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Quote</strong>${escapeHtml(formatMoney(request.quote_amount, currency))}</span>
-            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Margin</strong>${escapeHtml(formatMoney(requestMargin, currency))}</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Margin</strong>${escapeHtml(formatMoney(requestMargin, currency))} ${economics.marginPercent === null ? "" : `(${escapeHtml(economics.marginPercent)}%)`}</span>
             <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Due</strong>${escapeHtml(formatDate(request.payment_due_at))}</span>
             <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Funds</strong>${escapeHtml(formatStatus(request.funds_status))}</span>
           </div>
@@ -702,6 +855,7 @@
           <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" href="assistant.html">Ask AI</a>
         </div>
         ${renderMatchRecommendations(request)}
+        ${renderFounderEconomicsGuard(request)}
         ${renderPaymentRoutePanel(request)}
       </article>
     `;
@@ -712,7 +866,7 @@
     const open = openRequests();
     const exceptions = exceptionRequests();
     const payments = paymentRequests();
-    const marginRisk = open.filter((request) => request.quote_amount && margin(request) <= 0);
+    const marginRisk = open.filter((request) => quoteEconomics(request).flagLabel);
     setStat("#stat-open", open.length);
     setStat("#stat-exceptions", exceptions.length);
     setStat("#stat-payments", payments.length);
@@ -868,6 +1022,16 @@
     const original = button.textContent;
 
     if (!request || !rail) return;
+    const economics = quoteEconomics(request);
+    if (!economics.paymentSafe) {
+      const message = `Payment route paused by internal economics guard: ${economics.label}. ${economics.action}`;
+      if (status) {
+        status.textContent = message;
+        status.className = "payment-route-status mt-3 min-h-6 text-sm text-on-error-container";
+      }
+      setStatus(message, "text-on-error-container");
+      return;
+    }
 
     button.disabled = true;
     button.textContent = "Preparing...";
