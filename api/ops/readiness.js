@@ -301,6 +301,9 @@ function buildLaunchGate(categories) {
   const africaExpansionItems = flatItems.filter((entry) => entry.category_id === "africa_payment_expansion");
   const africaExpansionReady =
     africaExpansionItems.length > 0 && africaExpansionItems.every((entry) => entry.status === "ready");
+  const aiManualFallbackReady =
+    flatItems.some((entry) => entry.id === "ai_manual_mode_boundary" && entry.status === "ready") &&
+    flatItems.some((entry) => entry.id === "admin_ai_prompt_boundaries" && entry.status === "ready");
 
   const status = blockers.length
     ? "paid_launch_blocked"
@@ -351,6 +354,9 @@ function buildLaunchGate(categories) {
       africaExpansionReady
         ? "Africa expansion rails have explicit merchant, settlement, webhook, and provider-evidence confirmations."
         : "Paystack and Flutterwave remain expansion rails; do not expose them as default payment options until readiness confirms them.",
+      aiManualFallbackReady
+        ? "AI/manual mode fallback is ready; Swadakta can hide AI-only tools and keep manual operations running."
+        : "AI/manual mode fallback needs attention before relying on AI-optional operations.",
       "AI can draft and triage, but protected decisions remain provider/founder gated.",
     ],
   };
@@ -1156,6 +1162,24 @@ async function readinessReport(user, authHeader) {
       id: "ai_identity",
       label: "AI and identity verification",
       items: [
+        item(
+          "ai_manual_mode_boundary",
+          "AI/manual mode fallback",
+          "ready",
+          "The browser preference `swadakta_ai_mode` lets users and admins run Swadakta with AI on or off. Manual mode hides AI-only shortcuts and keeps queues, provider checks, payments, verification, messages, and tracking usable.",
+          "Keep the manual fallback working on every page that depends on AI assistance, so Swadakta can operate even when AI is disabled, unavailable, or intentionally avoided.",
+          [],
+          { priority: 15, owner: "Founder/product" },
+        ),
+        item(
+          "admin_ai_prompt_boundaries",
+          "Admin AI approval prompts",
+          "ready",
+          "Admin operations can group work into routine AI prompts, provider-evidence gates, and founder-gated protected decisions using compact Yes/No/Need evidence prompts.",
+          "Use AI for drafts, summaries, and checklists only; payment release, refunds, ID approval, receiver assignment, and external messages remain provider/founder gated.",
+          [],
+          { priority: 16, owner: "Founder/admin" },
+        ),
         item(
           "openai_vercel",
           "Vercel AI fallback",
