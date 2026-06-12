@@ -333,6 +333,7 @@ const requiredDockMarkers = [
   "findVisibleSection",
   "performSafeAction",
   "swadakta-site-polish-style",
+  "Comfortable tap targets across final UX surfaces",
   "aiDockEnabled",
   "swadakta-manual-mode-chip",
   "buildManualModeChip",
@@ -1021,8 +1022,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=12")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=12`);
+  if (!content.includes("assistant-dock.js?v=13")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=13`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1247,8 +1248,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=12")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=12`);
+  if (!text.includes("assistant-dock.js?v=13")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=13`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
@@ -1627,11 +1628,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=12");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=13");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=12 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=13 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=12 returned 200");
+  pass("assistant-dock.js?v=13 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {

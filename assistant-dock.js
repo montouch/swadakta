@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "12";
+  const DOCK_VERSION = "13";
   const rootId = "swadakta-ai-dock";
   const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
@@ -107,6 +107,7 @@
     const style = document.createElement("style");
     style.id = "swadakta-site-polish-style";
     style.textContent = `
+      /* Comfortable tap targets across final UX surfaces */
       html, body { max-width: 100%; overflow-x: clip; }
       body [hidden] { display: none !important; }
       body header, body nav, body main, body section, body article, body form, body aside, body footer, body .glass-panel, body .glass-card { min-width: 0; }
@@ -151,9 +152,45 @@
         overflow: hidden;
       }
       body header nav a {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 44px;
+        min-height: 40px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+      }
+      body header a:not(.brand), body header button,
+      body nav a:not(.brand), body nav button,
+      body .top-link,
+      body .workspace-link,
+      body .portal-tool-button,
+      body .quick-action-card,
+      body [class*="filter"],
+      body [aria-label*="filter" i] button,
+      body [aria-label*="filters" i] button,
+      body #login-mode-signin,
+      body #login-mode-create,
+      body #login-create-inline {
+        min-width: 44px;
+        min-height: 40px;
+      }
+      body .brand {
+        min-height: 44px;
+      }
+      body [class*="rounded"] > a:not([class*="aspect"]),
+      body [class*="rounded"] a[class*="hover:text-primary"] {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+      }
+      body a.material-symbols-outlined,
+      body button.material-symbols-outlined,
+      body a:has(> .material-symbols-outlined:only-child),
+      body button:has(> .material-symbols-outlined:only-child) {
+        min-width: 40px;
+        min-height: 40px;
       }
       body [class*="grid-cols-2"] > *, body [class*="grid-cols-3"] > *, body [class*="grid-cols-4"] > * {
         min-width: 0;
