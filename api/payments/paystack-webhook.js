@@ -1,4 +1,8 @@
 const crypto = require("crypto");
+const {
+  REQUEST_SELECT_FIELDS,
+  paymentReconciliationPayload,
+} = require("./payment-reconciliation");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -136,7 +140,7 @@ async function findRequestByReference(reference) {
   if (!reference) return null;
 
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/service_requests?payment_reference=${encodeURIComponent(`ilike.*${reference}*`)}&select=id,request_code,payment_reference&limit=1`,
+    `${SUPABASE_URL}/rest/v1/service_requests?payment_reference=${encodeURIComponent(`ilike.*${reference}*`)}&select=${REQUEST_SELECT_FIELDS}&limit=1`,
     {
       headers: {
         apikey: SUPABASE_SERVER_KEY,
@@ -149,6 +153,30 @@ async function findRequestByReference(reference) {
 
   if (!response.ok) {
     const error = new Error(data?.message || "Could not look up Swadakta request for Paystack reference.");
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] || null : null;
+}
+
+async function findRequestByCode(requestCode) {
+  if (!requestCode) return null;
+
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}&select=${REQUEST_SELECT_FIELDS}&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVER_KEY,
+        authorization: `Bearer ${SUPABASE_SERVER_KEY}`,
+        accept: "application/json",
+      },
+    },
+  );
+  const data = await response.json().catch(() => []);
+
+  if (!response.ok) {
+    const error = new Error(data?.message || "Could not look up Swadakta request for Paystack request code.");
     error.statusCode = 502;
     throw error;
   }
@@ -179,12 +207,8 @@ async function updateRequestFromPaystack(eventData, verifiedData) {
     };
   }
 
-  const request = requestCode ? null : await findRequestByReference(reference);
-  const requestFilter = requestCode
-    ? `request_code=eq.${encodeURIComponent(requestCode)}`
-    : request?.id
-      ? `id=eq.${encodeURIComponent(request.id)}`
-      : "";
+  const request = requestCode ? await findRequestByCode(requestCode) : await findRequestByReference(reference);
+  const requestFilter = request?.id ? `id=eq.${encodeURIComponent(request.id)}` : "";
 
   if (!requestFilter) {
     return {
@@ -198,13 +222,14 @@ async function updateRequestFromPaystack(eventData, verifiedData) {
   const amount = moneyFromPaystackAmount(verifiedData.amount || eventData.amount);
   const currency = String(verifiedData.currency || eventData.currency || "").toUpperCase();
   const referenceParts = ["Paystack", reference, verifiedData.id ? `id ${verifiedData.id}` : ""].filter(Boolean);
-  const updatePayload = {
-    payment_status: "paid",
-    funds_status: "deposit_confirmed",
-    protected_amount: amount,
-    payment_reference: referenceParts.join(" / "),
-    release_notes: `Paystack webhook and transaction verification confirmed ${currency || "provider"} payment. Founder/admin must still review milestone proof before any receiver release.`,
-  };
+  const updatePayload = paymentReconciliationPayload({
+    amount,
+    currency,
+    paymentReference: referenceParts.join(" / "),
+    providerName: "Paystack",
+    request,
+    successNotePrefix: `Paystack webhook and transaction verification confirmed ${currency || "provider"} payment`,
+  });
 
   const response = await fetch(`${SUPABASE_URL}/rest/v1/service_requests?${requestFilter}`, {
     method: "PATCH",
@@ -229,6 +254,8 @@ async function updateRequestFromPaystack(eventData, verifiedData) {
     updated: Boolean(updated),
     request_code: updated?.request_code || requestCode || request?.request_code || "",
     provider_reference: updatePayload.payment_reference,
+    payment_status: updated?.payment_status || updatePayload.payment_status || request.payment_status,
+    funds_status: updated?.funds_status || updatePayload.funds_status || request.funds_status,
     protected_amount: amount,
   };
 }

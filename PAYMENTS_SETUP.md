@@ -26,6 +26,15 @@ Swadakta should not present itself as a licensed escrow company unless that lega
 - Client tracking can show safe milestone status, but internal notes and founder economics stay in admin.
 - Require ID verification for high-value, title/document, local-authority, family-authority, or sensitive-document jobs before funds are released.
 
+## Provider Evidence Reconciliation
+
+Every automatic provider confirmation must be reconciled against the saved Swadakta quote before the request looks fully paid:
+
+- If provider amount and currency match the quote, set `Payment` to `Paid` and `Funds` to `Deposit confirmed`.
+- If the provider amount is below the quote, or no quote amount is recorded, set `Payment` to `Deposit paid` and keep the balance unresolved.
+- If the provider currency does not match the quote currency, set `Funds` to `Disputed` and leave paid status unresolved until founder/admin reconciliation.
+- In all cases, provider evidence only confirms collection state. It must not assign receivers, release milestones, refund money, or override proof review.
+
 ## Africa Expansion Rail Readiness
 
 Paystack and Flutterwave should stay expansion pilots until the readiness cockpit says the full evidence chain is complete. Do not expose either as a normal public payment option just because an API key exists.
@@ -45,7 +54,7 @@ Webhook endpoints are now reserved at:
 - `POST /api/payments/paystack-webhook`
 - `POST /api/payments/flutterwave-webhook`
 
-The Paystack endpoint verifies `x-paystack-signature`, then calls Paystack transaction verification by reference before updating a request. The Flutterwave endpoint verifies `verif-hash`, then calls Flutterwave transaction verification by transaction id before updating a request. Both endpoints can mark provider-confirmed deposits as paid/protected, but neither endpoint can assign receivers, release milestones, refund money, or override founder/admin proof review.
+The Paystack endpoint verifies `x-paystack-signature`, then calls Paystack transaction verification by reference before updating a request. The Flutterwave endpoint verifies `verif-hash`, then calls Flutterwave transaction verification by transaction id before updating a request. Both endpoints reconcile provider amount and currency against the saved quote before marking a request fully paid, and neither endpoint can assign receivers, release milestones, refund money, or override founder/admin proof review.
 
 ## Stripe
 
@@ -117,8 +126,9 @@ The webhook:
 - Verifies the Stripe signature using the raw body and `STRIPE_WEBHOOK_SECRET`.
 - Handles `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
 - Reads `request_code` from Checkout metadata/client reference.
-- Sets `payment_status` to `paid`.
-- Sets `funds_status` to `deposit_confirmed`.
+- Sets `payment_status` to `paid` only when Stripe amount/currency matches the saved quote.
+- Sets `payment_status` to `deposit_paid` when amount is short or no quote amount is recorded.
+- Sets `funds_status` to `disputed` when Stripe currency does not match the quote currency.
 - Sets `protected_amount` from Stripe `amount_total`.
 - Stores the Checkout Session/PaymentIntent reference.
 - Adds a release note saying founder proof review is still required.
@@ -169,7 +179,9 @@ The capture endpoint:
 
 - Requires a signed-in Supabase admin session.
 - Captures an approved PayPal order using the order ID stored in `Payment/provider ref`.
-- Updates the Swadakta request record to `Payment: Paid` and `Funds: Deposit confirmed`.
+- Updates the Swadakta request record to `Payment: Paid` and `Funds: Deposit confirmed` only when PayPal amount/currency matches the saved quote.
+- Marks the request `Deposit paid` when amount is short or no quote amount is recorded.
+- Marks funds `Disputed` when PayPal currency does not match the quote currency.
 - Stores the PayPal order/capture reference.
 - Sets `Protected amount` from the captured amount.
 - Adds a release note saying founder proof review is still required.
@@ -289,7 +301,10 @@ The callback endpoint:
 
 - Receives the Daraja STK callback.
 - Finds the request by `CheckoutRequestID` in `Payment/provider ref`.
-- On successful `ResultCode: 0`, sets `Payment: Paid`, `Funds: Deposit confirmed`, stores the M-Pesa receipt, and records the protected amount.
+- On successful `ResultCode: 0`, reconciles the KES amount against the saved quote before marking `Payment: Paid`.
+- Marks `Payment: Deposit paid` if the confirmed amount is short or the quote amount is missing.
+- Marks `Funds: Disputed` if the request quote currency is not `KES`.
+- Stores the M-Pesa receipt and protected amount either way, so founder/admin can reconcile safely.
 - On failed/cancelled STK, records the callback result in release notes without marking funds paid.
 - Does not release receiver payouts.
 

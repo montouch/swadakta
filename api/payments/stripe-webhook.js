@@ -1,4 +1,9 @@
 const crypto = require("crypto");
+const {
+  REQUEST_SELECT_FIELDS,
+  normalizeCurrency,
+  paymentReconciliationPayload,
+} = require("./payment-reconciliation");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -119,6 +124,28 @@ function paymentReference(session) {
     .join(" / ");
 }
 
+async function fetchRequestByCode(requestCode) {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}&select=${REQUEST_SELECT_FIELDS}&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_SERVER_KEY,
+        authorization: `Bearer ${SUPABASE_SERVER_KEY}`,
+        accept: "application/json",
+      },
+    },
+  );
+  const data = await response.json().catch(() => []);
+
+  if (!response.ok) {
+    const error = new Error(data?.message || "Could not look up Swadakta request for Stripe webhook.");
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] || null : null;
+}
+
 async function updateRequestFromCheckout(session) {
   if (!SUPABASE_SERVER_KEY) {
     const error = new Error("SUPABASE_SERVICE_ROLE_KEY or SUPABASE_SECRET_KEY is not configured in Vercel.");
@@ -143,28 +170,36 @@ async function updateRequestFromCheckout(session) {
 
   const amount = moneyFromSmallestUnit(session.amount_total || session.amount_subtotal);
   const reference = paymentReference(session);
-  const updatePayload = {
-    payment_status: "paid",
-    funds_status: "deposit_confirmed",
-    protected_amount: amount,
-    payment_reference: reference,
-    release_notes:
-      "Stripe webhook confirmed payment. Founder/admin must still review proof before any receiver release.",
-  };
+  const request = await fetchRequestByCode(requestCode);
+  if (!request) {
+    return {
+      updated: false,
+      request_code: requestCode,
+      reason: "No Swadakta request matched the Stripe request_code.",
+      payment_reference: reference,
+    };
+  }
 
-  const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}`,
-    {
-      method: "PATCH",
-      headers: {
-        apikey: SUPABASE_SERVER_KEY,
-        authorization: `Bearer ${SUPABASE_SERVER_KEY}`,
-        "Content-Type": "application/json",
-        Prefer: "return=representation",
-      },
-      body: JSON.stringify(updatePayload),
+  const updatePayload = paymentReconciliationPayload({
+    amount,
+    currency: normalizeCurrency(session.currency),
+    paymentReference: reference,
+    providerName: "Stripe",
+    request,
+    successNotePrefix: "Stripe webhook confirmed payment",
+  });
+
+  const requestFilter = `id=eq.${encodeURIComponent(request.id)}`;
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/service_requests?${requestFilter}`, {
+    method: "PATCH",
+    headers: {
+      apikey: SUPABASE_SERVER_KEY,
+      authorization: `Bearer ${SUPABASE_SERVER_KEY}`,
+      "Content-Type": "application/json",
+      Prefer: "return=representation",
     },
-  );
+    body: JSON.stringify(updatePayload),
+  });
 
   const data = await response.json().catch(() => []);
   if (!response.ok) {
@@ -173,10 +208,13 @@ async function updateRequestFromCheckout(session) {
     throw error;
   }
 
+  const updated = Array.isArray(data) ? data[0] || null : null;
   return {
-    updated: Array.isArray(data) && data.length > 0,
-    request_code: requestCode,
+    updated: Boolean(updated),
+    request_code: updated?.request_code || requestCode,
     payment_reference: reference,
+    payment_status: updated?.payment_status || updatePayload.payment_status || request.payment_status,
+    funds_status: updated?.funds_status || updatePayload.funds_status || request.funds_status,
     protected_amount: amount,
   };
 }

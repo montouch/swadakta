@@ -1,3 +1,8 @@
+const {
+  REQUEST_SELECT_FIELDS,
+  paymentReconciliationPayload,
+} = require("./payment-reconciliation");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -163,6 +168,28 @@ function moneyAmount(value) {
   return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
 }
 
+async function findRequestByCode(authHeader, requestCode) {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}&select=${REQUEST_SELECT_FIELDS}&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        authorization: authHeader,
+        accept: "application/json",
+      },
+    },
+  );
+
+  const data = await response.json().catch(() => []);
+  if (!response.ok) {
+    const error = new Error(data?.message || "PayPal captured, but Swadakta request lookup failed.");
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] || null : null;
+}
+
 async function updateRequestAfterCapture(authHeader, requestCode, updatePayload) {
   const response = await fetch(
     `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}`,
@@ -220,23 +247,31 @@ async function capturePayPalOrder(authHeader, payload) {
   }
 
   const amount = moneyAmount(capture.amount?.value || data.purchase_units?.[0]?.amount?.value);
+  const currency = capture.amount?.currency_code || data.purchase_units?.[0]?.amount?.currency_code || "";
   const reference = [orderId, capture.id].filter(Boolean).join(" / ");
-  const updatePayload = {
-    payment_status: "paid",
-    funds_status: "deposit_confirmed",
-    protected_amount: amount,
-    payment_reference: reference,
-    release_notes:
-      "PayPal capture confirmed. Founder/admin must still review milestone proof before any receiver release.",
-  };
+  const request = await findRequestByCode(authHeader, requestCode);
+  if (!request) {
+    const error = new Error("PayPal captured, but no Swadakta request matched the request code.");
+    error.statusCode = 404;
+    throw error;
+  }
+
+  const updatePayload = paymentReconciliationPayload({
+    amount,
+    currency,
+    paymentReference: reference,
+    providerName: "PayPal",
+    request,
+    successNotePrefix: "PayPal capture confirmed",
+  });
   const updatedRequest = await updateRequestAfterCapture(authHeader, requestCode, updatePayload);
 
   return {
     request_code: requestCode,
     paypal_order_id: orderId,
     capture_id: capture.id,
-    payment_status: updatePayload.payment_status,
-    funds_status: updatePayload.funds_status,
+    payment_status: updatedRequest?.payment_status || updatePayload.payment_status || request.payment_status,
+    funds_status: updatedRequest?.funds_status || updatePayload.funds_status || request.funds_status,
     protected_amount: updatePayload.protected_amount,
     provider_reference: updatePayload.payment_reference,
     updated_request_id: updatedRequest?.id || null,

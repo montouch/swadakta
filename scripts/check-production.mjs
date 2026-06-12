@@ -352,6 +352,15 @@ const requiredFlutterwaveWebhookMarkers = [
   "Flutterwave webhook and transaction verification confirmed",
   "Founder/admin must still review milestone proof before any receiver release",
 ];
+const requiredPaymentReconciliationMarkers = [
+  "paymentReconciliationPayload",
+  "REQUEST_SELECT_FIELDS",
+  "provider evidence matched quote amount/currency",
+  "Treat as deposit only",
+  "does not match quote currency",
+  'funds_status: "disputed"',
+  'payment_status: "deposit_paid"',
+];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
   "Disallow: /admin-ops",
@@ -623,15 +632,21 @@ for (const marker of requiredReadinessApiMarkers) {
   }
 }
 const localPaystackWebhook = await readLocal("api/payments/paystack-webhook.js");
+const localPaymentReconciliation = await readLocal("api/payments/payment-reconciliation.js");
 for (const marker of requiredPaystackWebhookMarkers) {
-  if (!localPaystackWebhook.includes(marker)) {
+  if (!`${localPaystackWebhook}\n${localPaymentReconciliation}`.includes(marker)) {
     fail(failures, `Local Paystack webhook is missing marker ${marker}`);
   }
 }
 const localFlutterwaveWebhook = await readLocal("api/payments/flutterwave-webhook.js");
 for (const marker of requiredFlutterwaveWebhookMarkers) {
-  if (!localFlutterwaveWebhook.includes(marker)) {
+  if (!`${localFlutterwaveWebhook}\n${localPaymentReconciliation}`.includes(marker)) {
     fail(failures, `Local Flutterwave webhook is missing marker ${marker}`);
+  }
+}
+for (const marker of requiredPaymentReconciliationMarkers) {
+  if (!localPaymentReconciliation.includes(marker)) {
+    fail(failures, `Local payment reconciliation helper is missing marker ${marker}`);
   }
 }
 

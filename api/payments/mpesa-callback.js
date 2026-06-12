@@ -1,3 +1,8 @@
+const {
+  REQUEST_SELECT_FIELDS,
+  paymentReconciliationPayload,
+} = require("./payment-reconciliation");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -87,7 +92,7 @@ async function findRequestByCheckout(checkoutRequestId) {
   }
 
   const response = await fetch(
-    `${SUPABASE_URL}/rest/v1/service_requests?payment_reference=${encodeURIComponent(`ilike.*${checkoutRequestId}*`)}&select=id,request_code,payment_reference`,
+    `${SUPABASE_URL}/rest/v1/service_requests?payment_reference=${encodeURIComponent(`ilike.*${checkoutRequestId}*`)}&select=${REQUEST_SELECT_FIELDS}&limit=1`,
     {
       headers: {
         apikey: SUPABASE_SERVER_KEY,
@@ -116,14 +121,14 @@ async function updateRequest(request, details) {
   ].filter(Boolean);
 
   const updatePayload = isPaid
-    ? {
-        payment_status: "paid",
-        funds_status: "deposit_confirmed",
-        protected_amount: Math.round(details.amount || 0),
-        payment_reference: referenceParts.join(" / "),
-        release_notes:
-          "M-Pesa callback confirmed payment. Founder/admin must still review milestone proof before any receiver release.",
-      }
+    ? paymentReconciliationPayload({
+        amount: details.amount,
+        currency: "KES",
+        paymentReference: referenceParts.join(" / "),
+        providerName: "M-Pesa",
+        request,
+        successNotePrefix: "M-Pesa callback confirmed payment",
+      })
     : {
         release_notes: `M-Pesa callback did not confirm payment. Result ${details.result_code}: ${details.result_description || "No result description."}`,
       };
@@ -149,7 +154,9 @@ async function updateRequest(request, details) {
   return {
     updated: Array.isArray(data) && data.length > 0,
     request_code: request.request_code,
-    paid: isPaid,
+    paid: isPaid && updatePayload.payment_status === "paid",
+    payment_status: updatePayload.payment_status || request.payment_status,
+    funds_status: updatePayload.funds_status || request.funds_status,
     receipt: details.receipt || null,
     protected_amount: isPaid ? updatePayload.protected_amount : 0,
   };
