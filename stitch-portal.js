@@ -450,6 +450,60 @@
     }, 60);
   }
 
+  function scrollAccountHomeAnchor(targetId = "", options = {}) {
+    const cleanTargetId = String(targetId || "").replace(/^#/, "").trim();
+    if (!cleanTargetId || !document.body.classList.contains("is-account-signed-in")) {
+      return false;
+    }
+
+    if (cleanTargetId === "work") {
+      openAccountWorkspace();
+      return true;
+    }
+
+    const target =
+      cleanTargetId === "home" || cleanTargetId === "dashboard"
+        ? accountHome
+        : document.getElementById(cleanTargetId);
+
+    if (!target || (accountHome && target !== accountHome && !accountHome.contains(target))) {
+      return false;
+    }
+
+    if (accountHome) {
+      accountHome.hidden = false;
+      accountHome.removeAttribute("hidden");
+    }
+
+    const nextHash = cleanTargetId === "dashboard" ? "home" : cleanTargetId;
+    if (options.updateHash !== false && window.location.hash !== `#${nextHash}`) {
+      const nextUrl = new URL(window.location.href);
+      nextUrl.hash = nextHash;
+      const method = options.replace ? "replaceState" : "pushState";
+      window.history[method](null, "", nextUrl);
+    }
+
+    window.setTimeout(() => {
+      target.scrollIntoView({
+        behavior: options.instant ? "auto" : "smooth",
+        block: "start",
+      });
+    }, options.delay ?? 70);
+    return true;
+  }
+
+  function handleAccountHomeAnchorClick(event) {
+    const link = event.target.closest?.('a[href^="#"]');
+    if (!link || !accountHome?.contains(link)) return;
+
+    const targetId = link.getAttribute("href")?.slice(1) || "";
+    if (!targetId) return;
+
+    if (scrollAccountHomeAnchor(targetId)) {
+      event.preventDefault();
+    }
+  }
+
   function setSignedInShell(email = "", profile = {}) {
     setAccountState("signed-in");
     signedInEmail = email || profile.email || signedInEmail;
@@ -2159,6 +2213,15 @@
   if (accountHomeSignOutButton) {
     accountHomeSignOutButton.addEventListener("click", () => signOutCurrentAccount(accountHomeSignOutButton));
   }
+
+  document.addEventListener("click", handleAccountHomeAnchorClick);
+  window.addEventListener("hashchange", () => {
+    scrollAccountHomeAnchor(window.location.hash, {
+      updateHash: false,
+      instant: true,
+      delay: 0,
+    });
+  });
 
   renderPaymentReturnPanel();
   normalizePortalHomeHash();

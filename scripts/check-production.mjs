@@ -86,6 +86,8 @@ const requiredPortalMarkers = [
   "receiverProfileScore",
   "Base change check needed",
   "Photo uploaded privately",
+  "scrollAccountHomeAnchor",
+  "handleAccountHomeAnchorClick",
 ];
 const requiredPortalHtmlMarkers = [
   "quick-action-card",
@@ -303,7 +305,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "stitch-portal.js?v=28",
+  "stitch-portal.js?v=29",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
   "supabase_leaked_password_protection",
