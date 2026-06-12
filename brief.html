@@ -234,10 +234,11 @@
 <aside class="glass-panel rounded-3xl p-5">
 <div class="flex items-center justify-between gap-3">
 <p class="font-label-md text-label-md text-primary uppercase tracking-[0.14em]">AI organizes</p>
-<button class="h-9 px-4 rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
+<button class="h-9 px-4 rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
 </div>
 <p class="font-body-md text-on-surface-variant mt-2">Messy details are okay. Add links, photos, deadlines, budget, and what proof you want. Protected actions stay gated until verification and payment evidence are ready.</p>
 <p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>Use the short fields below. The site still works without AI.</p>
+<p class="font-label-sm text-primary mt-3" data-ai-mode-status data-ai-status-on="AI can organize the brief, but you stay in control of what gets submitted." data-ai-status-off="Manual mode is active. Fill the sections directly and submit when ready.">AI can organize the brief, but you stay in control of what gets submitted.</p>
 </aside>
 </header>
 <section class="glass-panel rounded-3xl p-6 md:p-8 mb-8" id="brief-verification-gate" aria-live="polite">
@@ -305,6 +306,7 @@
 <span class="rounded-full bg-white/70 px-3 py-1">Milestones</span>
 </div>
 <button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" data-ai-only id="brief-ai-organize" type="button">Ask AI to organize</button>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" data-no-ai-copy hidden href="#brief-client-name">Fill manually</a>
 </div>
 </section>
 <section class="glass-panel rounded-3xl p-8 md:p-10">
@@ -591,7 +593,7 @@
 </div>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=50"></script>
-<script src="ai-preferences.js?v=2"></script>
+<script src="ai-preferences.js?v=3"></script>
 <script src="stitch-brief.js?v=12"></script>
 <script src="assistant-dock.js?v=10"></script>
 </body></html>

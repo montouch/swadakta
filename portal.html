@@ -595,7 +595,8 @@
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="verification.html" aria-label="Verify ID" title="Verify ID"><span class="material-symbols-outlined text-[20px]">verified_user</span>Verify</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" data-ai-only href="assistant.html?context=home" aria-label="AI assistant" title="AI assistant"><span class="material-symbols-outlined text-[20px]">auto_awesome</span>AI</a>
 </nav>
-<button class="mt-3 w-full h-10 rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
+<button class="mt-3 w-full h-10 rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
+<p class="mt-2 px-2 text-xs leading-5 text-on-surface-variant" data-ai-mode-status data-ai-status-on="AI helpers are available for drafts, routing, and next-step guidance." data-ai-status-off="Manual mode is active. Use the normal tools without AI shortcuts.">AI helpers are available for drafts, routing, and next-step guidance.</p>
 <button class="mt-4 w-full h-11 rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="account-home-sign-out" type="button">Sign out</button>
 </aside>
 <div class="space-y-5 min-w-0" id="dashboard">
@@ -605,6 +606,7 @@
 <p class="font-label-sm text-primary uppercase tracking-[0.18em]">Account home</p>
 <h1 class="font-display-lg text-headline-lg text-on-surface mt-1">What needs to happen?</h1>
 <p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Give a job, find jobs, track active work, message people, or ask AI to choose the next safe step.</p>
+<p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence." data-ai-status-off="Manual mode is on. Nothing breaks: use jobs, verification, messages, payments, tracking, and issues yourself.">AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence.</p>
 </div>
 <div class="flex flex-wrap gap-3 xl:justify-end">
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Give a job</a>
@@ -1148,11 +1150,15 @@ Submit offer
 </div>
 <div class="mt-4 grid gap-2">
 <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="account-home-verification-action" href="verification.html">Open verification</a>
-<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="assistant.html?context=verification">Ask AI</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=verification">Ask AI</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="verification.html">Open verification steps</a>
 </div>
 </article>
 <article class="glass-panel rounded-[1.5rem] p-5">
-<p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">AI co-pilot</p>
+<div class="flex items-start justify-between gap-3">
+<p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">AI / manual mode</p>
+<button class="h-9 shrink-0 rounded-full border border-outline-variant/40 bg-white/70 px-3 text-xs font-bold text-primary" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
+</div>
 <h2 class="font-headline-sm text-headline-sm mt-1">Tell AI what you need</h2>
 <p class="font-body-md text-on-surface-variant mt-2">It can draft a brief, write replies, predict blockers, and send you to the right tool. Protected decisions still need system evidence.</p>
 <p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>AI is off. You can still use the normal tools for jobs, verification, messages, tracking, payments, and issues.</p>
@@ -1265,7 +1271,7 @@ Submit offer
 </footer>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=50"></script>
-<script src="ai-preferences.js?v=2"></script>
+<script src="ai-preferences.js?v=3"></script>
 <script src="stitch-portal.js?v=31"></script>
 <script src="assistant-dock.js?v=10"></script>
 </body></html>

@@ -137,6 +137,9 @@ const requiredPortalMarkers = [
 const requiredPortalHtmlMarkers = [
   "quick-action-card",
   'aria-label="Find jobs"',
+  "data-ai-mode-status",
+  "Manual mode",
+  "Open verification steps",
   "Set up once, then get matched to suitable work",
   "find-job-step",
   "find-job-step-action",
@@ -180,6 +183,11 @@ const requiredAssistantMarkers = [
   "renderActionLinks",
   "renderConversation",
 ];
+const requiredAssistantHtmlMarkers = [
+  "Manual mode shortcuts",
+  "data-ai-disabled-when-off",
+  "data-ai-mode-status",
+];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
   "collectPageContext",
@@ -204,12 +212,17 @@ const requiredAiPreferenceMarkers = [
   "SwadaktaAiPreference",
   "dataset.aiMode",
   "swadakta_ai_mode",
+  "data-ai-mode-status",
+  "data-ai-disabled-when-off",
+  "Manual mode is on",
   "body[data-ai-mode=\"off\"] [data-ai-only]",
   "swadakta:ai-mode-change",
 ];
 const requiredBriefHtmlMarkers = [
   "brief-freeform",
   "Ask AI to organize",
+  "Fill manually",
+  "data-ai-mode-status",
   "brief-place-intelligence",
   "brief-place-checks",
   "brief-service-direction",
@@ -930,8 +943,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=2")) {
-    fail(failures, `${page} does not reference ai-preferences.js?v=2`);
+  if (["/portal", "/assistant", "/brief", "/admin-ops"].includes(page) && !text.includes("ai-preferences.js?v=3")) {
+    fail(failures, `${page} does not reference ai-preferences.js?v=3`);
   }
   if (page === "/brief" && !text.includes("stitch-brief.js?v=12")) {
     fail(failures, `${page} does not reference stitch-brief.js?v=12`);
@@ -960,6 +973,13 @@ for (const page of requiredPages) {
   }
   if (page === "/assistant" && !text.includes("assistant.js?v=6")) {
     fail(failures, `${page} does not reference assistant.js?v=6`);
+  }
+  if (page === "/assistant") {
+    for (const marker of requiredAssistantHtmlMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing assistant manual-mode marker ${marker}`);
+      }
+    }
   }
   if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
     fail(failures, `${page} does not reference resolution.js?v=2`);
@@ -1222,11 +1242,11 @@ for (const marker of requiredDockMarkers) {
   }
 }
 
-const { response: aiPreferenceResponse, text: aiPreferenceText } = await fetchText("/ai-preferences.js?v=2");
+const { response: aiPreferenceResponse, text: aiPreferenceText } = await fetchText("/ai-preferences.js?v=3");
 if (aiPreferenceResponse.status !== 200) {
-  fail(failures, `ai-preferences.js?v=2 returned ${aiPreferenceResponse.status}`);
+  fail(failures, `ai-preferences.js?v=3 returned ${aiPreferenceResponse.status}`);
 } else {
-  pass("ai-preferences.js?v=2 returned 200");
+  pass("ai-preferences.js?v=3 returned 200");
 }
 for (const marker of requiredAiPreferenceMarkers) {
   if (!aiPreferenceText.includes(marker)) {

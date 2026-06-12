@@ -112,7 +112,7 @@
             <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="notifications.html" title="Notifications" aria-label="Notifications"><span class="material-symbols-outlined text-[22px]">notifications</span></a>
             <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-on-surface-variant hover:bg-white/76 hover:text-primary" href="verification.html" title="Verify" aria-label="Verify"><span class="material-symbols-outlined text-[22px]">verified_user</span></a>
           </nav>
-          <button class="h-10 shrink-0 rounded-full border border-outline-variant/40 bg-white/80 px-3 text-xs font-bold text-primary lg:h-auto lg:w-12 lg:px-0 lg:py-3" data-ai-toggle type="button" aria-pressed="true">AI on</button>
+          <button class="h-10 shrink-0 rounded-full border border-outline-variant/40 bg-white/80 px-3 text-xs font-bold text-primary lg:h-auto lg:w-12 lg:px-0 lg:py-3" data-ai-toggle data-ai-on-label="AI on" data-ai-off-label="Manual" type="button" aria-pressed="true">AI on</button>
         </aside>
 
         <section class="assistant-chat-shell glass-panel flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[1.6rem]">
@@ -130,9 +130,10 @@
                 </div>
                 <p class="mt-3 max-w-2xl text-sm text-on-surface-variant" id="assistant-context-copy">Choose a quick action or describe the job, payment, proof, verification, message, or blocker.</p>
                 <p class="mt-2 text-sm text-on-surface-variant" data-no-ai-copy hidden>AI is off. You can still use Home, Jobs, Messages, Payments, Verification, and Resolution without the assistant.</p>
+                <p class="mt-2 text-xs font-bold text-primary" data-ai-mode-status data-ai-status-on="AI mode is on: ask for drafts, route checks, blockers, and next safe steps." data-ai-status-off="Manual mode is on: use the tool rail and suggested links without chat automation.">AI mode is on: ask for drafts, route checks, blockers, and next safe steps.</p>
               </div>
               <div class="flex shrink-0 flex-wrap items-center gap-2">
-                <select class="h-11 max-w-full rounded-full border border-outline-variant/40 bg-white/70 px-4 text-sm" id="assistant-task" aria-label="Assistant task">
+                <select class="h-11 max-w-full rounded-full border border-outline-variant/40 bg-white/70 px-4 text-sm" id="assistant-task" data-ai-disabled-when-off aria-label="Assistant task">
                   <option>Explain my next step</option>
                   <option>What happens after verification is requested?</option>
                   <option>Draft a message for this job</option>
@@ -143,7 +144,7 @@
                 <a class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/40 bg-white/70 px-4 font-label text-sm text-primary" href="portal.html#home">Home</a>
               </div>
             </div>
-            <div class="mt-4 flex gap-2 overflow-x-auto pb-1" aria-label="AI quick actions">
+            <div class="mt-4 flex gap-2 overflow-x-auto pb-1" data-ai-only aria-label="AI quick actions">
               <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Explain my next step" data-prompt="I need help choosing the next step from my Swadakta account. Explain where to go first and what is blocked until verification." data-links="portal,corridor,verification">
                 <span class="material-symbols-outlined text-[18px]">route</span>Next step
               </button>
@@ -163,6 +164,12 @@
                 <span class="material-symbols-outlined text-[18px]">support_agent</span>Resolve issue
               </button>
             </div>
+            <div class="mt-4 flex flex-wrap gap-2" data-no-ai-copy hidden aria-label="Manual mode shortcuts">
+              <a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-primary" href="portal.html#home">Account home</a>
+              <a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-primary" href="corridor.html">Give a job</a>
+              <a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-primary" href="tracking.html">Track jobs</a>
+              <a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-primary" href="verification.html">Verify ID</a>
+            </div>
           </header>
 
           <div class="assistant-message-list min-h-0 flex-1 space-y-3 overflow-y-auto px-3 py-5 sm:px-6" id="assistant-output" aria-live="polite" aria-label="Swadakta AI conversation"></div>
@@ -170,12 +177,12 @@
           <form class="chat-composer shrink-0 border-t border-outline-variant/30 bg-white/58 p-3 sm:p-4" id="assistant-form">
             <div class="rounded-[1.5rem] border border-outline-variant/40 bg-white/88 p-2 shadow-[0_18px_38px_rgba(48,52,150,0.09)]">
               <div class="flex items-end gap-2">
-                <div class="hidden items-center gap-1 sm:flex">
-                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="media" aria-label="Attach media"><span class="material-symbols-outlined text-[20px]">attach_file</span></button>
-                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="voice" aria-label="Voice note"><span class="material-symbols-outlined text-[20px]">mic</span></button>
-                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="call" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
+                <div class="hidden items-center gap-1 sm:flex" data-ai-only>
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-ai-disabled-when-off data-assistant-tool="media" aria-label="Attach media"><span class="material-symbols-outlined text-[20px]">attach_file</span></button>
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-ai-disabled-when-off data-assistant-tool="voice" aria-label="Voice note"><span class="material-symbols-outlined text-[20px]">mic</span></button>
+                  <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-ai-disabled-when-off data-assistant-tool="call" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
                 </div>
-                <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" rows="1" placeholder="Message AI..."></textarea>
+                <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" data-ai-disabled-when-off rows="1" placeholder="Message AI..."></textarea>
                 <button class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_12px_28px_rgba(70,72,212,0.28)] disabled:cursor-not-allowed disabled:opacity-50" data-ai-only id="assistant-run" type="submit" aria-label="Send message">
                   <span class="material-symbols-outlined text-[22px]">arrow_upward</span>
                 </button>
@@ -210,7 +217,7 @@
     </main>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=50"></script>
-    <script src="ai-preferences.js?v=2"></script>
+    <script src="ai-preferences.js?v=3"></script>
     <script src="assistant.js?v=6"></script>
   <script src="assistant-dock.js?v=10"></script>
 </body>

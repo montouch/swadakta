@@ -4,8 +4,8 @@ Swadakta can use AI to reduce admin load, but the system must remain useful when
 
 ## Modes
 
-- `AI on`: show assistant links, the floating screen assistant, admin prompt packs, draft helpers, and safe recommendation flows.
-- `AI off`: hide AI-only shortcuts, remove the floating assistant dock, and keep the manual queues, provider dashboards, verification pages, tracking, messages, payments, and admin tools usable.
+- `AI on` / `AI mode on`: show assistant links, the floating screen assistant, admin prompt packs, draft helpers, and safe recommendation flows.
+- `AI off` / `Manual mode`: hide AI-only shortcuts, remove the floating assistant dock, disable assistant-only chat inputs, and keep the manual queues, provider dashboards, verification pages, tracking, messages, payments, and admin tools usable.
 
 The browser preference is stored as `swadakta_ai_mode`. `off` means manual mode; any other value means AI mode is allowed.
 
