@@ -8,11 +8,11 @@ Last checked: June 13, 2026
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
 - Project: `swadakta`
 - Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
-- Latest production deployment observed: `dpl_9YfbtmfqCG5oPnFzadpEK6VzPXQJ`
-- Latest production app commit verified: `30063c9` (`Add founder action launch pack`)
-- Latest GitHub `main` commit locally: `10eb86a` (`Trigger deployment for pilot script`)
-- Production is currently stale until Vercel deploys commit `10eb86a` or newer. The repo contains release marker `2026-06-13-first-paid-pilot-script-v1`, but production still serves the earlier release.
-- Git integration is connected to `montouch/swadakta` on `main`, but the two latest pushes (`5c38efe` and `10eb86a`) did not create a new Vercel deployment during the latest check.
+- Latest production deployment observed: `dpl_CAQX6QmE7Poq46hnL8nhuox11RuG`
+- Latest production app commit verified: `d1a782f` (`Add real world founder launch board`)
+- Latest GitHub `main` commit locally: `d1a782f` (`Add real world founder launch board`)
+- Production health passed for `https://swadakta.com` with release marker `2026-06-13-first-paid-pilot-script-v1`.
+- Git integration is connected to `montouch/swadakta` on `main`. The earlier pushes `5c38efe` and `10eb86a` did not immediately create a deployment, but the latest push `d1a782f` did create a fresh production deployment.
 - Chrome is logged into Vercel for this team.
 - Local `.vercel/project.json`: present locally and ignored by Git.
 - `vercel` CLI on PATH: not present.
