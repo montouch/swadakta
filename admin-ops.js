@@ -12,6 +12,9 @@
   const opsMode = document.querySelector("#ops-mode");
   const opsStatus = document.querySelector("#ops-status");
   const opsList = document.querySelector("#ops-list");
+  const opsAutopilotSummary = document.querySelector("#ops-autopilot-summary");
+  const opsAutopilotList = document.querySelector("#ops-autopilot-list");
+  const copyOpsAutopilotButton = document.querySelector("#copy-ops-autopilot");
   const resolutionList = document.querySelector("#ops-resolution-list");
   const filterButtons = document.querySelectorAll(".ops-filter");
 
@@ -175,6 +178,172 @@
     if (kinds.has("compliance") || kinds.has("route")) return "Check corridor legality, restricted goods, route coverage, and proof plan before assignment.";
     if (kinds.has("assignment")) return "Assign only a vetted, ID-verified receiver with matching coverage.";
     return "Monitor normally; AI/autopilot can handle routine follow-up unless a protected decision appears.";
+  }
+
+  function requestFlagKinds(request) {
+    return new Set(requestFlags(request).map(([, kind]) => kind));
+  }
+
+  function automationLane(request) {
+    const kinds = requestFlagKinds(request);
+    if (
+      request.admin_review_required ||
+      request.sensitive_documents_expected ||
+      kinds.has("money") ||
+      kinds.has("margin") ||
+      kinds.has("admin") ||
+      kinds.has("compliance") ||
+      kinds.has("route") ||
+      kinds.has("assignment")
+    ) {
+      return "founder_gate";
+    }
+    if (kinds.has("identity") || kinds.has("payment")) return "provider_evidence";
+    return "ai_routine";
+  }
+
+  function automationLaneMeta(lane) {
+    return (
+      {
+        ai_routine: {
+          title: "AI routine lane",
+          badge: "AI can run",
+          tone: "bg-emerald-500/10 text-emerald-700",
+          copy:
+            "AI can draft updates, reminders, proof checklists, receiver instructions, and next-step summaries. No protected decision is needed yet.",
+        },
+        provider_evidence: {
+          title: "Provider evidence lane",
+          badge: "Wait for provider",
+          tone: "bg-primary/10 text-primary",
+          copy:
+            "AI can chase missing evidence and summarize status. Stripe webhook, PayPal capture, M-Pesa callback, bank/Wise receipt, or ID-provider evidence must decide the gate.",
+        },
+        founder_gate: {
+          title: "Founder gate lane",
+          badge: "Human/provider stop",
+          tone: "bg-amber-400/20 text-amber-800",
+          copy:
+            "AI can brief the founder, but money release, refunds, ID approval, paid assignment, restricted goods, legal authority, customs, tax, and high-value exceptions stay gated.",
+        },
+      }[lane] || {
+        title: "Operations lane",
+        badge: "Review",
+        tone: "bg-white/70 text-on-surface-variant",
+        copy: "Review this work queue.",
+      }
+    );
+  }
+
+  function laneNextStep(lane, request) {
+    if (lane === "ai_routine") {
+      return "AI drafts the next client/receiver update and asks for proof only if the job stage needs it.";
+    }
+    if (lane === "provider_evidence") {
+      if (!paidStatuses.has(request.payment_status) && request.quote_amount) {
+        return `${paymentRailLabel(preferredPaymentRail(request))}: wait for provider confirmation before paid status.`;
+      }
+      return "Wait for provider ID/selfie/liveness evidence before paid posting or receiver work unlocks.";
+    }
+    return nextAction(request, requestFlags(request));
+  }
+
+  function groupedAutomationRequests() {
+    return openRequests().reduce(
+      (groups, request) => {
+        groups[automationLane(request)].push(request);
+        return groups;
+      },
+      { ai_routine: [], provider_evidence: [], founder_gate: [] },
+    );
+  }
+
+  function renderAutomationLane(lane, requests) {
+    const meta = automationLaneMeta(lane);
+    const examples = requests
+      .slice(0, 3)
+      .map(
+        (request) => `
+          <li class="rounded-2xl bg-white/70 p-3">
+            <strong class="block text-on-surface">${escapeHtml(request.request_code || "Request")}</strong>
+            <span class="mt-1 block text-xs leading-5 text-on-surface-variant">${escapeHtml(routeLabel(request))} / ${escapeHtml(taskLabel(request))}</span>
+            <span class="mt-2 block text-xs leading-5 text-on-surface-variant">${escapeHtml(laneNextStep(lane, request))}</span>
+          </li>
+        `,
+      )
+      .join("");
+
+    return `
+      <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <p class="font-label text-xs uppercase tracking-[0.18em] text-secondary">${escapeHtml(meta.title)}</p>
+            <strong class="mt-1 block font-display text-4xl">${requests.length}</strong>
+          </div>
+          <span class="rounded-full px-3 py-1 font-label text-xs ${meta.tone}">${escapeHtml(meta.badge)}</span>
+        </div>
+        <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(meta.copy)}</p>
+        <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">
+          ${examples || `<li class="rounded-2xl bg-white/70 p-3">No requests in this lane right now.</li>`}
+        </ul>
+      </article>
+    `;
+  }
+
+  function renderOpsAutopilot() {
+    if (!opsAutopilotList && !opsAutopilotSummary) return;
+    const groups = groupedAutomationRequests();
+    const open = openRequests();
+    const unresolvedCases = currentResolutionCases.filter((item) => !["resolved", "closed"].includes(String(item.status || "").toLowerCase()));
+
+    if (opsAutopilotSummary) {
+      opsAutopilotSummary.textContent = open.length
+        ? `${groups.ai_routine.length} routine request${groups.ai_routine.length === 1 ? "" : "s"} can stay with AI, ${groups.provider_evidence.length} need provider evidence, and ${groups.founder_gate.length} need founder/provider gates. ${unresolvedCases.length} user issue${unresolvedCases.length === 1 ? "" : "s"} are unresolved.`
+        : "No open requests right now. AI can stay ready for intake, message drafting, route checks, and proof templates.";
+    }
+
+    if (opsAutopilotList) {
+      opsAutopilotList.innerHTML = ["ai_routine", "provider_evidence", "founder_gate"]
+        .map((lane) => renderAutomationLane(lane, groups[lane]))
+        .join("");
+    }
+  }
+
+  function opsAutopilotPrompt() {
+    const groups = groupedAutomationRequests();
+    const unresolvedCases = currentResolutionCases.filter((item) => !["resolved", "closed"].includes(String(item.status || "").toLowerCase()));
+    const lines = [
+      "Swadakta daily operations autopilot brief",
+      `AI routine lane: ${groups.ai_routine.length}`,
+      `Provider evidence lane: ${groups.provider_evidence.length}`,
+      `Founder gate lane: ${groups.founder_gate.length}`,
+      `Unresolved user issues: ${unresolvedCases.length}`,
+      "",
+      "AI may draft messages, summaries, proof checklists, receiver instructions, route checks, and payment reminders.",
+      "AI must not mark funds paid, approve ID, assign paid work, release payouts, issue refunds, or clear restricted/legal/customs/tax/high-value exceptions.",
+      "",
+    ];
+
+    ["founder_gate", "provider_evidence", "ai_routine"].forEach((lane) => {
+      const meta = automationLaneMeta(lane);
+      lines.push(`${meta.title}:`);
+      groups[lane].slice(0, 6).forEach((request) => {
+        lines.push(
+          `- ${request.request_code || "Request"} | ${routeLabel(request)} | ${taskLabel(request)} | ${laneNextStep(lane, request)}`,
+        );
+      });
+      if (!groups[lane].length) lines.push("- None");
+      lines.push("");
+    });
+
+    if (unresolvedCases.length) {
+      lines.push("Unresolved cases:");
+      unresolvedCases.slice(0, 6).forEach((item) => {
+        lines.push(`- ${item.resolution_code || "Case"} | ${item.request_code || "No request"} | ${formatStatus(item.issue_type)} | ${formatStatus(item.status)}`);
+      });
+    }
+
+    return lines.join("\n");
   }
 
   function normalizedText(...values) {
@@ -548,6 +717,7 @@
     setStat("#stat-exceptions", exceptions.length);
     setStat("#stat-payments", payments.length);
     setStat("#stat-margin", marginRisk.length);
+    renderOpsAutopilot();
 
     const visible =
       currentFilter === "all" ? open : currentFilter === "payments" ? payments : exceptions.length ? exceptions : open;
@@ -624,10 +794,12 @@
 
     if (!currentResolutionCases.length) {
       resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No resolution cases yet. User issues will appear here after they are opened from tracking or Account Home.</div>`;
+      renderOpsAutopilot();
       return;
     }
 
     resolutionList.innerHTML = currentResolutionCases.map(renderResolutionCase).join("");
+    renderOpsAutopilot();
   }
 
   async function loadOps() {
@@ -786,6 +958,15 @@
       currentFilter = button.dataset.filter || "exceptions";
       renderQueue();
     });
+  });
+
+  copyOpsAutopilotButton?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(opsAutopilotPrompt());
+      setStatus("Copied daily AI operations brief.", "text-primary");
+    } catch {
+      setStatus("Could not copy the daily operations brief.", "text-on-error-container");
+    }
   });
 
   document.addEventListener("click", async (event) => {
