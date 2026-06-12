@@ -359,6 +359,7 @@
       kenya_base: payload.kenya_base,
       service_regions: payload.service_regions,
       service_categories: payload.service_categories,
+      coverage_scopes: payload.coverage_scopes,
       availability: payload.availability,
       transport_access: payload.transport_access,
       notes: payload.notes,
@@ -378,6 +379,7 @@
       kenya_base: "",
       service_regions: "",
       service_categories: [],
+      coverage_scopes: [],
       availability: "flexible",
       transport_access: "mixed",
       status: "new",
@@ -474,6 +476,15 @@
       message.includes("could not find the function") ||
       (message.includes("function") && message.includes("does not exist")) ||
       (message.includes("function") && message.includes("schema cache"))
+    );
+  }
+
+  function missingColumn(error, columnName) {
+    const message = String(error?.message || "").toLowerCase();
+    const column = String(columnName || "").toLowerCase();
+    return (
+      error?.code === "42703" ||
+      (column && message.includes(column) && (message.includes("column") || message.includes("schema cache")))
     );
   }
 
@@ -715,7 +726,14 @@
       return { data: normalized, mode: "local" };
     }
 
-    const { error } = await supabase.from("partner_applications").insert(toPartnerDatabasePayload(normalized));
+    let { error } = await supabase.from("partner_applications").insert(toPartnerDatabasePayload(normalized));
+
+    if (error && missingColumn(error, "coverage_scopes")) {
+      const legacyPayload = toPartnerDatabasePayload(normalized);
+      delete legacyPayload.coverage_scopes;
+      const legacyResult = await supabase.from("partner_applications").insert(legacyPayload);
+      error = legacyResult.error;
+    }
 
     if (error) {
       throw error;

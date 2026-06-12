@@ -188,7 +188,13 @@
   }
 
   function partnerCoverageText(partner) {
-    return normalizedText(partner.kenya_base, partner.service_regions, partner.notes, partner.provenance_notes);
+    return normalizedText(
+      partner.kenya_base,
+      partner.service_regions,
+      Array.isArray(partner.coverage_scopes) ? partner.coverage_scopes.join(" ") : "",
+      partner.notes,
+      partner.provenance_notes,
+    );
   }
 
   function requestCoverageText(request) {
@@ -210,11 +216,26 @@
     const goods = String(request.goods_category || "").toLowerCase();
     const hints = new Set();
 
-    if (task.includes("site") || task.includes("inspection")) hints.add("property_checks");
-    if (task.includes("registry") || task.includes("legal") || goods.includes("documents")) hints.add("documents");
-    if (task.includes("shopping") || logistics.includes("delivery") || logistics.includes("courier")) hints.add("shopping_delivery");
-    if (task.includes("virtual") || task.includes("research")) hints.add("sourcing");
-    if (task.includes("quick")) hints.add("family_support");
+    if (task.includes("site") || task.includes("inspection")) {
+      hints.add("property_checks");
+      hints.add("site_visits");
+    }
+    if (task.includes("registry") || task.includes("legal") || goods.includes("documents")) {
+      hints.add("documents");
+      hints.add("registry_errands");
+    }
+    if (task.includes("shopping") || logistics.includes("delivery") || logistics.includes("courier")) {
+      hints.add("shopping_delivery");
+      hints.add("deliveries");
+    }
+    if (task.includes("virtual") || task.includes("research")) {
+      hints.add("sourcing");
+      hints.add("virtual_ops");
+    }
+    if (task.includes("quick")) {
+      hints.add("family_support");
+      hints.add("family_logistics");
+    }
     if (!hints.size) hints.add("business_support");
 
     return hints;
