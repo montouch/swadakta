@@ -61,6 +61,11 @@ function supabaseHost() {
   }
 }
 
+function supabaseProjectRef() {
+  const host = supabaseHost();
+  return host.endsWith(".supabase.co") ? host.replace(".supabase.co", "") : "";
+}
+
 function paypalMode() {
   return String(process.env.PAYPAL_ENVIRONMENT || process.env.PAYPAL_MODE || "live").toLowerCase() === "sandbox"
     ? "sandbox"
@@ -149,6 +154,10 @@ const DOCS = {
   securityTxt: "https://www.rfc-editor.org/info/rfc9116/",
   vercelHeaders: "https://vercel.com/docs/headers",
   supabaseApiSecurity: "https://supabase.com/docs/guides/api/securing-your-api",
+  supabaseRedirectUrls: "https://supabase.com/docs/guides/auth/redirect-urls",
+  supabasePasswordSecurity: "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
+  supabaseAuthRateLimits: "https://supabase.com/docs/guides/auth/rate-limits",
+  supabaseAuthCaptcha: "https://supabase.com/docs/guides/auth/auth-captcha",
   supabaseRls: "https://supabase.com/docs/guides/database/postgres/row-level-security",
   supabaseStorage: "https://supabase.com/docs/guides/storage",
   supabaseStorageAccess: "https://supabase.com/docs/guides/storage/security/access-control",
@@ -188,6 +197,56 @@ function buildNextActions(categories) {
     .filter((entry) => entry.status !== "ready")
     .sort((a, b) => a.priority - b.priority || String(a.label).localeCompare(String(b.label)))
     .slice(0, 8);
+}
+
+function authSecurityItems() {
+  const projectRef = supabaseProjectRef();
+  const projectBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : "";
+
+  return [
+    item(
+      "supabase_auth_redirect_urls",
+      "Auth production redirects",
+      "manual",
+      "Supabase Auth Site URL and Redirect URLs must point at swadakta.com so email confirmation, password reset, and OAuth links do not send users back to localhost.",
+      "Set Site URL to https://swadakta.com and allow https://swadakta.com/** before sharing sign-in links publicly.",
+      ["Supabase Auth Site URL", "Supabase Auth Redirect URLs"],
+      {
+        docs_url: DOCS.supabaseRedirectUrls,
+        copy_value: projectBase ? `${projectBase}/auth/url-configuration` : `${publicUrl() || "https://swadakta.com"}/auth`,
+        priority: 11,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "supabase_leaked_password_protection",
+      "Leaked-password protection",
+      "manual",
+      "Supabase Auth should reject known-compromised passwords before Swadakta opens paid work and identity upload flows to the public.",
+      "Enable leaked-password protection in Supabase Auth password security settings, then re-run Supabase advisors.",
+      ["Auth leaked-password protection advisor"],
+      {
+        docs_url: DOCS.supabasePasswordSecurity,
+        copy_value: projectBase ? `${projectBase}/auth/security` : "",
+        priority: 13,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "supabase_auth_attack_protection",
+      "Auth attack protection",
+      "manual",
+      "Sign-up, sign-in, password reset, and OTP flows should have rate-limit and bot-protection settings reviewed before paid campaigns.",
+      "Review Supabase Auth rate limits and add CAPTCHA or Turnstile if sign-up spam or credential-stuffing risk appears.",
+      ["Auth rate limits review", "CAPTCHA or Turnstile decision"],
+      {
+        docs_url: DOCS.supabaseAuthRateLimits,
+        copy_value: DOCS.supabaseAuthCaptcha,
+        priority: 14,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+  ];
 }
 
 async function fetchPublic(path, options = {}) {
@@ -630,6 +689,7 @@ async function readinessReport(user, authHeader) {
           [],
           { priority: 12, owner: "Founder/Supabase admin" },
         ),
+        ...authSecurityItems(),
       ],
     },
     {

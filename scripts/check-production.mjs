@@ -238,6 +238,11 @@ const requiredReadinessApiMarkers = [
   "storage_read_policy_probe",
   "swadakta-proof",
   "stitch-portal.js?v=26",
+  "authSecurityItems",
+  "supabase_auth_redirect_urls",
+  "supabase_leaked_password_protection",
+  "supabase_auth_attack_protection",
+  "password-strength-and-leaked-password-protection",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
