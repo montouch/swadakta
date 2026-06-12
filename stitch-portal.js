@@ -1350,7 +1350,7 @@
       setup.languages ? `Languages: ${setup.languages}` : "",
       setup.proof_tools ? `Proof tools: ${setup.proof_tools}` : "",
       setup.photo_path ? `Profile photo uploaded privately: ${setup.photo_path}` : "",
-      setup.proof_sample_name ? `Proof sample attached locally: ${setup.proof_sample_name}` : "",
+      setup.proof_sample_name ? `Proof sample attached for private review: ${setup.proof_sample_name}` : "",
       setup.proof_sample_path ? `Proof sample uploaded privately: ${setup.proof_sample_path}` : "",
       setup.bio ? `Receiver work bio: ${setup.bio}` : "",
       "Receiver profile photo must match provider ID/selfie verification before paid public trust signals unlock.",
@@ -1403,7 +1403,7 @@
     if (receiverProofSampleName && setup.proof_sample_name) {
       receiverProofSampleName.textContent = setup.proof_sample_path
         ? `${setup.proof_sample_name} uploaded privately. Review comes before public trust use.`
-        : `${setup.proof_sample_name} saved locally. Secure upload and review comes before public trust use.`;
+        : `${setup.proof_sample_name} ready for private upload and review before public trust use.`;
     }
     renderReceiverProfileSetup(profile);
   }
@@ -1471,14 +1471,14 @@
       return;
     }
     if (file.size > 1.5 * 1024 * 1024) {
-      setReceiverProfileStatus("Use a smaller photo for now. Proper profile storage will handle larger files later.", "text-error");
+      setReceiverProfileStatus("Use a smaller photo for this upload. Larger media can be added as proof links during the job.", "text-error");
       return;
     }
     const reader = new FileReader();
     reader.addEventListener("load", () => {
       writeReceiverProfileSetup({ photo_data_url: String(reader.result || "") });
       renderReceiverProfileSetup({});
-      setReceiverProfileStatus("Photo preview saved locally. It must match ID/selfie verification before clients rely on it.", "text-primary");
+      setReceiverProfileStatus("Photo preview saved. It must match ID/selfie verification before clients rely on it.", "text-primary");
     });
     reader.readAsDataURL(file);
 
@@ -1496,7 +1496,7 @@
           setReceiverProfileStatus("Photo uploaded privately. Provider ID/selfie matching is still required before paid jobs.", "text-primary");
         })
         .catch(() => {
-          setReceiverProfileStatus("Photo preview is saved locally. Secure upload can retry after sign-in/session is ready.", "text-primary");
+          setReceiverProfileStatus("Photo preview is saved on this device. Private upload can retry after the account session refreshes.", "text-primary");
         });
     }
   }
@@ -1509,7 +1509,7 @@
       return;
     }
     if (file.size > 6 * 1024 * 1024) {
-      setReceiverProfileStatus("Use a smaller sample for now. Secure storage will handle larger proof later.", "text-error");
+      setReceiverProfileStatus("Use a smaller proof sample for this upload. Larger evidence can be added as proof links during the job.", "text-error");
       return;
     }
     writeReceiverProfileSetup({
@@ -1518,10 +1518,10 @@
       proof_sample_size: file.size,
     });
     if (receiverProofSampleName) {
-      receiverProofSampleName.textContent = `${file.name} saved locally. It will need secure upload and review before clients rely on it.`;
+      receiverProofSampleName.textContent = `${file.name} ready for private upload and review before clients rely on it.`;
     }
     renderReceiverProfileSetup({});
-    setReceiverProfileStatus("Proof sample noted locally. Real provenance rises only after reviewed work and verified identity.", "text-primary");
+    setReceiverProfileStatus("Proof sample noted for review. Real provenance rises only after reviewed work and verified identity.", "text-primary");
 
     if (signedInEmail && window.SwadaktaData.uploadAccountMedia) {
       window.SwadaktaData.uploadAccountMedia("receiver-proof-sample", file)
@@ -1540,7 +1540,7 @@
           setReceiverProfileStatus("Proof sample uploaded privately. It still needs review before it raises public trust.", "text-primary");
         })
         .catch(() => {
-          setReceiverProfileStatus("Proof sample is saved locally. Secure upload can retry after sign-in/session is ready.", "text-primary");
+          setReceiverProfileStatus("Proof sample is saved on this device. Private upload can retry after the account session refreshes.", "text-primary");
         });
     }
   }

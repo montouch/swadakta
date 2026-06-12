@@ -310,6 +310,7 @@ const requiredPortalHtmlMarkers = [
   "Controlled offers",
   "Make an offer without racing to the bottom",
   "Lowest price does not automatically win",
+  "Signed-in accounts upload it privately",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
@@ -597,7 +598,7 @@ const requiredReadinessApiMarkers = [
   "storage_read_policy_probe",
   "swadakta-proof",
   "app-data.js?v=52",
-  "stitch-portal.js?v=32",
+  "stitch-portal.js?v=33",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
   "supabase_leaked_password_protection",
@@ -734,6 +735,14 @@ const requiredFinalUxSupportPageMarkers = [
   ['terms.html', 'data-final-ux-shell="support-policy"'],
   ['terms.html', 'data-stitch-source="support_terms_swadakta_final_ux_coverage"'],
   ['terms.html', "styles.css?v=29"],
+];
+const forbiddenUserFacingIncompleteMarkers = [
+  ["portal.html", "until proper storage is connected"],
+  ["portal.html", "until secure storage is connected"],
+  ["stitch-portal.js", "Proper profile storage will handle larger files later"],
+  ["stitch-portal.js", "Secure storage will handle larger proof later"],
+  ["verification.js", "continue the demo"],
+  ["verification.js", "Supabase grant/RPC applied"],
 ];
 const requiredSupportCssMarkers = [
   "Website v29: final-UX support pages",
@@ -1095,6 +1104,12 @@ for (const marker of requiredSupportCssMarkers) {
     fail(failures, `Local styles.css is missing final UX support marker ${marker}`);
   }
 }
+for (const [file, marker] of forbiddenUserFacingIncompleteMarkers) {
+  const content = await readLocal(file);
+  if (content.includes(marker)) {
+    fail(failures, `Local ${file} still contains unfinished user-facing copy: ${marker}`);
+  }
+}
 const localAiPreferences = await readLocal("ai-preferences.js");
 for (const marker of requiredAiPreferenceMarkers) {
   if (!localAiPreferences.includes(marker)) {
@@ -1360,8 +1375,8 @@ for (const page of requiredPages) {
   if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
     fail(failures, `${page} does not reference admin-readiness.js?v=4`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=8")) {
-    fail(failures, `${page} does not reference verification.js?v=8`);
+  if (page === "/verification" && !text.includes("verification.js?v=9")) {
+    fail(failures, `${page} does not reference verification.js?v=9`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
