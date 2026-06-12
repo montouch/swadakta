@@ -14,6 +14,7 @@
   const riskyGoods = new Set(["food_plant_animal", "medicine_health", "cosmetics", "electronics", "valuable_items", "restricted_or_unsure"]);
   const highRiskGoods = new Set(["food_plant_animal", "medicine_health", "valuable_items", "restricted_or_unsure"]);
   const physicalModes = new Set(["local_delivery", "postal_courier", "pickup_hold", "supplier_direct", "airport_handoff"]);
+  let importedRulesContext = {};
   const africaCountryOptions = [
     "Algeria",
     "Angola",
@@ -443,9 +444,30 @@
       flags.push("digital_or_document_work");
     }
 
-    const adminReviewRequired = route.admin_review_required || status === "needs_admin_review" || riskLevel === "high";
+    const importedRulesActive = rulesContextMatchesCurrent();
+    if (importedRulesActive) {
+      const importedChecks = Array.isArray(importedRulesContext.required_checks) ? importedRulesContext.required_checks : [];
+      const importedFlags = Array.isArray(importedRulesContext.compliance_flags) ? importedRulesContext.compliance_flags : [];
+      checks.push(...importedChecks);
+      flags.push(...importedFlags);
+
+      const importedRisk = importedRulesContext.compliance_risk_level || "";
+      const importedStatus = importedRulesContext.compliance_status || "";
+      if (importedStatus === "prohibited") status = "prohibited";
+      if (importedStatus === "needs_admin_review" && status !== "prohibited") status = "needs_admin_review";
+      if (importedRisk === "high") riskLevel = "high";
+      if (importedRisk === "medium" && riskLevel === "standard") riskLevel = "medium";
+    }
+
+    const adminReviewRequired =
+      route.admin_review_required ||
+      status === "needs_admin_review" ||
+      status === "prohibited" ||
+      riskLevel === "high" ||
+      Boolean(importedRulesActive && importedRulesContext.admin_review_required);
     const adminReviewReason = adminReviewRequired
-      ? route.admin_review_reason ||
+      ? (importedRulesActive ? importedRulesContext.admin_review_reason : "") ||
+        route.admin_review_reason ||
         "Founder approval is required because this route, item, or compliance risk cannot be cleared by AI alone."
       : "";
 
@@ -510,6 +532,8 @@
       compliance_flags: triage.flags,
       required_checks: triage.checks,
       notes: value("#corridor-notes"),
+      imported_from: importedRulesActive ? importedRulesContext.imported_from : "",
+      imported_at: importedRulesActive ? importedRulesContext.imported_at : "",
       created_at: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(context));
@@ -517,6 +541,7 @@
   }
 
   function applyContext(context = {}) {
+    rememberImportedRulesContext(context);
     if (context.origin_country) field("#corridor-origin").value = context.origin_country;
     if (context.destination_country) field("#corridor-destination").value = context.destination_country;
     if (context.task_location) field("#corridor-location").value = context.task_location;
@@ -531,6 +556,42 @@
       complianceAck.checked = context.compliance_acknowledged;
     }
     if (context.notes) field("#corridor-notes").value = context.notes;
+  }
+
+  function rememberImportedRulesContext(context = {}) {
+    importedRulesContext =
+      context.imported_from === "rules_precheck"
+        ? {
+            origin_country: context.origin_country || "",
+            destination_country: context.destination_country || "",
+            logistics_mode: context.logistics_mode || "",
+            goods_category: context.goods_category || "",
+            compliance_status: context.compliance_status || "",
+            compliance_risk_level: context.compliance_risk_level || "",
+            admin_review_required: Boolean(context.admin_review_required),
+            admin_review_reason: context.admin_review_reason || "",
+            compliance_flags: Array.isArray(context.compliance_flags) ? context.compliance_flags : [],
+            required_checks: Array.isArray(context.required_checks) ? context.required_checks : [],
+            imported_from: context.imported_from,
+            imported_at: context.imported_at || "",
+          }
+        : {};
+  }
+
+  function rulesContextMatchesCurrent() {
+    if (importedRulesContext.imported_from !== "rules_precheck") return false;
+
+    const sameOrigin =
+      !importedRulesContext.origin_country ||
+      normalizeCountry(importedRulesContext.origin_country) === normalizeCountry(value("#corridor-origin"));
+    const sameDestination =
+      !importedRulesContext.destination_country ||
+      normalizeCountry(importedRulesContext.destination_country) === normalizeCountry(value("#corridor-destination"));
+    const sameLogistics =
+      !importedRulesContext.logistics_mode || importedRulesContext.logistics_mode === value("#corridor-logistics");
+    const sameGoods = !importedRulesContext.goods_category || importedRulesContext.goods_category === value("#corridor-goods");
+
+    return sameOrigin && sameDestination && sameLogistics && sameGoods;
   }
 
   function nonEmptyContext(context = {}) {
@@ -598,7 +659,7 @@
       compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
       required_checks: (params.get("checks") || "").split("|").filter(Boolean),
       notes: params.get("notes") || "",
-      imported_from: "brief_route_planner",
+      imported_from: params.get("source") === "rules_precheck" ? "rules_precheck" : "brief_route_planner",
       imported_at: new Date().toISOString(),
     });
 

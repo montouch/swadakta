@@ -339,6 +339,7 @@
     <script>
       const form = document.querySelector("#rules-checker-form");
       const result = document.querySelector("#rules-result");
+      const corridorStorageKey = "swadakta_corridor_context";
 
       const itemPolicies = {
         general: {
@@ -439,6 +440,123 @@
         return { level, checks: [...new Set(checks)] };
       }
 
+      const itemToCorridorGoods = {
+        general: "general_goods",
+        documents: "documents",
+        electronics: "electronics",
+        perfume_liquids: "cosmetics",
+        food_plant_animal: "food_plant_animal",
+        medicine_health: "medicine_health",
+        valuable_cash_jewellery: "valuable_items",
+        weapons_hazardous: "restricted_or_unsure",
+        unknown: "restricted_or_unsure",
+      };
+
+      const modeToCorridorLogistics = {
+        local_errand: "local_delivery",
+        post: "postal_courier",
+        courier: "postal_courier",
+        traveller: "airport_handoff",
+        digital: "digital_only",
+      };
+
+      const itemToServiceType = {
+        documents: "Legal & Compliance Concierge",
+        general: "Personal Shopping",
+        electronics: "Logistics & Delivery",
+        perfume_liquids: "Logistics & Delivery",
+        food_plant_animal: "Logistics & Delivery",
+        medicine_health: "Legal & Compliance Concierge",
+        valuable_cash_jewellery: "Logistics & Delivery",
+        weapons_hazardous: "Legal & Compliance Concierge",
+        unknown: "Legal & Compliance Concierge",
+      };
+
+      function complianceStatus(level) {
+        if (level === "standard") return "not_applicable";
+        if (level === "review") return "needs_ai_review";
+        if (level === "refuse") return "prohibited";
+        return "needs_admin_review";
+      }
+
+      function riskLevel(level) {
+        if (level === "standard") return "standard";
+        if (level === "review") return "medium";
+        return "high";
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function buildCorridorContext({ origin, destination, itemType, mode, route, policy, crossBorder }) {
+        const reviewRequired = ["blocked", "refuse"].includes(route.level);
+        const serviceDirection = mode === "digital" ? "digital_global" : crossBorder ? "origin_to_destination" : "local_in_country";
+        const reviewReason = reviewRequired
+          ? `Rules pre-check: ${policy.title}. ${policy.copy}`
+          : "";
+        const flags = [
+          "rules_precheck",
+          `rules_item_${itemType}`,
+          `rules_mode_${mode}`,
+          crossBorder ? "rules_cross_border" : "rules_local",
+          reviewRequired ? "rules_founder_review" : "",
+        ].filter(Boolean);
+
+        return {
+          origin_country: origin,
+          destination_country: destination,
+          task_location: destination || origin,
+          service_direction: serviceDirection,
+          service_type: itemToServiceType[itemType] || "Logistics & Delivery",
+          logistics_mode: modeToCorridorLogistics[mode] || "not_needed",
+          goods_category: itemToCorridorGoods[itemType] || "restricted_or_unsure",
+          compliance_acknowledged: false,
+          compliance_status: complianceStatus(route.level),
+          compliance_risk_level: riskLevel(route.level),
+          admin_review_required: reviewRequired,
+          admin_review_reason: reviewReason,
+          compliance_flags: flags,
+          required_checks: route.checks,
+          notes: `Rules pre-check: ${policy.title}. ${policy.copy}`,
+          imported_from: "rules_precheck",
+          imported_at: new Date().toISOString(),
+        };
+      }
+
+      function corridorHref(context) {
+        const params = new URLSearchParams({
+          origin: context.origin_country,
+          destination: context.destination_country,
+          location: context.task_location,
+          direction: context.service_direction,
+          logistics: context.logistics_mode,
+          goods: context.goods_category,
+          service: context.service_type,
+          compliance: context.compliance_status,
+          risk: context.compliance_risk_level,
+          review: context.admin_review_required ? "yes" : "no",
+          review_reason: context.admin_review_reason,
+          flags: context.compliance_flags.join("|"),
+          checks: context.required_checks.join("|"),
+          notes: context.notes,
+          source: "rules_precheck",
+        });
+
+        return `corridor.html?${params.toString()}`;
+      }
+
+      function saveCorridorContext(context) {
+        try {
+          localStorage.setItem(corridorStorageKey, JSON.stringify(context));
+        } catch {}
+      }
+
       form?.addEventListener("submit", (event) => {
         event.preventDefault();
         const origin = document.querySelector("#rules-origin").value.trim() || "Origin";
@@ -450,19 +568,22 @@
         const policy = itemPolicies[itemType] || itemPolicies.unknown;
         const route = routeExtras(policy, mode, valueBand, crossBorder);
         const routeLabel = crossBorder ? `${origin} to ${destination}` : `${origin} local`;
+        const context = buildCorridorContext({ origin, destination, itemType, mode, route, policy, crossBorder });
+        const handoffHref = corridorHref(context);
+        saveCorridorContext(context);
 
         result.innerHTML = `
           <div class="flex flex-wrap items-center gap-2">
-            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${routeLabel}</p>
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${escapeHtml(routeLabel)}</p>
             <span class="rounded-full px-3 py-1 font-label text-xs ${tone(route.level)}">${label(route.level)}</span>
           </div>
-          <h3 class="mt-2 font-display text-3xl font-extrabold">${policy.title}</h3>
-          <p class="mt-2 text-on-surface-variant">${policy.copy}</p>
+          <h3 class="mt-2 font-display text-3xl font-extrabold">${escapeHtml(policy.title)}</h3>
+          <p class="mt-2 text-on-surface-variant">${escapeHtml(policy.copy)}</p>
           <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">
-            ${route.checks.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">check_circle</span><span>${item}</span></li>`).join("")}
+            ${route.checks.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">check_circle</span><span>${escapeHtml(item)}</span></li>`).join("")}
           </ul>
           <div class="mt-5 flex flex-wrap gap-3">
-            <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Use in corridor</a>
+            <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="rules-use-corridor-link" href="${handoffHref}">Use in corridor</a>
             <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" href="trust.html">Review trust rules</a>
           </div>
         `;

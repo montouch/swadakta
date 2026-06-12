@@ -233,6 +233,9 @@ const requiredRulesMarkers = [
   "Batteries, perfume, medicines, food, plants, valuables, and documents",
   "UPU international mail baseline",
   "postal or courier acceptance",
+  "rules_precheck",
+  "rules-use-corridor-link",
+  "corridorStorageKey",
 ];
 const requiredCorridorMarkers = [
   "Launch lanes",
@@ -256,6 +259,9 @@ const requiredCorridorScriptMarkers = [
   "Active Africa-wide corridor",
   "Pilot corridor - founder quote approval required",
   "review_reason",
+  "rules_precheck",
+  "rememberImportedRulesContext",
+  "rulesContextMatchesCurrent",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -834,8 +840,8 @@ for (const page of requiredPages) {
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=6")) {
-    fail(failures, `${page} does not reference corridor.js?v=6`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=7")) {
+    fail(failures, `${page} does not reference corridor.js?v=7`);
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {
