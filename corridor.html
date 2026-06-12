@@ -144,6 +144,13 @@
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Nigeria" data-destination="Ghana" data-location="Lagos, Accra, border handoff, or remote" data-direction="two_way" data-logistics="postal_courier" data-goods="general_goods">Africa to Africa</button>
                 <button class="corridor-preset rounded-2xl border border-outline-variant/40 bg-white/76 px-4 py-3 text-left font-label text-sm text-on-surface hover:border-primary" type="button" data-origin="Tanzania" data-destination="Tanzania" data-location="Dar es Salaam, Arusha, Dodoma, or remote" data-direction="local_in_country" data-logistics="local_delivery" data-goods="none">In-country Africa</button>
               </div>
+              <div class="rounded-2xl border border-primary/15 bg-primary-container/10 p-4">
+                <label class="block font-label text-sm text-primary" for="corridor-africa-country">In-country Africa quick start</label>
+                <select class="sunken-input mt-2 w-full h-12 px-4 rounded-xl" id="corridor-africa-country">
+                  <option value="">Choose any African country</option>
+                </select>
+                <p class="mt-2 text-sm text-on-surface-variant">This fills the client and work country as the same African country for errands, site visits, family support, local delivery, sourcing, and in-country business work.</p>
+              </div>
             </div>
           </section>
           <div class="grid gap-5 md:grid-cols-2">
@@ -272,7 +279,7 @@
       </section>
     </main>
 
-    <script src="corridor.js?v=4"></script>
+    <script src="corridor.js?v=5"></script>
   <script src="assistant-dock.js?v=4"></script>
 </body>
 </html>

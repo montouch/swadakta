@@ -9,6 +9,7 @@
   const routeCopy = document.querySelector("#corridor-route-copy");
   const routePill = document.querySelector("#corridor-route-pill");
   const presetButtons = document.querySelectorAll(".corridor-preset");
+  const africaQuickStart = document.querySelector("#corridor-africa-country");
   const STORAGE_KEY = "swadakta_corridor_context";
   const riskyGoods = new Set(["food_plant_animal", "medicine_health", "cosmetics", "electronics", "valuable_items", "restricted_or_unsure"]);
   const highRiskGoods = new Set(["food_plant_animal", "medicine_health", "valuable_items", "restricted_or_unsure"]);
@@ -200,6 +201,34 @@
       list.append(option);
       existing.add(country);
     });
+  }
+
+  function populateAfricaQuickSelect() {
+    if (!africaQuickStart) return;
+    const existing = new Set([...africaQuickStart.querySelectorAll("option")].map((option) => option.value));
+
+    africaCountryOptions.forEach((country) => {
+      if (existing.has(country)) return;
+      const option = document.createElement("option");
+      option.value = country;
+      option.textContent = country;
+      africaQuickStart.append(option);
+      existing.add(country);
+    });
+  }
+
+  function applyAfricaCountry(country) {
+    const selectedCountry = String(country || "").trim();
+    if (!selectedCountry) return;
+
+    field("#corridor-origin").value = selectedCountry;
+    field("#corridor-destination").value = selectedCountry;
+    field("#corridor-location").value = `${selectedCountry} city, town, or remote`;
+    field("#corridor-direction").value = "local_in_country";
+    field("#corridor-logistics").value = "local_delivery";
+    field("#corridor-goods").value = "none";
+    if (complianceAck) complianceAck.checked = false;
+    setNextCopy();
   }
 
   function sameCountry(a, b) {
@@ -497,6 +526,9 @@
       if (context.service_type) field("#corridor-service").value = context.service_type;
       if (context.logistics_mode) field("#corridor-logistics").value = context.logistics_mode;
       if (context.goods_category) field("#corridor-goods").value = context.goods_category;
+      if (africaQuickStart && context.origin_country && sameCountry(context.origin_country, context.destination_country)) {
+        africaQuickStart.value = africaCountryOptions.includes(context.origin_country) ? context.origin_country : "";
+      }
       if (complianceAck) complianceAck.checked = Boolean(context.compliance_acknowledged);
       if (context.notes) field("#corridor-notes").value = context.notes;
     } catch {
@@ -519,6 +551,7 @@
       setNextCopy();
     });
   });
+  africaQuickStart?.addEventListener("change", () => applyAfricaCountry(africaQuickStart.value));
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
@@ -544,5 +577,6 @@
   });
 
   ensureCountryOptions();
+  populateAfricaQuickSelect();
   restoreContext();
 })();

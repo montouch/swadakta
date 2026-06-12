@@ -188,11 +188,15 @@ const requiredCorridorMarkers = [
   "corridor-preset",
   "Africa to Africa",
   "In-country Africa",
+  "corridor-africa-country",
+  "Choose any African country",
 ];
 const requiredCorridorScriptMarkers = [
   "routeReadiness",
   "supportedRegion",
   "africaCountryOptions",
+  "populateAfricaQuickSelect",
+  "applyAfricaCountry",
   "Active Africa-to-Africa lane",
   "Active Africa in-country lane",
   "Active Africa-wide corridor",
@@ -626,8 +630,8 @@ for (const page of requiredPages) {
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=4")) {
-    fail(failures, `${page} does not reference corridor.js?v=4`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=5")) {
+    fail(failures, `${page} does not reference corridor.js?v=5`);
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {
