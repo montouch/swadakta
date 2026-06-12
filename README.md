@@ -98,7 +98,9 @@ Run a no-secret bundle check before demos or after Vercel deploys:
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
 ```
 
-Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, and production admin routing/indexing guards so stale sign-in or admin-entry code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
+Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, the Vercel API function budget, and production admin routing/indexing guards so stale sign-in, admin-entry, or deploy-shape code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
+
+By default the Vercel function-budget guard allows 12 `api/**/*.js` files, matching the current deployed project shape. Keep shared helpers in `lib/` instead of `api/`; set `SWADAKTA_VERCEL_FUNCTION_BUDGET` only if the hosting plan or Vercel project limit is intentionally changed.
 
 Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
 

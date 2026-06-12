@@ -15,6 +15,7 @@ Last checked: June 11, 2026
 - Local `.vercel/project.json`: not present
 - `vercel` CLI on PATH: not present
 - Vercel connector can inspect deployments, but the local `vercel` CLI is still not installed.
+- Current deployed serverless shape is 12 Node functions. Vercel's Node.js runtime builds `/api` files as functions, so `scripts/check-production.mjs` now guards that budget before deploy; keep shared helpers in `lib/` instead of adding extra files under `api/`. Reference: https://vercel.com/docs/functions/runtimes/node-js
 
 ## Domain
 

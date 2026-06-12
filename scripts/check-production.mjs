@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -7,6 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const baseUrl = (process.env.SWADAKTA_BASE_URL || "https://swadakta.com").replace(/\/+$/, "");
 const cacheBust = Date.now();
 const localBaseHosts = new Set(["localhost", "127.0.0.1", "::1"]);
+const vercelApiFunctionBudget = Number(process.env.SWADAKTA_VERCEL_FUNCTION_BUDGET || 12);
 
 const htmlFiles = [
   "admin.html",
@@ -750,6 +751,24 @@ async function readLocal(relativePath) {
   return readFile(path.join(root, relativePath), "utf8");
 }
 
+async function collectApiFunctionFiles(directory = path.join(root, "api")) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const files = [];
+
+  for (const entry of entries) {
+    const absolutePath = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...(await collectApiFunctionFiles(absolutePath)));
+      continue;
+    }
+    if (entry.isFile() && entry.name.endsWith(".js")) {
+      files.push(path.relative(root, absolutePath).replaceAll(path.sep, "/"));
+    }
+  }
+
+  return files.sort();
+}
+
 function findAppDataVersions(files) {
   const versions = new Map();
 
@@ -876,6 +895,15 @@ function runSecretScan(failures) {
 }
 
 const failures = [];
+const localApiFunctionFiles = await collectApiFunctionFiles();
+if (localApiFunctionFiles.length > vercelApiFunctionBudget) {
+  fail(
+    failures,
+    `Local Vercel API function budget exceeded: ${localApiFunctionFiles.length}/${vercelApiFunctionBudget}. Move shared helpers out of api/. Files: ${localApiFunctionFiles.join(", ")}`,
+  );
+} else {
+  pass(`Local Vercel API function budget OK: ${localApiFunctionFiles.length}/${vercelApiFunctionBudget}`);
+}
 const localSecretScan = await readLocal("scripts/secret-scan.mjs");
 for (const marker of requiredSecretScanMarkers) {
   if (!localSecretScan.includes(marker)) {
