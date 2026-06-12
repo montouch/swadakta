@@ -649,6 +649,10 @@
       forecastUrl.searchParams.set("current", "temperature_2m,precipitation,weather_code,wind_speed_10m");
       forecastUrl.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max");
       forecastUrl.searchParams.set("timezone", "auto");
+      forecastUrl.searchParams.set("forecast_days", "1");
+      forecastUrl.searchParams.set("temperature_unit", "celsius");
+      forecastUrl.searchParams.set("wind_speed_unit", "kmh");
+      forecastUrl.searchParams.set("precipitation_unit", "mm");
       const forecastResponse = await fetch(forecastUrl.toString());
       if (!forecastResponse.ok) throw new Error("Forecast lookup failed.");
       const forecast = await forecastResponse.json();

@@ -172,6 +172,8 @@ const mutationOnlyEndpoints = [...paymentProviderEndpoints, "/api/identity/start
 const requiredSecurityHeaders = [
   ["strict-transport-security", "max-age="],
   ["content-security-policy", "default-src 'self'"],
+  ["content-security-policy", "https://geocoding-api.open-meteo.com"],
+  ["content-security-policy", "https://api.open-meteo.com"],
   ["x-content-type-options", "nosniff"],
   ["x-frame-options", "DENY"],
   ["referrer-policy", "strict-origin-when-cross-origin"],
@@ -367,6 +369,9 @@ const requiredBriefScriptMarkers = [
   "loadPlaceIntelligence",
   "placeOperationalChecks",
   "locationLooksSpecific",
+  "geocoding-api.open-meteo.com",
+  "api.open-meteo.com",
+  "forecast_days",
   "populateBriefCountryLists",
   "applyAfricaCountryBrief",
   "syncBriefRoutePlan",
@@ -1213,8 +1218,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=12")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=12`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=13")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=13`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1556,11 +1561,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=12");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=13");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=12 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=13 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=12 returned 200");
+  pass("stitch-brief.js?v=13 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {
