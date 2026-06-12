@@ -12,6 +12,12 @@
   const corridorLogistics = document.querySelector("#brief-corridor-logistics");
   const corridorRisk = document.querySelector("#brief-corridor-risk");
   const corridorChecks = document.querySelector("#brief-corridor-checks");
+  const routeModeSelect = document.querySelector("#brief-service-direction");
+  const routeTitle = document.querySelector("#brief-route-title");
+  const routeCopy = document.querySelector("#brief-route-copy");
+  const routePill = document.querySelector("#brief-route-pill");
+  const routeChecks = document.querySelector("#brief-route-checks");
+  const routePlannerLink = document.querySelector("#brief-route-planner-link");
   const placePanel = document.querySelector("#brief-place-intelligence");
   const placeTitle = document.querySelector("#brief-place-title");
   const placeCopy = document.querySelector("#brief-place-copy");
@@ -35,7 +41,60 @@
     destination_to_origin: "From work country back to client country",
     two_way: "Both ways",
     local_in_country: "Local work inside one country",
+    africa_to_africa: "Africa-to-Africa brief route",
+    diaspora_to_africa: "Diaspora-to-Africa brief route",
+    africa_to_diaspora: "Africa-to-diaspora brief route",
     digital_global: "Digital / virtual only",
+  };
+  const routeModeGuidance = {
+    origin_to_destination: {
+      title: "Client-to-work-country route",
+      pill: "Outbound",
+      copy: "Use this when money, instructions, shopping, or goods start with the client and the work happens in another country.",
+      checks: ["Confirm destination law, courier or pickup method, proof requirements, and payment milestone before assignment."],
+    },
+    destination_to_origin: {
+      title: "Work-country-to-client route",
+      pill: "Return route",
+      copy: "Use this when a field partner buys, collects, verifies, or ships something back to the client country.",
+      checks: ["Check export rules, import rules, courier acceptance, receipts, and item condition before money is released."],
+    },
+    local_in_country: {
+      title: "Local or in-country task",
+      pill: "Local",
+      copy: "Use this for jobs that happen within one country: errands, site visits, delivery, family support, documents, or local business work.",
+      checks: ["Match a nearby verified field partner, confirm access, opening hours, local safety, and proof media."],
+    },
+    two_way: {
+      title: "Two-way corridor",
+      pill: "Two-way",
+      copy: "Use this when the job may involve instructions, goods, proof, or follow-up moving in both directions.",
+      checks: ["Split the work into milestones and check the lawful route in both directions before assignment."],
+    },
+    africa_to_africa: {
+      title: "Africa-to-Africa route",
+      pill: "Africa active",
+      copy: "Use this for work between African countries or regional in-country operations across Africa.",
+      checks: ["Confirm country-specific rules, customs or courier acceptance, duties, taxes, and field-partner coverage."],
+    },
+    diaspora_to_africa: {
+      title: "Diaspora-to-Africa route",
+      pill: "Diaspora",
+      copy: "Use this when someone outside Africa needs a trusted person to do work inside Africa.",
+      checks: ["Confirm client ID, destination country, local field partner coverage, proof media, and payment hold method."],
+    },
+    africa_to_diaspora: {
+      title: "Africa-to-diaspora route",
+      pill: "Reverse",
+      copy: "Use this when someone in Africa needs help buying, collecting, checking, or shipping something from abroad.",
+      checks: ["Confirm import rules, export rules, courier availability, product restrictions, receipts, and milestone release."],
+    },
+    digital_global: {
+      title: "Digital or remote work",
+      pill: "Remote",
+      copy: "Use this when no physical location, local travel, goods, or handoff is needed.",
+      checks: ["Confirm deliverables, access permissions, privacy, file proof, and acceptance criteria before payment release."],
+    },
   };
   const logisticsLabels = {
     not_needed: "No physical delivery",
@@ -104,9 +163,9 @@
     if (submitButton) submitButton.disabled = !canPost;
   }
 
-  function setValue(selector, value) {
+  function setValue(selector, value, options = {}) {
     const node = document.querySelector(selector);
-    if (node && value && !node.value) node.value = value;
+    if (node && value && (options.force || !node.value)) node.value = value;
   }
 
   function escapeHtml(value) {
@@ -346,6 +405,87 @@
     return map[value] || formatStatus(value) || fallback;
   }
 
+  function selectedRouteMode() {
+    return value("#brief-service-direction") || corridorContext.service_direction || "origin_to_destination";
+  }
+
+  function resolveRouteFields() {
+    const mode = selectedRouteMode();
+    const clientBase = value("#brief-client-base");
+    let origin = value("#brief-origin-country");
+    let destination = value("#brief-destination-country");
+    let location = value("#brief-location");
+
+    if (mode === "local_in_country") {
+      const country = origin || destination;
+      origin = origin || country;
+      destination = destination || country;
+    }
+
+    if (mode === "digital_global") {
+      origin = origin || clientBase || "Global";
+      destination = destination || "Global";
+      location = location || "Remote";
+    }
+
+    return { mode, origin, destination, location };
+  }
+
+  function routeModeChecks(mode = selectedRouteMode()) {
+    return routeModeGuidance[mode]?.checks || routeModeGuidance.origin_to_destination.checks;
+  }
+
+  function routePlanSummary() {
+    const { mode, origin, destination, location } = resolveRouteFields();
+    const label = labelFromMap(directionLabels, mode, "Route not set");
+    return [
+      `Route type: ${label}`,
+      origin || destination ? `Route countries: ${origin || "not set"} to ${destination || "not set"}` : "",
+      location ? `Task location: ${location}` : "",
+      `Route checks: ${routeModeChecks(mode).join(" ")}`,
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  function syncBriefRoutePlan() {
+    if (!routeModeSelect) return;
+    const { mode, origin, destination, location } = resolveRouteFields();
+    const guidance = routeModeGuidance[mode] || routeModeGuidance.origin_to_destination;
+    corridorContext.service_direction = mode;
+
+    if (mode === "local_in_country") {
+      if (origin && !value("#brief-destination-country")) {
+        const node = document.querySelector("#brief-destination-country");
+        if (node) node.value = origin;
+      } else if (destination && !value("#brief-origin-country")) {
+        const node = document.querySelector("#brief-origin-country");
+        if (node) node.value = destination;
+      }
+    }
+
+    if (mode === "digital_global" && !value("#brief-location")) {
+      const node = document.querySelector("#brief-location");
+      if (node) node.value = "Remote";
+      renderPlaceIntelligence(null);
+    }
+
+    if (routeTitle) routeTitle.textContent = guidance.title;
+    if (routeCopy) routeCopy.textContent = guidance.copy;
+    if (routePill) routePill.textContent = guidance.pill;
+    if (routeChecks) {
+      routeChecks.innerHTML = routeModeChecks(mode).map((check) => `<li>${escapeHtml(check)}</li>`).join("");
+    }
+    if (routePlannerLink) {
+      const url = new URL("corridor.html", window.location.href);
+      if (origin) url.searchParams.set("origin", origin);
+      if (destination) url.searchParams.set("destination", destination);
+      if (location) url.searchParams.set("location", location);
+      url.searchParams.set("direction", mode);
+      routePlannerLink.href = url.toString();
+    }
+  }
+
   function renderCorridorSummary() {
     if (!corridorSummary) return;
     const origin = corridorContext.origin_country || "";
@@ -401,6 +541,7 @@
       setValue("#brief-destination-country", corridorContext.destination_country);
       setValue("#brief-location", corridorContext.task_location);
       setValue("#brief-service-type", corridorContext.service_type);
+      setValue("#brief-service-direction", corridorContext.service_direction, { force: true });
     } catch {
       corridorContext = paramContext;
       localStorage.removeItem(corridorStorageKey);
@@ -409,6 +550,8 @@
     setValue("#brief-origin-country", corridorContext.origin_country);
     setValue("#brief-destination-country", corridorContext.destination_country);
     setValue("#brief-location", corridorContext.task_location);
+    setValue("#brief-service-direction", corridorContext.service_direction, { force: true });
+    syncBriefRoutePlan();
     renderCorridorSummary();
   }
 
@@ -434,6 +577,7 @@
   function corridorRequiredChecks(items) {
     const checks = Array.isArray(corridorContext.required_checks) ? corridorContext.required_checks : [];
     const fallback = ["ID verification before paid work"];
+    fallback.push(...routeModeChecks());
     if (items || corridorContext.logistics_mode || corridorContext.goods_category) {
       fallback.push("Compliance check before shipping, purchase, pickup, delivery, or restricted goods");
     }
@@ -494,7 +638,9 @@
     const freeformBrief = value("#brief-freeform");
     const proof = value("#brief-proof");
     const items = value("#brief-items");
-    const location = value("#brief-location");
+    syncBriefRoutePlan();
+    const routeFields = resolveRouteFields();
+    const location = routeFields.location;
     const requiredChecks = corridorRequiredChecks(items);
     const complianceFlags = Array.isArray(corridorContext.compliance_flags) ? corridorContext.compliance_flags : [];
     const logisticsMode = corridorContext.logistics_mode || (items ? "postal_courier" : "not_needed");
@@ -511,9 +657,9 @@
         whatsapp: value("#brief-whatsapp"),
         client_base: value("#brief-client-base"),
         australia_location: value("#brief-client-base"),
-        origin_country: value("#brief-origin-country"),
-        destination_country: value("#brief-destination-country"),
-        service_direction: corridorContext.service_direction || "origin_to_destination",
+        origin_country: routeFields.origin,
+        destination_country: routeFields.destination,
+        service_direction: routeFields.mode,
         task_location: location,
         kenya_location: location,
         task_type: serviceType(selectedService),
@@ -523,7 +669,7 @@
         logistics_mode: logisticsMode,
         goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [freeformBrief, selectedService, proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
+        notes: [freeformBrief, selectedService, routePlanSummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
@@ -545,7 +691,7 @@
       };
 
       if (!payload.origin_country || !payload.destination_country || !payload.task_location) {
-        throw new Error("Choose a corridor and task location before submitting.");
+        throw new Error("Choose a route type, origin, destination, and task location before submitting.");
       }
 
       const result = await window.SwadaktaData.createRequest(payload);
@@ -578,10 +724,23 @@
   loadPlaceIntelligence();
   refreshPostingGate();
 
-  ["#brief-location", "#brief-destination-country"].forEach((selector) => {
+  ["#brief-location", "#brief-origin-country", "#brief-destination-country", "#brief-client-base"].forEach((selector) => {
     const input = document.querySelector(selector);
-    input?.addEventListener("input", schedulePlaceIntelligence);
-    input?.addEventListener("change", loadPlaceIntelligence);
+    input?.addEventListener("input", () => {
+      syncBriefRoutePlan();
+      if (selector === "#brief-location" || selector === "#brief-destination-country") schedulePlaceIntelligence();
+    });
+    input?.addEventListener("change", () => {
+      syncBriefRoutePlan();
+      if (selector === "#brief-location" || selector === "#brief-destination-country") loadPlaceIntelligence();
+    });
+  });
+
+  routeModeSelect?.addEventListener("change", () => {
+    syncBriefRoutePlan();
+    if (selectedRouteMode() === "digital_global") {
+      loadPlaceIntelligence();
+    }
   });
 
   placeRefreshButton?.addEventListener("click", loadPlaceIntelligence);
@@ -590,8 +749,10 @@
     aiOrganizeButton.addEventListener("click", () => {
       const freeformBrief = value("#brief-freeform");
       const route = [value("#brief-origin-country"), value("#brief-destination-country")].filter(Boolean).join(" to ");
+      const routeMode = labelFromMap(directionLabels, selectedRouteMode(), "Route not set");
       const context = [
         freeformBrief,
+        routeMode ? `Route type: ${routeMode}` : "",
         route ? `Route: ${route}` : "",
         value("#brief-location") ? `Location: ${value("#brief-location")}` : "",
         placeIntelligenceSummary(),

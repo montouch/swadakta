@@ -109,12 +109,22 @@ const requiredDockMarkers = [
   "Protected actions stay gated",
 ];
 const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
-const requiredBriefHtmlMarkers = ["brief-freeform", "Ask AI to organize", "brief-place-intelligence", "brief-place-checks"];
+const requiredBriefHtmlMarkers = [
+  "brief-freeform",
+  "Ask AI to organize",
+  "brief-place-intelligence",
+  "brief-place-checks",
+  "brief-service-direction",
+  "brief-route-guidance",
+];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
   "loadPlaceIntelligence",
   "placeOperationalChecks",
   "locationLooksSpecific",
+  "syncBriefRoutePlan",
+  "Africa-to-Africa brief route",
+  "routePlanSummary",
 ];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
@@ -563,8 +573,8 @@ for (const page of requiredPages) {
   if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
     fail(failures, `${page} does not reference ai-preferences.js?v=1`);
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=9")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=9`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=10")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=10`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -820,11 +830,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=9");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=10");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=9 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=10 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=9 returned 200");
+  pass("stitch-brief.js?v=10 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {
