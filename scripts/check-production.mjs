@@ -613,6 +613,9 @@ const requiredAdminReadinessMarkers = [
   "buildFounderActionPack",
   "renderFounderActionPack",
   "Founder launch pack copied",
+  "buildPilotScript",
+  "renderPilotScript",
+  "First paid pilot script copied",
   "renderLaunchGate",
   "launchGateBrief",
   "Swadakta public launch gate",
@@ -1508,8 +1511,8 @@ for (const page of requiredPages) {
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
   }
-  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=5")) {
-    fail(failures, `${page} does not reference admin-readiness.js?v=5`);
+  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=6")) {
+    fail(failures, `${page} does not reference admin-readiness.js?v=6`);
   }
   if (page === "/verification" && !text.includes("verification.js?v=10")) {
     fail(failures, `${page} does not reference verification.js?v=10`);
@@ -1867,11 +1870,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=5");
+const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=6");
 if (adminReadinessResponse.status !== 200) {
-  fail(failures, `admin-readiness.js?v=5 returned ${adminReadinessResponse.status}`);
+  fail(failures, `admin-readiness.js?v=6 returned ${adminReadinessResponse.status}`);
 } else {
-  pass("admin-readiness.js?v=5 returned 200");
+  pass("admin-readiness.js?v=6 returned 200");
 }
 
 for (const marker of requiredAdminReadinessMarkers) {

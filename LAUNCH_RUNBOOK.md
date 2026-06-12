@@ -2,7 +2,7 @@
 
 This is the practical go-live checklist for turning the current MVP into a paid operating service.
 
-For the owner-only real-world setup sequence, use [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md) alongside the live admin readiness page at `https://swadakta.com/admin-readiness`.
+For the owner-only real-world setup sequence, use [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md), then rehearse the first paid job with [PILOT_TEST_SCRIPT.md](PILOT_TEST_SCRIPT.md) alongside the live admin readiness page at `https://swadakta.com/admin-readiness`.
 
 ## 0. Launch Mode and Owner-Only Actions
 

@@ -119,7 +119,7 @@ Use `.env.example` as the no-secret checklist for Vercel production variables. R
 
 ## Go live
 
-See [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md), [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the real-world founder setup, Supabase, founder console, Vercel, payments, domain, corridor, and pilot launch checklist.
+See [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md), [PILOT_TEST_SCRIPT.md](PILOT_TEST_SCRIPT.md), [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the real-world founder setup, first paid pilot rehearsal, Supabase, founder console, Vercel, payments, domain, corridor, and launch checklist.
 
 See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, M-Pesa, bank-transfer, and Wise fallback launch workflow.
 

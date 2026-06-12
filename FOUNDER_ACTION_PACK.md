@@ -80,6 +80,8 @@ Accept only jobs that are clear, legal, low-value, and easy to prove. Before wor
 
 AI can draft, sort, summarize, and prompt admin decisions. AI must not approve ID, mark money as paid, release/refund funds, assign a receiver, or make legal/customs promises.
 
+Run the detailed rehearsal in [PILOT_TEST_SCRIPT.md](PILOT_TEST_SCRIPT.md) before taking ordinary public paid work.
+
 ## 5. Daily Founder Rhythm
 
 - Open `https://swadakta.com/admin-readiness` before demos or paid work.

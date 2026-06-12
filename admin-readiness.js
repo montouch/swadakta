@@ -13,9 +13,12 @@
   const copyChecklistButton = document.querySelector("#copy-checklist");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
   const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
+  const copyPilotScriptButtons = document.querySelectorAll("#copy-pilot-script, #copy-pilot-script-mobile");
   const readinessMode = document.querySelector("#readiness-mode");
   const readinessStatus = document.querySelector("#readiness-status");
   const founderActionList = document.querySelector("#founder-action-list");
+  const pilotScriptList = document.querySelector("#pilot-script-list");
+  const pilotPassConditions = document.querySelector("#pilot-pass-conditions");
   const nextActionsList = document.querySelector("#next-actions-list");
   const nextActionsCount = document.querySelector("#next-actions-count");
   const categories = document.querySelector("#readiness-categories");
@@ -305,6 +308,47 @@
     ].join("\n");
   }
 
+  function pilotStepText(step = {}, index = 0) {
+    return [
+      `${index + 1}. [${statusLabel(step.status)}] ${step.label || "Pilot step"}`,
+      `Screen: ${step.screen || "Swadakta"}`,
+      `Owner: ${step.owner || "Founder/admin"}`,
+      `Action: ${step.action || "Complete this step."}`,
+      `Evidence: ${step.evidence || "Record the result."}`,
+      step.hard_stop ? `Hard stop: ${step.hard_stop}` : "",
+      step.route_url ? `Open: ${step.route_url}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  function buildPilotScript(report = latestReport) {
+    const script = report?.first_paid_pilot_script || {};
+    const phases = Array.isArray(script.phases) ? script.phases : [];
+    const passConditions = Array.isArray(script.pass_conditions) ? script.pass_conditions : [];
+    const readySummary = script.ready_summary || {};
+    return [
+      script.title || "Swadakta first paid pilot rehearsal",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      `Rule: ${script.rule || "Run a low-value internal/friendly-client job before normal paid launch."}`,
+      `Target job: ${script.target_job || "Simple, legal, low-risk, easy to prove."}`,
+      "",
+      "Readiness summary:",
+      ...Object.entries(readySummary).map(([key, value]) => `- ${key}: ${value}`),
+      "",
+      ...phases.flatMap((phase) => [
+        phase.label || "Pilot phase",
+        ...((phase.steps || []).map((step, index) => pilotStepText(step, index))),
+        "",
+      ]),
+      "Pass conditions:",
+      ...(passConditions.length ? passConditions.map((entry) => `- ${entry}`) : ["- No pass conditions returned."]),
+      "",
+      "Boundary: This pilot proves workflow. It does not authorize high-value, restricted, legal/customs, remittance, or informal-escrow work.",
+    ].join("\n");
+  }
+
   function updateStats(counts = {}) {
     document.querySelector("#stat-ready").textContent = counts.ready || 0;
     document.querySelector("#stat-warning").textContent = counts.warning || 0;
@@ -464,6 +508,64 @@
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No founder action pack returned by the readiness API.</div>`;
   }
 
+  function renderPilotScript(report) {
+    if (!pilotScriptList) return;
+    const script = report?.first_paid_pilot_script || {};
+    const phases = Array.isArray(script.phases) ? script.phases : [];
+    const passConditions = Array.isArray(script.pass_conditions) ? script.pass_conditions : [];
+
+    pilotScriptList.innerHTML = phases.length
+      ? phases
+          .map(
+            (phase) => `
+              <section class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(phase.id || "pilot")}</p>
+                    <h3 class="mt-1 font-display text-2xl font-extrabold">${escapeHtml(phase.label || "Pilot phase")}</h3>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-white/70 px-4 py-2 font-label text-xs text-secondary">${escapeHtml(String((phase.steps || []).length))} checks</span>
+                </div>
+                <div class="mt-4 grid gap-3">
+                  ${(phase.steps || [])
+                    .map(
+                      (step) => `
+                        <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+                          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="min-w-0">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <strong class="font-display text-xl">${escapeHtml(step.label || "Pilot step")}</strong>
+                                <span class="rounded-full px-3 py-1 font-label text-xs ${statusTone(step.status)}">${escapeHtml(statusLabel(step.status))}</span>
+                              </div>
+                              <p class="mt-2 font-label text-xs uppercase tracking-[0.14em] text-secondary">${escapeHtml(step.screen || "Swadakta")}</p>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(step.action || "")}</p>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(step.evidence || "")}</p>
+                              ${step.hard_stop ? `<p class="mt-2 text-xs leading-5 text-on-error-container">${escapeHtml(step.hard_stop)}</p>` : ""}
+                            </div>
+                            ${
+                              step.route_url
+                                ? `<a class="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(step.route_url)}" target="_blank" rel="noopener">Open</a>`
+                                : ""
+                            }
+                          </div>
+                        </article>
+                      `,
+                    )
+                    .join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No first-paid-pilot script returned by the readiness API.</div>`;
+
+    if (pilotPassConditions) {
+      pilotPassConditions.innerHTML = passConditions.length
+        ? passConditions.map((entry) => `<li class="rounded-2xl bg-white/70 p-3">${escapeHtml(entry)}</li>`).join("")
+        : `<li class="rounded-2xl bg-white/70 p-3">No pass conditions returned.</li>`;
+    }
+  }
+
   function renderReport(report, mode) {
     latestReport = report;
     const counts = report.counts || {};
@@ -476,6 +578,7 @@
     updateStats(counts);
     renderLaunchGate(report);
     renderFounderActionPack(report);
+    renderPilotScript(report);
     nextActionsCount.textContent = `${nextActions.length} priorit${nextActions.length === 1 ? "y" : "ies"}`;
     nextActionsList.innerHTML = nextActions.length
       ? nextActions.map(renderAction).join("")
@@ -504,6 +607,12 @@
     }
     if (founderActionList) {
       founderActionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (pilotScriptList) {
+      pilotScriptList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (pilotPassConditions) {
+      pilotPassConditions.innerHTML = "";
     }
     renderLaunchGate({});
     protectedActions.innerHTML = "";
@@ -598,6 +707,12 @@
   copyFounderPackButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildFounderActionPack(), "Founder launch pack copied.");
+    });
+  });
+
+  copyPilotScriptButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildPilotScript(), "First paid pilot script copied.");
     });
   });
 

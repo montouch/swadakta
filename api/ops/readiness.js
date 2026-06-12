@@ -625,6 +625,179 @@ function buildFounderActionPack() {
   };
 }
 
+function pilotStep(id, label, status, screen, action, evidence, options = {}) {
+  return {
+    id,
+    label,
+    status,
+    screen,
+    action,
+    evidence,
+    owner: options.owner || "Founder/admin",
+    route_url: options.route_url || "",
+    hard_stop: options.hard_stop || "",
+  };
+}
+
+function buildFirstPaidPilotScript() {
+  const base = publicUrl() || "https://swadakta.com";
+  const stripeEvidenceReady = hasEnv("STRIPE_SECRET_KEY") && hasEnv("STRIPE_WEBHOOK_SECRET");
+  const paypalReady = hasEnv("PAYPAL_CLIENT_ID") && hasEnv("PAYPAL_CLIENT_SECRET");
+  const mpesaReady = hasEnv("MPESA_CONSUMER_KEY") && hasEnv("MPESA_CONSUMER_SECRET") && hasEnv("MPESA_SHORTCODE");
+  const paymentRailReady = stripeEvidenceReady || paypalReady || mpesaReady;
+  const sumsubReady =
+    hasEnv("SUMSUB_APP_TOKEN") &&
+    hasEnv("SUMSUB_SECRET_KEY") &&
+    hasEnv("SUMSUB_LEVEL_NAME") &&
+    hasEnv("SUMSUB_WEBHOOK_SECRET");
+  const hostedIdentityReady = anyEnv(["SMILE_ID_VERIFICATION_URL", "SUMSUB_VERIFICATION_URL", "YOUVERIFY_VERIFICATION_URL"]);
+  const identityReady = sumsubReady || hostedIdentityReady;
+
+  return {
+    title: "First paid pilot rehearsal",
+    rule:
+      "Run this with a low-value internal or friendly-client job before accepting ordinary public paid work. The goal is to prove account, brief, identity, payment evidence, receiver offer, proof, tracking, and review without bypassing protected decisions.",
+    target_job:
+      "Use one simple, legal, low-risk concierge task such as a local site photo check, document pickup quote, supplier price check, or family-support errand. Avoid land/title, cash handling, medical/legal, restricted goods, or high-value purchases for the first run.",
+    ready_summary: {
+      identity_handoff: identityReady ? "ready" : "missing",
+      payment_evidence: paymentRailReady ? "ready" : "missing",
+      stripe_evidence: stripeEvidenceReady ? "ready" : "missing",
+      paypal_orders: paypalReady ? "ready" : "missing",
+      mpesa_stk: mpesaReady ? "ready" : "missing",
+    },
+    phases: [
+      {
+        id: "account_and_brief",
+        label: "1. Account, profile, and request",
+        steps: [
+          pilotStep(
+            "client_account",
+            "Create or sign in as the client",
+            "manual",
+            "Portal / Account Home",
+            "Create a normal user account, save profile basics, mobile backup, base country, preferred currency, and role choices.",
+            "Account opens to the account home without staying stuck on sign-in. Profile data is saved and visible after refresh.",
+            {
+              route_url: `${base}/portal`,
+              owner: "Founder/test client",
+              hard_stop: "Do not continue if sign-in returns to the sign-in page or profile saves fail.",
+            },
+          ),
+          pilotStep(
+            "brief_submit",
+            "Submit one low-risk brief",
+            "manual",
+            "Create brief",
+            "Use the AI organizer or manual fields to create a simple active-lane task with origin, destination, task location, budget comfort, proof requirements, contact preference, and compliance acknowledgement.",
+            "Admin can see request code, route, service package, proof priority, consent, and notes without needing private data in chat.",
+            {
+              route_url: `${base}/brief`,
+              hard_stop: "Reject the pilot if the job involves illegal goods, unclear authority, high value, medical/legal advice, or customs uncertainty.",
+            },
+          ),
+        ],
+      },
+      {
+        id: "identity_and_payment",
+        label: "2. Identity, quote, and provider payment",
+        steps: [
+          pilotStep(
+            "identity_start",
+            "Start ID verification",
+            identityReady ? "ready" : "missing",
+            "Verification Center / Account Home",
+            "Trigger provider-led verification for the client, then for the receiver/operator if a receiver will touch the task.",
+            "The request gets a provider reference/link or stays clearly queued with paid actions locked. No user, screenshot, or AI marks anyone verified.",
+            {
+              route_url: `${base}/verification`,
+              hard_stop: "Do not accept paid or sensitive work until a provider route exists or a documented exception review is approved.",
+            },
+          ),
+          pilotStep(
+            "quote_and_milestones",
+            "Quote and create milestone controls",
+            "manual",
+            "Founder Ops",
+            "Set quote amount, currency, service fee wording, payment preference, protected amount, funds status, due date, release condition, and at least two milestones.",
+            "Client-facing quote is clear; internal founder economics remain private; milestone release still requires proof review.",
+            {
+              route_url: `${base}/admin-ops`,
+              owner: "Founder/admin",
+              hard_stop: "Do not send a payment request if the internal economics guard says the quote is below floor.",
+            },
+          ),
+          pilotStep(
+            "payment_evidence",
+            "Run one payment evidence test",
+            paymentRailReady ? "ready" : "missing",
+            "Founder Ops / Provider dashboard",
+            "Use Stripe Checkout/Payment Link, PayPal order/invoice, or M-Pesa sandbox/live test according to the configured rail. Confirm provider reference, amount, currency, and request code.",
+            "Payment status changes only from provider evidence or founder reconciliation. Receiver assignment and milestone release do not happen automatically.",
+            {
+              route_url: `${base}/payments`,
+              owner: "Founder/payment admin",
+              hard_stop: "If amount, currency, payer, or provider reference do not match, mark the funds disputed and pause the pilot.",
+            },
+          ),
+        ],
+      },
+      {
+        id: "receiver_and_proof",
+        label: "3. Receiver, proof, tracking, and closeout",
+        steps: [
+          pilotStep(
+            "receiver_offer",
+            "Test receiver offer and assignment gates",
+            "manual",
+            "Account Home / Founder Ops",
+            "Have a receiver profile apply or place an offer. Confirm unverified receivers cannot be assigned and that the lowest price does not automatically win.",
+            "Admin sees offer quality, provenance, identity/vetting status, proof plan, and safety flags before choosing a preferred receiver for review.",
+            {
+              route_url: `${base}/portal#find-work`,
+              hard_stop: "Do not assign anyone who is not vetted, ID-verified, and suitable for the route/task.",
+            },
+          ),
+          pilotStep(
+            "proof_messages",
+            "Submit proof and communications",
+            "manual",
+            "Messages / Proof",
+            "Send one text update, one photo/file proof link or upload, and one video/voice-call request note if relevant.",
+            "Admin can review proof before it becomes client-facing. Sensitive documents are not copied into public messages.",
+            {
+              route_url: `${base}/messages`,
+              hard_stop: "Pause if proof is missing, low quality, mismatched, or exposes unnecessary personal data.",
+            },
+          ),
+          pilotStep(
+            "tracking_closeout",
+            "Track, close, review, and update provenance",
+            "manual",
+            "Tracking / Resolution",
+            "Confirm the client can track request status, payment/funds status, milestones, proof/report links, and resolution path. Close the job only after final proof is accepted.",
+            "Client review is captured, receiver provenance responds to performance, and no unresolved dispute remains.",
+            {
+              route_url: `${base}/tracking`,
+              hard_stop: "Do not mark completed if payment, proof, client acceptance, or dispute status is unclear.",
+            },
+          ),
+        ],
+      },
+    ],
+    pass_conditions: [
+      "Signed-in account reaches Account Home and stays signed in after refresh.",
+      "Brief creates a request code and admin can see all route, proof, budget, and consent context.",
+      "Identity handoff creates provider evidence or a clear queued state; paid actions stay locked when evidence is missing.",
+      "Payment evidence records provider reference, amount, currency, and request code before funds are treated as protected.",
+      "Receiver assignment is blocked unless the receiver is vetted and ID-verified.",
+      "Proof and messages are reviewable by admin before client-facing closeout.",
+      "Tracking shows safe status without exposing internal notes or founder economics.",
+      "AI helps draft, organize, and summarize but does not approve ID, release/refund money, assign receivers, or send protected external commitments.",
+    ],
+  };
+}
+
 function authSecurityItems() {
   const projectRef = supabaseProjectRef();
   const projectBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : "";
@@ -1636,6 +1809,7 @@ async function readinessReport(user, authHeader) {
     counts,
     launch_gate: launchGate,
     founder_action_pack: buildFounderActionPack(),
+    first_paid_pilot_script: buildFirstPaidPilotScript(),
     categories,
     next_actions: buildNextActions(categories),
     safe_copy_values: {
