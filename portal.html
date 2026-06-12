@@ -774,8 +774,8 @@
 <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Account setup</p>
-<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Get ready to give jobs or receive jobs</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Your account opens first. Paid posting, paid receiver work, sensitive jobs, and high-value milestones unlock only after profile, payment, corridor, and provider ID checks are ready.</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Get ready to give jobs or take jobs</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Your account opens first. Paid posting, paid work, sensitive jobs, and high-value milestones unlock only after profile, payment, corridor, and provider ID checks are ready.</p>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-setup-progress">Setup started</span>
 </div>
@@ -888,7 +888,7 @@
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Profile setup</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Build your verified work profile</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and receive jobs. Your public field-partner profile should look real: honest photo, real name, current base, coverage lanes, work strengths, languages, and a provider ID/selfie check before paid work unlocks.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and take jobs. Your public field-partner profile should look real: honest photo, real name, current base, coverage lanes, work strengths, languages, and a provider ID/selfie check before paid work unlocks.</p>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-label-md" id="receiver-profile-strength">25% starter provenance</span>
 </div>
@@ -1077,7 +1077,7 @@ Submit offer
 <div class="min-w-0">
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Set up once, then get matched to suitable work</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and receive jobs. Your receiver side opens in four simple steps, and paid work stays locked until ID, route, payment, and proof checks pass.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and take jobs. Your work profile opens in four simple steps, and paid work stays locked until ID, route, payment, and proof checks pass.</p>
 <div class="find-job-path mt-5">
 <a class="find-job-step" href="#receiver-profile-setup" aria-label="Complete job seeker profile">
 <span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">badge</span></span>
@@ -1091,7 +1091,7 @@ Submit offer
 <span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">verified_user</span></span>
 <span class="find-job-step-body">
 <span class="block font-label-md text-on-surface">2. Verify ID</span>
-<span class="block font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive receiver work.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive work.</span>
 </span>
 <span class="find-job-step-action">Start <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1281,7 +1281,7 @@ Submit offer
 <span class="material-symbols-outlined text-primary text-4xl">verified_user</span>
 <div>
 <h2 class="font-headline-lg text-headline-sm text-on-surface">Account verification</h2>
-<p class="font-body-md text-on-surface-variant">Account access is open first. Provider verification unlocks paid posting, paid receiver work, and sensitive jobs.</p>
+<p class="font-body-md text-on-surface-variant">Account access is open first. Provider verification unlocks paid posting, paid work, and sensitive jobs.</p>
 </div>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="verification-pill">Sign in required</span>
@@ -1329,14 +1329,14 @@ Submit offer
 </div>
 <div class="space-y-2 md:col-span-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-notes">Corridor coverage / notes</label>
-<textarea class="w-full p-4 rounded-xl sunken-input font-body-md text-on-surface resize-none" id="account-verification-notes" name="profile_notes" placeholder="What countries, cities, errands, sourcing, deliveries, admin work, or receiver jobs can you handle?" rows="4"></textarea>
+<textarea class="w-full p-4 rounded-xl sunken-input font-body-md text-on-surface resize-none" id="account-verification-notes" name="profile_notes" placeholder="What countries, cities, errands, sourcing, deliveries, admin work, or paid jobs can you handle?" rows="4"></textarea>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-verification-reason">Verification reason</label>
 <select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-verification-reason" name="reason">
 <option value="account_required">General account verification</option>
 <option value="paid_work">Paid work access</option>
-<option value="receiver_work">Receiver / field work</option>
+<option value="receiver_work">Field / paid work</option>
 <option value="sensitive_job">Sensitive task access</option>
 <option value="high_value_job">High-value task access</option>
 </select>
@@ -1372,8 +1372,8 @@ Submit offer
 </div>
 </footer>
 <script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=53"></script>
+<script src="app-data.js?v=54"></script>
 <script src="ai-preferences.js?v=3"></script>
-<script src="stitch-portal.js?v=33"></script>
+<script src="stitch-portal.js?v=34"></script>
 <script src="assistant-dock.js?v=14"></script>
 </body></html>

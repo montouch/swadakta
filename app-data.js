@@ -2405,7 +2405,7 @@
           message:
             "Local demo queued the provider handoff. Live verification links are created by the server once provider accounts are configured.",
           next:
-            "Use the live Supabase-backed site for provider-led ID verification. Paid posting and paid receiver work stay locked until provider evidence is recorded.",
+            "Use the live Supabase-backed site for provider-led ID verification. Paid posting and paid work stay locked until provider evidence is recorded.",
         },
         mode: "local",
       };
@@ -2790,7 +2790,7 @@
           ],
           safe_copy_values: {},
           protected_actions: [
-            "Local demo mode cannot confirm money, identity, receiver assignment, or provider callbacks.",
+            "Local demo mode cannot confirm money, identity, operator assignment, or provider callbacks.",
           ],
         },
         mode: "local",

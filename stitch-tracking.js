@@ -214,7 +214,7 @@
     if (funds === "partially_released") {
       return "Some milestone money has been released. Remaining releases still need proof review and client-safe reporting.";
     }
-    return "Funds are protected or confirmed. Next is receiver assignment, proof collection, and milestone review before any release.";
+    return "Funds are protected or confirmed. Next is operator assignment, proof collection, and milestone review before any release.";
   }
 
   function paymentBoundaryCopy(request) {
@@ -295,7 +295,7 @@
         copy: "Do not continue paid work until Swadakta resolves the payment, refund, or cancellation state.",
         next: "Open an issue or wait for Swadakta to confirm the next written decision.",
         ai: "AI can summarize the timeline and draft a calm client/receiver update.",
-        stop: "No new spending, receiver assignment, refund, or payout until provider evidence is reviewed.",
+        stop: "No new spending, operator assignment, refund, or payout until provider evidence is reviewed.",
         link: resolutionLink?.href || "resolution.html",
         linkLabel: "Open issue",
       };

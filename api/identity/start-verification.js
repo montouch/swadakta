@@ -255,7 +255,7 @@ async function startVerification(payload, user) {
     database_note: updated.reason || "Verification request/profile updated.",
     message: providerLink
       ? `${providerLabel} verification is ready. Open the provider check and complete the ID, document, selfie, and liveness steps.`
-      : `${providerLabel} verification is queued. The provider account/link is not configured yet, so paid posting and paid receiver work remain locked until provider evidence is attached.`,
+      : `${providerLabel} verification is queued. The provider account/link is not configured yet, so paid posting and paid work remain locked until provider evidence is attached.`,
     next: providerLink
       ? "Open the provider link from this page. Swadakta will wait for provider evidence before any paid unlock."
       : `Founder/admin should configure ${configuredLink.name || "the provider verification link"} or a provider API/webhook before relying on automated ID handoff.`,

@@ -221,7 +221,7 @@
       }
     } else {
       fallbacks.push("Smile ID: use as Africa-first backup when the user presents African ID or the job needs Africa-specific verification.");
-      fallbacks.push("Provider coverage check: confirm the selected document/country inside the provider dashboard before unlocking paid receiver work.");
+      fallbacks.push("Provider coverage check: confirm the selected document/country inside the provider dashboard before unlocking paid work.");
     }
 
     if (sensitive) {
@@ -282,7 +282,7 @@
       };
     }
 
-    requirements.push("Provider coverage check before accepting paid receiver work");
+    requirements.push("Provider coverage check before accepting paid work");
     return {
       provider: "sumsub",
       name: "Sumsub fallback route",

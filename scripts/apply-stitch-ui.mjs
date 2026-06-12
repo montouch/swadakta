@@ -82,7 +82,7 @@ function routeStitchHome(html) {
     'class="swadakta-hero-copy font-body-lg text-body-lg text-secondary mb-xl max-w-xl"',
   );
   output = output.replace(
-    "Post tasks for verified receivers across Africa and global corridors. We bridge the gap with transparency, safety, and cultural precision.",
+    "Post tasks for verified local operators across Africa and global corridors. We bridge the gap with transparency, safety, and cultural precision.",
     "Post trusted tasks across Africa and abroad. Receivers handle proof and updates.",
   );
   output = output.replace(
@@ -136,7 +136,7 @@ function routeStitchHome(html) {
     commonHead({
       title: "Swadakta | Ethical Global Corridor Concierge",
       description:
-        "Swadakta helps people get trusted jobs done across Africa and global corridors with verified receivers, milestone proof, payment clarity, and optional AI assistance.",
+        "Swadakta helps people get trusted jobs done across Africa and global corridors with verified local operators, milestone proof, payment clarity, and optional AI assistance.",
       canonical: "https://swadakta.com/",
     }),
   );
@@ -240,7 +240,7 @@ function routeStitchHome(html) {
   );
   output = output.replace(
     "The premium marketplace for global concierge services. Hire verified agents or monetize your international expertise.",
-    "A trusted marketplace for global concierge services. Get help from verified receivers or earn from local expertise.",
+    "A trusted marketplace for global concierge services. Get help from verified local operators or earn from reliable corridor work.",
   );
   output = output.replace(
     "Funds held under milestone rules and ID-verified partners. We bridge the gap with transparency and safety.",
@@ -471,7 +471,7 @@ function routeStitchLogin(html) {
   output = output.replace(
     /<!-- Micro-interaction Script -->[\s\S]*?<\/script>\s*<\/body>/,
     `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=53"></script>
+<script src="app-data.js?v=54"></script>
 <script src="login.js?v=3"></script>
 <script src="assistant-dock.js?v=14"></script>
 </body>`,
@@ -556,7 +556,7 @@ function routeStitchWelcomeLogin(html) {
   output = output.replace(
     /<script>\s*function setMode\(mode\)[\s\S]*?<\/script>\s*<\/body>/,
     `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=53"></script>
+<script src="app-data.js?v=54"></script>
 <script src="login.js?v=2"></script>
 <script src="assistant-dock.js?v=14"></script>
 </body>`,

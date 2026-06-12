@@ -530,7 +530,7 @@
     setVerificationEnabled(true);
     setVerificationPill("Account open", "bg-primary-container/10 text-primary");
     setVerificationStatus(
-      "Account is open. Verification is only required before paid posting, paid receiver work, or sensitive/high-value tasks.",
+      "Account is open. Verification is only required before paid posting, paid work, or sensitive/high-value tasks.",
       "text-primary",
     );
 
@@ -767,7 +767,7 @@
         title: latestRequest ? "Wait for verification result" : "Request verification",
         copy: latestRequest
           ? "Verification is queued. You can still prepare briefs, profile, and messages while Swadakta waits for provider evidence."
-          : "Verification is not needed to hold an account, but it is required before paid posting, paid receiver work, or sensitive jobs.",
+          : "Verification is not needed to hold an account, but it is required before paid posting, paid work, or sensitive jobs.",
         href: "verification.html?reason=account_required",
         label: "Open verification",
       };
@@ -1154,7 +1154,7 @@
     } else if (!verified) {
       accountSetupNext.textContent = latestRequest?.provider_link
         ? "Next: open the provider check and finish ID, document, and selfie/liveness steps."
-        : "Next: request provider verification before paid posting, paid receiver work, or sensitive tasks.";
+        : "Next: request provider verification before paid posting, paid work, or sensitive tasks.";
     } else if (!hasClientTrail && !hasReceiverProfile && !hasApplication) {
       accountSetupNext.textContent = "Next: choose whether to give a job, find jobs, or do both from this same account.";
     } else if (!hasReceiverProfile && !hasApplication) {
@@ -1186,7 +1186,7 @@
         accountHomeVerificationSummary.textContent = `Your ${providerName} verification request is saved as ${formatStatus(status)}. Swadakta waits for provider evidence before unlocking paid actions; manual review is only an exception fallback.`;
       } else {
         accountHomeVerificationSummary.textContent =
-          "Provider verification unlocks paid posting, paid receiver work, and sensitive jobs. You can still explore, save your profile, and prepare briefs now.";
+          "Provider verification unlocks paid posting, paid work, and sensitive jobs. You can still explore, save your profile, and prepare briefs now.";
       }
     }
 
@@ -1442,7 +1442,7 @@
     const setup = writeReceiverProfileSetup(receiverProfileSetupFromForm());
     renderReceiverProfileSetup({});
     renderAccountSetupChecklist({});
-    setReceiverProfileStatus("Profile setup saved. Verification is still required before paid receiver work unlocks.", "text-primary");
+    setReceiverProfileStatus("Profile setup saved. Verification is still required before paid work unlocks.", "text-primary");
 
     if (!signedInEmail) return;
     const receiverNotes = field("#receiver-notes")?.value.trim() || "";
@@ -1884,8 +1884,8 @@
     if (accountHomeJobCount) accountHomeJobCount.textContent = String(jobs.length);
     if (accountHomeJobCopy) {
       accountHomeJobCopy.textContent = jobs.length
-        ? "Open your assigned jobs from the receiver side and submit proof updates."
-        : "Verify ID and set coverage before accepting paid receiver work.";
+        ? "Open your assigned jobs from the work side and submit proof updates."
+        : "Verify ID and set coverage before accepting paid work.";
     }
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
     renderAccountHomeVerification(profile, verifications);
@@ -2067,7 +2067,7 @@
           <div>
             <h2 class="font-headline-sm text-headline-sm text-on-surface">Account open</h2>
             <p class="font-body-md text-on-surface-variant">${email || profile.email}</p>
-            <p class="font-label-sm text-secondary mt-2">Mode: ${(profile.account_role || roleIntent()).replaceAll("_", " ")}. Verification is required only before paid posting, paid receiver work, or sensitive/high-value tasks.</p>
+            <p class="font-label-sm text-secondary mt-2">Mode: ${(profile.account_role || roleIntent()).replaceAll("_", " ")}. Verification is required only before paid posting, paid work, or sensitive/high-value tasks.</p>
           </div>
         </div>`;
       if (nextActions) nextActions.hidden = false;

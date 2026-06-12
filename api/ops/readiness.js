@@ -10,8 +10,8 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
-const EXPECTED_APP_DATA_REF = "app-data.js?v=53";
-const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=33";
+const EXPECTED_APP_DATA_REF = "app-data.js?v=54";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=34";
 const PROOF_BUCKET_ID = "swadakta-proof";
 
 function sendJson(res, status, body) {

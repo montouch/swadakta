@@ -431,7 +431,7 @@
     }
 
     if (riskyGoods.has(goodsCategory)) {
-      checks.push("Founder approval before quote, pickup, purchase, shipment, or receiver assignment");
+      checks.push("Founder approval before quote, pickup, purchase, shipment, or operator assignment");
       flags.push(`goods_${goodsCategory}`);
       status = "needs_admin_review";
       riskLevel = highRiskGoods.has(goodsCategory) ? "high" : "medium";

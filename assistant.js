@@ -142,7 +142,7 @@
 
   function contextLabel() {
     const source = String(params.get("source") || params.get("context") || "").toLowerCase();
-    if (source.includes("verification")) return ["Verification guidance", "Provider-led ID checks unlock paid posting, paid receiver work, and sensitive/high-value tasks.", "ID route"];
+    if (source.includes("verification")) return ["Verification guidance", "Provider-led ID checks unlock paid posting, paid work, and sensitive/high-value tasks.", "ID route"];
     if (source.includes("payment")) return ["Payment guidance", "Use provider rails where possible. AI can draft payment wording, but provider evidence controls paid status and release decisions.", "Money safe"];
     if (source.includes("resolution") || source.includes("issue")) return ["Issue guidance", "Keep request code, contact, provider reference, proof, and timeline together before asking for refund, release, or receiver changes.", "Evidence first"];
     if (source.includes("corridor") || source.includes("brief")) return ["Brief guidance", "Route, item legality, proof standards, payment rail, and receiver coverage should be clear before paid work starts.", "Quote ready"];
@@ -172,12 +172,12 @@
       return [
         "After verification is requested:",
         "",
-        "1. Your account stays open. Verification is only the gate for paid posting, paid receiver work, sensitive jobs, and higher-value money flow.",
+        "1. Your account stays open. Verification is only the gate for paid posting, paid work, sensitive jobs, and higher-value money flow.",
         "2. Swadakta chooses the provider route from your country: Smile ID for eligible Africa-first checks, Youverify for selected West African checks, and Sumsub as the broad global route.",
         "3. The provider check is prepared or attached to your verification page.",
         "4. You complete ID and selfie/liveness with the provider, not with a founder manually inspecting documents.",
         "5. The provider result updates your account status.",
-        "6. Once verified, paid posting and paid receiver work unlock.",
+        "6. Once verified, paid posting and paid work unlock.",
         "",
         "Manual review is only an exception: provider outage, unsupported country/document, mismatch, suspected fraud, legal uncertainty, or a high-value/sensitive job that needs extra controls.",
       ].join("\n");
@@ -214,7 +214,7 @@
       return [
         "Likely blockers to check:",
         "",
-        "- ID verification: account can open first, but paid posting and paid receiver work stay locked until provider evidence is recorded.",
+        "- ID verification: account can open first, but paid posting and paid work stay locked until provider evidence is recorded.",
         "- Money: provider confirmation is needed before funds count as protected; AI cannot mark paid or release money.",
         "- Corridor: pilot or unsupported lanes need founder approval before quote, purchase, shipping, or assignment.",
         "- Goods: batteries, perfume/liquids, medicines, food, plants, animal-origin goods, valuables, and controlled documents need rules checks.",
@@ -225,7 +225,7 @@
     if (/draft|reply|message|whatsapp|email/i.test(text)) {
       return messageDraftAnswer();
     }
-    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or receive jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, receiver assignment, and sensitive task approval cannot be done by AI alone.";
+    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or take jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, operator assignment, and sensitive task approval cannot be done by AI alone.";
   }
 
   function messageDraftAnswer() {

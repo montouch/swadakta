@@ -600,8 +600,8 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=53",
-  "stitch-portal.js?v=33",
+  "app-data.js?v=54",
+  "stitch-portal.js?v=34",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
   "supabase_leaked_password_protection",
@@ -1392,14 +1392,14 @@ for (const page of requiredPages) {
   if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
     fail(failures, `${page} does not reference admin-readiness.js?v=4`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=9")) {
-    fail(failures, `${page} does not reference verification.js?v=9`);
+  if (page === "/verification" && !text.includes("verification.js?v=10")) {
+    fail(failures, `${page} does not reference verification.js?v=10`);
   }
-  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
-    fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=10`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=6")) {
-    fail(failures, `${page} does not reference assistant.js?v=6`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=7")) {
+    fail(failures, `${page} does not reference assistant.js?v=7`);
   }
   if (page === "/assistant") {
     for (const marker of requiredAssistantHtmlMarkers) {
@@ -1428,8 +1428,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=7")) {
-    fail(failures, `${page} does not reference corridor.js?v=7`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=8")) {
+    fail(failures, `${page} does not reference corridor.js?v=8`);
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {
@@ -1717,11 +1717,11 @@ for (const marker of requiredAdminReadinessMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=6");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=7");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=6 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=7 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=6 returned 200");
+  pass("assistant.js?v=7 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {
@@ -1780,11 +1780,11 @@ for (const marker of requiredBriefScriptMarkers) {
   }
 }
 
-const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=9");
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=10");
 if (trackingResponse.status !== 200) {
-  fail(failures, `stitch-tracking.js?v=9 returned ${trackingResponse.status}`);
+  fail(failures, `stitch-tracking.js?v=10 returned ${trackingResponse.status}`);
 } else {
-  pass("stitch-tracking.js?v=9 returned 200");
+  pass("stitch-tracking.js?v=10 returned 200");
 }
 
 for (const marker of requiredTrackingMarkers) {
