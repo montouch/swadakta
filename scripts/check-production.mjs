@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -349,6 +350,15 @@ const requiredEnvExampleKeys = [
   "SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED",
   "SWADAKTA_OWNER_KENYA_SETUP_REVIEWED",
 ];
+const requiredSecretScanMarkers = [
+  "openai_api_key",
+  "stripe_secret_key",
+  "stripe_webhook_secret",
+  "github_token",
+  "jwt_like_secret",
+  "sensitive_assignment",
+  "swadakta-secret-scan",
+];
 
 async function readLocal(relativePath) {
   return readFile(path.join(root, relativePath), "utf8");
@@ -437,7 +447,28 @@ function pass(message) {
   console.log(`OK   ${message}`);
 }
 
+function runSecretScan(failures) {
+  try {
+    execFileSync(process.execPath, [path.join(root, "scripts", "secret-scan.mjs")], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    pass("Local secret scan passed");
+  } catch (error) {
+    const output = `${error.stdout || ""}${error.stderr || ""}`.trim();
+    fail(failures, `Local secret scan failed${output ? `: ${output}` : ""}`);
+  }
+}
+
 const failures = [];
+const localSecretScan = await readLocal("scripts/secret-scan.mjs");
+for (const marker of requiredSecretScanMarkers) {
+  if (!localSecretScan.includes(marker)) {
+    fail(failures, `Local secret scanner is missing marker ${marker}`);
+  }
+}
+runSecretScan(failures);
 const localHtml = await Promise.all(htmlFiles.map(async (file) => [file, await readLocal(file)]));
 const versions = findAppDataVersions(localHtml);
 const uniqueVersions = [...new Set([...versions.values()].flat())];

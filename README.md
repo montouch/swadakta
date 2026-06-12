@@ -71,6 +71,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Corridor operating model in `CORRIDOR_OPERATIONS.md`
 - Privacy, terms, sitemap, robots, and security-contact files
 - Vercel static deployment config plus Cloudflare Pages headers and redirects
+- Local secret scanner that fails on high-confidence OpenAI, Stripe, Paystack, Flutterwave, GitHub, JWT/service-role, private-key, or sensitive env assignments before deploy
 
 ## Run locally
 
@@ -96,6 +97,14 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 ```
 
 Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, and production admin routing/indexing guards so stale sign-in or admin-entry code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
+
+Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/secret-scan.mjs
+```
+
+The production health script runs this scanner automatically. If it fails, remove the committed value and rotate the exposed provider key before continuing.
 
 ## Environment setup
 

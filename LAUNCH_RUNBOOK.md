@@ -26,6 +26,7 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 - For Kenya operations, decide whether Swadakta needs a Kenyan company/business registration, KRA PIN/tax setup, ODPC data-controller/processor registration, and Safaricom/M-Pesa business approval. Official starting points: BRS https://brs.go.ke/, KRA PIN registration https://www.kra.go.ke/business/companies-partnerships/companies-partnerships-pin-taxes/companies-partnerships-pin-registration, ODPC https://www.odpc.go.ke/, and Safaricom Daraja https://developer.safaricom.co.ke/
 - Open and verify the provider accounts under the chosen legal entity: Stripe, PayPal Business, Wise Business fallback, ID verification provider, Supabase, Vercel, OpenAI, and later M-Pesa/Daraja, Paystack, or Flutterwave.
 - Rotate any secret key that was ever pasted into chat or a browser field, then add the new value only as a Vercel/Supabase server-side secret.
+- Run `scripts/secret-scan.mjs` before every paid launch/demo deploy. It scans committed and unignored local files for high-confidence OpenAI, Stripe, Paystack, Flutterwave, GitHub, JWT/service-role, private-key, and sensitive env assignment leaks. If it fails, remove the value and rotate the exposed key before continuing.
 
 The admin readiness cockpit also tracks these owner-only steps as non-secret Vercel flags. Leave each flag `false` until the step is genuinely complete, then set it to `true`: `SWADAKTA_OWNER_BUSINESS_REGISTERED`, `SWADAKTA_OWNER_TAX_REVIEWED`, `SWADAKTA_OWNER_INSURANCE_ACTIVE`, `SWADAKTA_OWNER_LEGAL_REVIEWED`, `SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED`, `SWADAKTA_OWNER_CONTRACTOR_TERMS_READY`, `SWADAKTA_OWNER_PRIVACY_REVIEWED`, `SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED`, `SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED`, and `SWADAKTA_OWNER_KENYA_SETUP_REVIEWED`.
 
@@ -136,6 +137,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - `www.swadakta.com` redirects to the apex domain.
 - Supabase Auth Site URL is `https://swadakta.com`, and Redirect URLs include `https://swadakta.com/**`.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
+- `scripts/secret-scan.mjs` passes locally, and `scripts/check-production.mjs` includes the secret scan before production checks.
 - Social sign-in buttons stay hidden until `app-config.js` enables the provider and Supabase has real OAuth credentials configured.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
