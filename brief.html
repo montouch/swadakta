@@ -510,6 +510,40 @@
 </select>
 </div>
 </div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-service-package">Service package</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-service-package" name="service_package">
+<option value="quote_first">Quote first, then choose</option>
+<option value="quick_errand">Quick errand</option>
+<option value="site_visit">Proof visit or site check</option>
+<option value="registry_errand">Registry or document run</option>
+<option value="family_support">Family support</option>
+<option value="shopping_sourcing">Shopping or sourcing</option>
+<option value="monthly_retainer">Monthly assistant retainer</option>
+<option value="business_ops">Business operations support</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-budget">Budget comfort</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-budget" name="budget_range">
+<option value="unsure">Not sure yet</option>
+<option value="under_100">Under 100</option>
+<option value="100_250">100 to 250</option>
+<option value="250_500">250 to 500</option>
+<option value="500_plus">500 plus</option>
+<option value="retainer">Monthly retainer</option>
+</select>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-white/70 border border-outline-variant/40 flex gap-4" id="brief-quote-safety" aria-live="polite">
+<span class="material-symbols-outlined text-primary">price_check</span>
+<div>
+<strong class="font-label-md text-label-md text-on-surface" id="brief-quote-safety-title">Budget and quote safety</strong>
+<p class="mt-1 text-label-sm font-label-md text-on-surface-variant leading-relaxed" id="brief-quote-safety-copy">Swadakta will quote after checking route, proof, receiver payout, field costs, provider fees, and founder margin.</p>
+<ul class="mt-2 grid gap-1 text-label-sm font-label-md text-on-surface-variant list-disc pl-4" id="brief-quote-safety-checks"></ul>
+</div>
+</div>
 <div class="p-4 rounded-2xl bg-primary-container/10 border border-primary-container/20 flex gap-4">
 <span class="material-symbols-outlined text-primary">info</span>
 <p class="text-label-sm font-label-md text-on-surface-variant leading-relaxed">
@@ -558,6 +592,6 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=45"></script>
 <script src="ai-preferences.js?v=1"></script>
-<script src="stitch-brief.js?v=11"></script>
+<script src="stitch-brief.js?v=12"></script>
 <script src="assistant-dock.js?v=4"></script>
 </body></html>

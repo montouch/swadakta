@@ -131,6 +131,8 @@ const requiredBriefHtmlMarkers = [
   "brief-route-guidance",
   "brief-route-shortcuts",
   "In-country Africa job",
+  "brief-budget",
+  "Budget and quote safety",
 ];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
@@ -142,6 +144,9 @@ const requiredBriefScriptMarkers = [
   "syncBriefRoutePlan",
   "Africa-to-Africa brief route",
   "routePlanSummary",
+  "renderQuoteSafety",
+  "quoteSafetySummary",
+  "budgetRange",
 ];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
@@ -618,8 +623,8 @@ for (const page of requiredPages) {
   if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
     fail(failures, `${page} does not reference ai-preferences.js?v=1`);
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=11")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=11`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=12")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=12`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -878,11 +883,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=11");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=12");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=11 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=12 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=11 returned 200");
+  pass("stitch-brief.js?v=12 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

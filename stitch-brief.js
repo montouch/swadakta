@@ -33,6 +33,9 @@
   const placeAlertLink = document.querySelector("#brief-place-alert-link");
   const placeUpdated = document.querySelector("#brief-place-updated");
   const placeRefreshButton = document.querySelector("#brief-place-refresh");
+  const quoteSafetyTitle = document.querySelector("#brief-quote-safety-title");
+  const quoteSafetyCopy = document.querySelector("#brief-quote-safety-copy");
+  const quoteSafetyChecks = document.querySelector("#brief-quote-safety-checks");
   const corridorStorageKey = "swadakta_corridor_context";
 
   if (!form || !window.SwadaktaData) return;
@@ -231,6 +234,120 @@
     if (value.includes("research")) return "virtual";
     if (value.includes("legal") || value.includes("compliance")) return "registry";
     return "quick";
+  }
+
+  function servicePackage(raw, selectedService = "") {
+    const clean = String(raw || "").trim().toLowerCase();
+    if (
+      [
+        "quote_first",
+        "quick_errand",
+        "site_visit",
+        "registry_errand",
+        "family_support",
+        "shopping_sourcing",
+        "monthly_retainer",
+        "business_ops",
+      ].includes(clean)
+    ) {
+      return clean;
+    }
+
+    const service = String(selectedService || "").toLowerCase();
+    if (service.includes("verification") || service.includes("inspection")) return "site_visit";
+    if (service.includes("legal") || service.includes("compliance")) return "registry_errand";
+    if (service.includes("shopping") || service.includes("sourcing") || service.includes("supplier")) {
+      return "shopping_sourcing";
+    }
+    if (service.includes("assistant")) return "monthly_retainer";
+    if (service.includes("business")) return "business_ops";
+    return "quote_first";
+  }
+
+  function budgetRange(raw) {
+    const clean = String(raw || "unsure").trim().toLowerCase();
+    return ["unsure", "under_100", "100_250", "250_500", "500_plus", "retainer"].includes(clean) ? clean : "unsure";
+  }
+
+  function budgetRangeLabel(raw = budgetRange(value("#brief-budget"))) {
+    return {
+      unsure: "Budget not sure yet",
+      under_100: "Under 100",
+      "100_250": "100 to 250",
+      "250_500": "250 to 500",
+      "500_plus": "500 plus",
+      retainer: "Monthly retainer",
+    }[budgetRange(raw)];
+  }
+
+  function packageLabel(raw = servicePackage(value("#brief-service-package"), value("#brief-service-type"))) {
+    return {
+      quote_first: "Quote first",
+      quick_errand: "Quick errand",
+      site_visit: "Proof visit or site check",
+      registry_errand: "Registry or document run",
+      family_support: "Family support",
+      shopping_sourcing: "Shopping or sourcing",
+      monthly_retainer: "Monthly assistant retainer",
+      business_ops: "Business operations support",
+    }[servicePackage(raw)] || "Quote first";
+  }
+
+  function quoteSafetyPlan() {
+    const selectedPackage = servicePackage(value("#brief-service-package"), value("#brief-service-type"));
+    const selectedBudget = budgetRange(value("#brief-budget"));
+    const fundsPlan = escrowPreference(value("#brief-escrow"));
+    const payment = paymentMethod(value("#brief-payment"));
+    const logisticsMode = corridorContext.logistics_mode || (value("#brief-items") ? "postal_courier" : "not_needed");
+    const goodsCategory = corridorContext.goods_category || (value("#brief-items") ? "general_goods" : "none");
+    const hasPhysical = !["not_needed", "digital_only"].includes(logisticsMode) || goodsCategory !== "none";
+    const highValue =
+      selectedBudget === "500_plus" ||
+      selectedBudget === "retainer" ||
+      fundsPlan === "regulated_escrow" ||
+      selectedPackage === "monthly_retainer" ||
+      selectedPackage === "business_ops";
+    const lowBudgetPhysical = selectedBudget === "under_100" && hasPhysical;
+    const checks = [
+      "Quote must cover receiver payout, field costs, provider fees, risk reserve, and founder margin.",
+      payment === "bank" || payment === "mpesa"
+        ? "Provider receipt, callback, or statement evidence is required before funds count as protected."
+        : "Provider checkout/order evidence is required before paid work starts.",
+    ];
+
+    if (hasPhysical) checks.push("Physical work needs route, item, delivery, access, and proof checks before purchase or dispatch.");
+    if (fundsPlan === "deposit_milestones") checks.push("Split payment release into proof milestones before receiver payout.");
+    if (highValue) checks.push("High-value or retainer work should use milestone controls and founder/provider review before release.");
+    if (lowBudgetPhysical) checks.push("Under-100 physical work may need a smaller scope, local-only route, or re-quote to protect margin.");
+
+    return {
+      tone: highValue || lowBudgetPhysical ? "review" : "standard",
+      title: highValue
+        ? "Quote safety: milestone review needed"
+        : lowBudgetPhysical
+          ? "Quote safety: budget may be tight"
+          : "Budget and quote safety",
+      copy: `${packageLabel(selectedPackage)}. ${budgetRangeLabel(selectedBudget)}. Swadakta will price the job after checking route, proof, receiver payout, field costs, provider fees, and founder margin.`,
+      checks,
+    };
+  }
+
+  function quoteSafetySummary() {
+    const plan = quoteSafetyPlan();
+    return [
+      `Quote safety: ${plan.title}`,
+      `Package: ${packageLabel()}`,
+      `Budget comfort: ${budgetRangeLabel()}`,
+      `Quote checks: ${plan.checks.join(" ")}`,
+    ].join("\n");
+  }
+
+  function renderQuoteSafety() {
+    if (!quoteSafetyTitle || !quoteSafetyCopy || !quoteSafetyChecks) return;
+    const plan = quoteSafetyPlan();
+    quoteSafetyTitle.textContent = plan.title;
+    quoteSafetyCopy.textContent = plan.copy;
+    quoteSafetyChecks.innerHTML = plan.checks.map((check) => `<li>${escapeHtml(check)}</li>`).join("");
   }
 
   function setStatus(message, tone = "") {
@@ -826,13 +943,14 @@
         task_location: location,
         kenya_location: location,
         task_type: serviceType(selectedService),
-        service_package: "quote_first",
+        service_package: servicePackage(value("#brief-service-package"), selectedService),
         payment_method_preference: paymentMethod(value("#brief-payment")),
         funds_protection_preference: escrowPreference(value("#brief-escrow")),
+        budget_range: budgetRange(value("#brief-budget")),
         logistics_mode: logisticsMode,
         goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [freeformBrief, selectedService, routePlanSummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
+        notes: [freeformBrief, selectedService, routePlanSummary(), quoteSafetySummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
@@ -921,6 +1039,11 @@
 
   placeRefreshButton?.addEventListener("click", loadPlaceIntelligence);
 
+  ["#brief-service-package", "#brief-budget", "#brief-payment", "#brief-escrow", "#brief-items"].forEach((selector) => {
+    document.querySelector(selector)?.addEventListener("input", renderQuoteSafety);
+    document.querySelector(selector)?.addEventListener("change", renderQuoteSafety);
+  });
+
   if (aiOrganizeButton) {
     aiOrganizeButton.addEventListener("click", () => {
       const freeformBrief = value("#brief-freeform");
@@ -946,4 +1069,6 @@
       window.location.href = url.toString();
     });
   }
+
+  renderQuoteSafety();
 })();
