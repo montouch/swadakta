@@ -18,6 +18,13 @@
   const compliancePackRisk = document.querySelector("#brief-compliance-pack-risk");
   const compliancePackChecks = document.querySelector("#brief-compliance-pack-checks");
   const compliancePackLinks = document.querySelector("#brief-compliance-pack-links");
+  const goodsCategorySelect = document.querySelector("#brief-goods-category");
+  const logisticsModeSelect = document.querySelector("#brief-logistics-mode");
+  const goodsSafetyTitle = document.querySelector("#brief-goods-safety-title");
+  const goodsSafetyCopy = document.querySelector("#brief-goods-safety-copy");
+  const goodsSafetyRisk = document.querySelector("#brief-goods-safety-risk");
+  const goodsSafetyChecks = document.querySelector("#brief-goods-safety-checks");
+  const goodsRulesLink = document.querySelector("#brief-goods-rules-link");
   const routeModeSelect = document.querySelector("#brief-service-direction");
   const routeTitle = document.querySelector("#brief-route-title");
   const routeCopy = document.querySelector("#brief-route-copy");
@@ -209,6 +216,102 @@
     valuable_items: "Valuable items or jewellery",
     restricted_or_unsure: "Restricted or not sure",
   };
+  const officialGoodsReferences = [
+    {
+      label: "UPU dangerous goods",
+      url: "https://www.upu.int/en/universal-postal-union/outreach-campaigns/dangerous-goods",
+    },
+    {
+      label: "USPS international restrictions",
+      url: "https://www.usps.com/international/shipping-restrictions.htm",
+    },
+    {
+      label: "DHL restricted commodities",
+      url: "https://www.dhl.com/discover/en-us/ship-with-dhl/start-shipping/restricted-commodities",
+    },
+  ];
+  const goodsSafetyProfiles = {
+    none: {
+      title: "No physical goods selected",
+      risk: "standard",
+      status: "not_applicable",
+      review: false,
+      copy: "This looks like a service, visit, document upload, or digital workflow. Keep proof and permission clear.",
+      checks: ["Confirm location, access permission, proof standard, and payment milestone before assignment."],
+    },
+    general_goods: {
+      title: "General goods route",
+      risk: "standard",
+      status: "needs_ai_review",
+      review: false,
+      copy: "Ordinary goods can move only after description, value, receipt, route, and proof are clear.",
+      checks: ["Record item description and value", "Keep receipt or purchase evidence", "Confirm carrier, pickup, or local handoff proof"],
+    },
+    clothing_household: {
+      title: "Low-risk retail goods",
+      risk: "standard",
+      status: "needs_ai_review",
+      review: false,
+      copy: "Clothing and ordinary household items still need accurate value, condition proof, and delivery confirmation.",
+      checks: ["Record item list and value", "Photograph condition before handoff", "Keep receipt and delivery proof"],
+    },
+    electronics: {
+      title: "Electronics or battery check",
+      risk: "medium",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Electronics can contain lithium batteries or data risk. Check carrier, airline, postal, customs, and destination rules before payment or dispatch.",
+      checks: ["Confirm battery type and watt-hour where relevant", "Check carrier acceptance and packaging", "Remove or protect personal data where relevant"],
+    },
+    cosmetics: {
+      title: "Perfume, aerosol, or liquid check",
+      risk: "medium",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Perfume, aerosols, nail products, cosmetics, and liquids can be restricted as dangerous goods or refused by carriers.",
+      checks: ["Confirm ingredients, volume, and packaging", "Check postal or courier acceptance", "Do not buy before route acceptance is proven"],
+    },
+    food_plant_animal: {
+      title: "Biosecurity-sensitive goods",
+      risk: "high",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Food, plants, seeds, wood, leather, and animal-origin goods can require permits, declarations, inspection, or refusal.",
+      checks: ["Check origin and destination biosecurity rules", "Confirm permits and declarations", "Pause purchase or shipping until lawful route is proven"],
+    },
+    medicine_health: {
+      title: "Medicine or health-product review",
+      risk: "high",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Medicine, supplements, medical products, and controlled health items need legal, customs, and carrier checks before Swadakta touches them.",
+      checks: ["Confirm prescription, permit, and import rules", "Do not accept controlled substances", "Use specialist provider only when lawful route is documented"],
+    },
+    documents: {
+      title: "Document authority check",
+      risk: "medium",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Documents, certificates, IDs, registry papers, and legal-adjacent errands need authority, privacy, and proof controls.",
+      checks: ["Confirm requester authority", "Protect personal data", "Use receipt, chain-of-custody, and delivery proof"],
+    },
+    valuable_items: {
+      title: "Valuable-item route review",
+      risk: "high",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Cash-equivalent, jewellery, precious metals, valuables, and high-value goods need insured, lawful, provider-backed handling or refusal.",
+      checks: ["Confirm declared value and insurance", "Avoid informal carriage", "Use provider-held funds and milestone release only after proof"],
+    },
+    restricted_or_unsure: {
+      title: "Paused until lawful route is proven",
+      risk: "high",
+      status: "needs_admin_review",
+      review: true,
+      copy: "Restricted, controlled, hazardous, counterfeit, undeclared, or unclear goods must pause before quote, payment, purchase, pickup, dispatch, or assignment.",
+      checks: ["Describe every item before quote", "Check official carrier and customs rules", "Founder/provider review required before any paid action"],
+    },
+  };
 
   function value(selector) {
     return String(document.querySelector(selector)?.value || "").trim();
@@ -336,8 +439,21 @@
         official_reference_links: normalizeReferenceLinks(context.rules_compliance_pack.official_reference_links),
       };
     }
+    if (context.inline_goods_safety_pack?.source === "brief_inline_goods_safety") {
+      return {
+        ...context.inline_goods_safety_pack,
+        official_reference_links: normalizeReferenceLinks(context.inline_goods_safety_pack.official_reference_links),
+      };
+    }
 
     const flags = Array.isArray(context.compliance_flags) ? context.compliance_flags : [];
+    if (flags.includes("brief_inline_goods_safety")) {
+      const pack = buildInlineGoodsSafetyPack();
+      return {
+        ...pack,
+        official_reference_links: normalizeReferenceLinks(pack.official_reference_links),
+      };
+    }
     if (context.imported_from !== "rules_precheck" && !flags.includes("rules_precheck")) return {};
 
     return {
@@ -407,8 +523,8 @@
     if (highValue) checks.push("High-value or retainer work should use milestone controls and Swadakta/provider review before release.");
     if (lowBudgetPhysical) checks.push("Under-100 physical work may need a smaller scope, local-only route, or re-quote to protect the operating reserve.");
     const compliancePack = rulesPackFromContext();
-    if (compliancePack.source === "rules_precheck") {
-      checks.push(`Rules compliance pack carried forward: ${formatStatus(compliancePack.compliance_status || "not_applicable")} / ${formatStatus(compliancePack.compliance_risk_level || "standard")}.`);
+    if (["rules_precheck", "brief_inline_goods_safety"].includes(compliancePack.source)) {
+      checks.push(`Goods compliance pack carried forward: ${formatStatus(compliancePack.compliance_status || "not_applicable")} / ${formatStatus(compliancePack.compliance_risk_level || "standard")}.`);
       if (compliancePack.next_action) checks.push(compliancePack.next_action);
     }
 
@@ -780,6 +896,143 @@
     return map[value] || formatStatus(value) || fallback;
   }
 
+  function selectedGoodsCategory() {
+    const raw = goodsCategorySelect?.value || corridorContext.goods_category || (value("#brief-items") ? "general_goods" : "none");
+    if (raw === "none" && value("#brief-items")) return "general_goods";
+    return goodsSafetyProfiles[raw] ? raw : "restricted_or_unsure";
+  }
+
+  function selectedLogisticsMode() {
+    const raw = logisticsModeSelect?.value || corridorContext.logistics_mode || (value("#brief-items") ? "postal_courier" : "not_needed");
+    if (raw === "not_needed" && value("#brief-items")) return "postal_courier";
+    return logisticsLabels[raw] ? raw : "not_needed";
+  }
+
+  function routeIsCrossBorder() {
+    const { origin, destination, mode } = resolveRouteFields();
+    if (mode === "digital_global" || mode === "local_in_country") return false;
+    if (!origin || !destination) return false;
+    return origin.trim().toLowerCase() !== destination.trim().toLowerCase();
+  }
+
+  function buildInlineGoodsSafetyPack() {
+    const goods = selectedGoodsCategory();
+    const logistics = selectedLogisticsMode();
+    const profile = goodsSafetyProfiles[goods] || goodsSafetyProfiles.restricted_or_unsure;
+    const crossBorder = routeIsCrossBorder();
+    const hasPhysical = goods !== "none" || !["not_needed", "digital_only"].includes(logistics);
+    const requiredChecks = uniqueList([
+      ...profile.checks,
+      hasPhysical ? "Capture photos, receipts, serial/model details where relevant, and handoff proof" : "",
+      crossBorder ? "Check origin, destination, transit, customs, tax/duty, and import restrictions" : "",
+      logistics === "postal_courier" ? "Check postal/courier acceptance before buying or dispatching" : "",
+      logistics === "airport_handoff" ? "Check airline and traveller handoff rules; avoid informal carriage for restricted or valuable goods" : "",
+    ]);
+    const complianceFlags = uniqueList([
+      "brief_inline_goods_safety",
+      `brief_goods_${goods}`,
+      `brief_logistics_${logistics}`,
+      crossBorder ? "brief_cross_border_goods" : "",
+      profile.review ? "brief_goods_admin_review" : "",
+    ]);
+
+    return {
+      source: "brief_inline_goods_safety",
+      created_at: new Date().toISOString(),
+      route_label: [value("#brief-origin-country") || "Origin", value("#brief-destination-country") || "destination"].join(" to "),
+      goods_category: goods,
+      logistics_mode: logistics,
+      item_type: goods,
+      movement_mode: logistics,
+      cross_border: crossBorder,
+      compliance_status: profile.status,
+      compliance_risk_level: profile.risk,
+      admin_review_required: Boolean(profile.review || crossBorder || logistics === "airport_handoff"),
+      admin_review_reason: profile.review
+        ? profile.title
+        : crossBorder
+          ? "Cross-border goods need carrier, customs, tax, and lawful-route checks"
+          : "",
+      compliance_flags: complianceFlags,
+      required_checks: requiredChecks,
+      official_reference_links: hasPhysical ? officialGoodsReferences : [],
+      next_action: compliancePackNextAction({
+        compliance_status: profile.status,
+        compliance_risk_level: profile.risk,
+        admin_review_required: Boolean(profile.review || crossBorder || logistics === "airport_handoff"),
+      }),
+      title: profile.title,
+      copy: profile.copy,
+    };
+  }
+
+  function applyInlineGoodsSafety() {
+    if (!goodsCategorySelect || !logisticsModeSelect) return;
+    const pack = buildInlineGoodsSafetyPack();
+    const preservedRulesPack =
+      corridorContext.rules_compliance_pack?.source === "rules_precheck" ? corridorContext.rules_compliance_pack : null;
+
+    corridorContext = {
+      ...corridorContext,
+      goods_category: pack.goods_category,
+      logistics_mode: pack.logistics_mode,
+      compliance_status: pack.compliance_status,
+      compliance_risk_level: pack.compliance_risk_level,
+      admin_review_required: Boolean(pack.admin_review_required),
+      admin_review_reason: pack.admin_review_reason,
+      compliance_flags: uniqueList([
+        ...(Array.isArray(corridorContext.compliance_flags) ? corridorContext.compliance_flags : []),
+        ...pack.compliance_flags,
+      ]),
+      required_checks: uniqueList([
+        ...(Array.isArray(corridorContext.required_checks) ? corridorContext.required_checks : []),
+        ...pack.required_checks,
+      ]),
+      official_reference_links: normalizeReferenceLinks([
+        ...(Array.isArray(corridorContext.official_reference_links) ? corridorContext.official_reference_links : []),
+        ...pack.official_reference_links,
+      ]),
+      inline_goods_safety_pack: pack,
+      imported_from: preservedRulesPack ? "rules_precheck" : "brief_inline_goods_safety",
+      rules_compliance_pack: preservedRulesPack || corridorContext.rules_compliance_pack,
+    };
+  }
+
+  function renderGoodsSafety() {
+    if (!goodsCategorySelect || !logisticsModeSelect) return;
+    applyInlineGoodsSafety();
+    const pack = buildInlineGoodsSafetyPack();
+    if (goodsCategorySelect.value !== pack.goods_category) goodsCategorySelect.value = pack.goods_category;
+    if (logisticsModeSelect.value !== pack.logistics_mode) logisticsModeSelect.value = pack.logistics_mode;
+    if (goodsSafetyTitle) goodsSafetyTitle.textContent = pack.title || "Goods safety quick check";
+    if (goodsSafetyCopy) goodsSafetyCopy.textContent = pack.copy || "Choose the item type and route before quote or assignment.";
+    if (goodsSafetyRisk) {
+      goodsSafetyRisk.textContent = `${formatStatus(pack.compliance_risk_level)} risk`;
+      goodsSafetyRisk.className = `inline-flex min-h-9 px-3 items-center justify-center rounded-full font-label-sm ${
+        pack.compliance_risk_level === "high"
+          ? "bg-error-container text-on-error-container"
+          : pack.compliance_risk_level === "medium"
+            ? "bg-amber-400/20 text-amber-800"
+            : "bg-primary-container/10 text-primary"
+      }`;
+    }
+    if (goodsSafetyChecks) {
+      goodsSafetyChecks.innerHTML = pack.required_checks.map((check) => `<li>${escapeHtml(check)}</li>`).join("");
+    }
+    if (goodsRulesLink) {
+      const url = new URL("rules.html", window.location.href);
+      const route = resolveRouteFields();
+      if (route.origin) url.searchParams.set("origin", route.origin);
+      if (route.destination) url.searchParams.set("destination", route.destination);
+      url.searchParams.set("item", pack.goods_category);
+      url.searchParams.set("mode", pack.logistics_mode);
+      goodsRulesLink.href = url.toString();
+    }
+    renderCompliancePack();
+    renderQuoteSafety();
+    renderCorridorSummary();
+  }
+
   function selectedRouteMode() {
     return value("#brief-service-direction") || corridorContext.service_direction || "origin_to_destination";
   }
@@ -892,13 +1145,13 @@
   function renderCompliancePack() {
     if (!compliancePackPanel) return;
     const pack = rulesPackFromContext();
-    const hasPack = pack.source === "rules_precheck";
+    const hasPack = ["rules_precheck", "brief_inline_goods_safety"].includes(pack.source);
     compliancePackPanel.hidden = !hasPack;
     if (!hasPack) return;
 
     const status = formatStatus(pack.compliance_status || "not_applicable");
     const risk = formatStatus(pack.compliance_risk_level || "standard");
-    if (compliancePackTitle) compliancePackTitle.textContent = pack.route_label || "Rules pre-check carried forward";
+    if (compliancePackTitle) compliancePackTitle.textContent = pack.route_label || pack.title || "Rules pre-check carried forward";
     if (compliancePackCopy) {
       compliancePackCopy.textContent = `${status}. ${risk} risk. ${pack.next_action || "Keep the required checks with the brief before payment or assignment."}`;
     }
@@ -983,6 +1236,8 @@
       setValue("#brief-location", corridorContext.task_location);
       setValue("#brief-service-type", corridorContext.service_type);
       setValue("#brief-service-direction", corridorContext.service_direction, { force: true });
+      setValue("#brief-goods-category", corridorContext.goods_category, { force: true });
+      setValue("#brief-logistics-mode", corridorContext.logistics_mode, { force: true });
     } catch {
       corridorContext = paramContext;
       localStorage.removeItem(corridorStorageKey);
@@ -992,7 +1247,10 @@
     setValue("#brief-destination-country", corridorContext.destination_country);
     setValue("#brief-location", corridorContext.task_location);
     setValue("#brief-service-direction", corridorContext.service_direction, { force: true });
+    setValue("#brief-goods-category", corridorContext.goods_category, { force: true });
+    setValue("#brief-logistics-mode", corridorContext.logistics_mode, { force: true });
     syncBriefRoutePlan();
+    renderGoodsSafety();
     renderCorridorSummary();
   }
 
@@ -1080,6 +1338,7 @@
     const proof = value("#brief-proof");
     const items = value("#brief-items");
     syncBriefRoutePlan();
+    applyInlineGoodsSafety();
     const routeFields = resolveRouteFields();
     const location = routeFields.location;
     const compliancePack = rulesPackFromContext();
@@ -1178,16 +1437,19 @@
     const input = document.querySelector(selector);
     input?.addEventListener("input", () => {
       syncBriefRoutePlan();
+      renderGoodsSafety();
       if (selector === "#brief-location" || selector === "#brief-destination-country") schedulePlaceIntelligence();
     });
     input?.addEventListener("change", () => {
       syncBriefRoutePlan();
+      renderGoodsSafety();
       if (selector === "#brief-location" || selector === "#brief-destination-country") loadPlaceIntelligence();
     });
   });
 
   routeModeSelect?.addEventListener("change", () => {
     syncBriefRoutePlan();
+    renderGoodsSafety();
     if (selectedRouteMode() === "digital_global") {
       loadPlaceIntelligence();
     }
@@ -1207,10 +1469,17 @@
 
   placeRefreshButton?.addEventListener("click", loadPlaceIntelligence);
 
-  ["#brief-service-package", "#brief-budget", "#brief-payment", "#brief-escrow", "#brief-items"].forEach((selector) => {
+  ["#brief-goods-category", "#brief-logistics-mode"].forEach((selector) => {
+    document.querySelector(selector)?.addEventListener("input", renderGoodsSafety);
+    document.querySelector(selector)?.addEventListener("change", renderGoodsSafety);
+  });
+
+  ["#brief-service-package", "#brief-budget", "#brief-payment", "#brief-escrow"].forEach((selector) => {
     document.querySelector(selector)?.addEventListener("input", renderQuoteSafety);
     document.querySelector(selector)?.addEventListener("change", renderQuoteSafety);
   });
+  document.querySelector("#brief-items")?.addEventListener("input", renderGoodsSafety);
+  document.querySelector("#brief-items")?.addEventListener("change", renderGoodsSafety);
 
   if (aiOrganizeButton) {
     aiOrganizeButton.addEventListener("click", () => {

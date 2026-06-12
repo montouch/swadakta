@@ -401,6 +401,10 @@ const requiredBriefHtmlMarkers = [
   "brief-route-guidance",
   "brief-route-shortcuts",
   "In-country Africa job",
+  "brief-goods-safety",
+  "Goods safety quick check",
+  "brief-goods-category",
+  "brief-logistics-mode",
   "brief-compliance-pack",
   "Compliance pack",
   "brief-budget",
@@ -426,6 +430,11 @@ const requiredBriefScriptMarkers = [
   "rulesPackFromContext",
   "compliancePackSummary",
   "renderCompliancePack",
+  "officialGoodsReferences",
+  "buildInlineGoodsSafetyPack",
+  "brief_inline_goods_safety",
+  "renderGoodsSafety",
+  "Goods compliance pack carried forward",
   "rulesStorageKey",
   "budgetRange",
 ];
@@ -1397,8 +1406,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=14")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=14`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=15")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=15`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1790,11 +1799,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=14");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=15");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=14 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=15 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=14 returned 200");
+  pass("stitch-brief.js?v=15 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

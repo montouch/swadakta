@@ -472,6 +472,51 @@
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-items">Items Description</label>
 <textarea class="sunken-input w-full p-4 rounded-xl text-body-md resize-none" id="brief-items" name="items_description" placeholder="Provide weight, dimensions, and nature of goods..." rows="3"></textarea>
 </div>
+<section class="rounded-[1.5rem] bg-white/64 border border-outline-variant/30 p-5" id="brief-goods-safety" aria-live="polite">
+<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+<div>
+<p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">Goods safety quick check</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-goods-safety-title">Tell Swadakta what is moving</h3>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-goods-safety-copy">Postal services, couriers, airlines, customs, and local law decide what can move. Choose the item type and handoff mode so the brief carries the right checks into admin before quote, purchase, pickup, shipment, or payout.</p>
+</div>
+<span class="inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm" id="brief-goods-safety-risk">No goods declared</span>
+</div>
+<div class="mt-4 grid gap-4 md:grid-cols-2">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-goods-category">Item category</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-goods-category" name="goods_category">
+<option value="none">No physical goods</option>
+<option value="general_goods">General retail or household goods</option>
+<option value="clothing_household">Clothing or household items</option>
+<option value="electronics">Electronics or batteries</option>
+<option value="cosmetics">Cosmetics, perfume, aerosols, or liquids</option>
+<option value="food_plant_animal">Food, plants, seeds, wood, leather, or animal-origin goods</option>
+<option value="medicine_health">Medicine, supplements, or health products</option>
+<option value="documents">Documents or certificates</option>
+<option value="valuable_items">Valuables, jewellery, cash-equivalent, or high-value items</option>
+<option value="restricted_or_unsure">Restricted, controlled, hazardous, or not sure</option>
+</select>
+</div>
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-logistics-mode">Handoff mode</label>
+<select class="sunken-input w-full h-12 px-4 rounded-xl text-body-md appearance-none" id="brief-logistics-mode" name="logistics_mode">
+<option value="not_needed">No physical delivery</option>
+<option value="local_delivery">Local delivery or errand</option>
+<option value="postal_courier">Post or courier shipment</option>
+<option value="supplier_direct">Supplier ships directly</option>
+<option value="pickup_hold">Pickup and hold</option>
+<option value="airport_handoff">Airport or traveller handoff</option>
+<option value="digital_only">Digital/documents only</option>
+</select>
+</div>
+</div>
+<div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+<ul class="grid gap-2 text-sm text-on-surface-variant list-disc pl-5" id="brief-goods-safety-checks">
+<li>No physical goods selected.</li>
+</ul>
+<a class="inline-flex min-h-10 items-center justify-center rounded-full border border-outline-variant/45 bg-white/76 px-4 text-sm font-bold text-primary" id="brief-goods-rules-link" href="rules.html">Open item rules</a>
+</div>
+</section>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-files">Documents / Photos</label>
 <label class="border-2 border-dashed border-outline-variant/50 rounded-2xl p-8 flex flex-col items-center justify-center bg-surface-container-low/50 hover:bg-surface-container-low transition-colors cursor-pointer group" for="brief-files">
@@ -607,6 +652,6 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=54"></script>
 <script src="ai-preferences.js?v=3"></script>
-<script src="stitch-brief.js?v=14"></script>
+<script src="stitch-brief.js?v=15"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body></html>
