@@ -11,6 +11,7 @@ When the visual direction changes, update the matching screen in Stitch first, e
 | Route | Stitch source |
 | --- | --- |
 | `/` | `swadakta_home_final_ux_refined` |
+| `/auth` | `support_auth_swadakta_final_ux_coverage` |
 | `/login` | `welcome_swadakta_final_ux` |
 | `/portal` | `dashboard_swadakta_mobile_final_ux`, `account_setup_profile_swadakta_final_ux_coverage`, `find_work_swadakta_final_ux` |
 | `/assistant` | `ai_assistant_swadakta_final_ux_coverage` |
@@ -24,6 +25,7 @@ When the visual direction changes, update the matching screen in Stitch first, e
 | `/payments` | `payment_milestones_swadakta_final_ux_coverage` |
 | `/resolution` | `dispute_resolution_swadakta_final_ux_coverage` |
 | `/rules` | `trust_rules_swadakta_final_ux_coverage` |
+| `/admin` | `admin_console_swadakta_final_ux_exception_cockpit` redirect |
 | `/admin-ops` | `admin_console_swadakta_final_ux_exception_cockpit` |
 | `/admin-verification` | `admin_verification_queue_swadakta_final_ux_coverage` |
 | `/admin-readiness` | `admin_readiness_launch_gate_swadakta_final_ux_coverage` |

@@ -61,6 +61,12 @@ const requiredStitchScreens = [
     integration: "public-links",
   },
   {
+    path: "/auth",
+    file: "auth.html",
+    sources: ["support_auth_swadakta_final_ux_coverage"],
+    integration: "support",
+  },
+  {
     path: "/login",
     file: "login.html",
     sources: ["welcome_swadakta_final_ux"],
@@ -199,6 +205,16 @@ const privateNoStorePages = [
   "/messages",
   "/notifications",
   "/resolution",
+];
+const publicFreshHtmlPages = [
+  "/",
+  "/index.html",
+  "/corridor",
+  "/trust",
+  "/payments",
+  "/rules",
+  "/privacy",
+  "/terms",
 ];
 const criticalNoStoreScripts = [
   "/app-data.js",
@@ -707,7 +723,12 @@ const requiredLoginHtmlMarkers = [
 ];
 const requiredFinalUxSupportPageMarkers = [
   ['auth.html', 'data-final-ux-shell="support-auth"'],
+  ['auth.html', 'data-stitch-source="support_auth_swadakta_final_ux_coverage"'],
+  ['auth.html', 'data-stitch-integration="support"'],
   ['auth.html', "styles.css?v=29"],
+  ['admin.html', 'data-stitch-source="admin_console_swadakta_final_ux_exception_cockpit"'],
+  ['admin.html', 'data-stitch-integration="redirect"'],
+  ['admin.html', 'data-admin-theme="dark"'],
   ['privacy.html', 'data-final-ux-shell="support-policy"'],
   ['privacy.html', 'data-stitch-source="support_policy_swadakta_final_ux_coverage"'],
   ['privacy.html', "styles.css?v=29"],
@@ -1506,6 +1527,19 @@ if (isLocalBaseUrl()) {
       fail(failures, `${privatePage} is missing X-Robots-Tag: noindex`);
     } else {
       pass(`${privatePage} includes X-Robots-Tag: noindex`);
+    }
+  }
+
+  for (const publicPage of publicFreshHtmlPages) {
+    const { response } = await fetchText(publicPage);
+    if (response.status !== 200) {
+      fail(failures, `${publicPage} returned ${response.status} while checking public final-UX cache headers`);
+      continue;
+    }
+    if (!headerIncludes(response, "cache-control", "no-store")) {
+      fail(failures, `${publicPage} is missing Cache-Control: no-store for final UX refresh safety`);
+    } else {
+      pass(`${publicPage} includes Cache-Control: no-store`);
     }
   }
 
