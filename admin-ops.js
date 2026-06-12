@@ -990,7 +990,7 @@
         const preferred = rail === preferredRail;
         const classes = enabled
           ? preferred
-            ? "bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.18)]"
+            ? "bg-primary text-white shadow-[0_14px_30px_rgba(16,26,58,0.18)]"
             : "border border-outline-variant/50 bg-white/72 text-primary"
           : "border border-outline-variant/40 bg-white/40 text-on-surface-variant opacity-60";
         return `<button class="payment-route rounded-full px-4 py-2 font-label text-sm font-bold ${classes}" data-rail="${rail}" type="button" ${enabled ? "" : "disabled"}>${escapeHtml(paymentRailLabel(rail))}</button>`;

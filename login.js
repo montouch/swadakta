@@ -83,7 +83,7 @@
   }
 
   function renderSubmitLabel() {
-    submit.innerHTML = `${mode === "create" ? "Create account" : "Sign in"} <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>`;
+    submit.textContent = mode === "create" ? "Create Account" : "Sign In";
   }
 
   function setMode(nextMode) {
@@ -97,12 +97,12 @@
     }
     signInModeButton.className =
       mode === "signin"
-        ? "h-11 rounded-full bg-primary text-on-primary font-label-md text-label-md"
-        : "h-11 rounded-full text-on-surface-variant font-label-md text-label-md";
+        ? "flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 bg-white text-primary shadow-sm"
+        : "flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 text-on-surface-variant hover:text-on-surface";
     createModeButton.className =
       mode === "create"
-        ? "h-11 rounded-full bg-primary text-on-primary font-label-md text-label-md"
-        : "h-11 rounded-full text-on-surface-variant font-label-md text-label-md";
+        ? "flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 bg-white text-primary shadow-sm"
+        : "flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 text-on-surface-variant hover:text-on-surface";
     renderSubmitLabel();
     setStatus(
       mode === "create"
@@ -162,7 +162,7 @@
 
   signInModeButton.addEventListener("click", () => setMode("signin"));
   createModeButton.addEventListener("click", () => setMode("create"));
-  createInlineButton.addEventListener("click", () => setMode("create"));
+  createInlineButton?.addEventListener("click", () => setMode("create"));
 
   resetButton.addEventListener("click", async () => {
     const email = String(emailInput.value || "").trim().toLowerCase();

@@ -383,7 +383,7 @@
 
   function routeShortcutClass(active = false) {
     return active
-      ? "h-11 rounded-full bg-primary px-4 font-label-md text-white shadow-[0px_16px_32px_rgba(70,72,212,0.18)]"
+      ? "h-11 rounded-full bg-primary px-4 font-label-md text-white shadow-[0px_16px_32px_rgba(16,26,58,0.18)]"
       : "h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary";
   }
 

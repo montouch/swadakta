@@ -4,66 +4,81 @@
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Swadakta | Sign in</title>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=Geist:wght@500;600&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&amp;family=Inter:wght@400;500;600&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;family=Manrope:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 8px 32px 0 rgba(16, 26, 58, 0.04);
+        }
+        .inner-glow {
+            box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+        }
+        .transition-all-300 {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
 <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
                 extend: {
                     "colors": {
-                        "on-surface": "#131b2e",
-                        "on-primary-container": "#fffbff",
-                        "primary-fixed": "#e1e0ff",
-                        "surface": "#faf8ff",
-                        "tertiary-fixed": "#f0dbff",
-                        "background": "#faf8ff",
-                        "on-secondary-fixed": "#141d21",
-                        "surface-tint": "#494bd6",
-                        "surface-bright": "#faf8ff",
-                        "tertiary": "#8127cf",
-                        "secondary": "#576065",
-                        "on-primary-fixed-variant": "#2f2ebe",
+                        "outline-variant": "#c6c6cf",
+                        "primary-fixed-dim": "#bcc5ee",
+                        "on-secondary-container": "#546777",
+                        "outline": "#76767f",
+                        "secondary-fixed": "#d1e5f8",
+                        "on-primary-fixed-variant": "#3c4568",
+                        "surface-container-highest": "#e4e2e5",
+                        "on-tertiary-fixed": "#002112",
+                        "surface-tint": "#545d81",
+                        "tertiary-fixed": "#6efcb7",
+                        "surface-container-low": "#f6f3f6",
+                        "secondary-container": "#d1e5f8",
+                        "on-secondary-fixed-variant": "#364958",
+                        "primary-fixed": "#dce1ff",
+                        "surface": "#fbf8fc",
+                        "tertiary": "#000000",
                         "error": "#ba1a1a",
-                        "primary-fixed-dim": "#c0c1ff",
-                        "surface-container": "#eaedff",
-                        "tertiary-container": "#9c48ea",
-                        "on-error-container": "#93000a",
-                        "outline-variant": "#c7c4d7",
-                        "on-primary": "#ffffff",
-                        "outline": "#767586",
-                        "tertiary-fixed-dim": "#ddb7ff",
-                        "on-background": "#131b2e",
-                        "surface-variant": "#dae2fd",
-                        "inverse-surface": "#283044",
-                        "on-secondary": "#ffffff",
-                        "surface-dim": "#d2d9f4",
-                        "on-secondary-container": "#5d666b",
-                        "surface-container-high": "#e2e7ff",
-                        "on-error": "#ffffff",
-                        "on-secondary-fixed-variant": "#3f484d",
-                        "on-primary-fixed": "#07006c",
-                        "surface-container-highest": "#dae2fd",
-                        "surface-container-low": "#f2f3ff",
-                        "on-tertiary-container": "#fffbff",
-                        "surface-container-lowest": "#ffffff",
-                        "on-surface-variant": "#464554",
-                        "error-container": "#ffdad6",
-                        "secondary-fixed-dim": "#bfc8ce",
-                        "primary-container": "#6063ee",
-                        "inverse-on-surface": "#eef0ff",
-                        "secondary-fixed": "#dbe4ea",
-                        "secondary-container": "#dbe4ea",
-                        "primary": "#4648d4",
+                        "secondary-fixed-dim": "#b5c9db",
+                        "surface-container": "#f0edf0",
+                        "inverse-primary": "#bcc5ee",
+                        "on-tertiary-container": "#009763",
+                        "primary": "#000105",
                         "on-tertiary": "#ffffff",
-                        "on-tertiary-fixed-variant": "#6900b3",
-                        "inverse-primary": "#c0c1ff",
-                        "on-tertiary-fixed": "#2c0051"
+                        "surface-container-high": "#eae7eb",
+                        "inverse-surface": "#303033",
+                        "error-container": "#ffdad6",
+                        "secondary": "#4e6170",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-primary-fixed": "#101a3a",
+                        "on-primary-container": "#7983a9",
+                        "primary-container": "#101a3a",
+                        "on-surface-variant": "#45464e",
+                        "on-error-container": "#93000a",
+                        "on-tertiary-fixed-variant": "#005234",
+                        "surface-dim": "#dcd9dc",
+                        "on-error": "#ffffff",
+                        "tertiary-container": "#002112",
+                        "on-surface": "#1b1b1e",
+                        "surface-bright": "#fbf8fc",
+                        "surface-variant": "#e4e2e5",
+                        "on-secondary-fixed": "#091d2b",
+                        "tertiary-fixed-dim": "#4ddf9d",
+                        "on-background": "#1b1b1e",
+                        "inverse-on-surface": "#f3f0f3",
+                        "background": "#fbf8fc",
+                        "on-primary": "#ffffff"
                     },
                     "borderRadius": {
                         "DEFAULT": "0.25rem",
@@ -72,116 +87,38 @@
                         "full": "9999px"
                     },
                     "spacing": {
-                        "section-gap": "120px",
-                        "base": "8px",
+                        "md": "16px",
+                        "unit": "4px",
+                        "margin-desktop": "64px",
+                        "sm": "8px",
+                        "xs": "4px",
+                        "lg": "24px",
+                        "xl": "40px",
                         "margin-mobile": "16px",
-                        "margin-desktop": "48px",
-                        "gutter": "24px",
-                        "container-max": "1280px"
+                        "gutter": "24px"
                     },
                     "fontFamily": {
-                        "display-lg": ["Manrope"],
-                        "label-md": ["Geist"],
-                        "body-lg": ["Inter"],
-                        "headline-sm": ["Manrope"],
                         "headline-lg": ["Manrope"],
-                        "label-sm": ["Geist"],
-                        "display-lg-mobile": ["Manrope"],
-                        "body-md": ["Inter"]
+                        "label-md": ["Inter"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Inter"],
+                        "headline-xl": ["Manrope"],
+                        "body-md": ["Inter"],
+                        "label-sm": ["Inter"]
                     },
                     "fontSize": {
-                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "0", "fontWeight": "800"}],
-                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "600"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
                         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
-                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "700"}],
-                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
-                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "0", "fontWeight": "800"}],
-                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                        "headline-xl": ["48px", {"lineHeight": "56px", "letterSpacing": "0", "fontWeight": "700"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600"}]
                     }
-                },
-            },
+                }
+            }
         }
     </script>
-<style>
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.7);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.04);
-        }
-        .sunken-input {
-            background: rgba(218, 226, 253, 0.3);
-            border: 1px solid rgba(118, 117, 134, 0.1);
-            transition: all 0.2s ease-in-out;
-        }
-        .sunken-input:focus {
-            background: rgba(218, 226, 253, 0.5);
-            border-color: #4648d4;
-            outline: none;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .account-tile-radio:checked + label {
-            background: #F5F3FF;
-            border-color: #4648d4;
-            color: #4648d4;
-        }
-        .material-symbols-outlined {
-            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
-        }
-            * {
-            box-sizing: border-box;
-        }
-        html,
-        body {
-            max-width: 100%;
-            overflow-x: hidden;
-        }
-        [hidden] {
-            display: none !important;
-        }
-        main,
-        #swadakta-login-form,
-        .swadakta-login-card,
-        .swadakta-login-card .grid,
-        .swadakta-login-card input {
-            min-width: 0;
-        }
-        .swadakta-login-card {
-            box-sizing: border-box;
-            width: min(100%, 480px) !important;
-            max-width: min(480px, calc(100vw - 32px)) !important;
-            overflow: hidden;
-        }
-        @media (max-width: 767px) {
-            main {
-                padding-top: 2rem !important;
-                padding-bottom: 2rem !important;
-            }
-            .swadakta-login-card {
-                width: min(358px, calc(100vw - 32px)) !important;
-                max-width: 358px !important;
-                border-radius: 1.5rem !important;
-                padding: 1.25rem !important;
-            }
-            .swadakta-login-card h1 {
-                font-size: 1.9rem !important;
-                line-height: 1.18 !important;
-            }
-            .swadakta-login-card .grid-cols-3 {
-                gap: 0.5rem !important;
-            }
-            .account-tile-radio + label {
-                padding: 0.75rem 0.35rem !important;
-            }
-            #login-mode-signin,
-            #login-mode-create {
-                min-width: 0;
-                padding-inline: 0.25rem;
-                font-size: 0.82rem;
-            }
-        }
-    </style>
 <!-- Swadakta production metadata layered onto the direct Google Stitch export. -->
 <meta name="description" content="Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance." />
 <meta name="theme-color" content="#101A3A" />
@@ -201,128 +138,149 @@
 <meta name="application-name" content="Swadakta" />
 <meta name="robots" content="noindex,nofollow" />
 </head>
-<body data-stitch-source="sign_in_swadakta_1" class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
-<!-- Global Background Animation -->
-<div class="fixed inset-0 -z-10 overflow-hidden">
+<body data-stitch-source="welcome_swadakta_final_ux" class="bg-background text-on-surface min-h-screen flex flex-col font-body-md overflow-x-hidden">
+<!-- Hero Background Animation -->
+<div class="fixed inset-0 z-0">
 
-<div class="absolute inset-0 bg-gradient-to-tr from-surface-container-lowest via-surface-container-low to-primary-fixed/20"></div>
 </div>
-<!-- Header (Suppressed Nav for Transactional Flow) -->
-<header class="w-full h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between z-50">
-<div class="font-display-lg text-headline-sm font-extrabold text-primary">
-            Swadakta
-        </div>
-<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 font-label-md" href="/">
-<span class="material-symbols-outlined text-[20px]">close</span>
-            Exit
-        </a>
+<!-- Top Auth Branding -->
+<header class="relative z-10 w-full px-margin-desktop py-lg max-w-[1440px] mx-auto flex justify-between items-center">
+<div class="flex items-center space-x-2">
+<span class="text-headline-md font-headline-md font-bold text-primary">Swadakta</span>
+<div class="h-4 w-[1px] bg-outline-variant mx-2"></div>
+<span class="text-label-md font-label-md text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">verified_user</span>
+                Secure Entry
+            </span>
+</div>
+<div class="hidden md:flex items-center space-x-md">
+<p class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Trusted by 10k+ Caregivers</p>
+</div>
 </header>
-<!-- Main Content Canvas -->
-<main class="flex-grow flex items-center justify-center px-margin-mobile py-section-gap">
-<div class="swadakta-login-card glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">
-<!-- Hero Header inside Panel -->
-<div class="text-center mb-10">
-<h1 class="font-display-lg text-headline-lg text-on-surface mb-2">Welcome back</h1>
-<p class="font-body-md text-on-surface-variant">Sign in to your global corridor concierge.</p>
-</div>
-<!-- Login Form -->
-<form class="space-y-7" id="swadakta-login-form">
-<!-- Email Input Group -->
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-email">Email</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
-<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-email" name="email" placeholder="you@example.com" required="" type="email" autocomplete="email"/>
-</div>
-</div>
-<!-- Password Input Group -->
-<div class="space-y-2">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-password">Password</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
-<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-password" name="password" placeholder="At least 8 characters" required="" minlength="8" type="password" autocomplete="current-password"/>
-</div>
-</div>
-<!-- Account Type Selector (Tiles) -->
-<div class="space-y-3">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Continue as</label>
-<div class="grid grid-cols-3 gap-3">
-<!-- Client Tile -->
-<div class="relative">
-<input checked="" class="peer hidden account-tile-radio" id="client" name="account_type" type="radio" value="client"/>
-<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="client">
-<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">corporate_fare</span>
-<span class="font-label-sm text-[11px] uppercase tracking-wider">Client</span>
-</label>
-</div>
-<!-- Job Seeker Tile -->
-<div class="relative">
-<input class="peer hidden account-tile-radio" id="seeker" name="account_type" type="radio" value="seeker"/>
-<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="seeker">
-<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">person_search</span>
-<span class="font-label-sm text-[11px] uppercase tracking-wider">Seeker</span>
-</label>
-</div>
-<!-- Both Tile -->
-<div class="relative">
-<input class="peer hidden account-tile-radio" id="both" name="account_type" type="radio" value="both"/>
-<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="both">
-<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">sync_alt</span>
-<span class="font-label-sm text-[11px] uppercase tracking-wider">Both</span>
-</label>
-</div>
-</div>
-</div>
-<div class="grid grid-cols-2 gap-2 rounded-full bg-white/70 border border-outline-variant/30 p-1">
-<button class="h-11 rounded-full bg-primary text-on-primary font-label-md text-label-md" id="login-mode-signin" type="button">Sign in</button>
-<button class="h-11 rounded-full text-on-surface-variant font-label-md text-label-md" id="login-mode-create" type="button">Create account</button>
-</div>
-<div class="space-y-2" data-login-create-only hidden>
-<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-phone">Mobile / WhatsApp backup</label>
-<div class="relative">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">phone_iphone</span>
-<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-phone" name="phone" placeholder="+61 431 455 174" type="tel" autocomplete="tel"/>
-</div>
-</div>
-<!-- Trust Message -->
-<div class="flex items-start gap-3 p-4 rounded-xl bg-primary-container/5 border border-primary/10">
-<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">verified_user</span>
-<p class="font-label-sm text-on-surface-variant leading-relaxed">
-                        Verification follows you. Roles can be changed at any time.
+<main class="relative z-10 flex-grow flex items-center justify-center px-margin-mobile md:px-0 py-xl">
+<div class="w-full max-w-[520px]">
+<!-- Main Content Panel -->
+<div class="glass-panel p-xl rounded-xl border border-white/40 shadow-2xl transition-all-300">
+<div class="mb-xl text-center">
+<h1 class="text-headline-lg font-headline-lg text-primary mb-2">Welcome to Swadakta</h1>
+<p class="text-body-md font-body-md text-on-surface-variant max-w-[340px] mx-auto leading-relaxed">
+                        Access your workspace or join our community of trusted professionals.
                     </p>
 </div>
-<!-- Action Button -->
-<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="login-status" role="status"></p>
-<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="login-submit" type="submit">
-                    Sign in
-                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
-</button>
-<div class="grid gap-3 sm:grid-cols-2">
-<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-google" type="button">Continue with Google</button>
-<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-reset" type="button">Reset password</button>
+<!-- Toggle Segment -->
+<div class="flex p-1 bg-surface-container-high rounded-xl mb-xl">
+<button class="flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 bg-white text-primary shadow-sm" id="login-mode-signin" type="button">
+                        Sign In
+                    </button>
+<button class="flex-1 py-2 text-label-md font-label-md rounded-lg transition-all-300 text-on-surface-variant hover:text-on-surface" id="login-mode-create" type="button">
+                        Create Account
+                    </button>
 </div>
-<!-- Footer Links -->
-<div class="pt-4 text-center">
-<p class="font-body-md text-on-surface-variant text-[14px]">
-                        New here? <button class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" id="login-create-inline" type="button">Create your account</button>
-</p>
+<!-- Form Section -->
+<form class="space-y-lg" id="swadakta-login-form">
+<!-- Standard Fields -->
+<div class="space-y-md">
+<div class="space-y-xs">
+<label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-email">Email Address</label>
+<input class="w-full h-12 px-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-email" name="email" autocomplete="email" required placeholder="name@company.com" type="email"/>
+</div>
+<div class="space-y-xs">
+<label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-password">Password</label>
+<input class="w-full h-12 px-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-password" name="password" autocomplete="current-password" required minlength="8" placeholder="••••••••" type="password"/>
+</div>
+</div>
+<!-- Account Creation Fields (Hidden by default) -->
+<div data-login-create-only hidden class="space-y-lg animate-in fade-in slide-in-from-top-4 duration-500" id="signup-fields">
+<div class="space-y-xs">
+<label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-phone">Mobile/WhatsApp number</label>
+<div class="relative">
+<span class="absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">+254</span>
+<input class="w-full h-12 pl-[54px] pr-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-phone" name="phone" autocomplete="tel" placeholder="700 000 000" type="tel"/>
+</div>
+</div>
+<div class="space-y-md">
+<p class="text-label-md font-label-md text-on-surface-variant px-1">What is your primary role?</p>
+<div class="grid grid-cols-3 gap-sm">
+<label class="cursor-pointer">
+<input class="peer hidden" name="account_type" type="radio" value="client"/>
+<div class="h-20 flex flex-col items-center justify-center bg-surface-container-low border border-secondary-container rounded-lg peer-checked:bg-secondary-container peer-checked:border-primary-container transition-all text-center">
+<span class="material-symbols-outlined text-[20px] mb-1">person_search</span>
+<span class="text-label-sm">Client</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="account_type" type="radio" value="receiver"/>
+<div class="h-20 flex flex-col items-center justify-center bg-surface-container-low border border-secondary-container rounded-lg peer-checked:bg-secondary-container peer-checked:border-primary-container transition-all text-center">
+<span class="material-symbols-outlined text-[20px] mb-1">handyman</span>
+<span class="text-label-sm">Receiver</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer hidden" name="account_type" type="radio" value="both"/>
+<div class="h-20 flex flex-col items-center justify-center bg-surface-container-low border border-secondary-container rounded-lg peer-checked:bg-secondary-container peer-checked:border-primary-container transition-all text-center">
+<span class="material-symbols-outlined text-[20px] mb-1">groups</span>
+<span class="text-label-sm">Both</span>
+</div>
+</label>
+</div>
+</div>
+<!-- Verification Note -->
+<div class="flex items-start gap-md p-md bg-primary-container/5 rounded-lg border border-primary-container/10">
+<span class="material-symbols-outlined text-primary-container">info</span>
+<p class="text-label-sm font-label-sm text-on-primary-container">ID Verification required before paid work can be initiated or accepted on the platform.</p>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="pt-md space-y-md">
+<p class="text-label-sm font-label-sm text-on-surface-variant min-h-6" id="login-status" role="status"></p>
+<button class="w-full h-14 bg-primary-container text-white rounded-lg font-headline-md text-label-md inner-glow hover:bg-primary-container/90 active:scale-[0.98] transition-all-300 shadow-lg" id="login-submit" type="submit">
+                            Sign In
+                        </button>
+<div class="relative py-2 flex items-center">
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink mx-4 text-label-sm text-outline font-label-sm">OR</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
+<button class="w-full h-12 flex items-center justify-center gap-md bg-white border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-google" type="button">
+<img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoGO_JmuT_-I2PEApjuzFCwJ4fqPpdanv3UjEDgiavKOYpopCv345sjtUKoqdS1cUKHOCPYFuF3t6Sqol2_KK3W2fsWrOzauAyXQbaTo6SwYEeS-3MBRUW5uN7CH6oETJ7Vfplj6iB4mApT5rr44e_YzDwGs58V0qLvq2i7Ezv9bt0zMthZ4rpm3ChnkUCUwqzbjTVBrPUzosVLlP2xC6gm8lQtGeE9AUNH416XvrTgnWmyxRv98TlHvfoHDqucp8VmPWQTuvUIx_Y"/>
+                            Continue with Google
+                        </button>
+<button class="w-full h-12 flex items-center justify-center gap-md bg-surface-container-lowest border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-reset" type="button">Reset password</button>
+<p class="text-center text-label-sm font-label-sm text-on-surface-variant">New here? <button class="text-primary-container font-semibold underline underline-offset-4 decoration-primary-container/30" id="login-create-inline" type="button">Create your account</button></p>
 </div>
 </form>
 </div>
-</main>
-<!-- Simple Footer -->
-<footer class="w-full py-8 px-margin-mobile md:px-margin-desktop border-t border-outline-variant/10">
-<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-<span class="font-label-sm text-on-surface-variant">&copy; 2026 Swadakta. Global Corridor Concierge.</span>
-<div class="flex gap-6">
-<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="privacy.html">Privacy Policy</a>
-<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="terms.html">Terms of Service</a>
-<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="mailto:swadakta111@gmail.com">Help Center</a>
+<!-- Footer Meta -->
+<footer class="mt-lg text-center space-y-md">
+<p class="text-label-sm font-label-sm text-on-surface-variant">
+                    By continuing, you agree to Swadakta's <a class="text-primary-container font-semibold underline underline-offset-4 decoration-primary-container/30" href="terms.html">Terms of Service</a> and <a class="text-primary-container font-semibold underline underline-offset-4 decoration-primary-container/30" href="privacy.html">Privacy Policy</a>.
+                </p>
+<div class="flex justify-center items-center gap-lg text-outline">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="text-label-sm">SSL Secure</span>
+</div>
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+<span class="text-label-sm">Compliant</span>
 </div>
 </div>
 </footer>
+</div>
+</main>
+<!-- Side Decoration (Asymmetric Layout element) -->
+<aside class="hidden lg:block fixed right-0 bottom-0 w-1/3 h-full pointer-events-none z-0">
+<div class="absolute right-[10%] top-[20%] w-[400px] h-[500px] rounded-3xl overflow-hidden shadow-2xl rotate-2">
+<img class="w-full h-full object-cover" data-alt="A professional African woman working in a high-end, sunlit modern office environment. She is focused and serene, embodying the Sage and Guide persona. The lighting is soft and natural, with a palette of sky blues and deep inks reflecting the Swadakta brand identity. High definition, premium photographic style with shallow depth of field." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA_uZX3OoWlocr3hDlli_wL4o6hEDzPtqyIfc1H1CdSVaVsiA20sF66ey-kIjGDTZRxx-IlWPu5UW4o_8rPI7DCpegwiCB7hnnWtruIveU5UM0G_0FT7GDLRoPBbAeD-8LdKm8Co02x5hbud5qXw536npGgOKSBh_aiACT0RHmjMIfUxX4jGg82sQTR9zCE5YfrHf5R2SgO1NvuDPuJB1BrS5jWnMrSYVcEY8sG97lzIw8ze-4hhe8XO25IW55DZG3gFjs3mexjBIfz"/>
+<div class="absolute inset-0 bg-gradient-to-t from-primary-container/60 to-transparent"></div>
+<div class="absolute bottom-md left-md right-md p-md glass-panel rounded-xl">
+<p class="text-label-sm font-label-sm text-primary mb-1">Community Spotlight</p>
+<p class="text-body-md font-bold text-primary">"Swadakta provided the ethical clarity I needed for my caregiving practice."</p>
+</div>
+</div>
+</aside>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=50"></script>
-<script src="login.js?v=1"></script>
-<script src="assistant-dock.js?v=11"></script>
+<script src="login.js?v=2"></script>
+<script src="assistant-dock.js?v=12"></script>
 </body></html>

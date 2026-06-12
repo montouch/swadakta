@@ -81,7 +81,7 @@
     const isUser = message.role === "user";
     const isThinking = message.tone === "thinking";
     const bubbleClass = isUser
-      ? "rounded-[1.25rem] rounded-br-sm bg-primary px-4 py-3 text-white shadow-[0_14px_32px_rgba(70,72,212,0.20)]"
+      ? "rounded-[1.25rem] rounded-br-sm bg-primary px-4 py-3 text-white shadow-[0_14px_32px_rgba(16,26,58,0.20)]"
       : "rounded-[1.25rem] rounded-bl-sm border border-outline-variant/30 bg-white/82 px-4 py-3 text-on-surface shadow-[0_14px_32px_rgba(48,52,150,0.08)]";
     const wrapperClass = isUser ? "ml-auto flex max-w-[86%] justify-end" : "mr-auto flex max-w-[88%] items-end gap-2";
     const status = isThinking

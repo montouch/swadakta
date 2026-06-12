@@ -239,7 +239,7 @@ function routeStitchHome(html) {
     '<nav class="swadakta-mobile-bottom-nav md:hidden fixed bottom-0 left-0 w-full z-50 grid grid-cols-3 items-center px-4 py-2 bg-surface/80 backdrop-blur-xl border-t border-white/20 shadow-lg rounded-t-xl">',
   );
 
-  output = injectBeforeBodyClose(output, '<script src="assistant-dock.js?v=11"></script>');
+  output = injectBeforeBodyClose(output, '<script src="assistant-dock.js?v=12"></script>');
   output = output.replace(
     "<body ",
     '<body data-stitch-source="swadakta_home_final_ux_coverage" ',
@@ -370,12 +370,12 @@ function routeStitchLogin(html) {
   );
 
   output = output.replace(
-    `<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" type="submit">
+    `<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(16,26,58,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" type="submit">
                     Continue
                     <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </button>`,
     `<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="login-status" role="status"></p>
-<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="login-submit" type="submit">
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(16,26,58,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="login-submit" type="submit">
                     Sign in
                     <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </button>
@@ -403,16 +403,98 @@ function routeStitchLogin(html) {
     `<script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=50"></script>
 <script src="login.js?v=1"></script>
-<script src="assistant-dock.js?v=11"></script>
+<script src="assistant-dock.js?v=12"></script>
 </body>`,
   );
   output = output.replace("<body ", '<body data-stitch-source="sign_in_swadakta_1" ');
   return output;
 }
 
+function routeStitchWelcomeLogin(html) {
+  let output = html;
+
+  output = output.replace("<title>Swadakta | Secure Access</title>", "<title>Swadakta | Sign in</title>");
+  output = output.replaceAll('"letterSpacing": "-0.02em"', '"letterSpacing": "0"');
+  output = output.replaceAll('"letterSpacing": "-0.01em"', '"letterSpacing": "0"');
+  output = injectBeforeHeadClose(
+    output,
+    `${commonHead({
+      title: "Swadakta | Sign in",
+      description:
+        "Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance.",
+      canonical: "https://swadakta.com/login",
+    })}
+<meta name="robots" content="noindex,nofollow" />`,
+  );
+
+  output = output.replace(
+    "<body ",
+    '<body data-stitch-source="welcome_swadakta_final_ux" ',
+  );
+  output = output.replace('id="auth-form"', 'id="swadakta-login-form"');
+  output = output.replace('for="email"', 'for="login-email"');
+  output = output.replace(
+    /id="email"([^>]*?)type="email"/,
+    'id="login-email" name="email" autocomplete="email" required$1type="email"',
+  );
+  output = output.replace('for="password"', 'for="login-password"');
+  output = output.replace(
+    /id="password"([^>]*?)type="password"/,
+    'id="login-password" name="password" autocomplete="current-password" required minlength="8"$1type="password"',
+  );
+  output = output.replace('for="phone"', 'for="login-phone"');
+  output = output.replace(
+    /id="phone"([^>]*?)type="tel"/,
+    'id="login-phone" name="phone" autocomplete="tel"$1type="tel"',
+  );
+  output = output.replaceAll('name="role"', 'name="account_type"');
+  output = output.replace(
+    `id="toggle-signin" onclick="setMode('signin')"`,
+    'id="login-mode-signin" type="button"',
+  );
+  output = output.replace(
+    `id="toggle-signup" onclick="setMode('signup')"`,
+    'id="login-mode-create" type="button"',
+  );
+  output = output.replace(
+    '<div class="hidden space-y-lg animate-in fade-in slide-in-from-top-4 duration-500" id="signup-fields">',
+    '<div data-login-create-only hidden class="space-y-lg animate-in fade-in slide-in-from-top-4 duration-500" id="signup-fields">',
+  );
+  output = output.replace(
+    '<button class="w-full h-14 bg-primary-container text-white rounded-lg font-headline-md text-label-md inner-glow hover:bg-primary-container/90 active:scale-[0.98] transition-all-300 shadow-lg" id="submit-btn" type="submit">',
+    '<p class="text-label-sm font-label-sm text-on-surface-variant min-h-6" id="login-status" role="status"></p>\n<button class="w-full h-14 bg-primary-container text-white rounded-lg font-headline-md text-label-md inner-glow hover:bg-primary-container/90 active:scale-[0.98] transition-all-300 shadow-lg" id="login-submit" type="submit">',
+  );
+  output = output.replace(
+    '<button class="w-full h-12 flex items-center justify-center gap-md bg-white border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" type="button">',
+    '<button class="w-full h-12 flex items-center justify-center gap-md bg-white border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-google" type="button">',
+  );
+  output = output.replace(
+    `</button>
+</div>
+</form>`,
+    `</button>
+<button class="w-full h-12 flex items-center justify-center gap-md bg-surface-container-lowest border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-reset" type="button">Reset password</button>
+<p class="text-center text-label-sm font-label-sm text-on-surface-variant">New here? <button class="text-primary-container font-semibold underline underline-offset-4 decoration-primary-container/30" id="login-create-inline" type="button">Create your account</button></p>
+</div>
+</form>`,
+  );
+  output = output.replaceAll('href="#">Terms of Service', 'href="terms.html">Terms of Service');
+  output = output.replaceAll('href="#">Privacy Policy', 'href="privacy.html">Privacy Policy');
+  output = output.replace(
+    /<script>\s*function setMode\(mode\)[\s\S]*?<\/script>\s*<\/body>/,
+    `<script src="app-config.js?v=4"></script>
+<script src="app-data.js?v=50"></script>
+<script src="login.js?v=2"></script>
+<script src="assistant-dock.js?v=12"></script>
+</body>`,
+  );
+
+  return output;
+}
+
 async function main() {
   const home = routeStitchHome(await readStitchPage("swadakta_home_final_ux_coverage"));
-  const login = routeStitchLogin(await readStitchPage("sign_in_swadakta_1"));
+  const login = routeStitchWelcomeLogin(await readStitchPage("welcome_swadakta_final_ux"));
   await writeFile(path.join(root, "index.html"), home, "utf8");
   await writeFile(path.join(root, "login.html"), login, "utf8");
   console.log("Applied direct Stitch exports to index.html and login.html");

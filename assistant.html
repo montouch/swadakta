@@ -12,8 +12,8 @@
         theme: {
           extend: {
             colors: {
-              primary: "#4648d4",
-              tertiary: "#8127cf",
+              primary: "#000105",
+              tertiary: "#000000",
               surface: "#faf8ff",
               "on-surface": "#131b2e",
               "on-surface-variant": "#464554",
@@ -28,7 +28,7 @@
       body {
         background:
           radial-gradient(circle at 12% 8%, rgba(96, 99, 238, 0.18), transparent 32%),
-          radial-gradient(circle at 86% 14%, rgba(129, 39, 207, 0.14), transparent 30%),
+          radial-gradient(circle at 86% 14%, rgba(0, 0, 0, 0.14), transparent 30%),
           #faf8ff;
       }
       .glass-panel {
@@ -100,7 +100,7 @@
     <main class="min-h-screen overflow-hidden p-3 md:p-4">
       <div class="mx-auto grid h-[calc(100vh-1.5rem)] w-full min-w-0 max-w-[1440px] grid-rows-[auto_minmax(0,1fr)] gap-3 lg:h-[calc(100vh-2rem)] lg:grid-cols-[88px_minmax(0,1fr)_300px] lg:grid-rows-none">
         <aside class="glass-panel flex min-w-0 items-center justify-between rounded-[1.4rem] p-2 lg:sticky lg:top-4 lg:h-full lg:flex-col" aria-label="Swadakta tools">
-          <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.28)]" href="portal.html#home" aria-label="Swadakta home">
+          <a class="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(16, 26, 58, 0.28)]" href="portal.html#home" aria-label="Swadakta home">
             <span class="font-display text-lg font-extrabold">S</span>
           </a>
           <nav class="flex min-w-0 flex-1 items-center justify-center gap-1 overflow-x-auto px-2 lg:flex-col lg:px-0" aria-label="AI workspace tools">
@@ -120,7 +120,7 @@
             <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div class="min-w-0">
                 <div class="flex items-center gap-3">
-                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(70,72,212,0.26)]">
+                  <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(16, 26, 58, 0.26)]">
                     <span class="material-symbols-outlined text-[22px]">auto_awesome</span>
                   </span>
                   <div class="min-w-0">
@@ -183,7 +183,7 @@
                   <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-ai-disabled-when-off data-assistant-tool="call" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
                 </div>
                 <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" data-ai-disabled-when-off rows="1" placeholder="Message AI..."></textarea>
-                <button class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_12px_28px_rgba(70,72,212,0.28)] disabled:cursor-not-allowed disabled:opacity-50" data-ai-only id="assistant-run" type="submit" aria-label="Send message">
+                <button class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_12px_28px_rgba(16, 26, 58, 0.28)] disabled:cursor-not-allowed disabled:opacity-50" data-ai-only id="assistant-run" type="submit" aria-label="Send message">
                   <span class="material-symbols-outlined text-[22px]">arrow_upward</span>
                 </button>
                 <a class="inline-flex h-11 shrink-0 items-center justify-center rounded-full bg-primary px-4 text-sm font-bold text-white" data-no-ai-copy hidden href="portal.html#home">Use tools</a>
@@ -219,6 +219,6 @@
     <script src="app-data.js?v=50"></script>
     <script src="ai-preferences.js?v=3"></script>
     <script src="assistant.js?v=6"></script>
-  <script src="assistant-dock.js?v=11"></script>
+  <script src="assistant-dock.js?v=12"></script>
 </body>
 </html>

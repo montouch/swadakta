@@ -519,6 +519,15 @@ const requiredSecurityTxtMarkers = [
   "Expires:",
 ];
 const requiredFaviconMarkers = ['rel="icon" href="/favicon.svg"', 'rel="manifest" href="/site.webmanifest"'];
+const forbiddenLegacyPurpleMarkers = ["#4648d4", "#8127cf", "rgba(70,72,212", "rgba(70, 72, 212"];
+const requiredLoginHtmlMarkers = [
+  'data-stitch-source="welcome_swadakta_final_ux"',
+  'id="swadakta-login-form"',
+  'id="login-mode-signin"',
+  'id="login-mode-create"',
+  'id="login-submit"',
+  "login.js?v=2",
+];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
   "SUPABASE_URL",
@@ -770,9 +779,25 @@ for (const marker of requiredDockMarkers) {
     fail(failures, `Local assistant dock is missing marker ${marker}`);
   }
 }
+for (const marker of forbiddenLegacyPurpleMarkers) {
+  if (localAssistantDock.toLowerCase().includes(marker.toLowerCase())) {
+    fail(failures, `Local assistant dock still contains legacy purple UI marker ${marker}`);
+  }
+}
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=11")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=11`);
+  if (!content.includes("assistant-dock.js?v=12")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=12`);
+  }
+  for (const marker of forbiddenLegacyPurpleMarkers) {
+    if (content.toLowerCase().includes(marker.toLowerCase())) {
+      fail(failures, `${file} still contains legacy purple UI marker ${marker}`);
+    }
+  }
+}
+const localLoginHtml = await readLocal("login.html");
+for (const marker of requiredLoginHtmlMarkers) {
+  if (!localLoginHtml.includes(marker)) {
+    fail(failures, `Local login.html is missing final Stitch login marker ${marker}`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -962,8 +987,20 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=11")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=11`);
+  if (!text.includes("assistant-dock.js?v=12")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=12`);
+  }
+  for (const marker of forbiddenLegacyPurpleMarkers) {
+    if (text.toLowerCase().includes(marker.toLowerCase())) {
+      fail(failures, `${page} still contains legacy purple UI marker ${marker}`);
+    }
+  }
+  if (page === "/login") {
+    for (const marker of requiredLoginHtmlMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing final Stitch login marker ${marker}`);
+      }
+    }
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -1302,11 +1339,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=11");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=12");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=11 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=12 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=11 returned 200");
+  pass("assistant-dock.js?v=12 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
@@ -1314,6 +1351,11 @@ for (const marker of requiredDockMarkers) {
     fail(failures, `Production assistant-dock.js is missing marker ${marker}`);
   } else {
     pass(`Production assistant-dock.js contains ${marker}`);
+  }
+}
+for (const marker of forbiddenLegacyPurpleMarkers) {
+  if (assistantDockText.toLowerCase().includes(marker.toLowerCase())) {
+    fail(failures, `Production assistant-dock.js still contains legacy purple UI marker ${marker}`);
   }
 }
 
