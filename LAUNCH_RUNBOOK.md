@@ -69,6 +69,14 @@ These hosted Supabase settings are required for Supabase Auth emails and OAuth r
 
 Start with quote-based payment links, then automate later.
 
+### Provider accounts to open now
+
+- Stripe: create/verify the business account, then add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to Vercel. Webhook URL: `https://swadakta.com/api/payments/stripe-webhook`.
+- PayPal Business: create a REST app, then add `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and `PAYPAL_ENVIRONMENT` to Vercel.
+- Safaricom Daraja/M-Pesa: complete Kenya business setup first, create/approve the Daraja app, then add `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, `MPESA_PASSKEY`, and eventually `MPESA_ENVIRONMENT=live`. Callback URL: `https://swadakta.com/api/payments/mpesa-callback`.
+- Paystack and Flutterwave: open only as Africa expansion merchant accounts. Keep them hidden until merchant approval, settlement currencies, webhook signature checks, and provider-evidence mapping have all been tested.
+- Wise Business: open as fallback only, not the public default rail. Add `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL` only after the account is approved and you are ready to manually reconcile receipts.
+
 - Stripe Payment Links are a strong launch fit because Stripe says they can be created without code and shared with clients: https://docs.stripe.com/payment-links
 - Create reusable Stripe links for common deposits:
   - Quick errand deposit
@@ -92,6 +100,16 @@ Automation later:
 - Configure Stripe to send successful Checkout events to `https://swadakta.com/api/payments/stripe-webhook`, with `STRIPE_WEBHOOK_SECRET` and a server-only Supabase key stored in Vercel.
 - Store provider transaction IDs on the request record after payment confirmation.
 - Treat Paystack and Flutterwave as Africa expansion candidates only after merchant approval, settlement-currency checks, webhook verification, and provider-evidence mapping. The public Payments page has an Africa payment expansion planner, and admin readiness tracks `PAYSTACK_*` and `FLUTTERWAVE_*` placeholders without making them public default rails.
+
+## 3A. Identity Verification Provider Setup
+
+Open and approve at least one ID provider before paid work goes public.
+
+- Sumsub is the fastest global route to automate now. Create the Sumsub account, create a verification level, then add `SUMSUB_APP_TOKEN`, `SUMSUB_SECRET_KEY`, `SUMSUB_LEVEL_NAME`, and `SUMSUB_WEBHOOK_SECRET` to Vercel. Webhook URL: `https://swadakta.com/api/identity/sumsub-webhook`.
+- Smile ID remains the Africa-first route. Open the Smile ID account under the business, confirm the exact countries/documents needed, then add `SMILE_ID_API_KEY`, `SMILE_ID_PARTNER_ID`, and either a provider-approved `SMILE_ID_VERIFICATION_URL` or the later native Smile ID SDK integration.
+- Youverify can be evaluated for selected African checks. Add `YOUVERIFY_API_KEY` and a provider-approved `YOUVERIFY_VERIFICATION_URL` only after the account and coverage are confirmed.
+- ID provider results must be the source of truth. Users, receivers, screenshots, and AI cannot mark an account verified.
+- If the provider webhook is not configured, admin may record the provider result as an exception fallback, but paid posting and paid work should stay locked until a clear provider reference exists.
 
 ## 4. Privacy and Compliance
 

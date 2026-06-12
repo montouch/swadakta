@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -14,6 +16,8 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
+const SUMSUB_BASE_URL = (process.env.SUMSUB_BASE_URL || "https://api.sumsub.com").replace(/\/+$/, "");
+const SUMSUB_LINK_TTL_SECONDS = Number(process.env.SUMSUB_WEBSDK_LINK_TTL_SECONDS || 1800);
 
 const PROVIDER_LABELS = {
   smile_id: "Smile ID",
@@ -25,6 +29,11 @@ const PROVIDER_LINK_ENV = {
   smile_id: ["SMILE_ID_VERIFICATION_URL", "SMILE_ID_WEB_LINK_URL", "SMILE_ID_PORTAL_URL"],
   sumsub: ["SUMSUB_VERIFICATION_URL", "SUMSUB_WEBSDK_URL", "SUMSUB_APPLICANT_LINK_URL"],
   youverify: ["YOUVERIFY_VERIFICATION_URL", "YOUVERIFY_APPLICANT_LINK_URL"],
+};
+const PROVIDER_NATIVE_REQUIRED_ENV = {
+  smile_id: ["SMILE_ID_API_KEY", "SMILE_ID_PARTNER_ID"],
+  sumsub: ["SUMSUB_APP_TOKEN", "SUMSUB_SECRET_KEY", "SUMSUB_LEVEL_NAME"],
+  youverify: ["YOUVERIFY_API_KEY"],
 };
 const ALLOWED_PROVIDERS = new Set(Object.keys(PROVIDER_LABELS));
 const OPEN_REQUEST_STATUSES = ["requested", "link_sent", "submitted", "manual_review"];
@@ -74,6 +83,15 @@ function envValue(names = []) {
   return { name: names[0] || "", value: "" };
 }
 
+function missingEnv(names = []) {
+  return names.filter((name) => !String(process.env[name] || "").trim());
+}
+
+function positiveInteger(value, fallback) {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? Math.round(number) : fallback;
+}
+
 function compactReference(value, fallback) {
   const clean = String(value || "")
     .trim()
@@ -99,6 +117,108 @@ function buildProviderLink(baseLink, { reference, provider, reason }) {
   url.searchParams.set("reason", reason);
   url.searchParams.set("return_url", returnUrl.href);
   return url.href;
+}
+
+function providerSetup(provider, configuredLink) {
+  const nativeRequired = PROVIDER_NATIVE_REQUIRED_ENV[provider] || [];
+  const nativeMissing = missingEnv(nativeRequired);
+  const handoffMissing = configuredLink.value ? [] : PROVIDER_LINK_ENV[provider] || [];
+  const nativeReady = nativeRequired.length > 0 && nativeMissing.length === 0;
+
+  return {
+    provider,
+    native_ready: nativeReady,
+    native_required_env: nativeRequired,
+    native_missing_env: nativeMissing,
+    handoff_ready: Boolean(configuredLink.value),
+    handoff_env_used: configuredLink.value ? configuredLink.name : "",
+    handoff_missing_env: handoffMissing,
+  };
+}
+
+function providerCallbackUrl(provider) {
+  const path =
+    {
+      sumsub: "/api/identity/sumsub-webhook",
+    }[provider] || "/verification";
+  return new URL(path, publicOrigin()).href;
+}
+
+function signedSumsubHeaders(method, pathWithQuery, body) {
+  const appToken = String(process.env.SUMSUB_APP_TOKEN || "").trim();
+  const secretKey = String(process.env.SUMSUB_SECRET_KEY || "").trim();
+  const timestamp = Math.floor(Date.now() / 1000).toString();
+  const signature = crypto
+    .createHmac("sha256", secretKey)
+    .update(`${timestamp}${method.toUpperCase()}${pathWithQuery}${body || ""}`)
+    .digest("hex");
+
+  return {
+    "content-type": "application/json",
+    "x-app-token": appToken,
+    "x-app-access-ts": timestamp,
+    "x-app-access-sig": signature,
+  };
+}
+
+async function createSumsubWebsdkLink({ reference, reason, user }) {
+  const missing = missingEnv(PROVIDER_NATIVE_REQUIRED_ENV.sumsub);
+  if (missing.length) {
+    return {
+      ready: false,
+      missing,
+      reason: `Missing Sumsub environment values: ${missing.join(", ")}.`,
+    };
+  }
+
+  const pathWithQuery = "/resources/sdkIntegrations/levels/-/websdkLink";
+  const successUrl = new URL("/verification", publicOrigin());
+  successUrl.searchParams.set("status", "provider_return");
+  successUrl.searchParams.set("provider", "sumsub");
+  successUrl.searchParams.set("reference", reference);
+
+  const rejectUrl = new URL("/verification", publicOrigin());
+  rejectUrl.searchParams.set("status", "provider_rejected");
+  rejectUrl.searchParams.set("provider", "sumsub");
+  rejectUrl.searchParams.set("reference", reference);
+
+  const ttlInSecs = positiveInteger(SUMSUB_LINK_TTL_SECONDS, 1800);
+  const bodyPayload = {
+    levelName: String(process.env.SUMSUB_LEVEL_NAME || "").trim(),
+    userId: reference,
+    applicantIdentifiers: {
+      email: String(user.email || "").trim(),
+    },
+    redirect: {
+      successUrl: successUrl.href,
+      rejectUrl: rejectUrl.href,
+    },
+    ttlInSecs,
+  };
+
+  const body = JSON.stringify(bodyPayload);
+  const response = await fetch(`${SUMSUB_BASE_URL}${pathWithQuery}`, {
+    method: "POST",
+    headers: signedSumsubHeaders("POST", pathWithQuery, body),
+    body,
+  });
+  const data = await response.json().catch(() => ({}));
+
+  if (!response.ok || !data.url) {
+    const error = new Error(
+      data.description || data.message || `Sumsub WebSDK link creation failed with ${response.status}.`,
+    );
+    error.statusCode = response.status || 502;
+    error.provider = "sumsub";
+    throw error;
+  }
+
+  return {
+    ready: true,
+    url: data.url,
+    ttl_in_seconds: ttlInSecs,
+    mode: "sumsub_websdk_link",
+  };
 }
 
 async function assertUser(authHeader) {
@@ -212,7 +332,7 @@ async function patchSupabase({ userId, requestId, requestCode, provider, status,
 function providerDocs(provider) {
   return {
     smile_id: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
-    sumsub: "https://docs.sumsub.com/docs/websdk",
+    sumsub: "https://docs.sumsub.com/reference/generate-websdk-external-link",
     youverify: "https://doc.youverify.co/",
     manual: "https://swadakta.com/trust",
   }[provider];
@@ -225,14 +345,24 @@ async function startVerification(payload, user) {
   const requestCode = compactReference(payload.request_code, "");
   const reference = providerReference({ provider, requestCode, userId: user.id });
   const configuredLink = envValue(PROVIDER_LINK_ENV[provider] || []);
-  const providerLink = configuredLink.value
-    ? buildProviderLink(configuredLink.value, { reference, provider, reason })
-    : "";
+  const setup = providerSetup(provider, configuredLink);
+  let providerLink = configuredLink.value ? buildProviderLink(configuredLink.value, { reference, provider, reason }) : "";
+  let providerMode = providerLink ? "configured_provider_link" : "queued_for_provider_setup";
+  let providerSession = null;
+
+  if (provider === "sumsub" && setup.native_ready) {
+    providerSession = await createSumsubWebsdkLink({ reference, reason, user });
+    if (providerSession.ready) {
+      providerLink = providerSession.url;
+      providerMode = providerSession.mode;
+    }
+  }
+
   const status = providerLink ? "link_sent" : "requested";
   const providerLabel = PROVIDER_LABELS[provider] || "Provider";
   const adminNotes = providerLink
-    ? `${providerLabel} handoff link prepared by /api/identity/start-verification. Provider evidence still decides verification; AI and users cannot mark ID verified.`
-    : `${providerLabel} verification requested. Add ${configuredLink.name || "provider verification URL"} or provider API integration in Vercel/Supabase before automated links can be issued.`;
+    ? `${providerLabel} verification link prepared by /api/identity/start-verification using ${providerMode}. Provider evidence still decides verification; AI and users cannot mark ID verified.`
+    : `${providerLabel} verification requested. Configure ${configuredLink.name || "provider verification URL"} or missing native provider env values before automated links can be issued.`;
   const updated = await patchSupabase({
     userId: user.id,
     requestId,
@@ -248,8 +378,17 @@ async function startVerification(payload, user) {
     status,
     provider,
     provider_label: providerLabel,
+    provider_mode: providerMode,
     provider_link: providerLink,
     provider_reference: reference,
+    provider_callback_url: providerCallbackUrl(provider),
+    provider_setup: setup,
+    provider_session: providerSession
+      ? {
+          mode: providerSession.mode,
+          ttl_in_seconds: providerSession.ttl_in_seconds,
+        }
+      : null,
     docs_url: providerDocs(provider),
     database_updated: updated.updated,
     database_note: updated.reason || "Verification request/profile updated.",
@@ -258,7 +397,7 @@ async function startVerification(payload, user) {
       : `${providerLabel} verification is queued. The provider account/link is not configured yet, so paid posting and paid work remain locked until provider evidence is attached.`,
     next: providerLink
       ? "Open the provider link from this page. Swadakta will wait for provider evidence before any paid unlock."
-      : `Founder/admin should configure ${configuredLink.name || "the provider verification link"} or a provider API/webhook before relying on automated ID handoff.`,
+      : `Founder/admin should configure ${configuredLink.name || "the provider verification link"} or missing native provider env values before relying on automated ID handoff.`,
   };
 }
 

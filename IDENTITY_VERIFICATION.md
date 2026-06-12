@@ -51,7 +51,9 @@ Provider coverage rule:
 - Admin can store provider, status, verification link, reference, verified timestamp, and notes.
 - `/api/identity/start-verification` is the server-side provider handoff used by the existing Stitch Verification page and Account Home form after a request is saved.
 - If `SMILE_ID_VERIFICATION_URL`, `SUMSUB_VERIFICATION_URL`, or `YOUVERIFY_VERIFICATION_URL` is configured in Vercel, the endpoint attaches a provider link and reference to the user's open verification request.
+- If `SUMSUB_APP_TOKEN`, `SUMSUB_SECRET_KEY`, and `SUMSUB_LEVEL_NAME` are configured in Vercel, the endpoint creates a native Sumsub WebSDK external link server-side and stores the Sumsub/Swadakta reference.
 - If no provider handoff URL is configured yet, the endpoint keeps the request queued and tells the user that paid posting and paid receiver work remain locked until provider evidence is attached.
+- `POST /api/identity/sumsub-webhook` verifies Sumsub's signed webhook digest, matches the provider external user reference to the Swadakta verification request, and updates account verification from provider evidence.
 - Portal users see their account KYC status, provider, and verification link when available.
 - Receiver portal also shows the applicant their receiver-specific KYC status, provider, reference, and verification link when available.
 - Database constraint blocks `status = 'vetted'` unless ID consent is true and `identity_verification_status = 'verified'`.
@@ -63,7 +65,7 @@ Provider coverage rule:
 1. Client or receiver creates/opens a portal account and saves an account profile.
 2. The app saves a verification request, then calls `/api/identity/start-verification` to prepare a Smile ID, Sumsub, Youverify, or approved-provider link when configured.
 3. User completes verification.
-4. Admin records the result as `verified`, with the provider reference and timestamp.
+4. If Sumsub signed webhook evidence is configured, Swadakta records the result automatically. Otherwise admin records the provider result as `verified`, with the provider reference and timestamp.
 5. Client requests can proceed to paid or sensitive work only after account/request verification is handled.
 6. Receivers also apply through `/portal` for field work.
 7. Founder console sends receiver-specific verification where needed and records the provider result.
@@ -79,14 +81,24 @@ Current Vercel handoff setup:
 - `YOUVERIFY_VERIFICATION_URL`: hosted Youverify or provider-approved handoff URL.
 - `SUPABASE_SERVICE_ROLE_KEY`: server-only Vercel secret used by `/api/identity/start-verification` to attach the provider reference/link to the user's saved request.
 
+Native Sumsub setup:
+
+- `SUMSUB_APP_TOKEN`: Sumsub app token from the Sumsub dashboard.
+- `SUMSUB_SECRET_KEY`: Sumsub secret key used to sign REST requests.
+- `SUMSUB_LEVEL_NAME`: Sumsub verification level name for Swadakta users.
+- `SUMSUB_WEBSDK_LINK_TTL_SECONDS`: optional WebSDK external-link lifetime; defaults to 1800 seconds.
+- `SUMSUB_WEBHOOK_SECRET`: Sumsub webhook secret for `POST /api/identity/sumsub-webhook`.
+- Sumsub webhook URL: `https://swadakta.com/api/identity/sumsub-webhook`.
+
 The handoff endpoint is not a verification result. It must not mark anyone verified. It only prepares the provider route, stores the reference/link, and keeps the paid-action gate locked.
 
 Once provider accounts and API credentials are available, add provider-specific server functions or extend the Vercel handoff so it can:
 
 - Create Smile ID verification jobs/sessions server-side for African users.
-- Create Persona, Sumsub, or Stripe Identity verification sessions server-side for wider global users where selected.
+- Keep Sumsub WebSDK links and signed webhook results active for wider global users where selected.
+- Create Persona or Stripe Identity verification sessions server-side if the provider and owner legal setup are later approved.
 - Store the provider job reference on account verification requests and `partner_applications`.
-- Handles provider webhook callbacks.
+- Handle provider webhook callbacks.
 - Updates `identity_verification_status`, `identity_verified_at`, and notes from provider results.
 
 Provider API secrets must not be placed in browser JavaScript. Store them as Supabase secrets and call the provider only from server-side code.

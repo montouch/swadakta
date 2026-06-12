@@ -171,6 +171,7 @@ const requiredStitchScreenByPath = new Map(requiredStitchScreens.map((screen) =>
 const postOnlyApiEndpoints = [
   "/api/ai/assistant",
   "/api/identity/start-verification",
+  "/api/identity/sumsub-webhook",
   "/api/payments/stripe-checkout",
   "/api/payments/paypal-order",
   "/api/payments/paypal-capture",
@@ -668,8 +669,16 @@ const requiredReadinessApiMarkers = [
   "AI/manual mode fallback is ready",
   "identity_start_endpoint",
   "provider_handoff_links",
+  "sumsub_websdk_link",
+  "sumsub_webhook",
+  "sumsub_webhook_url",
   "/api/identity/start-verification",
+  "/api/identity/sumsub-webhook",
   "SMILE_ID_VERIFICATION_URL",
+  "SUMSUB_APP_TOKEN",
+  "SUMSUB_SECRET_KEY",
+  "SUMSUB_LEVEL_NAME",
+  "SUMSUB_WEBHOOK_SECRET",
   "SUMSUB_VERIFICATION_URL",
   "YOUVERIFY_VERIFICATION_URL",
   "ownerLaunchItems",
@@ -742,9 +751,20 @@ const requiredIdentityEndpointMarkers = [
   "SUPABASE_SERVICE_ROLE_KEY",
   "SMILE_ID_VERIFICATION_URL",
   "SUMSUB_VERIFICATION_URL",
+  "createSumsubWebsdkLink",
+  "SUMSUB_LEVEL_NAME",
+  "generate-websdk-external-link",
   "YOUVERIFY_VERIFICATION_URL",
   "provider_link",
   "AI and users cannot mark ID verified",
+];
+const requiredSumsubWebhookMarkers = [
+  "verifySumsubSignature",
+  "x-payload-digest",
+  "SUMSUB_WEBHOOK_SECRET",
+  "reviewAnswer",
+  "Provider evidence",
+  "bodyParser: false",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
@@ -1265,6 +1285,12 @@ const localIdentityEndpoint = await readLocal("api/identity/start-verification.j
 for (const marker of requiredIdentityEndpointMarkers) {
   if (!localIdentityEndpoint.includes(marker)) {
     fail(failures, `Local identity start endpoint is missing marker ${marker}`);
+  }
+}
+const localSumsubWebhook = await readLocal("api/identity/sumsub-webhook.js");
+for (const marker of requiredSumsubWebhookMarkers) {
+  if (!localSumsubWebhook.includes(marker)) {
+    fail(failures, `Local Sumsub webhook is missing marker ${marker}`);
   }
 }
 

@@ -166,6 +166,8 @@ const DOCS = {
   smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
   smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
   sumsubWebSdk: "https://docs.sumsub.com/docs/websdk",
+  sumsubWebsdkLink: "https://docs.sumsub.com/reference/generate-websdk-external-link",
+  sumsubWebhooks: "https://docs.sumsub.com/docs/webhook-manager",
   youverifyDocs: "https://doc.youverify.co/",
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
   securityTxt: "https://www.rfc-editor.org/info/rfc9116/",
@@ -986,11 +988,14 @@ async function readinessReport(user, authHeader) {
     "WISE_RECEIVE_DETAILS_URL",
   ]);
   const smileIdConfigured = hasEnv("SMILE_ID_API_KEY") && hasEnv("SMILE_ID_PARTNER_ID");
+  const sumsubNativeMissing = missingEnv(["SUMSUB_APP_TOKEN", "SUMSUB_SECRET_KEY", "SUMSUB_LEVEL_NAME"]);
+  const sumsubWebhookMissing = missingEnv(["SUMSUB_WEBHOOK_SECRET"]);
   const stripeWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/stripe-webhook`;
   const mpesaWebhookUrl = mpesaCallbackUrl();
   const paystackWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/paystack-webhook`;
   const flutterwaveWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/flutterwave-webhook`;
   const identityStartUrl = `${publicUrl() || "https://swadakta.com"}/api/identity/start-verification`;
+  const sumsubWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/identity/sumsub-webhook`;
   const identityStartEndpoint = await fetchPublic("/api/identity/start-verification", { readText: false });
   const identityStartEndpointReady = identityStartEndpoint.status === 405;
   const identityProviderLinkReady = anyEnv([
@@ -1002,7 +1007,7 @@ async function readinessReport(user, authHeader) {
     "SUMSUB_APPLICANT_LINK_URL",
     "YOUVERIFY_VERIFICATION_URL",
     "YOUVERIFY_APPLICANT_LINK_URL",
-  ]);
+  ]) || sumsubNativeMissing.length === 0;
   const identityProviderLinkMissing = missingEnv([
     "SMILE_ID_VERIFICATION_URL",
     "SUMSUB_VERIFICATION_URL",
@@ -1297,25 +1302,60 @@ async function readinessReport(user, authHeader) {
           "Provider handoff links",
           identityProviderLinkReady ? "ready" : "missing",
           identityProviderLinkReady
-            ? "At least one provider handoff URL is configured for the server-side verification start flow."
-            : "The server endpoint can queue verification, but it cannot issue a provider link until Smile ID, Sumsub, or Youverify handoff URLs are configured.",
+            ? "At least one provider handoff route or native Sumsub WebSDK link route is configured for the server-side verification start flow."
+            : "The server endpoint can queue verification, but it cannot issue a provider link until Smile ID, Sumsub, or Youverify handoff URLs or Sumsub native credentials are configured.",
           identityProviderLinkReady
             ? "Run a low-risk test account and confirm the provider reference returns to Swadakta before unlocking paid actions."
-            : "Add a provider-approved hosted verification URL in Vercel, then keep provider evidence as the only source of verified status.",
-          identityProviderLinkReady ? [] : identityProviderLinkMissing,
+            : "Add a provider-approved hosted verification URL or Sumsub native WebSDK credentials in Vercel, then keep provider evidence as the only source of verified status.",
+          identityProviderLinkReady
+            ? []
+            : [...identityProviderLinkMissing, "or SUMSUB_APP_TOKEN/SUMSUB_SECRET_KEY/SUMSUB_LEVEL_NAME"],
           {
-            docs_url: DOCS.sumsubWebSdk,
-            copy_value: "SMILE_ID_VERIFICATION_URL / SUMSUB_VERIFICATION_URL / YOUVERIFY_VERIFICATION_URL",
+            docs_url: DOCS.sumsubWebsdkLink,
+            copy_value: "SMILE_ID_VERIFICATION_URL / SUMSUB_APP_TOKEN+SUMSUB_SECRET_KEY+SUMSUB_LEVEL_NAME / YOUVERIFY_VERIFICATION_URL",
             priority: 31,
             owner: "Founder/ID provider admin",
+          },
+        ),
+        item(
+          "sumsub_websdk_link",
+          "Sumsub WebSDK link automation",
+          sumsubNativeMissing.length ? "missing" : "ready",
+          sumsubNativeMissing.length
+            ? "Sumsub native WebSDK link generation is not configured yet."
+            : "Sumsub native WebSDK links can be generated server-side by /api/identity/start-verification.",
+          sumsubNativeMissing.length
+            ? "Create/approve the Sumsub account, choose the verification level name, then add the app token, secret key, and level name in Vercel."
+            : "Run a low-risk account through Sumsub and confirm the external user reference matches the Swadakta verification request.",
+          sumsubNativeMissing,
+          {
+            docs_url: DOCS.sumsubWebsdkLink,
+            priority: 32,
+            owner: "Founder/Sumsub admin",
+          },
+        ),
+        item(
+          "sumsub_webhook",
+          "Sumsub signed webhook",
+          sumsubWebhookMissing.length || !serviceRoleConfigured ? "missing" : "ready",
+          sumsubWebhookMissing.length || !serviceRoleConfigured
+            ? "Sumsub provider evidence cannot update Swadakta automatically until the webhook secret and server Supabase key are configured."
+            : "Sumsub signed webhooks can update account verification status from provider evidence.",
+          "Paste this endpoint into Sumsub Webhook Manager and set SUMSUB_WEBHOOK_SECRET in Vercel. The webhook can mark verified/failed/manual-review, but AI and users cannot approve ID.",
+          [...sumsubWebhookMissing, ...(serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"])],
+          {
+            docs_url: DOCS.sumsubWebhooks,
+            copy_value: sumsubWebhookUrl,
+            priority: 33,
+            owner: "Founder/Sumsub admin",
           },
         ),
         item(
           "smile_id_api",
           "Smile ID API sessions",
           smileIdConfigured ? "manual" : "missing",
-          "Provider API session creation is planned; current workflow supports storing provider links manually.",
-          "After Smile ID credentials are approved, add server-side session creation and webhook handling.",
+          "Smile ID credentials can be tracked, but native Smile ID session creation still needs the provider-approved web/link route or Smile SDK wiring.",
+          "Use Smile ID as the Africa-first provider route after the account is approved; store a Smile Links URL now, then add native session/webhook automation as the next ID rail.",
           smileIdConfigured ? [] : ["SMILE_ID_API_KEY", "SMILE_ID_PARTNER_ID"],
           {
             docs_url: DOCS.smileIdDocument,
@@ -1354,11 +1394,12 @@ async function readinessReport(user, authHeader) {
       paystack_webhook_url: paystackWebhookUrl,
       flutterwave_webhook_url: flutterwaveWebhookUrl,
       identity_start_url: identityStartUrl,
+      sumsub_webhook_url: sumsubWebhookUrl,
       final_ux_theme_url: `${publicUrl() || "https://swadakta.com"}/${EXPECTED_FINAL_UX_THEME_REF}`,
     },
     protected_actions: [
       "Money release, refund, paid status, and milestone release stay founder/admin decisions.",
-      "ID verification and receiver vetting stay founder/admin decisions until provider webhooks are fully integrated.",
+      "ID approval can only come from signed provider evidence or admin exception review; AI and users cannot approve ID.",
       "AI can draft and triage, but it must not contact clients, assign receivers, or claim legal/customs certainty.",
     ],
   };
