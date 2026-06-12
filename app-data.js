@@ -1393,6 +1393,71 @@
     return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
   }
 
+  function trackingOfferPayload(offer = {}) {
+    return {
+      offer_code: offer.offer_code || "",
+      request_code: String(offer.request_code || "").trim().toUpperCase(),
+      amount: Number(offer.amount || 0),
+      currency: String(offer.currency || "AUD").trim().toUpperCase(),
+      timeline_days: Number(offer.timeline_days || 0),
+      proof_plan: String(offer.proof_plan || "").trim(),
+      status: offer.status || "submitted",
+      safety_flags: Array.isArray(offer.safety_flags) ? offer.safety_flags : [],
+      provenance_score: Math.max(25, Math.min(100, Number(offer.provenance_score || 25))),
+      verification_status: offer.verification_status || "not_started",
+      partner_status: offer.partner_status || offer.status || "submitted",
+      receiver_base: String(offer.receiver_base || offer.kenya_base || "").trim(),
+      created_at: offer.created_at || null,
+      updated_at: offer.updated_at || null,
+    };
+  }
+
+  function trackingOfferSortRank(status) {
+    return { accepted: 0, shortlisted: 1, submitted: 2, declined: 3, blocked: 4 }[status] ?? 5;
+  }
+
+  async function listTrackingJobOffers(code, contact) {
+    const normalizedCode = String(code || "").trim().toUpperCase();
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const request = readLocalRequests().find(
+        (item) => String(item.request_code || "").toUpperCase() === normalizedCode && contactMatches(item, contact),
+      );
+
+      if (!request) {
+        return { data: [], mode: "local" };
+      }
+
+      const data = readLocalJobOffers()
+        .filter((offer) => String(offer.request_code || "").toUpperCase() === String(request.request_code || "").toUpperCase())
+        .filter((offer) => ["submitted", "shortlisted", "accepted", "declined", "blocked"].includes(offer.status))
+        .map(trackingOfferPayload)
+        .sort((first, second) => {
+          const rankDelta = trackingOfferSortRank(first.status) - trackingOfferSortRank(second.status);
+          if (rankDelta) return rankDelta;
+          const scoreDelta = Number(second.provenance_score || 25) - Number(first.provenance_score || 25);
+          if (scoreDelta) return scoreDelta;
+          const amountDelta = Number(first.amount || 0) - Number(second.amount || 0);
+          if (amountDelta) return amountDelta;
+          return new Date(second.updated_at || second.created_at || 0) - new Date(first.updated_at || first.created_at || 0);
+        });
+
+      return { data, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_tracking_job_offers", {
+      lookup_code: normalizedCode,
+      lookup_contact: contact,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data.map(trackingOfferPayload) : [], mode: "supabase" };
+  }
+
   async function submitServiceReview(code, contact, score, note) {
     const normalizedCode = String(code || "").trim().toUpperCase();
     const normalizedScore = Number(score);
@@ -2945,6 +3010,7 @@
     listRequests,
     updateRequest,
     trackRequest,
+    listTrackingJobOffers,
     submitServiceReview,
     createResolutionCase,
     listRequestResolutionCases,

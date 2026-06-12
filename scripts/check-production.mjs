@@ -85,6 +85,7 @@ const requiredAppDataMarkers = [
   "missingColumn",
   "listMarketplaceJobs",
   "submitJobOffer",
+  "listTrackingJobOffers",
   "listMyJobOffers",
   "listJobOffersForAdmin",
   "updateJobOfferStatus",
