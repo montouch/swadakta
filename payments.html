@@ -321,6 +321,11 @@
                   <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Swadakta margin range</p>
                   <strong class="mt-1 block text-lg text-primary">AUD 20-40</strong>
                 </div>
+                <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4 md:col-span-2">
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Minimum margin guardrail</p>
+                  <strong class="mt-1 block text-lg text-primary">Target 25% or re-quote</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">The quote should leave enough founder margin after receiver payout, field costs, provider fees, and risk reserve.</p>
+                </div>
               </div>
               <p class="mt-4 text-xs text-on-surface-variant">Planning only: field costs, provider fees, refunds, taxes, disputes, and regulated escrow can change the final economics.</p>
             </div>
@@ -464,7 +469,13 @@
         return `${money(low, currency)}-${money(high, currency)}`;
       }
 
-      function quoteBreakdown(low, high, currency, sensitive, logistics) {
+      function marginTarget(jobType, sensitive) {
+        if (sensitive) return 0.28;
+        if (jobType === "retainer") return 0.18;
+        return 0.25;
+      }
+
+      function quoteBreakdown(low, high, currency, sensitive, logistics, jobType) {
         const receiverLow = low * 0.42;
         const receiverHigh = high * 0.5;
         const fieldReserveLow = low * (logistics ? 0.16 : 0.08);
@@ -473,13 +484,31 @@
         const providerFeeHigh = high * (currency === "KES" ? 0.025 : 0.045);
         const riskReserveLow = sensitive ? low * 0.08 : 0;
         const riskReserveHigh = sensitive ? high * 0.14 : 0;
-        const marginLow = Math.max(0, low - receiverLow - fieldReserveLow - providerFeeLow - riskReserveLow);
-        const marginHigh = Math.max(0, high - receiverHigh - fieldReserveHigh - providerFeeHigh - riskReserveHigh);
+        const costsLow = receiverLow + fieldReserveLow + providerFeeLow + riskReserveLow;
+        const costsHigh = receiverHigh + fieldReserveHigh + providerFeeHigh + riskReserveHigh;
+        const marginLow = low - costsLow;
+        const marginHigh = high - costsHigh;
+        const target = marginTarget(jobType, sensitive);
+        const targetLow = low * target;
+        const targetHigh = high * target;
+        const quoteFloorLow = costsLow / (1 - target);
+        const quoteFloorHigh = costsHigh / (1 - target);
+        const guardrailPass = marginLow >= targetLow && marginHigh >= targetHigh;
+        const marginPercentLow = Math.round((marginLow / low) * 100);
+        const marginPercentHigh = Math.round((marginHigh / high) * 100);
         return {
           receiver: moneyRange(receiverLow, receiverHigh, currency),
           field: moneyRange(fieldReserveLow, fieldReserveHigh, currency),
           provider: moneyRange(providerFeeLow, providerFeeHigh, currency),
           margin: moneyRange(marginLow, marginHigh, currency),
+          marginPercent: `${Math.min(marginPercentLow, marginPercentHigh)}%-${Math.max(marginPercentLow, marginPercentHigh)}%`,
+          target: `${Math.round(target * 100)}%`,
+          quoteFloor: moneyRange(quoteFloorLow, quoteFloorHigh, currency),
+          guardrailPass,
+          guardrailLabel: guardrailPass ? "Margin guardrail clear" : "Re-quote before sending",
+          guardrailCopy: guardrailPass
+            ? "This range appears to cover receiver payout, field costs, provider fees, risk reserve, and target founder margin."
+            : "Raise the quote, reduce scope, reduce field costs, or split the job into milestones before sending a payment link.",
           risk: sensitive ? moneyRange(riskReserveLow, riskReserveHigh, currency) : "",
         };
       }
@@ -504,7 +533,7 @@
         const low = aud * currencyRates[currency];
         const high = low * (jobType === "retainer" ? 1.35 : 1.55);
         const rail = railFor(currency, sensitive, logistics);
-        const breakdown = quoteBreakdown(low, high, currency, sensitive, logistics);
+        const breakdown = quoteBreakdown(low, high, currency, sensitive, logistics, jobType);
         const flags = [
           logistics ? "include lawful-goods or postal check" : "",
           sensitive ? "requires ID and protected decision review" : "",
@@ -531,6 +560,7 @@
             <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4">
               <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Swadakta margin range</p>
               <strong class="mt-1 block text-lg text-primary">${breakdown.margin}</strong>
+              <p class="mt-1 text-xs text-on-surface-variant">${breakdown.marginPercent} of quote</p>
             </div>
             ${
               breakdown.risk
@@ -540,6 +570,12 @@
                   </div>`
                 : ""
             }
+            <div class="rounded-2xl ${breakdown.guardrailPass ? "bg-emerald-50/90 border-emerald-200" : "bg-error-container border-error/20"} border p-4 md:col-span-2">
+              <p class="font-label text-xs uppercase tracking-[0.14em] ${breakdown.guardrailPass ? "text-emerald-700" : "text-on-error-container"}">Minimum margin guardrail</p>
+              <strong class="mt-1 block text-lg ${breakdown.guardrailPass ? "text-emerald-700" : "text-on-error-container"}">${breakdown.guardrailLabel}</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">Target founder margin: ${breakdown.target}. Suggested quote floor: ${breakdown.quoteFloor}.</p>
+              <p class="mt-1 text-sm text-on-surface-variant">${breakdown.guardrailCopy}</p>
+            </div>
           </div>
           <p class="mt-4 text-xs text-on-surface-variant">Founder planning only: final quote can change with route, field costs, payment fees, refunds, taxes, disputes, or regulated escrow requirements.</p>
           ${

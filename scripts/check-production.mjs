@@ -176,6 +176,10 @@ const requiredPaymentsMarkers = [
   "Estimate a launch quote",
   "Founder margin is built into each quote",
   "Swadakta margin range",
+  "Minimum margin guardrail",
+  "marginTarget",
+  "quoteFloor",
+  "Re-quote before sending",
   "Wise stays hidden as fallback",
   "Swadakta is not currently a licensed escrow provider",
 ];
