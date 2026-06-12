@@ -6,18 +6,18 @@
     <title>Swadakta | Trusted Corridor Help</title>
     <meta
       name="description"
-      content="Swadakta helps people get trusted local tasks done across Africa and global corridors, with verified accounts, quote-first payments, proof tracking, and paid receiver work."
+      content="Swadakta helps people post trusted tasks across Africa and global corridors, receive verified offers, protect provider-confirmed payments, track proof, and apply for paid receiver work."
     />
     <meta name="theme-color" content="#4648d4" />
     <link rel="canonical" href="https://swadakta.com/" />
     <meta property="og:title" content="Swadakta | Trusted Corridor Help" />
-    <meta property="og:description" content="Request trusted help or get verified for paid corridor work with proof, payments, and milestone controls." />
+    <meta property="og:description" content="Post tasks for verified receivers across Africa and global corridors, or verify one account to receive paid work." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://swadakta.com/" />
     <meta property="og:image" content="https://swadakta.com/assets/saas-burst.png" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Swadakta | Trusted Corridor Help" />
-    <meta name="twitter:description" content="Verified global corridor help for errands, sourcing, proof visits, logistics, and receiver work." />
+    <meta name="twitter:description" content="Trusted tasks, verified receivers, protected payments, proof tracking, and one account for both client and work-seeker roles." />
     <meta name="twitter:image" content="https://swadakta.com/assets/saas-burst.png" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
@@ -37,7 +37,8 @@
               surface: "#faf8ff",
               mint: "#0f8f7f",
               sky: "#2f80ed",
-              gold: "#a46a00"
+              gold: "#a46a00",
+              night: "#10172a"
             },
             fontFamily: {
               display: ["Manrope", "sans-serif"],
@@ -61,7 +62,9 @@
 
       body {
         background:
-          linear-gradient(180deg, #f5f6ff 0%, #fbfbff 34%, #ffffff 100%);
+          radial-gradient(circle at 78% 4%, rgba(99, 102, 241, 0.18), transparent 28rem),
+          radial-gradient(circle at 8% 18%, rgba(15, 143, 127, 0.12), transparent 20rem),
+          linear-gradient(180deg, #f6f7ff 0%, #fbfbff 45%, #ffffff 100%);
         color: #131b2e;
         font-family: Inter, system-ui, sans-serif;
         letter-spacing: 0;
@@ -71,21 +74,21 @@
         display: none !important;
       }
 
-      .glass-panel {
-        border: 1px solid rgba(255, 255, 255, 0.7);
+      .section-shell {
+        width: min(1180px, calc(100% - 32px));
+        margin-inline: auto;
+      }
+
+      .glass {
+        border: 1px solid rgba(255, 255, 255, 0.72);
         background: rgba(255, 255, 255, 0.78);
         box-shadow: 0 24px 70px rgba(43, 47, 127, 0.09);
         backdrop-filter: blur(22px);
       }
 
-      .soft-panel {
-        border: 1px solid rgba(199, 196, 215, 0.42);
-        background: rgba(255, 255, 255, 0.82);
-      }
-
-      .section-shell {
-        width: min(1180px, calc(100% - 32px));
-        margin-inline: auto;
+      .panel {
+        border: 1px solid rgba(199, 196, 215, 0.46);
+        background: rgba(255, 255, 255, 0.86);
       }
 
       .label {
@@ -96,6 +99,52 @@
         text-transform: uppercase;
       }
 
+      .button {
+        display: inline-flex;
+        min-height: 3rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.55rem;
+        border-radius: 999px;
+        padding: 0.82rem 1.16rem;
+        font-weight: 800;
+        line-height: 1.1;
+        text-align: center;
+        transition:
+          transform 160ms ease,
+          box-shadow 160ms ease,
+          background 160ms ease;
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+      }
+
+      .button-primary {
+        background: linear-gradient(180deg, #6366f1 0%, #4648d4 100%);
+        color: #ffffff;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.34),
+          0 18px 36px rgba(70, 72, 212, 0.24);
+      }
+
+      .button-secondary {
+        border: 1px solid rgba(199, 196, 215, 0.72);
+        background: rgba(255, 255, 255, 0.92);
+        color: #4648d4;
+      }
+
+      .icon-button {
+        display: inline-flex;
+        min-height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        gap: 0.45rem;
+        border-radius: 999px;
+        padding: 0.68rem 0.92rem;
+        font-weight: 800;
+      }
+
       .material-symbols-outlined {
         display: inline-flex;
         align-items: center;
@@ -104,40 +153,26 @@
         overflow: hidden;
         line-height: 1;
         letter-spacing: 0;
+        font-variation-settings: "FILL" 0, "wght" 500, "GRAD" 0, "opsz" 24;
       }
 
-      .button {
-        display: inline-flex;
-        min-height: 3rem;
-        align-items: center;
-        justify-content: center;
-        gap: 0.55rem;
-        border-radius: 999px;
-        padding: 0.8rem 1.15rem;
-        font-weight: 800;
-        line-height: 1.1;
-        text-align: center;
+      .orbital-object {
+        filter: drop-shadow(0 32px 46px rgba(70, 72, 212, 0.24));
       }
 
-      .button-primary {
-        background: #4648d4;
-        color: #fff;
-        box-shadow: 0 18px 36px rgba(70, 72, 212, 0.2);
-      }
-
-      .button-secondary {
-        border: 1px solid rgba(199, 196, 215, 0.72);
-        background: rgba(255, 255, 255, 0.9);
-        color: #4648d4;
-      }
-
-      .path-card,
+      .role-card,
+      .step-card,
       .service-card,
-      .step-card {
+      .trust-chip {
         min-width: 0;
         border-radius: 1.25rem;
-        border: 1px solid rgba(199, 196, 215, 0.42);
-        background: rgba(255, 255, 255, 0.84);
+      }
+
+      .role-card:focus-within,
+      .role-card:hover,
+      .service-card:hover {
+        border-color: rgba(70, 72, 212, 0.32);
+        box-shadow: 0 18px 42px rgba(43, 47, 127, 0.08);
       }
 
       @media (max-width: 760px) {
@@ -155,11 +190,14 @@
     <link rel="manifest" href="/site.webmanifest" />
     <meta name="application-name" content="Swadakta" />
   </head>
-  <body class="min-h-screen antialiased">
-    <header class="sticky top-0 z-50 border-b border-white/60 bg-surface/82 backdrop-blur-2xl">
+  <body class="min-h-screen pb-24 antialiased md:pb-0">
+    <header class="sticky top-0 z-50 border-b border-white/70 bg-surface/84 backdrop-blur-2xl">
       <div class="section-shell flex h-20 items-center justify-between gap-4">
-        <a class="inline-flex min-h-10 items-center font-display text-2xl font-extrabold text-primary" href="/" aria-label="Swadakta home">Swadakta</a>
-        <nav class="hidden items-center gap-3 font-label text-sm text-muted md:flex" aria-label="Main navigation">
+        <a class="inline-flex min-h-10 items-center gap-3 font-display text-2xl font-extrabold text-primary" href="/" aria-label="Swadakta home">
+          <img class="h-9 w-9" src="assets/swadakta-brand-mark.svg" alt="" />
+          Swadakta
+        </a>
+        <nav class="hidden items-center gap-2 font-label text-sm text-muted lg:flex" aria-label="Main navigation">
           <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="#how-it-works">How it works</a>
           <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="payments.html">Payments</a>
           <a class="inline-flex min-h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="trust.html">Trust</a>
@@ -172,16 +210,16 @@
     </header>
 
     <main>
-      <section class="section-shell grid gap-10 py-12 md:grid-cols-[1fr_0.9fr] md:items-center md:py-16">
+      <section class="section-shell grid gap-10 py-12 lg:grid-cols-[1fr_0.92fr] lg:items-center lg:py-16">
         <div class="max-w-3xl">
-          <span class="label inline-flex rounded-full border border-line/50 bg-white/72 px-4 py-2 text-primary">
+          <span class="label inline-flex rounded-full border border-line/50 bg-white/76 px-4 py-2 text-primary">
             Africa-wide and global corridor help
           </span>
           <h1 class="mt-6 font-display text-5xl font-extrabold leading-[1.03] text-ink md:text-6xl">
-            Get trusted help there, without being there.
+            Trusted help there, without being there.
           </h1>
           <p class="mt-5 max-w-2xl text-lg leading-8 text-muted">
-            Swadakta connects people who need errands, sourcing, proof visits, deliveries, documents, or family support with verified local help. One account can also let you apply for paid receiver work.
+            Post errands, sourcing, proof visits, deliveries, document tasks, and local support across Africa and major global corridors. Verified receivers handle the work while Swadakta keeps proof, payments, and rules in order.
           </p>
           <div class="mt-7 grid gap-3 sm:flex sm:flex-wrap">
             <a class="button button-primary" href="corridor.html">
@@ -192,109 +230,206 @@
               <span class="material-symbols-outlined text-[20px]">work</span>
               Get paid work
             </a>
+            <a class="button button-secondary" href="tracking.html">
+              <span class="material-symbols-outlined text-[20px]">travel_explore</span>
+              Track request
+            </a>
           </div>
           <div class="mt-6 grid gap-2 text-sm text-muted sm:grid-cols-3">
-            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-mint"></span>ID-gated work</span>
+            <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-mint"></span>ID-gated paid work</span>
             <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-sky"></span>Quote-first payment</span>
             <span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-gold"></span>Proof before release</span>
           </div>
         </div>
 
-        <aside class="glass-panel overflow-hidden rounded-[1.75rem] p-4">
-          <div class="rounded-[1.35rem] bg-[#eef2ff] p-5">
-            <div class="flex items-center justify-between gap-4">
-              <div>
-                <p class="label text-primary">Live job flow</p>
-                <h2 class="mt-2 font-display text-2xl font-extrabold">From request to proof</h2>
-              </div>
-              <img class="h-20 w-20 shrink-0 object-contain" src="assets/saas-burst.png" alt="Swadakta corridor mark" />
-            </div>
+        <aside class="relative min-h-[520px] overflow-hidden rounded-[2rem] border border-white/70 bg-[#eef2ff]/72 p-5 shadow-[0_28px_80px_rgba(70,72,212,0.12)]">
+          <div class="absolute right-0 top-0 h-36 w-36 rounded-bl-[5rem] bg-primary/12"></div>
+          <img class="orbital-object absolute right-4 top-6 h-48 w-48 object-contain md:right-8 md:h-56 md:w-56" src="assets/saas-burst.png" alt="Blue crystalline Swadakta corridor object" />
+          <div class="relative z-10 max-w-[320px] rounded-[1.35rem] border border-white/74 bg-white/72 p-5 backdrop-blur-2xl">
+            <p class="label text-primary">Start a request</p>
+            <h2 class="mt-2 font-display text-2xl font-extrabold">Corridor preview</h2>
             <div class="mt-5 grid gap-3">
-              <article class="soft-panel rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                  <span class="material-symbols-outlined text-primary">route</span>
-                  <div>
-                    <strong>Choose corridor</strong>
-                    <p class="mt-1 text-sm leading-6 text-muted">Pick where the job happens and what proof is required.</p>
-                  </div>
+              <div class="panel rounded-2xl p-4">
+                <p class="label text-muted">From</p>
+                <p class="mt-1 font-bold">Australia</p>
+              </div>
+              <div class="panel rounded-2xl p-4">
+                <p class="label text-muted">To / in-country</p>
+                <p class="mt-1 font-bold">Kenya, Ghana, Nigeria, South Africa...</p>
+              </div>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <div class="panel rounded-2xl p-4">
+                  <p class="label text-muted">Task</p>
+                  <p class="mt-1 font-bold">Proof visit</p>
                 </div>
-              </article>
-              <article class="soft-panel rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                  <span class="material-symbols-outlined text-mint">verified_user</span>
-                  <div>
-                    <strong>Verify people</strong>
-                    <p class="mt-1 text-sm leading-6 text-muted">Paid work and sensitive tasks unlock after provider checks.</p>
-                  </div>
+                <div class="panel rounded-2xl p-4">
+                  <p class="label text-muted">Proof</p>
+                  <p class="mt-1 font-bold">Photos + receipt</p>
                 </div>
-              </article>
-              <article class="soft-panel rounded-2xl p-4">
-                <div class="flex items-start gap-3">
-                  <span class="material-symbols-outlined text-gold">payments</span>
-                  <div>
-                    <strong>Track money and proof</strong>
-                    <p class="mt-1 text-sm leading-6 text-muted">Payments stay provider-confirmed. Milestones release only by proof.</p>
-                  </div>
-                </div>
-              </article>
+              </div>
+            </div>
+          </div>
+          <div class="relative z-10 mt-5 grid gap-3 md:grid-cols-2">
+            <div class="glass rounded-2xl p-4">
+              <div class="flex items-center justify-between gap-3">
+                <span class="label text-muted">Receiver fit</span>
+                <span class="rounded-full bg-mint/10 px-3 py-1 text-xs font-bold text-mint">84%</span>
+              </div>
+              <p class="mt-3 text-sm leading-6 text-muted">Verification, location fit, proof plan, reviews, and availability shape who gets offered the work.</p>
+            </div>
+            <div class="glass rounded-2xl p-4">
+              <div class="flex items-center justify-between gap-3">
+                <span class="label text-muted">Money gate</span>
+                <span class="rounded-full bg-sky/10 px-3 py-1 text-xs font-bold text-sky">Protected</span>
+              </div>
+              <p class="mt-3 text-sm leading-6 text-muted">Milestones move only after provider confirmation and proof review.</p>
             </div>
           </div>
         </aside>
       </section>
 
-      <section class="border-y border-line/35 bg-white/62 py-8">
-        <div class="section-shell grid gap-4 md:grid-cols-3">
-          <article class="path-card p-5">
+      <section class="border-y border-line/35 bg-white/66 py-8" aria-label="Trust and payment safeguards">
+        <div class="section-shell grid gap-3 md:grid-cols-5">
+          <div class="trust-chip panel p-4">
+            <span class="material-symbols-outlined text-primary">badge</span>
+            <p class="mt-2 font-bold">ID verification</p>
+          </div>
+          <div class="trust-chip panel p-4">
+            <span class="material-symbols-outlined text-sky">request_quote</span>
+            <p class="mt-2 font-bold">Quote-first pricing</p>
+          </div>
+          <div class="trust-chip panel p-4">
+            <span class="material-symbols-outlined text-mint">account_balance_wallet</span>
+            <p class="mt-2 font-bold">Protected payment</p>
+          </div>
+          <div class="trust-chip panel p-4">
+            <span class="material-symbols-outlined text-gold">task_alt</span>
+            <p class="mt-2 font-bold">Milestone release</p>
+          </div>
+          <div class="trust-chip panel p-4">
+            <span class="material-symbols-outlined text-tertiary">gavel</span>
+            <p class="mt-2 font-bold">Lawful route checks</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell py-14">
+        <div class="grid gap-5 md:grid-cols-3">
+          <article class="role-card panel p-5">
             <span class="material-symbols-outlined text-3xl text-primary">shopping_bag</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">For clients</h2>
-            <p class="mt-2 leading-7 text-muted">Post a task, set the country or city, upload details, agree proof, receive updates, and track completion.</p>
+            <h2 class="mt-3 font-display text-2xl font-extrabold">Client</h2>
+            <p class="mt-2 leading-7 text-muted">Post a task, choose where it happens, add photos or links, agree proof, and track completion.</p>
             <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="corridor.html">Start a request</a>
           </article>
-          <article class="path-card p-5">
+          <article class="role-card panel p-5">
             <span class="material-symbols-outlined text-3xl text-mint">engineering</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">For job seekers</h2>
-            <p class="mt-2 leading-7 text-muted">Build a real profile, verify your ID, choose your coverage area, and apply for suitable paid corridor work.</p>
+            <h2 class="mt-3 font-display text-2xl font-extrabold">Receiver</h2>
+            <p class="mt-2 leading-7 text-muted">Create a real profile, verify your ID, choose your work areas, and make offers on suitable jobs.</p>
             <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="verification.html?reason=receiver_work&amp;role=receiver">Apply for work</a>
           </article>
-          <article class="path-card p-5">
+          <article class="role-card panel p-5">
             <span class="material-symbols-outlined text-3xl text-tertiary">sync_alt</span>
-            <h2 class="mt-3 font-display text-2xl font-extrabold">For both</h2>
+            <h2 class="mt-3 font-display text-2xl font-extrabold">Both</h2>
             <p class="mt-2 leading-7 text-muted">Use one account to request help when you need it and receive work when you are verified and available.</p>
             <a class="mt-5 inline-flex min-h-10 items-center rounded-full px-1 font-bold text-primary" href="portal.html">Open account</a>
           </article>
         </div>
+        <p class="mt-5 rounded-2xl border border-primary/12 bg-primary/6 p-4 text-sm leading-6 text-muted">
+          Verification is not required just to create an account. It is required before paid posting, paid receiving, sensitive tasks, higher-value work, and location or identity changes that affect trust.
+        </p>
       </section>
 
-      <section class="section-shell py-14" id="how-it-works">
-        <div class="max-w-2xl">
-          <p class="label text-primary">How it works</p>
-          <h2 class="mt-3 font-display text-4xl font-extrabold">A simple flow for serious tasks.</h2>
+      <section class="section-shell grid gap-8 pb-14 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+        <div>
+          <p class="label text-primary">Receiver credibility</p>
+          <h2 class="mt-3 font-display text-4xl font-extrabold">Choose by trust signals, not just price.</h2>
+          <p class="mt-4 leading-8 text-muted">
+            Offers should be judged by verification status, provenance score, proof plan, reviews, route fit, and communication quality. Lowest price does not automatically win.
+          </p>
+          <a class="button button-secondary mt-6" href="trust.html">Read trust rules</a>
         </div>
-        <div class="mt-8 grid gap-4 md:grid-cols-4">
-          <article class="step-card p-5">
-            <strong class="text-primary">01</strong>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Choose route</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Country, city, direction, item type, and legal or carrier checks.</p>
+        <div class="grid gap-4 md:grid-cols-[0.85fr_1fr]">
+          <article class="panel rounded-[1.5rem] p-5">
+            <div class="flex items-center gap-4">
+              <div class="grid h-16 w-16 place-items-center rounded-full bg-primary/10 text-xl font-extrabold text-primary">AN</div>
+              <div>
+                <h3 class="font-display text-xl font-extrabold">Verified receiver</h3>
+                <p class="text-sm text-muted">Nairobi, Kenya</p>
+              </div>
+            </div>
+            <div class="mt-5 rounded-2xl bg-mint/10 p-4">
+              <div class="flex items-center justify-between gap-3">
+                <span class="font-bold text-mint">Provenance seal</span>
+                <span class="rounded-full bg-white px-3 py-1 text-sm font-extrabold text-mint">82%</span>
+              </div>
+              <div class="mt-3 h-2 overflow-hidden rounded-full bg-white">
+                <div class="h-full w-[82%] rounded-full bg-mint"></div>
+              </div>
+            </div>
+            <div class="mt-4 grid gap-2 text-sm text-muted">
+              <p><strong class="text-ink">ID:</strong> provider verified</p>
+              <p><strong class="text-ink">Proof quality:</strong> photos, receipts, voice notes</p>
+              <p><strong class="text-ink">Review:</strong> 4.8 after completed jobs</p>
+            </div>
           </article>
-          <article class="step-card p-5">
-            <strong class="text-primary">02</strong>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Create brief</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Photos, links, deadline, budget comfort, local contact, and proof standard.</p>
-          </article>
-          <article class="step-card p-5">
-            <strong class="text-primary">03</strong>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Confirm quote</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Provider payment first. Wise stays hidden unless other rails fail.</p>
-          </article>
-          <article class="step-card p-5">
-            <strong class="text-primary">04</strong>
-            <h3 class="mt-3 font-display text-xl font-extrabold">Track proof</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Messages, media, receipts, milestones, issues, and completion review.</p>
-          </article>
+          <div class="grid gap-4">
+            <article class="service-card panel p-5">
+              <span class="material-symbols-outlined text-primary">local_offer</span>
+              <h3 class="mt-3 font-display text-xl font-extrabold">Verified offers</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">Clients see safe offer comparisons without private receiver data, admin notes, or internal economics.</p>
+            </article>
+            <article class="service-card panel p-5">
+              <span class="material-symbols-outlined text-gold">rule</span>
+              <h3 class="mt-3 font-display text-xl font-extrabold">Proof plan first</h3>
+              <p class="mt-2 text-sm leading-6 text-muted">Receivers explain how they will prove the job before Swadakta assigns sensitive or paid work.</p>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section class="section-shell grid gap-8 pb-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
+      <section class="bg-night py-14 text-white" id="how-it-works">
+        <div class="section-shell">
+          <div class="max-w-2xl">
+            <p class="label text-[#9ee6d8]">How work moves</p>
+            <h2 class="mt-3 font-display text-4xl font-extrabold">A simple flow for serious tasks.</h2>
+            <p class="mt-4 leading-8 text-white/72">Every job should have a route, a quote, protected payment evidence, proof expectations, and a clear release condition.</p>
+          </div>
+          <div class="mt-8 grid gap-4 md:grid-cols-3 lg:grid-cols-6">
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">01</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Post brief</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Route, item, task, budget, deadline, and proof.</p>
+            </article>
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">02</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Review offers</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Verification, provenance, proof plan, and fit.</p>
+            </article>
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">03</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Protect payment</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Provider confirmation before real work starts.</p>
+            </article>
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">04</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Do work</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Messages, media, voice notes, receipts, and reports.</p>
+            </article>
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">05</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Review proof</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Milestone release only after proof review.</p>
+            </article>
+            <article class="step-card border border-white/10 bg-white/8 p-4">
+              <strong class="text-[#9ee6d8]">06</strong>
+              <h3 class="mt-3 font-display text-lg font-extrabold">Rate outcome</h3>
+              <p class="mt-2 text-sm leading-6 text-white/66">Reviews feed receiver and client trust scores.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-shell grid gap-8 py-14 lg:grid-cols-[0.8fr_1.2fr] lg:items-start">
         <div>
           <p class="label text-primary">Common work</p>
           <h2 class="mt-3 font-display text-4xl font-extrabold">Start with practical jobs.</h2>
@@ -304,22 +439,22 @@
           <a class="button button-secondary mt-6" href="rules.html">Check item rules</a>
         </div>
         <div class="grid gap-4 sm:grid-cols-2">
-          <article class="service-card p-5">
+          <article class="service-card panel p-5">
             <span class="material-symbols-outlined text-primary">photo_camera</span>
             <h3 class="mt-3 font-display text-xl font-extrabold">Proof visits</h3>
             <p class="mt-2 text-sm leading-6 text-muted">Site photos, videos, receipts, and clear reports.</p>
           </article>
-          <article class="service-card p-5">
+          <article class="service-card panel p-5">
             <span class="material-symbols-outlined text-mint">local_shipping</span>
             <h3 class="mt-3 font-display text-xl font-extrabold">Pickup and delivery</h3>
             <p class="mt-2 text-sm leading-6 text-muted">Local handoffs, shopping, parcel checks, and recipient coordination.</p>
           </article>
-          <article class="service-card p-5">
+          <article class="service-card panel p-5">
             <span class="material-symbols-outlined text-sky">description</span>
             <h3 class="mt-3 font-display text-xl font-extrabold">Document runs</h3>
-            <p class="mt-2 text-sm leading-6 text-muted">Registry, office, compliance, and title/logbook errands.</p>
+            <p class="mt-2 text-sm leading-6 text-muted">Registry, office, compliance, title, school, and government errands.</p>
           </article>
-          <article class="service-card p-5">
+          <article class="service-card panel p-5">
             <span class="material-symbols-outlined text-gold">support_agent</span>
             <h3 class="mt-3 font-display text-xl font-extrabold">Virtual support</h3>
             <p class="mt-2 text-sm leading-6 text-muted">Supplier research, customer replies, quotes, bookkeeping support, and admin work.</p>
@@ -327,43 +462,48 @@
         </div>
       </section>
 
-      <section class="bg-[#10172a] py-14 text-white">
-        <div class="section-shell grid gap-8 lg:grid-cols-[1fr_0.9fr] lg:items-center">
-          <div>
-            <p class="label text-[#9ee6d8]">Trust and payments</p>
-            <h2 class="mt-3 font-display text-4xl font-extrabold">Clear boundaries before real money moves.</h2>
-            <p class="mt-4 max-w-2xl leading-8 text-white/72">
-              Swadakta is quote-first and proof-first. AI can help draft, explain, and route, but it cannot verify ID, release money, assign paid work, mark payment received, or clear legal/customs risk by itself.
+      <section class="section-shell pb-14">
+        <div class="grid gap-5 lg:grid-cols-[1fr_0.8fr] lg:items-center">
+          <div class="glass rounded-[1.6rem] p-6 md:p-8">
+            <p class="label text-primary">Optional AI helper</p>
+            <h2 class="mt-3 font-display text-4xl font-extrabold">Ask Swadakta AI when you want help, turn it off when you do not.</h2>
+            <p class="mt-4 max-w-2xl leading-8 text-muted">
+              AI can organize a messy brief, explain next steps, draft updates, summarize proof, and help you find the right page. It cannot verify ID, release or refund money, assign sensitive work, or override legal and payment rules.
             </p>
-          </div>
-          <div class="grid gap-3">
-            <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
-              <strong>ID checks before paid work</strong>
-              <p class="mt-1 text-sm leading-6 text-white/64">Provider verification is required for receiving work and sensitive/high-value tasks.</p>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
-              <strong>Provider rails before payout</strong>
-              <p class="mt-1 text-sm leading-6 text-white/64">Stripe, PayPal, M-Pesa, bank, or approved providers confirm funds before milestones move.</p>
-            </div>
-            <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
-              <strong>Issues stay visible</strong>
-              <p class="mt-1 text-sm leading-6 text-white/64">Delays, proof gaps, refunds, disputes, and restricted goods go through the resolution flow.</p>
+            <div class="mt-6 grid gap-3 sm:flex">
+              <a class="button button-primary" href="assistant.html">Ask AI</a>
+              <a class="button button-secondary" href="portal.html#account-setup">Set up account</a>
             </div>
           </div>
+          <aside class="panel rounded-[1.6rem] p-5">
+            <div class="flex items-center gap-3">
+              <span class="grid h-11 w-11 place-items-center rounded-full bg-primary text-white">
+                <span class="material-symbols-outlined">auto_awesome</span>
+              </span>
+              <div>
+                <p class="font-bold">Swadakta AI</p>
+                <p class="text-sm text-muted">Friendly, optional, guarded</p>
+              </div>
+            </div>
+            <div class="mt-5 grid gap-3">
+              <p class="rounded-2xl bg-primary/8 p-4 text-sm leading-6 text-muted">"Turn this WhatsApp request into a clean brief and list the missing details."</p>
+              <p class="rounded-2xl bg-mint/10 p-4 text-sm leading-6 text-muted">"Explain why this job needs verification before posting."</p>
+            </div>
+          </aside>
         </div>
       </section>
 
-      <section class="section-shell py-14">
-        <div class="glass-panel rounded-[1.5rem] p-6 md:p-8">
+      <section class="section-shell pb-14">
+        <div class="rounded-[1.6rem] bg-[#eaf0ff] p-6 md:p-8">
           <div class="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-center">
             <div>
               <p class="label text-primary">Ready when you are</p>
               <h2 class="mt-2 font-display text-3xl font-extrabold">Open one account and choose your path.</h2>
-              <p class="mt-3 max-w-2xl leading-7 text-muted">You can start as a client, a job seeker, or both. Verification is not needed to open an account, but it is required before paid posting, paid receiver work, and sensitive jobs.</p>
+              <p class="mt-3 max-w-2xl leading-7 text-muted">Start as a client, receiver, or both. Swadakta keeps the flow simple and gates the serious parts only when money, identity, location, or sensitive work requires it.</p>
             </div>
             <div class="grid gap-3 sm:flex">
               <a class="button button-primary" href="portal.html">Open account</a>
-              <a class="button button-secondary" href="assistant.html">Ask AI</a>
+              <a class="button button-secondary" href="tracking.html">Track request</a>
             </div>
           </div>
         </div>
@@ -374,7 +514,11 @@
       <div class="section-shell grid gap-8 md:grid-cols-[1fr_auto]">
         <div>
           <strong class="font-display text-2xl font-extrabold">Swadakta</strong>
-          <p class="mt-3 max-w-md text-sm leading-6 text-muted">Global corridor concierge for trusted help, proof-first work, and verified receiver opportunities.</p>
+          <p class="mt-3 max-w-md text-sm leading-6 text-muted">Trusted corridor help for practical tasks, proof-first work, verified receivers, and protected milestone payments.</p>
+          <div class="mt-4 grid gap-2 text-sm text-muted">
+            <a class="inline-flex min-h-8 items-center hover:text-primary" href="mailto:swadakta111@gmail.com">swadakta111@gmail.com</a>
+            <a class="inline-flex min-h-8 items-center hover:text-primary" href="https://wa.me/61431455174">WhatsApp: +61431455174</a>
+          </div>
           <p class="mt-3 text-sm text-muted">&copy; 2026 Swadakta.</p>
         </div>
         <nav class="grid gap-2 text-sm text-muted sm:grid-cols-2 md:min-w-[320px]" aria-label="Footer navigation">
@@ -384,9 +528,26 @@
           <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="verification.html">Verify ID</a>
           <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="privacy.html">Privacy</a>
           <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="terms.html">Terms</a>
+          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="tracking.html">Track request</a>
+          <a class="inline-flex min-h-10 items-center rounded-full hover:text-primary" href="portal.html">Sign in</a>
         </nav>
       </div>
     </footer>
+
+    <nav class="fixed inset-x-3 bottom-3 z-50 grid grid-cols-3 gap-2 rounded-[1.25rem] border border-white/70 bg-white/88 p-2 shadow-[0_18px_44px_rgba(16,23,42,0.18)] backdrop-blur-2xl md:hidden" aria-label="Mobile quick actions">
+      <a class="icon-button bg-primary text-xs text-white" href="corridor.html">
+        <span class="material-symbols-outlined text-[18px]">add_circle</span>
+        Get job done
+      </a>
+      <a class="icon-button border border-line/60 bg-white text-xs text-primary" href="verification.html?reason=receiver_work&amp;role=receiver">
+        <span class="material-symbols-outlined text-[18px]">search</span>
+        Find work
+      </a>
+      <a class="icon-button border border-line/60 bg-white text-xs text-primary" href="assistant.html">
+        <span class="material-symbols-outlined text-[18px]">auto_awesome</span>
+        AI
+      </a>
+    </nav>
 
     <script src="assistant-dock.js?v=8"></script>
   </body>
