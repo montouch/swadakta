@@ -8,11 +8,11 @@ Last checked: June 13, 2026
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
 - Project: `swadakta`
 - Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
-- Latest production deployment observed: `dpl_CAQX6QmE7Poq46hnL8nhuox11RuG`
-- Latest production app commit verified: `d1a782f` (`Add real world founder launch board`)
-- Latest GitHub `main` commit locally: `d1a782f` (`Add real world founder launch board`)
-- Production health passed for `https://swadakta.com` with release marker `2026-06-13-first-paid-pilot-script-v1`.
-- Git integration is connected to `montouch/swadakta` on `main`. The earlier pushes `5c38efe` and `10eb86a` did not immediately create a deployment, but the latest push `d1a782f` did create a fresh production deployment.
+- Latest production deployment observed: `dpl_yNLSqLg7ZteGXu6PbVgEoWGkhShr`
+- Latest production app commit verified: `5bcb3a7` (`Add job acceptance gate to rules flow`)
+- Latest GitHub `main` commit locally: `5bcb3a7` (`Add job acceptance gate to rules flow`)
+- Production health passed for `https://swadakta.com` with release marker `2026-06-13-job-acceptance-gate-v1`.
+- Git integration is connected to `montouch/swadakta` on `main`; the latest push created a fresh production deployment.
 - Chrome is logged into Vercel for this team.
 - Local `.vercel/project.json`: present locally and ignored by Git.
 - `vercel` CLI on PATH: not present.
@@ -78,7 +78,7 @@ Use this when production health says the release is stale:
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
 ```
 
-Production is current only when `https://swadakta.com/release.json` reports `2026-06-13-first-paid-pilot-script-v1` or a newer release.
+Production is current only when `https://swadakta.com/release.json` reports `2026-06-13-job-acceptance-gate-v1` or a newer release.
 
 ## Fallback Notes
 
