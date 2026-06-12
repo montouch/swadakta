@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "13";
+  const DOCK_VERSION = "15";
   const rootId = "swadakta-ai-dock";
   const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
@@ -12,7 +12,7 @@
     home: ["Account home", "portal.html#home"],
     post_job: ["Post a job", "corridor.html"],
     brief: ["Create brief", "brief.html"],
-    find_work: ["Find work", "portal.html#receiver"],
+    find_work: ["Find jobs", "portal.html#find-work"],
     tracking: ["Track jobs", "tracking.html"],
     messages: ["Messages", "messages.html"],
     notifications: ["Notifications", "notifications.html"],
@@ -204,6 +204,32 @@
       body [class*="rounded"] strong, body [class*="rounded"] span, body [class*="rounded"] p {
         max-width: 100%;
       }
+      body .glass-panel,
+      body .glass-card {
+        box-shadow:
+          inset 0 1px 0 rgba(255,255,255,.72),
+          0 18px 44px rgba(30,36,94,.08);
+      }
+      body .portal-tool-button,
+      body .quick-action-card,
+      body .find-job-step,
+      body .workspace-link {
+        text-decoration: none;
+      }
+      body .portal-tool-button,
+      body .quick-action-card,
+      body .find-job-step,
+      body .workspace-link,
+      body .sw-ai-fab {
+        will-change: transform;
+      }
+      body .portal-tool-button:active,
+      body .quick-action-card:active,
+      body .find-job-step:active,
+      body .workspace-link:active,
+      body .sw-ai-fab:active {
+        transform: translateY(1px) scale(.99);
+      }
       body .swadakta-auth-cta {
         white-space: nowrap;
       }
@@ -239,6 +265,17 @@
         }
         body header nav {
           display: none !important;
+        }
+        body #home > div > aside:first-child nav {
+          display: grid !important;
+          grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+          gap: .28rem !important;
+          overflow: visible !important;
+        }
+        body #home > div > aside:first-child nav a {
+          width: 100% !important;
+          min-width: 0 !important;
+          justify-content: center !important;
         }
         body header a[href*="portal"], body header a[href*="/portal"] {
           max-width: 48vw;

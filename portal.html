@@ -479,27 +479,27 @@
                 display: none !important;
             }
             #home > div > aside:first-child nav {
-                display: flex;
+                display: grid;
                 grid-column: 1 / -1;
                 grid-row: 2;
                 min-width: 0;
                 width: 100%;
-                gap: 0.2rem;
-                overflow-x: auto;
-                overflow-y: hidden;
-                scrollbar-width: none;
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+                gap: 0.28rem;
+                overflow: visible;
             }
             #home > div > aside:first-child nav::-webkit-scrollbar {
                 display: none;
             }
             #home > div > aside:first-child nav a {
-                flex: 0 0 2.75rem;
-                width: 2.75rem;
+                width: 100%;
+                min-width: 0;
                 height: 2.55rem;
                 justify-content: center;
                 padding: 0;
                 border-radius: 1rem;
                 font-size: 0;
+                overflow: hidden;
             }
             #home > div > aside:first-child nav a span {
                 margin: 0;
@@ -686,7 +686,7 @@
 </div>
 <nav class="grid min-w-0 gap-1 font-label-md text-sm" aria-label="Workspace tools" data-final-ux-shell="account-tools">
 <a class="workspace-link flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="#dashboard" aria-label="Home" title="Home"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
-<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="brief.html" aria-label="Post a job" title="Post a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Post a job</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="brief.html" aria-label="Post a job" title="Give jobs"><span class="material-symbols-outlined text-[20px]">add_task</span>Give jobs</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="#find-work" aria-label="Find jobs" title="Find jobs"><span class="material-symbols-outlined text-[20px]">work</span>Find jobs</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html" aria-label="Track jobs" title="Track jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>Track</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html" aria-label="Messages" title="Messages"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
@@ -709,7 +709,7 @@
 <p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence." data-ai-status-off="Manual mode is on. Nothing breaks: use jobs, verification, messages, payments, tracking, and issues yourself.">AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence.</p>
 </div>
 <div class="flex flex-wrap gap-3 xl:justify-end">
-<a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="brief.html">Post a job</a>
+<a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="brief.html">Give a job</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=home&links=portal,corridor,verification">Ask AI</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="tracking.html">Use normal tools</a>
 </div>
@@ -860,7 +860,7 @@
 <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Main actions">
 <a class="quick-action-card glass-panel" href="brief.html" aria-label="Post a job">
 <span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">add_task</span></span>
-<h2 class="font-headline-sm text-headline-sm mt-4">Post a job</h2>
+<h2 class="font-headline-sm text-headline-sm mt-4">Give a job</h2>
 <p class="font-body-md text-on-surface-variant mt-2">Describe the job, choose the route, upload details, set proof, and get a quote.</p>
 <span class="quick-action-cta">Start request <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1375,5 +1375,5 @@ Submit offer
 <script src="app-data.js?v=54"></script>
 <script src="ai-preferences.js?v=3"></script>
 <script src="stitch-portal.js?v=34"></script>
-<script src="assistant-dock.js?v=14"></script>
+<script src="assistant-dock.js?v=15"></script>
 </body></html>

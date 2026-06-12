@@ -304,7 +304,7 @@ function routeStitchHome(html) {
     '<nav class="swadakta-mobile-bottom-nav md:hidden fixed bottom-0 left-0 w-full z-50 grid grid-cols-3 items-center px-4 py-2 bg-surface/80 backdrop-blur-xl border-t border-white/20 shadow-lg rounded-t-xl">',
   );
 
-  output = injectBeforeBodyClose(output, '<script src="assistant-dock.js?v=14"></script>');
+  output = injectBeforeBodyClose(output, '<script src="assistant-dock.js?v=15"></script>');
   output = output.replace(
     "<body ",
     '<body data-stitch-source="swadakta_home_final_ux_refined" data-stitch-integration="public-links" ',
@@ -473,7 +473,7 @@ function routeStitchLogin(html) {
     `<script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=54"></script>
 <script src="login.js?v=3"></script>
-<script src="assistant-dock.js?v=14"></script>
+<script src="assistant-dock.js?v=15"></script>
 </body>`,
   );
   output = output.replace(
@@ -558,7 +558,7 @@ function routeStitchWelcomeLogin(html) {
     `<script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=54"></script>
 <script src="login.js?v=2"></script>
-<script src="assistant-dock.js?v=14"></script>
+<script src="assistant-dock.js?v=15"></script>
 </body>`,
   );
 

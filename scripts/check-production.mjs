@@ -351,11 +351,13 @@ const requiredAssistantHtmlMarkers = [
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
+  'const DOCK_VERSION = "15"',
   "collectPageContext",
   "inferSafeIntent",
   "protectedIntentPattern",
   "routeKeyFromPrompt",
   "safeActionMap",
+  'find_work: ["Find jobs", "portal.html#find-work"]',
   "open_visible_link",
   "explain_screen",
   "findVisibleSafeLink",
@@ -372,6 +374,7 @@ const requiredDockMarkers = [
   "swadakta:ai-mode-change",
   "syncAccountCtas",
   "storedSupabaseSessionEmail",
+  "grid-template-columns: repeat(5, minmax(0, 1fr))",
   "Protected actions stay gated",
 ];
 const requiredAiPreferenceMarkers = [
@@ -1094,8 +1097,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=14")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=14`);
+  if (!content.includes("assistant-dock.js?v=15")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=15`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1326,8 +1329,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=14")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=14`);
+  if (!text.includes("assistant-dock.js?v=15")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=15`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
@@ -1732,11 +1735,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=14");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=15");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=14 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=15 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=14 returned 200");
+  pass("assistant-dock.js?v=15 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
