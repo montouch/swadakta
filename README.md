@@ -7,6 +7,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Client-facing landing page and real intake form
 - Public Payments & Pricing page with a launch quote estimator, provider-rail order, client-safe service-fee wording, Wise fallback boundary, and escrow disclaimer
 - Public Item & Corridor Rules page with a postal/courier/customs pre-check for batteries, perfume, medicines, food, plants, valuables, documents, and restricted goods
+- Inline brief goods-safety selector that carries item category, handoff mode, compliance checks, risk level, and official reference links into quote/admin triage
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
 - Account-first flow blueprint in `FLOW_BLUEPRINT.md` for the Google Stitch rebuild
 - One account flow for client, job seeker, or both account modes
