@@ -516,25 +516,107 @@
     return context;
   }
 
-  function restoreContext() {
+  function applyContext(context = {}) {
+    if (context.origin_country) field("#corridor-origin").value = context.origin_country;
+    if (context.destination_country) field("#corridor-destination").value = context.destination_country;
+    if (context.task_location) field("#corridor-location").value = context.task_location;
+    if (context.service_direction) field("#corridor-direction").value = context.service_direction;
+    if (context.service_type) field("#corridor-service").value = context.service_type;
+    if (context.logistics_mode) field("#corridor-logistics").value = context.logistics_mode;
+    if (context.goods_category) field("#corridor-goods").value = context.goods_category;
+    if (africaQuickStart && context.origin_country && sameCountry(context.origin_country, context.destination_country)) {
+      africaQuickStart.value = africaCountryOptions.includes(context.origin_country) ? context.origin_country : "";
+    }
+    if (typeof context.compliance_acknowledged === "boolean" && complianceAck) {
+      complianceAck.checked = context.compliance_acknowledged;
+    }
+    if (context.notes) field("#corridor-notes").value = context.notes;
+  }
+
+  function nonEmptyContext(context = {}) {
+    return Object.fromEntries(
+      Object.entries(context).filter(([, value]) =>
+        Array.isArray(value) ? value.length : value !== "" && value !== null && value !== undefined,
+      ),
+    );
+  }
+
+  function readStoredContext() {
     try {
-      const context = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-      if (context.origin_country) field("#corridor-origin").value = context.origin_country;
-      if (context.destination_country) field("#corridor-destination").value = context.destination_country;
-      if (context.task_location) field("#corridor-location").value = context.task_location;
-      if (context.service_direction) field("#corridor-direction").value = context.service_direction;
-      if (context.service_type) field("#corridor-service").value = context.service_type;
-      if (context.logistics_mode) field("#corridor-logistics").value = context.logistics_mode;
-      if (context.goods_category) field("#corridor-goods").value = context.goods_category;
-      if (africaQuickStart && context.origin_country && sameCountry(context.origin_country, context.destination_country)) {
-        africaQuickStart.value = africaCountryOptions.includes(context.origin_country) ? context.origin_country : "";
-      }
-      if (complianceAck) complianceAck.checked = Boolean(context.compliance_acknowledged);
-      if (context.notes) field("#corridor-notes").value = context.notes;
+      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
     } catch {
       localStorage.removeItem(STORAGE_KEY);
+      return {};
     }
+  }
+
+  function restoreContext() {
+    applyContext(readStoredContext());
     setNextCopy();
+  }
+
+  function applyCorridorQueryParams() {
+    const params = new URLSearchParams(window.location.search);
+    const hasRouteContext = [
+      "origin",
+      "origin_country",
+      "destination",
+      "destination_country",
+      "location",
+      "task_location",
+      "direction",
+      "service_direction",
+      "logistics",
+      "logistics_mode",
+      "goods",
+      "goods_category",
+      "service",
+      "service_type",
+      "review_reason",
+      "flags",
+      "checks",
+      "notes",
+    ].some((key) => params.has(key));
+
+    if (!hasRouteContext) return;
+
+    const queryContext = nonEmptyContext({
+      origin_country: params.get("origin") || params.get("origin_country") || "",
+      destination_country: params.get("destination") || params.get("destination_country") || "",
+      task_location: params.get("location") || params.get("task_location") || "",
+      service_direction: params.get("direction") || params.get("service_direction") || "",
+      service_type: params.get("service") || params.get("service_type") || "",
+      logistics_mode: params.get("logistics") || params.get("logistics_mode") || "",
+      goods_category: params.get("goods") || params.get("goods_category") || "",
+      compliance_status: params.get("compliance") || "",
+      compliance_risk_level: params.get("risk") || "",
+      route_status: params.get("route") || "",
+      automation_status: params.get("automation") || "",
+      admin_review_required: params.get("review") === "yes",
+      admin_review_reason: params.get("review_reason") || "",
+      compliance_acknowledged: params.has("ack") ? params.get("ack") === "yes" : undefined,
+      compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
+      required_checks: (params.get("checks") || "").split("|").filter(Boolean),
+      notes: params.get("notes") || "",
+      imported_from: "brief_route_planner",
+      imported_at: new Date().toISOString(),
+    });
+
+    const mergedContext = { ...readStoredContext(), ...queryContext };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedContext));
+    applyContext(mergedContext);
+    setNextCopy();
+  }
+
+  function applyInitialQueryDefaults() {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.toString()) return;
+    if (!params.has("origin") && !params.has("origin_country")) return;
+    if (!params.has("destination") && !params.has("destination_country")) return;
+    const notice = document.querySelector("#corridor-next-copy");
+    if (notice) {
+      notice.textContent = "Route details were imported from the brief. Review the checks, then continue back to the paid brief.";
+    }
   }
 
   form.addEventListener("input", setNextCopy);
@@ -579,4 +661,6 @@
   ensureCountryOptions();
   populateAfricaQuickSelect();
   restoreContext();
+  applyCorridorQueryParams();
+  applyInitialQueryDefaults();
 })();
