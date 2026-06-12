@@ -53,6 +53,27 @@ const paymentProviderEndpoints = [
   "/api/payments/paystack-webhook",
   "/api/payments/flutterwave-webhook",
 ];
+const requiredSecurityHeaders = [
+  ["strict-transport-security", "max-age="],
+  ["content-security-policy", "default-src 'self'"],
+  ["x-content-type-options", "nosniff"],
+  ["x-frame-options", "DENY"],
+  ["referrer-policy", "strict-origin-when-cross-origin"],
+  ["permissions-policy", "camera=(self)"],
+];
+const privateNoStorePages = [
+  "/admin-ops",
+  "/admin-readiness",
+  "/admin-verification",
+  "/auth",
+  "/portal",
+  "/brief",
+  "/tracking",
+  "/verification",
+  "/assistant",
+  "/messages",
+  "/resolution",
+];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -519,6 +540,12 @@ function isLocalBaseUrl() {
   }
 }
 
+function headerIncludes(response, name, expected) {
+  return String(response.headers.get(name) || "")
+    .toLowerCase()
+    .includes(String(expected || "").toLowerCase());
+}
+
 function fail(failures, message) {
   failures.push(message);
   console.error(`FAIL ${message}`);
@@ -918,6 +945,33 @@ if (!manifestText.includes('"name": "Swadakta"') || !manifestText.includes("/fav
 if (isLocalBaseUrl()) {
   pass("Skipping hosted /admin redirect check for local static server");
 } else {
+  const { response: rootHeaderResponse } = await fetchText("/");
+  for (const [name, expected] of requiredSecurityHeaders) {
+    if (!headerIncludes(rootHeaderResponse, name, expected)) {
+      fail(failures, `/ is missing ${name} containing ${expected}`);
+    } else {
+      pass(`/ includes ${name}`);
+    }
+  }
+
+  for (const privatePage of privateNoStorePages) {
+    const { response } = await fetchText(privatePage);
+    if (response.status !== 200) {
+      fail(failures, `${privatePage} returned ${response.status} while checking private-page headers`);
+      continue;
+    }
+    if (!headerIncludes(response, "cache-control", "no-store")) {
+      fail(failures, `${privatePage} is missing Cache-Control: no-store`);
+    } else {
+      pass(`${privatePage} includes Cache-Control: no-store`);
+    }
+    if (!headerIncludes(response, "x-robots-tag", "noindex")) {
+      fail(failures, `${privatePage} is missing X-Robots-Tag: noindex`);
+    } else {
+      pass(`${privatePage} includes X-Robots-Tag: noindex`);
+    }
+  }
+
   for (const adminEntry of ["/admin", "/admin.html"]) {
     const chain = await fetchRedirectChain(adminEntry);
     const final = chain[chain.length - 1] || {};

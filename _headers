@@ -7,75 +7,99 @@
   Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; connect-src 'self' https://srwkoulknropnwwyqslj.supabase.co wss://srwkoulknropnwwyqslj.supabase.co; img-src 'self' data: https:; media-src 'self' blob: data:; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; upgrade-insecure-requests
 
 /admin
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-ops
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-ops.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-readiness
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-readiness.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-verification
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /admin-verification.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /auth
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /auth.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /portal
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /portal.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /brief
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /brief.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /tracking
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /tracking.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /verification
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /verification.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /assistant
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /assistant.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /messages
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /messages.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /resolution
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /resolution.html
+  Cache-Control: no-store
   X-Robots-Tag: noindex, nofollow
 
 /assets/*
