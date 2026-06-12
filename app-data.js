@@ -3024,6 +3024,7 @@
         whatsapp: request.whatsapp,
         phone_number: request.local_contact_phone || request.whatsapp,
         mpesa_phone: updates.mpesa_phone,
+        force_new_stk: updates.force_new_stk === true,
         service_package: updates.service_package || request.service_package,
         quote_amount: updates.quote_amount || request.quote_amount,
         quote_currency: updates.quote_currency || request.quote_currency || request.preferred_currency,

@@ -235,6 +235,13 @@
     return `Best fit for ${currency} card checkout. Stripe webhook evidence still controls paid status.`;
   }
 
+  function existingMpesaPrompt(request) {
+    const reference = String(request.payment_reference || "");
+    const payment = String(request.payment_status || "");
+    const funds = String(request.funds_status || "");
+    return reference.startsWith("M-Pesa STK") && payment === "invoice_sent" && funds === "payment_link_sent";
+  }
+
   function railEnabled(request, rail) {
     const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
     const hasQuote = Number(request.quote_amount || 0) > 0;
@@ -942,6 +949,9 @@
     const payload = result?.data || {};
     const link = payload.url ? ` Link: ${payload.url}` : "";
     const reference = payload.provider_reference || payload.checkout_request_id || payload.id || "";
+    if (rail === "mpesa" && payload.reused) {
+      return `M-Pesa STK already active. Reused CheckoutRequestID${reference ? ` ${reference}` : ""}. Wait for callback confirmation or replace only after expiry/failure is confirmed.`;
+    }
     return `${paymentRailLabel(rail)} prepared.${reference ? ` Reference: ${reference}.` : ""}${link} Provider confirmation is still required before funds are marked paid or released.`;
   }
 
@@ -983,6 +993,7 @@
     const preferredRail = preferredPaymentRail(request);
     const currency = normalizeCurrency(request.quote_currency || request.preferred_currency);
     const economics = quoteEconomics(request);
+    const mpesaActive = existingMpesaPrompt(request);
     const rails = ["stripe", "paypal", "mpesa", "wise"];
     const buttons = rails
       .map((rail) => {
@@ -1010,6 +1021,19 @@
             M-Pesa phone
             <input class="payment-mpesa-phone glass-input h-11 rounded-2xl px-4 font-body text-on-surface" type="tel" value="${escapeHtml(request.local_contact_phone || request.whatsapp || "")}" placeholder="+2547..." />
           </label>
+        </div>
+        <div class="mt-4 rounded-3xl border border-outline-variant/30 bg-white/60 p-4" data-mpesa-resend-guard>
+          <div class="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+            <p class="text-xs leading-5 text-on-surface-variant">
+              <strong class="text-on-surface">M-Pesa resend safety:</strong>
+              ${mpesaActive ? "An active STK prompt is already recorded. Swadakta will reuse its CheckoutRequestID instead of prompting the phone again." : "Duplicate STK prompts are suppressed automatically when the same quote already has an active M-Pesa reference."}
+            </p>
+            <label class="inline-flex min-h-11 items-center gap-3 rounded-2xl bg-white/72 px-4 font-label text-xs font-bold text-on-surface-variant">
+              <input class="payment-mpesa-force-new h-4 w-4 accent-primary" type="checkbox" />
+              Replace expired/failed prompt
+            </label>
+          </div>
+          <p class="mt-2 text-[11px] leading-5 text-on-surface-variant">Use this only after the payer confirms the old STK expired, failed, or went to the wrong number. It must not mark funds paid or override provider evidence.</p>
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
           ${buttons}
@@ -1367,6 +1391,7 @@
     try {
       const updates = {
         mpesa_phone: article.querySelector(".payment-mpesa-phone")?.value.trim() || "",
+        force_new_stk: article.querySelector(".payment-mpesa-force-new")?.checked || false,
       };
       let result;
 
