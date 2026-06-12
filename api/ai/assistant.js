@@ -270,6 +270,7 @@ module.exports = async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
+    res.setHeader("Allow", "POST, OPTIONS");
     sendJson(res, 405, { error: "Method not allowed." });
     return;
   }

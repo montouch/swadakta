@@ -4,6 +4,8 @@ Google Stitch is the visual source of truth for Swadakta workflow screens.
 
 The production app may layer in metadata, route links, script tags, Supabase/Auth wiring, payment provider calls, AI guardrails, and hidden state needed for functionality. It should not invent replacement visual page designs in code.
 
+When the visual direction changes, update the matching screen in Stitch first, export/import that exact screen, then reconnect the functional hooks. Code-only work is allowed for backend, auth, health checks, data wiring, validation, and provider integrations, but not for creating a substitute page design.
+
 ## Required screen sources
 
 | Route | Stitch source |

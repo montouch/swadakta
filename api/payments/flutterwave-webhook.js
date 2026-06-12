@@ -258,6 +258,7 @@ async function updateRequestFromFlutterwave(eventData, verifiedData) {
 
 module.exports = async function handler(req, res) {
   if (req.method !== "POST") {
+    res.setHeader("Allow", "POST");
     sendJson(res, 405, { error: "Method not allowed." });
     return;
   }

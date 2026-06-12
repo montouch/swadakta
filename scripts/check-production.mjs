@@ -162,14 +162,19 @@ const requiredStitchScreens = [
   },
 ];
 const requiredStitchScreenByPath = new Map(requiredStitchScreens.map((screen) => [screen.path, screen]));
-const paymentProviderEndpoints = [
+const postOnlyApiEndpoints = [
+  "/api/ai/assistant",
+  "/api/identity/start-verification",
+  "/api/payments/stripe-checkout",
+  "/api/payments/paypal-order",
+  "/api/payments/paypal-capture",
+  "/api/payments/mpesa-stk",
+  "/api/payments/wise-payment-request",
   "/api/payments/stripe-webhook",
   "/api/payments/mpesa-callback",
-  "/api/payments/paypal-capture",
   "/api/payments/paystack-webhook",
   "/api/payments/flutterwave-webhook",
 ];
-const mutationOnlyEndpoints = [...paymentProviderEndpoints, "/api/identity/start-verification"];
 const requiredSecurityHeaders = [
   ["strict-transport-security", "max-age="],
   ["content-security-policy", "default-src 'self'"],
@@ -791,9 +796,10 @@ function findStitchPortalVersions(files) {
   return versions;
 }
 
-async function fetchText(urlPath) {
+async function fetchText(urlPath, options = {}) {
   const separator = urlPath.includes("?") ? "&" : "?";
   const response = await fetch(`${baseUrl}${urlPath}${separator}health=${cacheBust}`, {
+    method: options.method || "GET",
     headers: {
       "cache-control": "no-cache",
       "user-agent": "swadakta-production-health",
@@ -1451,13 +1457,37 @@ if (isLocalBaseUrl()) {
     }
   }
 
-  for (const paymentEndpoint of mutationOnlyEndpoints) {
-    const { response } = await fetchText(paymentEndpoint);
+  for (const apiEndpoint of postOnlyApiEndpoints) {
+    const { response } = await fetchText(apiEndpoint);
     if (response.status !== 405) {
-      fail(failures, `${paymentEndpoint} should reject GET with 405, got ${response.status}`);
+      fail(failures, `${apiEndpoint} should reject GET with 405, got ${response.status}`);
     } else {
-      pass(`${paymentEndpoint} rejects GET with 405`);
+      pass(`${apiEndpoint} rejects GET with 405`);
     }
+    if (!headerIncludes(response, "allow", "POST")) {
+      fail(failures, `${apiEndpoint} 405 response is missing Allow: POST`);
+    } else {
+      pass(`${apiEndpoint} 405 response includes Allow: POST`);
+    }
+  }
+
+  const { response: readinessGetResponse } = await fetchText("/api/ops/readiness");
+  if (readinessGetResponse.status !== 401) {
+    fail(failures, `/api/ops/readiness should require admin auth with 401, got ${readinessGetResponse.status}`);
+  } else {
+    pass("/api/ops/readiness requires admin auth with 401");
+  }
+
+  const { response: readinessPostResponse } = await fetchText("/api/ops/readiness", { method: "POST" });
+  if (readinessPostResponse.status !== 405) {
+    fail(failures, `/api/ops/readiness should reject POST with 405, got ${readinessPostResponse.status}`);
+  } else {
+    pass("/api/ops/readiness rejects POST with 405");
+  }
+  if (!headerIncludes(readinessPostResponse, "allow", "GET")) {
+    fail(failures, "/api/ops/readiness 405 response is missing Allow: GET");
+  } else {
+    pass("/api/ops/readiness 405 response includes Allow: GET");
   }
 }
 
