@@ -149,7 +149,10 @@ const DOCS = {
   paypalOrders: "https://developer.paypal.com/docs/api/orders/v2/",
   daraja: "https://developer.safaricom.co.ke/",
   paystackPayments: "https://paystack.com/docs/payments/",
+  paystackWebhooks: "https://paystack.com/docs/payments/webhooks/",
+  paystackVerifyPayments: "https://paystack.com/docs/payments/verify-payments/",
   flutterwaveStandard: "https://developer.flutterwave.com/docs/flutterwave-standard",
+  flutterwaveWebhooks: "https://developer.flutterwave.com/docs/webhooks",
   smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
   smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
@@ -185,6 +188,13 @@ function confirmedEnv(name) {
   );
 }
 
+function csvEnv(name) {
+  return String(process.env[name] || "")
+    .split(",")
+    .map((value) => value.trim().toUpperCase())
+    .filter(Boolean);
+}
+
 function ownerFlagItem(id, label, envName, detail, next, options = {}) {
   const ready = confirmedEnv(envName);
   return item(id, label, ready ? "ready" : "missing", detail, ready ? options.ready_next || "Owner confirmation is recorded." : next, ready ? [] : [envName], {
@@ -208,6 +218,43 @@ function item(id, label, status, detail, next, missing = [], options = {}) {
     priority: Number.isFinite(options.priority) ? options.priority : 50,
     owner: options.owner || "Founder/admin",
   };
+}
+
+function paymentExpansionRailItem(options) {
+  const callbackUrl = `${publicUrl() || "https://swadakta.com"}${options.callbackPath}`;
+  const missingSecrets = missingEnv(options.requiredEnv);
+  const settlementCurrencies = csvEnv(options.settlementEnv);
+  const merchantApproved = confirmedEnv(options.merchantEnv);
+  const endpointReady = confirmedEnv(options.endpointEnv);
+  const evidenceMapped = confirmedEnv(options.evidenceEnv);
+  const missing = [
+    ...missingSecrets,
+    ...(settlementCurrencies.length ? [] : [options.settlementEnv]),
+    ...(merchantApproved ? [] : [options.merchantEnv]),
+    ...(endpointReady ? [] : [options.endpointEnv]),
+    ...(evidenceMapped ? [] : [options.evidenceEnv]),
+  ];
+  const ready = missing.length === 0;
+  const settlementCopy = settlementCurrencies.length ? settlementCurrencies.join(", ") : "not set";
+
+  return item(
+    options.id,
+    options.label,
+    ready ? "ready" : "manual",
+    ready
+      ? `${options.provider} is approved for pilot use. Webhook, verification, settlement, and Swadakta provider-evidence mapping are confirmed.`
+      : `${options.provider} remains an Africa expansion pilot. Callback candidate: ${callbackUrl}. Settlement currencies: ${settlementCopy}.`,
+    ready
+      ? `Run one low-value sandbox/live test, confirm webhook signature, verify transaction amount/currency/reference server-side, then keep milestone release founder-gated.`
+      : `Keep ${options.provider} hidden from normal users until merchant approval, webhook endpoint, signature secret, settlement currencies, and evidence mapping are all confirmed.`,
+    missing,
+    {
+      docs_url: options.docs_url,
+      copy_value: callbackUrl,
+      priority: options.priority,
+      owner: options.owner,
+    },
+  );
 }
 
 function buildNextActions(categories) {
@@ -251,6 +298,9 @@ function buildLaunchGate(categories) {
   );
   const publicTrustItems = flatItems.filter((entry) => entry.category_id === "public_trust");
   const publicTrustReady = publicTrustItems.every((entry) => entry.status === "ready");
+  const africaExpansionItems = flatItems.filter((entry) => entry.category_id === "africa_payment_expansion");
+  const africaExpansionReady =
+    africaExpansionItems.length > 0 && africaExpansionItems.every((entry) => entry.status === "ready");
 
   const status = blockers.length
     ? "paid_launch_blocked"
@@ -298,6 +348,9 @@ function buildLaunchGate(categories) {
       providerEvidenceReady
         ? "At least one provider-confirmed payment evidence path is ready."
         : "Payment evidence confirmation is not fully ready; do not treat funds as protected manually.",
+      africaExpansionReady
+        ? "Africa expansion rails have explicit merchant, settlement, webhook, and provider-evidence confirmations."
+        : "Paystack and Flutterwave remain expansion rails; do not expose them as default payment options until readiness confirms them.",
       "AI can draft and triage, but protected decisions remain provider/founder gated.",
     ],
   };
@@ -884,6 +937,8 @@ async function readinessReport(user, authHeader) {
   const smileIdConfigured = hasEnv("SMILE_ID_API_KEY") && hasEnv("SMILE_ID_PARTNER_ID");
   const stripeWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/stripe-webhook`;
   const mpesaWebhookUrl = mpesaCallbackUrl();
+  const paystackWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/paystack-webhook`;
+  const flutterwaveWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/flutterwave-webhook`;
 
   const categories = [
     {
@@ -1015,36 +1070,6 @@ async function readinessReport(user, authHeader) {
           },
         ),
         item(
-          "paystack_africa_pilot",
-          "Paystack Africa pilot",
-          paystackMissing.length ? "manual" : "ready",
-          paystackMissing.length
-            ? "Paystack is tracked as an Africa expansion candidate, not a live Swadakta rail yet."
-            : "Paystack secret and webhook placeholders are configured; run sandbox/live test jobs before client use.",
-          "Use Paystack only after merchant approval, settlement currency fit, webhook verification, and provider-evidence mapping are tested.",
-          paystackMissing,
-          {
-            docs_url: DOCS.paystackPayments,
-            priority: 54,
-            owner: "Founder/Paystack admin",
-          },
-        ),
-        item(
-          "flutterwave_africa_pilot",
-          "Flutterwave Africa pilot",
-          flutterwaveMissing.length ? "manual" : "ready",
-          flutterwaveMissing.length
-            ? "Flutterwave is tracked as an Africa expansion candidate, not a live Swadakta rail yet."
-            : "Flutterwave secret and webhook placeholders are configured; run sandbox/live test jobs before client use.",
-          "Use Flutterwave only after merchant approval, settlement currency fit, webhook verification, and provider-evidence mapping are tested.",
-          flutterwaveMissing,
-          {
-            docs_url: DOCS.flutterwaveStandard,
-            priority: 55,
-            owner: "Founder/Flutterwave admin",
-          },
-        ),
-        item(
           "wise_fallback",
           "Wise fallback transfer",
           wiseConfigured ? "ready" : "missing",
@@ -1055,6 +1080,74 @@ async function readinessReport(user, authHeader) {
             docs_url: DOCS.wiseBusiness,
             priority: 60,
             owner: "Founder/Wise admin",
+          },
+        ),
+      ],
+    },
+    {
+      id: "africa_payment_expansion",
+      label: "Africa payment expansion",
+      items: [
+        paymentExpansionRailItem({
+          id: "paystack_africa_pilot",
+          label: "Paystack Africa pilot",
+          provider: "Paystack",
+          requiredEnv: ["PAYSTACK_SECRET_KEY", "PAYSTACK_WEBHOOK_SECRET"],
+          settlementEnv: "PAYSTACK_SETTLEMENT_CURRENCIES",
+          merchantEnv: "PAYSTACK_MERCHANT_APPROVED",
+          endpointEnv: "PAYSTACK_WEBHOOK_ENDPOINT_READY",
+          evidenceEnv: "PAYSTACK_PROVIDER_EVIDENCE_MAPPED",
+          callbackPath: "/api/payments/paystack-webhook",
+          docs_url: DOCS.paystackWebhooks,
+          priority: 54,
+          owner: "Founder/Paystack admin",
+        }),
+        item(
+          "paystack_transaction_verify",
+          "Paystack transaction verification",
+          paystackMissing.length || !confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED") ? "manual" : "ready",
+          "Paystack payments should be verified server-side by reference before Swadakta treats funds as protected.",
+          "Map Paystack reference, amount, currency, customer, and status into the Swadakta request before any receiver assignment or milestone release.",
+          [
+            ...paystackMissing,
+            ...(confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED") ? [] : ["PAYSTACK_PROVIDER_EVIDENCE_MAPPED"]),
+          ],
+          {
+            docs_url: DOCS.paystackVerifyPayments,
+            copy_value: paystackWebhookUrl,
+            priority: 55,
+            owner: "Founder/Paystack admin",
+          },
+        ),
+        paymentExpansionRailItem({
+          id: "flutterwave_africa_pilot",
+          label: "Flutterwave Africa pilot",
+          provider: "Flutterwave",
+          requiredEnv: ["FLUTTERWAVE_SECRET_KEY", "FLUTTERWAVE_WEBHOOK_SECRET"],
+          settlementEnv: "FLUTTERWAVE_SETTLEMENT_CURRENCIES",
+          merchantEnv: "FLUTTERWAVE_MERCHANT_APPROVED",
+          endpointEnv: "FLUTTERWAVE_WEBHOOK_ENDPOINT_READY",
+          evidenceEnv: "FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED",
+          callbackPath: "/api/payments/flutterwave-webhook",
+          docs_url: DOCS.flutterwaveWebhooks,
+          priority: 56,
+          owner: "Founder/Flutterwave admin",
+        }),
+        item(
+          "flutterwave_transaction_verify",
+          "Flutterwave transaction verification",
+          flutterwaveMissing.length || !confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED") ? "manual" : "ready",
+          "Flutterwave payments should be verified server-side by transaction/reference before Swadakta treats funds as protected.",
+          "Map Flutterwave transaction id/reference, amount, currency, customer, and status into the Swadakta request before any receiver assignment or milestone release.",
+          [
+            ...flutterwaveMissing,
+            ...(confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED") ? [] : ["FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED"]),
+          ],
+          {
+            docs_url: DOCS.flutterwaveWebhooks,
+            copy_value: flutterwaveWebhookUrl,
+            priority: 57,
+            owner: "Founder/Flutterwave admin",
           },
         ),
       ],
@@ -1135,6 +1228,8 @@ async function readinessReport(user, authHeader) {
     safe_copy_values: {
       stripe_webhook_url: stripeWebhookUrl,
       mpesa_callback_url: mpesaWebhookUrl,
+      paystack_webhook_url: paystackWebhookUrl,
+      flutterwave_webhook_url: flutterwaveWebhookUrl,
     },
     protected_actions: [
       "Money release, refund, paid status, and milestone release stay founder/admin decisions.",

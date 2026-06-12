@@ -30,6 +30,8 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 
 The admin readiness cockpit also tracks these owner-only steps as non-secret Vercel flags. Leave each flag `false` until the step is genuinely complete, then set it to `true`: `SWADAKTA_OWNER_BUSINESS_REGISTERED`, `SWADAKTA_OWNER_TAX_REVIEWED`, `SWADAKTA_OWNER_INSURANCE_ACTIVE`, `SWADAKTA_OWNER_LEGAL_REVIEWED`, `SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED`, `SWADAKTA_OWNER_CONTRACTOR_TERMS_READY`, `SWADAKTA_OWNER_PRIVACY_REVIEWED`, `SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED`, `SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED`, and `SWADAKTA_OWNER_KENYA_SETUP_REVIEWED`.
 
+Africa expansion payment rails have their own non-secret readiness flags. Keep `PAYSTACK_MERCHANT_APPROVED`, `PAYSTACK_WEBHOOK_ENDPOINT_READY`, `PAYSTACK_PROVIDER_EVIDENCE_MAPPED`, `FLUTTERWAVE_MERCHANT_APPROVED`, `FLUTTERWAVE_WEBHOOK_ENDPOINT_READY`, and `FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED` set to `false` until merchant approval, settlement currencies, webhook signature checks, and server-side transaction evidence mapping are actually tested.
+
 ### Practical public-launch rule
 
 Until the owner-only steps above are complete, Swadakta can be shown as a live pilot and can collect non-sensitive test requests. Real paid jobs should stay founder-approved, provider-paid, ID-gated, and low-value, with written scope and no informal escrow.

@@ -26,6 +26,20 @@ Swadakta should not present itself as a licensed escrow company unless that lega
 - Client tracking can show safe milestone status, but internal notes and founder economics stay in admin.
 - Require ID verification for high-value, title/document, local-authority, family-authority, or sensitive-document jobs before funds are released.
 
+## Africa Expansion Rail Readiness
+
+Paystack and Flutterwave should stay expansion pilots until the readiness cockpit says the full evidence chain is complete. Do not expose either as a normal public payment option just because an API key exists.
+
+For each provider, confirm all of these before client use:
+
+- Merchant account is approved for the legal entity and the target countries/currencies.
+- Settlement currencies and payout route are known.
+- Webhook/callback endpoint exists and signature verification is configured.
+- Server-side transaction verification maps provider reference, amount, currency, customer, and status into the Swadakta request.
+- A low-value sandbox/live test proves the provider evidence trail without releasing funds automatically.
+
+Use these non-secret Vercel flags only after the step is genuinely complete: `PAYSTACK_MERCHANT_APPROVED`, `PAYSTACK_WEBHOOK_ENDPOINT_READY`, `PAYSTACK_PROVIDER_EVIDENCE_MAPPED`, `FLUTTERWAVE_MERCHANT_APPROVED`, `FLUTTERWAVE_WEBHOOK_ENDPOINT_READY`, and `FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED`.
+
 ## Stripe
 
 Use Stripe Payment Links for standard deposits, card payments, and repeatable packages. Stripe says Payment Links can create a payment page in a few clicks and be shared without code:
