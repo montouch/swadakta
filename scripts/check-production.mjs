@@ -332,6 +332,24 @@ const requiredReadinessApiMarkers = [
   "PAYSTACK_WEBHOOK_SECRET",
   "FLUTTERWAVE_WEBHOOK_SECRET",
 ];
+const requiredPaystackWebhookMarkers = [
+  "x-paystack-signature",
+  "verifyPaystackSignature",
+  "verifyPaystackTransaction",
+  "/transaction/verify/",
+  "Paystack webhook and transaction verification confirmed",
+  "Founder/admin must still review milestone proof before any receiver release",
+  "bodyParser: false",
+];
+const requiredFlutterwaveWebhookMarkers = [
+  "verif-hash",
+  "verifyFlutterwaveSignature",
+  "verifyFlutterwaveTransaction",
+  "/transactions/",
+  "/verify",
+  "Flutterwave webhook and transaction verification confirmed",
+  "Founder/admin must still review milestone proof before any receiver release",
+];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
   "Disallow: /admin-ops",
@@ -365,12 +383,14 @@ const requiredEnvExampleKeys = [
   "PAYSTACK_MERCHANT_APPROVED",
   "PAYSTACK_WEBHOOK_ENDPOINT_READY",
   "PAYSTACK_PROVIDER_EVIDENCE_MAPPED",
+  "PAYSTACK_BASE_URL",
   "FLUTTERWAVE_SECRET_KEY",
   "FLUTTERWAVE_WEBHOOK_SECRET",
   "FLUTTERWAVE_SETTLEMENT_CURRENCIES",
   "FLUTTERWAVE_MERCHANT_APPROVED",
   "FLUTTERWAVE_WEBHOOK_ENDPOINT_READY",
   "FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED",
+  "FLUTTERWAVE_BASE_URL",
   "WISE_PAYMENT_LINK_URL",
   "WISE_PAYMENT_REQUEST_URL",
   "WISE_RECEIVE_DETAILS_URL",
@@ -598,6 +618,18 @@ const localReadinessApi = await readLocal("api/ops/readiness.js");
 for (const marker of requiredReadinessApiMarkers) {
   if (!localReadinessApi.includes(marker)) {
     fail(failures, `Local readiness API is missing marker ${marker}`);
+  }
+}
+const localPaystackWebhook = await readLocal("api/payments/paystack-webhook.js");
+for (const marker of requiredPaystackWebhookMarkers) {
+  if (!localPaystackWebhook.includes(marker)) {
+    fail(failures, `Local Paystack webhook is missing marker ${marker}`);
+  }
+}
+const localFlutterwaveWebhook = await readLocal("api/payments/flutterwave-webhook.js");
+for (const marker of requiredFlutterwaveWebhookMarkers) {
+  if (!localFlutterwaveWebhook.includes(marker)) {
+    fail(failures, `Local Flutterwave webhook is missing marker ${marker}`);
   }
 }
 
@@ -870,6 +902,15 @@ if (isLocalBaseUrl()) {
       fail(failures, `${adminEntry} should end at /admin-ops, got ${summary}`);
     } else {
       pass(`${adminEntry} reaches ${final.urlPath}`);
+    }
+  }
+
+  for (const webhookPath of ["/api/payments/paystack-webhook", "/api/payments/flutterwave-webhook"]) {
+    const { response } = await fetchText(webhookPath);
+    if (response.status !== 405) {
+      fail(failures, `${webhookPath} should reject GET with 405, got ${response.status}`);
+    } else {
+      pass(`${webhookPath} rejects GET with 405`);
     }
   }
 }

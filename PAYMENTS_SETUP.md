@@ -40,6 +40,13 @@ For each provider, confirm all of these before client use:
 
 Use these non-secret Vercel flags only after the step is genuinely complete: `PAYSTACK_MERCHANT_APPROVED`, `PAYSTACK_WEBHOOK_ENDPOINT_READY`, `PAYSTACK_PROVIDER_EVIDENCE_MAPPED`, `FLUTTERWAVE_MERCHANT_APPROVED`, `FLUTTERWAVE_WEBHOOK_ENDPOINT_READY`, and `FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED`.
 
+Webhook endpoints are now reserved at:
+
+- `POST /api/payments/paystack-webhook`
+- `POST /api/payments/flutterwave-webhook`
+
+The Paystack endpoint verifies `x-paystack-signature`, then calls Paystack transaction verification by reference before updating a request. The Flutterwave endpoint verifies `verif-hash`, then calls Flutterwave transaction verification by transaction id before updating a request. Both endpoints can mark provider-confirmed deposits as paid/protected, but neither endpoint can assign receivers, release milestones, refund money, or override founder/admin proof review.
+
 ## Stripe
 
 Use Stripe Payment Links for standard deposits, card payments, and repeatable packages. Stripe says Payment Links can create a payment page in a few clicks and be shared without code:
