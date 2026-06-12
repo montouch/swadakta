@@ -202,6 +202,9 @@ const requiredAdminOpsMarkers = [
   "createPayPalOrder",
   "createMpesaStkPush",
   "createWisePaymentRequest",
+  "renderMatchRecommendations",
+  "Autopilot match suggestions",
+  "AI does not assign receivers",
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
 ];
@@ -583,8 +586,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=2")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=2`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=3")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=3`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
@@ -741,11 +744,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=2");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=3");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=2 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=3 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=2 returned 200");
+  pass("admin-ops.js?v=3 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {

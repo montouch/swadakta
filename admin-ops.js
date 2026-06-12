@@ -17,6 +17,7 @@
 
   let currentFilter = "exceptions";
   let currentRequests = [];
+  let currentPartners = [];
   let currentResolutionCases = [];
 
   const closedStatuses = new Set(["completed", "cancelled"]);
@@ -176,6 +177,182 @@
     return "Monitor normally; AI/autopilot can handle routine follow-up unless a protected decision appears.";
   }
 
+  function normalizedText(...values) {
+    return values
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function partnerCoverageText(partner) {
+    return normalizedText(partner.kenya_base, partner.service_regions, partner.notes, partner.provenance_notes);
+  }
+
+  function requestCoverageText(request) {
+    return normalizedText(
+      request.origin_country,
+      request.destination_country,
+      request.task_location,
+      request.kenya_location,
+      request.service_direction,
+      request.logistics_mode,
+      request.goods_category,
+      request.notes,
+    );
+  }
+
+  function requestCategoryHints(request) {
+    const task = String(request.task_type || "").toLowerCase();
+    const logistics = String(request.logistics_mode || "").toLowerCase();
+    const goods = String(request.goods_category || "").toLowerCase();
+    const hints = new Set();
+
+    if (task.includes("site") || task.includes("inspection")) hints.add("property_checks");
+    if (task.includes("registry") || task.includes("legal") || goods.includes("documents")) hints.add("documents");
+    if (task.includes("shopping") || logistics.includes("delivery") || logistics.includes("courier")) hints.add("shopping_delivery");
+    if (task.includes("virtual") || task.includes("research")) hints.add("sourcing");
+    if (task.includes("quick")) hints.add("family_support");
+    if (!hints.size) hints.add("business_support");
+
+    return hints;
+  }
+
+  function partnerEligibility(partner) {
+    const vetted = partner.status === "vetted";
+    const verified = partner.identity_verification_status === "verified";
+    if (vetted && verified) return { eligible: true, label: "Eligible" };
+    if (!verified && !vetted) return { eligible: false, label: "Needs ID and vetting" };
+    if (!verified) return { eligible: false, label: "Needs ID verification" };
+    return { eligible: false, label: "Needs vetting" };
+  }
+
+  function matchScore(request, partner) {
+    const reasons = [];
+    const blockers = [];
+    const eligibility = partnerEligibility(partner);
+    const coverage = partnerCoverageText(partner);
+    const requestText = requestCoverageText(request);
+    const taskLocation = normalizedText(request.task_location || request.kenya_location);
+    const destination = normalizedText(request.destination_country);
+    const origin = normalizedText(request.origin_country);
+    const categories = new Set(Array.isArray(partner.service_categories) ? partner.service_categories : []);
+    const hints = requestCategoryHints(request);
+    let score = 0;
+
+    if (eligibility.eligible) {
+      score += 30;
+      reasons.push("ID verified and vetted");
+    } else {
+      blockers.push(eligibility.label);
+      score += partner.identity_verification_status === "verified" ? 10 : 0;
+      score += partner.status === "vetted" ? 10 : 0;
+    }
+
+    if ([...hints].some((hint) => categories.has(hint))) {
+      score += 20;
+      reasons.push("Category fit");
+    }
+
+    if (taskLocation && coverage.includes(taskLocation)) {
+      score += 18;
+      reasons.push("Task location coverage");
+    } else if (destination && coverage.includes(destination)) {
+      score += 14;
+      reasons.push("Destination coverage");
+    } else if (origin && coverage.includes(origin)) {
+      score += 8;
+      reasons.push("Origin coverage");
+    }
+
+    if (requestText.includes("africa") && coverage.includes("africa")) {
+      score += 10;
+      reasons.push("Africa route coverage");
+    }
+
+    if (requestText.includes("remote") || requestText.includes("digital")) {
+      if (coverage.includes("remote") || coverage.includes("digital")) {
+        score += 12;
+        reasons.push("Digital work coverage");
+      }
+    }
+
+    if (["car", "motorbike", "ride_hailing", "mixed"].includes(partner.transport_access)) {
+      score += 5;
+      reasons.push("Transport access recorded");
+    }
+
+    score += Math.min(15, Math.round(Number(partner.provenance_score || 25) / 7));
+
+    return {
+      partner,
+      score: Math.min(100, score),
+      reasons: reasons.length ? reasons : ["Coverage needs review"],
+      blockers,
+      eligible: eligibility.eligible,
+      eligibilityLabel: eligibility.label,
+    };
+  }
+
+  function matchRecommendations(request) {
+    return currentPartners
+      .map((partner) => matchScore(request, partner))
+      .sort((left, right) => {
+        if (left.eligible !== right.eligible) return left.eligible ? -1 : 1;
+        return right.score - left.score;
+      })
+      .slice(0, 3);
+  }
+
+  function renderMatchRecommendations(request) {
+    const recommendations = matchRecommendations(request);
+    const route = routeLabel(request);
+
+    if (!recommendations.length) {
+      return `
+        <section class="mt-5 rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+          <p class="font-label text-xs uppercase tracking-[0.18em] text-tertiary">Autopilot match suggestions</p>
+          <p class="mt-2 text-sm leading-6 text-on-surface-variant">No field-partner applications are loaded yet. AI can draft outreach, but it cannot assign receivers without vetted, ID-verified coverage.</p>
+        </section>
+      `;
+    }
+
+    const cards = recommendations
+      .map(({ partner, score, reasons, blockers, eligible, eligibilityLabel }) => {
+        const tone = eligible ? "bg-emerald-500/10 text-emerald-700" : "bg-amber-400/20 text-amber-800";
+        return `
+          <article class="rounded-2xl border border-outline-variant/30 bg-white/72 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <strong class="font-label text-on-surface">${escapeHtml(partner.partner_code || partner.full_name || "Partner")}</strong>
+              <span class="rounded-full px-3 py-1 font-label text-xs ${tone}">${escapeHtml(score)}% ${escapeHtml(eligibilityLabel)}</span>
+            </div>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">${escapeHtml(partner.kenya_base || "Base pending")} / ${escapeHtml(partner.service_regions || "Coverage pending")}</p>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">${escapeHtml(reasons.join(" / "))}</p>
+            ${blockers.length ? `<p class="mt-2 text-xs font-bold text-amber-800">Blocked: ${escapeHtml(blockers.join(", "))}</p>` : ""}
+          </article>
+        `;
+      })
+      .join("");
+
+    return `
+      <section class="mt-5 rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+        <div class="flex flex-col gap-2 md:flex-row md:items-start md:justify-between">
+          <div>
+            <p class="font-label text-xs uppercase tracking-[0.18em] text-tertiary">Autopilot match suggestions</p>
+            <h3 class="mt-1 font-display text-xl font-extrabold">Best field-partner fit for ${escapeHtml(route)}</h3>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">AI can rank and draft assignment notes. AI does not assign receivers, approve ID, or clear legal/customs risk without provider evidence or founder approval.</p>
+          </div>
+          <a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="admin-verification.html">Open vetting</a>
+        </div>
+        <div class="mt-4 grid gap-3 lg:grid-cols-3">
+          ${cards}
+        </div>
+      </section>
+    `;
+  }
+
   function setStatus(message, tone = "text-on-surface-variant") {
     opsStatus.textContent = message;
     opsStatus.className = `mt-4 min-h-6 text-sm ${tone}`.trim();
@@ -225,6 +402,7 @@
   }
 
   function copyQuoteText(request, flags) {
+    const topMatch = matchRecommendations(request)[0];
     return [
       `Swadakta request ${request.request_code}`,
       `Client: ${request.client_name || "Client"}`,
@@ -233,6 +411,9 @@
       `Status: ${formatStatus(request.status)} / payment ${formatStatus(request.payment_status)}`,
       `Quote: ${formatMoney(request.quote_amount, request.quote_currency || request.preferred_currency || "AUD")}`,
       `Funds guard: ${formatStatus(request.funds_status || "not_collected")}`,
+      topMatch
+        ? `Top match: ${topMatch.partner.partner_code || topMatch.partner.full_name || "Partner"} (${topMatch.score}%, ${topMatch.eligibilityLabel}) - ${topMatch.reasons.join("; ")}`
+        : "Top match: no partner applications loaded yet",
       `Founder note: ${nextAction(request, flags)}`,
       "Protected decisions are not delegated to AI: paid status, ID approval, assignment, and payout release require provider evidence or founder/admin approval.",
     ].join("\n");
@@ -330,6 +511,7 @@
           <a class="rounded-full border border-outline-variant/50 bg-white/72 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" href="tracking.html">Open tracking</a>
           <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" href="assistant.html">Ask AI</a>
         </div>
+        ${renderMatchRecommendations(request)}
         ${renderPaymentRoutePanel(request)}
       </article>
     `;
@@ -452,16 +634,21 @@
         setStatus("Local static mode cannot call the Vercel readiness API; loading requests through Supabase/RLS instead.");
       }
 
-      const [requestResult, resolutionResult] = await Promise.all([
+      const [requestResult, partnerResult, resolutionResult] = await Promise.all([
         data.listRequests(),
+        data.listPartnerApplications().catch((error) => ({ data: [], error })),
         data.listResolutionCases().catch((error) => ({ data: [], error })),
       ]);
       currentRequests = requestResult.data || [];
+      currentPartners = partnerResult.data || [];
       currentResolutionCases = resolutionResult.data || [];
       opsMode.textContent = requestResult.mode === "local" ? "Local demo requests" : "Live production requests";
       setStatus(`Updated ${new Date().toLocaleString()}. Showing protected-decision exceptions first.`);
       renderQueue();
       renderResolutionCases();
+      if (partnerResult.error) {
+        setStatus(`Updated ${new Date().toLocaleString()}. Partner matching is limited: ${partnerResult.error.message || "could not load partner applications"}.`, "text-on-surface-variant");
+      }
       if (resolutionResult.error && resolutionList) {
         resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(resolutionResult.error.message || "Could not load resolution cases.")}</div>`;
       }
