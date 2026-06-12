@@ -118,3 +118,5 @@ See [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md)
 See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, M-Pesa, bank-transfer, and Wise fallback launch workflow.
 
 See [IDENTITY_VERIFICATION.md](IDENTITY_VERIFICATION.md) for the Smile ID-first Africa verification workflow plus wider global verification options.
+
+See [STITCH_UI_SOURCE.md](STITCH_UI_SOURCE.md) for the rule that Google Stitch owns the visible workflow UI and production code only layers in links, data, auth, payment, AI, and safety behavior.

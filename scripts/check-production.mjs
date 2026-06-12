@@ -43,6 +43,7 @@ const requiredPages = [
   "/messages",
   "/notifications",
   "/verification",
+  "/assistant",
   "/trust",
   "/payments",
   "/resolution",
@@ -51,6 +52,115 @@ const requiredPages = [
   "/admin-verification",
   "/admin-readiness",
 ];
+const requiredStitchScreens = [
+  {
+    path: "/",
+    file: "index.html",
+    sources: ["swadakta_home_final_ux_coverage"],
+    integration: "public-links",
+  },
+  {
+    path: "/login",
+    file: "login.html",
+    sources: ["welcome_swadakta_final_ux"],
+    integration: "auth",
+  },
+  {
+    path: "/portal",
+    file: "portal.html",
+    sources: [
+      "dashboard_swadakta_mobile_final_ux",
+      "account_setup_profile_swadakta_final_ux_coverage",
+      "find_work_swadakta_final_ux",
+    ],
+    integration: "functional",
+  },
+  {
+    path: "/assistant",
+    file: "assistant.html",
+    sources: ["ai_assistant_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/brief",
+    file: "brief.html",
+    sources: ["create_brief_swadakta_final_ux"],
+    integration: "functional",
+  },
+  {
+    path: "/corridor",
+    file: "corridor.html",
+    sources: ["corridor_place_intelligence_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/tracking",
+    file: "tracking.html",
+    sources: ["track_request_swadakta_final_ux_calm"],
+    integration: "functional",
+  },
+  {
+    path: "/messages",
+    file: "messages.html",
+    sources: ["messages_proof_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/notifications",
+    file: "notifications.html",
+    sources: ["notifications_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/verification",
+    file: "verification.html",
+    sources: ["verification_center_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/trust",
+    file: "trust.html",
+    sources: ["trust_rules_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/payments",
+    file: "payments.html",
+    sources: ["payment_milestones_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/resolution",
+    file: "resolution.html",
+    sources: ["dispute_resolution_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/rules",
+    file: "rules.html",
+    sources: ["trust_rules_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/admin-ops",
+    file: "admin-ops.html",
+    sources: ["admin_console_swadakta_final_ux_exception_cockpit"],
+    integration: "functional",
+  },
+  {
+    path: "/admin-verification",
+    file: "admin-verification.html",
+    sources: ["admin_verification_queue_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+  {
+    path: "/admin-readiness",
+    file: "admin-readiness.html",
+    sources: ["admin_readiness_launch_gate_swadakta_final_ux_coverage"],
+    integration: "functional",
+  },
+];
+const requiredStitchScreenByPath = new Map(requiredStitchScreens.map((screen) => [screen.path, screen]));
 const paymentProviderEndpoints = [
   "/api/payments/stripe-webhook",
   "/api/payments/mpesa-callback",
@@ -715,6 +825,28 @@ function headerIncludes(response, name, expected) {
     .includes(String(expected || "").toLowerCase());
 }
 
+function stitchSourcesFromHtml(html) {
+  const match = String(html || "").match(/\sdata-stitch-source="([^"]+)"/);
+  if (!match) return [];
+  return match[1].split(/\s+/).filter(Boolean);
+}
+
+function stitchIntegrationFromHtml(html) {
+  return String(html || "").match(/\sdata-stitch-integration="([^"]+)"/)?.[1] || "";
+}
+
+function checkStitchScreenContract(failures, label, html, screen) {
+  const actualSources = stitchSourcesFromHtml(html);
+  for (const source of screen.sources) {
+    if (!actualSources.includes(source)) {
+      fail(failures, `${label} is missing Stitch source marker ${source}`);
+    }
+  }
+  if (screen.integration && stitchIntegrationFromHtml(html) !== screen.integration) {
+    fail(failures, `${label} is missing Stitch integration marker ${screen.integration}`);
+  }
+}
+
 function fail(failures, message) {
   failures.push(message);
   console.error(`FAIL ${message}`);
@@ -747,10 +879,20 @@ for (const marker of requiredSecretScanMarkers) {
 }
 runSecretScan(failures);
 const localHtml = await Promise.all(htmlFiles.map(async (file) => [file, await readLocal(file)]));
+const localHtmlByFile = new Map(localHtml);
 const versions = findAppDataVersions(localHtml);
 const uniqueVersions = [...new Set([...versions.values()].flat())];
 const stitchPortalVersions = findStitchPortalVersions(localHtml);
 const uniqueStitchPortalVersions = [...new Set([...stitchPortalVersions.values()].flat())];
+
+for (const screen of requiredStitchScreens) {
+  const html = localHtmlByFile.get(screen.file);
+  if (!html) {
+    fail(failures, `Local Stitch screen ${screen.file} is missing`);
+    continue;
+  }
+  checkStitchScreenContract(failures, `Local ${screen.file}`, html, screen);
+}
 
 if (uniqueVersions.length !== 1) {
   fail(failures, `Expected one app-data version across pages, found: ${uniqueVersions.join(", ") || "none"}`);
@@ -1038,6 +1180,10 @@ for (const page of requiredPages) {
         fail(failures, `${page} is missing final Stitch login marker ${marker}`);
       }
     }
+  }
+  const stitchScreen = requiredStitchScreenByPath.get(page);
+  if (stitchScreen) {
+    checkStitchScreenContract(failures, page, text, stitchScreen);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
