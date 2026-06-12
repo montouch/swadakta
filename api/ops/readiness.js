@@ -199,6 +199,78 @@ function buildNextActions(categories) {
     .slice(0, 8);
 }
 
+function buildLaunchGate(categories) {
+  const flatItems = categories.flatMap((category) =>
+    (category.items || []).map((entry) => ({
+      ...entry,
+      category: category.label,
+      category_id: category.id,
+    })),
+  );
+  const launchRelevant = flatItems.filter((entry) => (entry.priority || 50) <= 40);
+  const blockers = launchRelevant.filter((entry) => entry.status === "missing");
+  const checks = launchRelevant.filter((entry) => entry.status === "warning" || entry.status === "manual");
+  const paymentItems = flatItems.filter((entry) => entry.category_id === "payments");
+  const livePaymentReady = paymentItems.some((entry) =>
+    ["stripe_checkout", "paypal_orders", "mpesa_stk"].includes(entry.id) && entry.status === "ready",
+  );
+  const providerEvidenceReady = paymentItems.some((entry) =>
+    ["stripe_webhook", "mpesa_callback"].includes(entry.id) && entry.status === "ready",
+  );
+  const publicTrustItems = flatItems.filter((entry) => entry.category_id === "public_trust");
+  const publicTrustReady = publicTrustItems.every((entry) => entry.status === "ready");
+
+  const status = blockers.length
+    ? "paid_launch_blocked"
+    : checks.length
+      ? "soft_launch_with_checks"
+      : "launch_ready";
+  const label = {
+    paid_launch_blocked: "Paid launch blocked",
+    soft_launch_with_checks: "Soft launch with checks",
+    launch_ready: "Launch ready",
+  }[status];
+  const summary = blockers.length
+    ? "The public site can be reviewed, but do not take paid customer jobs until the listed blockers are fixed."
+    : checks.length
+      ? "Public demos and limited pilots are reasonable, but founder/admin should watch the manual checks before scaling paid traffic."
+      : "The readiness report did not find launch blockers in the checked rails.";
+
+  return {
+    status,
+    label,
+    summary,
+    public_site: publicTrustReady ? "ready" : "check",
+    paid_jobs: blockers.length || !livePaymentReady ? "blocked" : providerEvidenceReady ? "ready" : "check",
+    founder_load: blockers.length ? "high" : checks.length ? "medium" : "low",
+    blockers: blockers.slice(0, 6).map((entry) => ({
+      id: entry.id,
+      category: entry.category,
+      label: entry.label,
+      next: entry.next,
+      missing: entry.missing || [],
+      owner: entry.owner || "Founder/admin",
+    })),
+    checks: checks.slice(0, 6).map((entry) => ({
+      id: entry.id,
+      category: entry.category,
+      label: entry.label,
+      next: entry.next,
+      missing: entry.missing || [],
+      owner: entry.owner || "Founder/admin",
+      status: entry.status,
+    })),
+    evidence: [
+      publicTrustReady ? "Public domain trust files and noindex checks are ready." : "Public domain trust files or noindex checks need attention.",
+      livePaymentReady ? "At least one live primary payment rail is ready." : "No primary payment rail is fully ready yet.",
+      providerEvidenceReady
+        ? "At least one provider-confirmed payment evidence path is ready."
+        : "Payment evidence confirmation is not fully ready; do not treat funds as protected manually.",
+      "AI can draft and triage, but protected decisions remain provider/founder gated.",
+    ],
+  };
+}
+
 function authSecurityItems() {
   const projectRef = supabaseProjectRef();
   const projectBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : "";
@@ -849,6 +921,7 @@ async function readinessReport(user, authHeader) {
   ];
 
   const flatItems = categories.flatMap((category) => category.items);
+  const launchGate = buildLaunchGate(categories);
   const counts = flatItems.reduce(
     (acc, entry) => {
       acc[entry.status] = (acc[entry.status] || 0) + 1;
@@ -865,6 +938,7 @@ async function readinessReport(user, authHeader) {
       supabase_host: supabaseHost(),
     },
     counts,
+    launch_gate: launchGate,
     categories,
     next_actions: buildNextActions(categories),
     safe_copy_values: {

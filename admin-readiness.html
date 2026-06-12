@@ -192,6 +192,49 @@
             </article>
           </section>
 
+          <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="launch-gate-panel">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-tertiary">Public launch gate</p>
+                <h2 class="mt-1 font-display text-3xl font-extrabold">Can Swadakta take real jobs today?</h2>
+                <p class="mt-3 max-w-3xl text-on-surface-variant" id="launch-gate-summary">
+                  Loading launch gate from domain, trust, auth, payment, storage, AI, and ID-provider checks.
+                </p>
+              </div>
+              <button class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary" id="copy-launch-gate" type="button">
+                Copy launch brief
+              </button>
+            </div>
+            <div class="mt-6 grid gap-3 lg:grid-cols-4" id="launch-gate-metrics">
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Gate</p>
+                <strong class="mt-2 block font-display text-2xl" id="launch-gate-label">Checking</strong>
+              </article>
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Public site</p>
+                <strong class="mt-2 block font-display text-2xl" id="launch-public-site">Checking</strong>
+              </article>
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Paid jobs</p>
+                <strong class="mt-2 block font-display text-2xl" id="launch-paid-jobs">Checking</strong>
+              </article>
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Founder load</p>
+                <strong class="mt-2 block font-display text-2xl" id="launch-founder-load">Checking</strong>
+              </article>
+            </div>
+            <div class="mt-6 grid gap-4 lg:grid-cols-2">
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-sm text-on-surface">Blocking items</p>
+                <ul class="mt-3 grid gap-2 text-sm text-on-surface-variant" id="launch-blockers-list"></ul>
+              </article>
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <p class="font-label text-sm text-on-surface">Evidence notes</p>
+                <ul class="mt-3 grid gap-2 text-sm text-on-surface-variant" id="launch-evidence-list"></ul>
+              </article>
+            </div>
+          </section>
+
           <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="next-actions-panel">
             <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div>
@@ -236,7 +279,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=45"></script>
-    <script src="admin-readiness.js?v=3"></script>
+    <script src="admin-readiness.js?v=4"></script>
   <script src="assistant-dock.js?v=4"></script>
 </body>
 </html>

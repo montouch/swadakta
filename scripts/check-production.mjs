@@ -248,6 +248,9 @@ const requiredAdminReadinessMarkers = [
   "buildProviderPack",
   "providerPackCategoryText",
   "renderProviderPacks",
+  "renderLaunchGate",
+  "launchGateBrief",
+  "Swadakta public launch gate",
   "copy-provider-pack",
   "copy-category-pack",
   "Provider setup pack copied",
@@ -269,6 +272,9 @@ const requiredReadinessApiMarkers = [
   "supabase_leaked_password_protection",
   "supabase_auth_attack_protection",
   "password-strength-and-leaked-password-protection",
+  "buildLaunchGate",
+  "launch_gate",
+  "paid_launch_blocked",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
@@ -626,6 +632,9 @@ for (const page of requiredPages) {
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
   }
+  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
+    fail(failures, `${page} does not reference admin-readiness.js?v=4`);
+  }
   if (page === "/verification" && !text.includes("verification.js?v=5")) {
     fail(failures, `${page} does not reference verification.js?v=5`);
   }
@@ -808,11 +817,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=3");
+const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=4");
 if (adminReadinessResponse.status !== 200) {
-  fail(failures, `admin-readiness.js?v=3 returned ${adminReadinessResponse.status}`);
+  fail(failures, `admin-readiness.js?v=4 returned ${adminReadinessResponse.status}`);
 } else {
-  pass("admin-readiness.js?v=3 returned 200");
+  pass("admin-readiness.js?v=4 returned 200");
 }
 
 for (const marker of requiredAdminReadinessMarkers) {

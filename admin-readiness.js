@@ -19,6 +19,14 @@
   const categories = document.querySelector("#readiness-categories");
   const providerPackList = document.querySelector("#provider-pack-list");
   const protectedActions = document.querySelector("#protected-actions");
+  const launchGateSummary = document.querySelector("#launch-gate-summary");
+  const launchGateLabel = document.querySelector("#launch-gate-label");
+  const launchPublicSite = document.querySelector("#launch-public-site");
+  const launchPaidJobs = document.querySelector("#launch-paid-jobs");
+  const launchFounderLoad = document.querySelector("#launch-founder-load");
+  const launchBlockersList = document.querySelector("#launch-blockers-list");
+  const launchEvidenceList = document.querySelector("#launch-evidence-list");
+  const copyLaunchGateButton = document.querySelector("#copy-launch-gate");
 
   let latestReport = null;
 
@@ -127,6 +135,95 @@
       { ready: 0, warning: 0, missing: 0, manual: 0 },
     );
     return `${counts.ready || 0} ready / ${counts.warning || 0} check / ${counts.missing || 0} missing / ${counts.manual || 0} manual`;
+  }
+
+  function launchStatusTone(status) {
+    if (status === "launch_ready" || status === "ready" || status === "low") return "text-emerald-700";
+    if (status === "paid_launch_blocked" || status === "blocked" || status === "high") return "text-on-error-container";
+    return "text-amber-800";
+  }
+
+  function launchValueLabel(value) {
+    return String(value || "checking").replaceAll("_", " ").replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function launchGateBrief(report = latestReport) {
+    const gate = report?.launch_gate || {};
+    const blockers = Array.isArray(gate.blockers) ? gate.blockers : [];
+    const checks = Array.isArray(gate.checks) ? gate.checks : [];
+    const evidence = Array.isArray(gate.evidence) ? gate.evidence : [];
+    return [
+      "Swadakta public launch gate",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      `Gate: ${gate.label || "Checking"}`,
+      `Public site: ${launchValueLabel(gate.public_site)}`,
+      `Paid jobs: ${launchValueLabel(gate.paid_jobs)}`,
+      `Founder load: ${launchValueLabel(gate.founder_load)}`,
+      "",
+      "Summary:",
+      gate.summary || "No launch gate summary returned.",
+      "",
+      "Blockers:",
+      ...(blockers.length
+        ? blockers.map((entry) => `- ${entry.category}: ${entry.label}. ${entry.next || "Review setup."}`)
+        : ["- No blocking items returned."]),
+      "",
+      "Checks:",
+      ...(checks.length
+        ? checks.map((entry) => `- [${statusLabel(entry.status)}] ${entry.category}: ${entry.label}. ${entry.next || "Review setup."}`)
+        : ["- No manual/warning checks returned."]),
+      "",
+      "Evidence:",
+      ...(evidence.length ? evidence.map((entry) => `- ${entry}`) : ["- No evidence notes returned."]),
+      "",
+      "Founder rule: do not accept paid work unless payment evidence, ID/provider evidence, route rules, proof requirements, and payout gates are clear.",
+    ].join("\n");
+  }
+
+  function renderLaunchGate(report = latestReport) {
+    const gate = report?.launch_gate || {};
+    const blockers = Array.isArray(gate.blockers) ? gate.blockers : [];
+    const evidence = Array.isArray(gate.evidence) ? gate.evidence : [];
+
+    if (launchGateSummary) {
+      launchGateSummary.textContent = gate.summary || "Launch gate has not loaded yet.";
+    }
+    if (launchGateLabel) {
+      launchGateLabel.textContent = gate.label || "Checking";
+      launchGateLabel.className = `mt-2 block font-display text-2xl ${launchStatusTone(gate.status)}`.trim();
+    }
+    if (launchPublicSite) {
+      launchPublicSite.textContent = launchValueLabel(gate.public_site);
+      launchPublicSite.className = `mt-2 block font-display text-2xl ${launchStatusTone(gate.public_site)}`.trim();
+    }
+    if (launchPaidJobs) {
+      launchPaidJobs.textContent = launchValueLabel(gate.paid_jobs);
+      launchPaidJobs.className = `mt-2 block font-display text-2xl ${launchStatusTone(gate.paid_jobs)}`.trim();
+    }
+    if (launchFounderLoad) {
+      launchFounderLoad.textContent = launchValueLabel(gate.founder_load);
+      launchFounderLoad.className = `mt-2 block font-display text-2xl ${launchStatusTone(gate.founder_load)}`.trim();
+    }
+    if (launchBlockersList) {
+      launchBlockersList.innerHTML = blockers.length
+        ? blockers
+            .map(
+              (entry) => `
+                <li class="rounded-2xl bg-white/70 p-3">
+                  <strong class="block text-on-surface">${escapeHtml(entry.label || "Launch blocker")}</strong>
+                  <span class="mt-1 block text-xs leading-5">${escapeHtml(entry.category || "Readiness")} / ${escapeHtml(entry.owner || "Founder/admin")}</span>
+                  <span class="mt-2 block text-xs leading-5">${escapeHtml(entry.next || "Review setup.")}</span>
+                </li>
+              `,
+            )
+            .join("")
+        : `<li class="rounded-2xl bg-white/70 p-3">No paid-launch blockers returned by the readiness API.</li>`;
+    }
+    if (launchEvidenceList) {
+      launchEvidenceList.innerHTML = evidence.length
+        ? evidence.map((entry) => `<li class="rounded-2xl bg-white/70 p-3">${escapeHtml(entry)}</li>`).join("")
+        : `<li class="rounded-2xl bg-white/70 p-3">No evidence notes returned yet.</li>`;
+    }
   }
 
   function providerPackCategoryText(category = {}, report = latestReport) {
@@ -279,6 +376,7 @@
       "text-on-surface-variant",
     );
     updateStats(counts);
+    renderLaunchGate(report);
     nextActionsCount.textContent = `${nextActions.length} priorit${nextActions.length === 1 ? "y" : "ies"}`;
     nextActionsList.innerHTML = nextActions.length
       ? nextActions.map(renderAction).join("")
@@ -305,6 +403,7 @@
     if (providerPackList) {
       providerPackList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
+    renderLaunchGate({});
     protectedActions.innerHTML = "";
   }
 
@@ -392,6 +491,10 @@
     button.addEventListener("click", async () => {
       await copyText(buildProviderPack(), "Provider setup pack copied.");
     });
+  });
+
+  copyLaunchGateButton?.addEventListener("click", async () => {
+    await copyText(launchGateBrief(), "Launch gate brief copied.");
   });
 
   document.addEventListener("click", async (event) => {
