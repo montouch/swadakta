@@ -134,6 +134,36 @@
         body {
             background: radial-gradient(circle at 10% 20%, rgba(225, 224, 255, 0.4) 0%, rgba(250, 248, 255, 1) 90%);
         }
+        [hidden] {
+            display: none !important;
+        }
+        @media (max-width: 640px) {
+            header {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+            main {
+                padding-top: 104px !important;
+            }
+            main > section,
+            footer > div {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+            main > section:first-of-type {
+                gap: 2.25rem;
+                align-items: flex-start;
+            }
+            h1.text-display-lg {
+                font-size: 3.1rem !important;
+                line-height: 1.04 !important;
+                letter-spacing: 0 !important;
+            }
+            #trust .glass-card {
+                border-radius: 1.5rem !important;
+                padding: 1.25rem !important;
+            }
+        }
     </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -175,10 +205,9 @@
 <a class="glass-card px-8 py-4 rounded-xl font-bold text-lg border border-outline-variant/30 hover:bg-white/90 transition-all duration-700 opacity-100 translate-y-0" href="corridor.html">
                         Choose corridor
                     </a>
-<a class="text-primary font-bold px-8 py-4 hover:underline transition-all" href="verification.html?reason=receiver_work&role=receiver">
+<a class="glass-card px-8 py-4 rounded-xl font-bold text-lg border border-outline-variant/30 text-primary hover:bg-white/90 transition-all" href="verification.html?reason=receiver_work&role=receiver">
                         Apply for work
-                    </a>
-<a class="text-on-surface-variant font-bold px-8 py-4 hover:text-primary transition-all" href="portal.html">Sign in</a></div>
+                    </a></div>
 </div>
 <!-- Visual Component -->
 <div class="flex-1 relative w-full h-[600px] flex items-center justify-center">
@@ -400,5 +429,5 @@
     </script>
 
 
-<script src="assistant-dock.js?v=5"></script>
+<script src="assistant-dock.js?v=7"></script>
 </body></html>

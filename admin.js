@@ -980,6 +980,12 @@ function renderReadinessItem(entry) {
     Array.isArray(entry.missing) && entry.missing.length
       ? `<small>Missing: ${escapeHtml(entry.missing.join(", "))}</small>`
       : "";
+  const docsLink = entry.docs_url
+    ? `<a class="readiness-link" href="${escapeHtml(entry.docs_url)}" target="_blank" rel="noopener">Open setup docs</a>`
+    : "";
+  const copyButton = entry.copy_value
+    ? `<button class="readiness-copy" type="button" data-copy-readiness="${escapeHtml(entry.id || "")}">Copy value</button>`
+    : "";
 
   return `
     <article class="readiness-item readiness-${escapeHtml(entry.status || "pending")}">
@@ -990,6 +996,77 @@ function renderReadinessItem(entry) {
       <p>${escapeHtml(entry.detail || "No detail provided.")}</p>
       ${entry.next ? `<small>${escapeHtml(entry.next)}</small>` : ""}
       ${missing}
+      ${docsLink || copyButton ? `<div class="readiness-actions">${docsLink}${copyButton}</div>` : ""}
+    </article>
+  `;
+}
+
+function flattenReadinessItems() {
+  if (!operationsReadiness || operationsReadiness.error) {
+    return [];
+  }
+
+  return (operationsReadiness.categories || []).flatMap((category) =>
+    (category.items || []).map((entry) => ({
+      ...entry,
+      category: category.label || "Readiness",
+    })),
+  );
+}
+
+function buildReadinessChecklist() {
+  if (!operationsReadiness || operationsReadiness.error) {
+    return "";
+  }
+
+  const counts = operationsReadiness.counts || {};
+  const environment = operationsReadiness.environment || {};
+  const nextActions = Array.isArray(operationsReadiness.next_actions)
+    ? operationsReadiness.next_actions
+    : [];
+  const safeCopyValues = operationsReadiness.safe_copy_values || {};
+  const lines = [
+    "Swadakta launch readiness checklist",
+    `Generated: ${operationsReadiness.generated_at || new Date().toISOString()}`,
+    `Environment: ${environment.vercel_env || "unknown"} / ${environment.public_base_url || "domain unknown"}`,
+    `Counts: ${counts.ready || 0} ready, ${counts.warning || 0} check, ${counts.missing || 0} missing, ${counts.manual || 0} manual`,
+    "",
+    "Next setup actions:",
+    ...(nextActions.length
+      ? nextActions.map((entry, index) => {
+          const missing = Array.isArray(entry.missing) && entry.missing.length ? ` Missing: ${entry.missing.join(", ")}.` : "";
+          return `${index + 1}. [${readinessStatusLabel(entry.status)}] ${entry.label}: ${entry.next || "Review setup."}${missing}`;
+        })
+      : ["1. No missing setup actions returned by the readiness API."]),
+    "",
+    "Safe callback URLs:",
+    ...Object.entries(safeCopyValues).map(([key, value]) => `${key}: ${value}`),
+    "",
+    "Protected decisions:",
+    ...(operationsReadiness.protected_actions || []).map((action) => `- ${action}`),
+  ];
+
+  return lines.join("\n");
+}
+
+function renderReadinessAction(entry, index) {
+  const missing = Array.isArray(entry.missing) && entry.missing.length ? entry.missing.join(", ") : "";
+  const docsLink = entry.docs_url
+    ? `<a class="readiness-link" href="${escapeHtml(entry.docs_url)}" target="_blank" rel="noopener">Docs</a>`
+    : "";
+  const copyButton = entry.copy_value
+    ? `<button class="readiness-copy" type="button" data-copy-readiness="${escapeHtml(entry.id || "")}">Copy</button>`
+    : "";
+
+  return `
+    <article class="readiness-next-item readiness-${escapeHtml(entry.status || "pending")}">
+      <span>${escapeHtml(String(index + 1).padStart(2, "0"))}</span>
+      <div>
+        <strong>${escapeHtml(entry.label || "Setup action")}</strong>
+        <p>${escapeHtml(entry.next || "Review this setup item.")}</p>
+        ${missing ? `<small>Missing: ${escapeHtml(missing)}</small>` : ""}
+      </div>
+      <div class="readiness-actions">${docsLink}${copyButton}</div>
     </article>
   `;
 }
@@ -1030,6 +1107,9 @@ function renderOperationsReadiness() {
   const protectedActions = Array.isArray(operationsReadiness.protected_actions)
     ? operationsReadiness.protected_actions
     : [];
+  const nextActions = Array.isArray(operationsReadiness.next_actions)
+    ? operationsReadiness.next_actions
+    : [];
   const generatedAt = operationsReadiness.generated_at ? formatDate(operationsReadiness.generated_at) : "just now";
   const environment = operationsReadiness.environment || {};
   const categoryHtml = categories
@@ -1056,7 +1136,10 @@ function renderOperationsReadiness() {
           <h2>What is ready to make money safely.</h2>
           <p class="form-note">Updated ${escapeHtml(generatedAt)}. Environment: ${escapeHtml(environment.vercel_env || "unknown")} / ${escapeHtml(environment.public_base_url || "domain unknown")}.</p>
         </div>
-        <span class="mode-badge">${escapeHtml((counts.missing || 0) ? `${counts.missing} missing` : "Launch rails checked")}</span>
+        <div class="readiness-header-actions">
+          <span class="mode-badge">${escapeHtml((counts.missing || 0) ? `${counts.missing} missing` : "Launch rails checked")}</span>
+          <button class="button button-secondary" type="button" data-copy-readiness-checklist>Copy launch checklist</button>
+        </div>
       </div>
       <div class="readiness-summary" aria-label="Readiness summary">
         <article class="readiness-ready"><strong>${escapeHtml(String(counts.ready || 0))}</strong><span>Ready</span></article>
@@ -1064,12 +1147,26 @@ function renderOperationsReadiness() {
         <article class="readiness-missing"><strong>${escapeHtml(String(counts.missing || 0))}</strong><span>Missing</span></article>
         <article class="readiness-manual"><strong>${escapeHtml(String(counts.manual || 0))}</strong><span>Manual rails</span></article>
       </div>
+      ${
+        nextActions.length
+          ? `<section class="readiness-next" aria-label="Next setup actions">
+              <div class="readiness-category-header">
+                <strong>Next setup actions</strong>
+                <span>${escapeHtml(String(nextActions.length))} priorities</span>
+              </div>
+              <div class="readiness-next-list">
+                ${nextActions.map(renderReadinessAction).join("")}
+              </div>
+            </section>`
+          : ""
+      }
       ${categoryHtml}
       ${
         protectedActions.length
           ? `<div class="protected-actions"><strong>Protected decisions</strong><ul>${protectedActions.map((action) => `<li>${escapeHtml(action)}</li>`).join("")}</ul></div>`
           : ""
       }
+      <span class="copy-status" id="readiness-status" role="status"></span>
     </section>
   `;
 }
@@ -1209,6 +1306,16 @@ function renderFounderCommand() {
       <span class="copy-status" id="ops-ai-status" role="status"></span>
     </section>
   `;
+  founderCommand.dataset.readinessItems = JSON.stringify(
+    flattenReadinessItems()
+      .filter((entry) => entry.copy_value)
+      .map((entry) => ({
+        id: entry.id,
+        label: entry.label,
+        copy_value: entry.copy_value,
+      })),
+  );
+  founderCommand.dataset.readinessChecklist = buildReadinessChecklist();
   founderCommand.dataset.opsAiItems = JSON.stringify(
     opsAiItems.map((item) => ({
       requestId: item.request.id,
@@ -3990,6 +4097,27 @@ sensitiveFilter.addEventListener("change", renderRequests);
 searchRequests.addEventListener("input", renderRequests);
 if (founderCommand) {
   founderCommand.addEventListener("click", async (event) => {
+    const readinessCopyButton = event.target.closest("[data-copy-readiness]");
+    if (readinessCopyButton) {
+      const items = JSON.parse(founderCommand.dataset.readinessItems || "[]");
+      const item = items.find((entry) => entry.id === readinessCopyButton.dataset.copyReadiness);
+      const statusElement = founderCommand.querySelector("#readiness-status") || readinessCopyButton;
+      if (item?.copy_value) {
+        await copyText(item.copy_value, statusElement);
+      }
+      return;
+    }
+
+    const readinessChecklistButton = event.target.closest("[data-copy-readiness-checklist]");
+    if (readinessChecklistButton) {
+      const statusElement = founderCommand.querySelector("#readiness-status") || readinessChecklistButton;
+      const checklist = founderCommand.dataset.readinessChecklist || buildReadinessChecklist();
+      if (checklist) {
+        await copyText(checklist, statusElement);
+      }
+      return;
+    }
+
     const opsButton = event.target.closest("[data-copy-ops-ai]");
     if (opsButton) {
       const items = JSON.parse(founderCommand.dataset.opsAiItems || "[]");

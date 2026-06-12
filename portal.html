@@ -140,6 +140,101 @@
         body.is-account-signed-out #home {
             display: none !important;
         }
+        [hidden] {
+            display: none !important;
+        }
+        #dashboard > section[aria-label="Account at a glance"] > article,
+        #account-setup-checklist .setup-tile,
+        #account-home-autopilot-list > article,
+        section[aria-label="Main actions"] > a {
+            min-height: 100%;
+        }
+        #dashboard > section[aria-label="Account at a glance"] > article {
+            display: flex;
+            flex-direction: column;
+        }
+        #dashboard > section[aria-label="Account at a glance"] > article > a,
+        #dashboard > section[aria-label="Account at a glance"] > article > span:last-child {
+            align-self: flex-start;
+            margin-top: auto;
+        }
+        #account-setup-checklist .setup-tile {
+            display: flex;
+            align-items: flex-start;
+        }
+        #account-setup-checklist .setup-tile > div {
+            min-width: 0;
+        }
+        @media (max-width: 1023px) {
+            #home > div {
+                gap: 1rem;
+            }
+            #home aside {
+                position: sticky;
+                top: 0.6rem;
+                z-index: 40;
+                display: flex;
+                align-items: center;
+                gap: 0.45rem;
+                padding: 0.55rem;
+                border-radius: 1.35rem;
+            }
+            #home aside > div {
+                display: grid;
+                flex: 0 0 2.75rem;
+                height: 2.75rem;
+                place-items: center;
+                padding: 0;
+                border-radius: 1rem;
+                background: #4648d4;
+                color: #fff;
+                box-shadow: 0 14px 30px rgba(70,72,212,0.22);
+            }
+            #home aside > div::before {
+                content: "S";
+                font-family: Manrope, Inter, sans-serif;
+                font-size: 1rem;
+                font-weight: 800;
+            }
+            #home aside > div > * {
+                display: none !important;
+            }
+            #home aside nav {
+                display: flex;
+                min-width: 0;
+                flex: 1 1 auto;
+                gap: 0.2rem;
+                overflow-x: auto;
+                scrollbar-width: none;
+            }
+            #home aside nav::-webkit-scrollbar {
+                display: none;
+            }
+            #home aside nav a {
+                flex: 0 0 2.55rem;
+                width: 2.55rem;
+                height: 2.55rem;
+                justify-content: center;
+                padding: 0;
+                border-radius: 1rem;
+                font-size: 0;
+            }
+            #home aside nav a span {
+                margin: 0;
+                font-size: 20px !important;
+            }
+            #home aside [data-ai-toggle] {
+                flex: 0 0 auto;
+                width: auto;
+                height: 2.55rem;
+                margin: 0;
+                padding: 0 0.7rem;
+                font-size: 0.74rem;
+            }
+            #account-home-sign-out {
+                display: none;
+            }
+        }
     </style>
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -313,7 +408,7 @@
 <h1 class="font-display-lg text-headline-lg text-on-surface mt-1">What needs to happen?</h1>
 <p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Give a job, find jobs, track active work, message people, or ask AI to choose the next safe step.</p>
 </div>
-<div class="flex flex-col sm:flex-row gap-3">
+<div class="flex flex-wrap gap-3 xl:justify-end">
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Give a job</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=home&links=portal,corridor,verification">Ask AI</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="tracking.html">Use normal tools</a>
@@ -322,7 +417,7 @@
 <div class="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 <div class="relative flex-1">
 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-full sunken-input font-body-md text-on-surface" placeholder="Search jobs, requests, payments, messages..." type="search"/>
+<input class="w-full h-12 pl-12 pr-4 rounded-full sunken-input font-body-md text-on-surface" placeholder="Search jobs or messages..." type="search"/>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="account-home-verification-pill">Checking verification</span>
 </div>
@@ -383,7 +478,7 @@
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-setup-progress">Setup started</span>
 </div>
 <div class="mt-5 grid gap-3 md:grid-cols-4">
-<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-profile">
+<article class="setup-tile rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-profile">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">badge</span>
 <div>
@@ -392,7 +487,7 @@
 </div>
 </div>
 </article>
-<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-verification">
+<article class="setup-tile rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-verification">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">verified_user</span>
 <div>
@@ -401,7 +496,7 @@
 </div>
 </div>
 </article>
-<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-client">
+<article class="setup-tile rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-client">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">assignment_add</span>
 <div>
@@ -410,7 +505,7 @@
 </div>
 </div>
 </article>
-<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-receiver">
+<article class="setup-tile rounded-2xl bg-white/66 border border-outline-variant/30 p-4" id="account-setup-receiver">
 <div class="flex items-start gap-3">
 <span class="material-symbols-outlined text-primary">engineering</span>
 <div>
@@ -867,5 +962,5 @@
 <script src="app-data.js?v=45"></script>
 <script src="ai-preferences.js?v=1"></script>
 <script src="stitch-portal.js?v=28"></script>
-<script src="assistant-dock.js?v=5"></script>
+<script src="assistant-dock.js?v=7"></script>
 </body></html>

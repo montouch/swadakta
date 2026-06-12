@@ -163,7 +163,37 @@ const DOCS = {
   supabaseRls: "https://supabase.com/docs/guides/database/postgres/row-level-security",
   supabaseStorage: "https://supabase.com/docs/guides/storage",
   supabaseStorageAccess: "https://supabase.com/docs/guides/storage/security/access-control",
+  businessRegistration: "https://business.gov.au/registrations",
+  businessRegistrationService: "https://register.business.gov.au/",
+  atoGst: "https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst",
+  austracRemittance: "https://www.austrac.gov.au/enrol-and-register-remittance",
+  asicAfs: "https://www.asic.gov.au/for-finance-professionals/afs-licensees/do-you-need-an-afs-licence/",
+  businessInsurance: "https://business.gov.au/risk-management/insurance/types-of-business-insurance",
+  acccConsumerGuarantees: "https://www.accc.gov.au/consumers/problem-with-a-product-or-service-you-bought",
+  fairWorkContractors: "https://www.fairwork.gov.au/find-help-for/independent-contractors",
+  oaicSmallBusiness: "https://www.oaic.gov.au/privacy/privacy-guidance-for-organisations-and-government-agencies/organisations/small-business",
+  brsKenya: "https://brs.go.ke/",
+  kraPin: "https://www.kra.go.ke/business/companies-partnerships/companies-partnerships-pin-taxes/companies-partnerships-pin-registration",
+  odpcKenya: "https://www.odpc.go.ke/",
 };
+
+function confirmedEnv(name) {
+  return ["1", "true", "yes", "ready", "confirmed", "done"].includes(
+    String(process.env[name] || "")
+      .trim()
+      .toLowerCase(),
+  );
+}
+
+function ownerFlagItem(id, label, envName, detail, next, options = {}) {
+  const ready = confirmedEnv(envName);
+  return item(id, label, ready ? "ready" : "missing", detail, ready ? options.ready_next || "Owner confirmation is recorded." : next, ready ? [] : [envName], {
+    priority: options.priority,
+    owner: options.owner || "Founder/owner",
+    docs_url: options.docs_url || "",
+    copy_value: envName,
+  });
+}
 
 function item(id, label, status, detail, next, missing = [], options = {}) {
   return {
@@ -318,6 +348,128 @@ function authSecurityItems() {
         copy_value: DOCS.supabaseAuthCaptcha,
         priority: 14,
         owner: "Founder/Supabase admin",
+      },
+    ),
+  ];
+}
+
+function ownerLaunchItems() {
+  return [
+    ownerFlagItem(
+      "owner_business_registration",
+      "Business registration and trading name",
+      "SWADAKTA_OWNER_BUSINESS_REGISTERED",
+      "The owner must choose the legal home, business structure, ABN/company setup, and trading name before public paid launch.",
+      "Register or confirm the business/legal structure and trading name, then set SWADAKTA_OWNER_BUSINESS_REGISTERED=true in Vercel.",
+      {
+        docs_url: DOCS.businessRegistration,
+        priority: 4,
+      },
+    ),
+    ownerFlagItem(
+      "owner_tax_accounting",
+      "Tax and accounting review",
+      "SWADAKTA_OWNER_TAX_REVIEWED",
+      "Cross-border income, GST, contractor payments, records, refunds, and platform fees need an accountant/tax review.",
+      "Get tax/accounting advice, then set SWADAKTA_OWNER_TAX_REVIEWED=true.",
+      {
+        docs_url: DOCS.atoGst,
+        priority: 5,
+        owner: "Founder/accountant",
+      },
+    ),
+    ownerFlagItem(
+      "owner_insurance_active",
+      "Insurance active before real field jobs",
+      "SWADAKTA_OWNER_INSURANCE_ACTIVE",
+      "Swadakta should not take real paid field, courier, property, or proof jobs without suitable insurance.",
+      "Buy/confirm public liability, professional indemnity, cyber/privacy, and any goods/courier cover, then set SWADAKTA_OWNER_INSURANCE_ACTIVE=true.",
+      {
+        docs_url: DOCS.businessInsurance,
+        priority: 6,
+      },
+    ),
+    ownerFlagItem(
+      "owner_legal_review",
+      "Terms, refund, and operating legal review",
+      "SWADAKTA_OWNER_LEGAL_REVIEWED",
+      "Terms, privacy, refund/dispute wording, payment wording, and service boundaries need legal review before paid scaling.",
+      "Have the legal documents and operating model reviewed, then set SWADAKTA_OWNER_LEGAL_REVIEWED=true.",
+      {
+        docs_url: DOCS.acccConsumerGuarantees,
+        priority: 7,
+        owner: "Founder/legal reviewer",
+      },
+    ),
+    ownerFlagItem(
+      "owner_financial_boundary_review",
+      "Financial services/remittance boundary review",
+      "SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED",
+      "If Swadakta transfers client money, acts like escrow, or controls payouts outside regulated provider rails, AUSTRAC/ASIC advice may be required.",
+      "Get legal/compliance advice confirming Swadakta is staying inside provider-held payment and concierge boundaries, then set SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED=true.",
+      {
+        docs_url: DOCS.austracRemittance,
+        priority: 8,
+        owner: "Founder/legal reviewer",
+      },
+    ),
+    ownerFlagItem(
+      "owner_contractor_terms",
+      "Receiver contractor terms and code of conduct",
+      "SWADAKTA_OWNER_CONTRACTOR_TERMS_READY",
+      "Receivers need clear contractor terms, proof obligations, safety rules, payout timing, prohibited tasks, and dispute consequences.",
+      "Prepare receiver/contractor agreement and code of conduct, then set SWADAKTA_OWNER_CONTRACTOR_TERMS_READY=true.",
+      {
+        docs_url: DOCS.fairWorkContractors,
+        priority: 9,
+        owner: "Founder/legal reviewer",
+      },
+    ),
+    ownerFlagItem(
+      "owner_privacy_data_review",
+      "Privacy and data registration review",
+      "SWADAKTA_OWNER_PRIVACY_REVIEWED",
+      "The app handles IDs, photos, family contacts, addresses, payment references, proof media, and cross-border data.",
+      "Review Australian privacy obligations, Kenya ODPC/data-controller requirements, retention, deletion, and access controls; then set SWADAKTA_OWNER_PRIVACY_REVIEWED=true.",
+      {
+        docs_url: DOCS.oaicSmallBusiness,
+        priority: 10,
+        owner: "Founder/privacy reviewer",
+      },
+    ),
+    ownerFlagItem(
+      "owner_provider_accounts",
+      "Provider accounts approved under legal entity",
+      "SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED",
+      "Stripe, PayPal Business, Wise Business fallback, ID verification, and later M-Pesa/Paystack/Flutterwave should be approved under the chosen legal entity.",
+      "Open and verify provider accounts under the chosen legal entity, then set SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED=true.",
+      {
+        docs_url: DOCS.businessRegistrationService,
+        priority: 12,
+      },
+    ),
+    ownerFlagItem(
+      "owner_secret_rotation",
+      "Exposed secret rotation confirmed",
+      "SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED",
+      "Any API key pasted into chat, browser fields, screenshots, or support tools must be treated as exposed before launch.",
+      "Rotate exposed keys, store fresh values only as server-side Vercel/Supabase secrets, then set SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED=true.",
+      {
+        docs_url: DOCS.vercelEnv,
+        priority: 13,
+        owner: "Founder/security admin",
+      },
+    ),
+    ownerFlagItem(
+      "owner_kenya_operating_review",
+      "Kenya operating setup review",
+      "SWADAKTA_OWNER_KENYA_SETUP_REVIEWED",
+      "Kenya-side operations may need BRS/KRA/ODPC/Safaricom setup depending on entity structure, local collection, staffing, and data processing.",
+      "Confirm Kenya business/tax/data/M-Pesa setup requirements with qualified advisors or provider onboarding, then set SWADAKTA_OWNER_KENYA_SETUP_REVIEWED=true.",
+      {
+        docs_url: DOCS.brsKenya,
+        priority: 14,
+        owner: "Founder/Kenya advisor",
       },
     ),
   ];
@@ -734,6 +886,11 @@ async function readinessReport(user, authHeader) {
   const mpesaWebhookUrl = mpesaCallbackUrl();
 
   const categories = [
+    {
+      id: "owner_legal",
+      label: "Owner legal and launch authority",
+      items: ownerLaunchItems(),
+    },
     {
       id: "domain_auth",
       label: "Domain, auth, and backend",

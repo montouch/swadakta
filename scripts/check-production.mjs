@@ -290,6 +290,11 @@ const requiredReadinessApiMarkers = [
   "buildLaunchGate",
   "launch_gate",
   "paid_launch_blocked",
+  "ownerLaunchItems",
+  "owner_legal",
+  "SWADAKTA_OWNER_INSURANCE_ACTIVE",
+  "SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED",
+  "SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED",
   "paystack_africa_pilot",
   "flutterwave_africa_pilot",
   "PAYSTACK_WEBHOOK_SECRET",
@@ -333,6 +338,16 @@ const requiredEnvExampleKeys = [
   "WISE_RECEIVE_DETAILS_URL",
   "SMILE_ID_API_KEY",
   "SMILE_ID_PARTNER_ID",
+  "SWADAKTA_OWNER_BUSINESS_REGISTERED",
+  "SWADAKTA_OWNER_TAX_REVIEWED",
+  "SWADAKTA_OWNER_INSURANCE_ACTIVE",
+  "SWADAKTA_OWNER_LEGAL_REVIEWED",
+  "SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED",
+  "SWADAKTA_OWNER_CONTRACTOR_TERMS_READY",
+  "SWADAKTA_OWNER_PRIVACY_REVIEWED",
+  "SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED",
+  "SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED",
+  "SWADAKTA_OWNER_KENYA_SETUP_REVIEWED",
 ];
 
 async function readLocal(relativePath) {
@@ -482,8 +497,8 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=5")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=5`);
+  if (!content.includes("assistant-dock.js?v=7")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=7`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -624,8 +639,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=5")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=5`);
+  if (!text.includes("assistant-dock.js?v=7")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=7`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -872,11 +887,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=5");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=7");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=5 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=7 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=5 returned 200");
+  pass("assistant-dock.js?v=7 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {

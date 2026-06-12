@@ -37,6 +37,60 @@
         border: 1px solid rgba(255, 255, 255, 0.48);
         box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
       }
+      [hidden] {
+        display: none !important;
+      }
+      .material-symbols-outlined {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        max-width: 1.35em;
+        line-height: 1;
+        letter-spacing: 0;
+      }
+      .assistant-message-list {
+        background:
+          linear-gradient(180deg, rgba(250, 248, 255, 0.42), rgba(255, 255, 255, 0.18)),
+          rgba(255, 255, 255, 0.16);
+      }
+      @media (max-width: 640px) {
+        main {
+          padding: 0.75rem !important;
+        }
+        aside[aria-label="Swadakta tools"] {
+          gap: 0.25rem;
+          border-radius: 1.35rem;
+          overflow: hidden;
+        }
+        aside[aria-label="Swadakta tools"] > a {
+          height: 2.6rem;
+          width: 2.6rem;
+          border-radius: 1rem;
+        }
+        aside[aria-label="Swadakta tools"] nav {
+          justify-content: space-between;
+          gap: 0;
+          overflow-x: visible;
+          padding-inline: 0.2rem;
+        }
+        aside[aria-label="Swadakta tools"] nav a {
+          height: 2.35rem;
+          width: 2.35rem;
+          border-radius: 0.9rem;
+        }
+        aside[aria-label="Swadakta tools"] nav a span {
+          font-size: 19px !important;
+        }
+        aside[aria-label="Swadakta tools"] [data-ai-toggle] {
+          height: 2.35rem;
+          padding-inline: 0.65rem;
+          font-size: 0.72rem;
+        }
+        .assistant-chat-shell {
+          border-radius: 1.35rem;
+        }
+      }
     </style>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -120,7 +174,7 @@
                   <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="voice" aria-label="Voice note"><span class="material-symbols-outlined text-[20px]">mic</span></button>
                   <button class="grid h-10 w-10 place-items-center rounded-full text-on-surface-variant hover:bg-surface hover:text-primary" type="button" data-assistant-tool="call" aria-label="Video call"><span class="material-symbols-outlined text-[20px]">videocam</span></button>
                 </div>
-                <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" rows="1" placeholder="Message Swadakta AI..."></textarea>
+                <textarea class="max-h-36 min-h-11 flex-1 resize-none border-0 bg-transparent px-2 py-3 text-sm text-on-surface placeholder:text-on-surface-variant focus:ring-0" id="assistant-prompt" rows="1" placeholder="Message AI..."></textarea>
                 <button class="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-primary text-white shadow-[0_12px_28px_rgba(70,72,212,0.28)] disabled:cursor-not-allowed disabled:opacity-50" data-ai-only id="assistant-run" type="submit" aria-label="Send message">
                   <span class="material-symbols-outlined text-[22px]">arrow_upward</span>
                 </button>
@@ -157,6 +211,6 @@
     <script src="app-data.js?v=45"></script>
     <script src="ai-preferences.js?v=1"></script>
     <script src="assistant.js?v=5"></script>
-  <script src="assistant-dock.js?v=5"></script>
+  <script src="assistant-dock.js?v=7"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "5";
+  const DOCK_VERSION = "7";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
@@ -77,8 +77,10 @@
       .sw-ai-send:disabled { opacity: .58; cursor: not-allowed; }
       .sw-ai-note { margin: 8px 2px 0; font-size: 11px; line-height: 1.4; color: #464554; }
       @media (max-width: 640px) {
-        #${rootId} { left: 12px; right: 12px; bottom: max(12px, env(safe-area-inset-bottom)); }
-        .sw-ai-fab { margin-left: auto; min-height: 48px; }
+        #${rootId} { left: auto; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); width: auto; }
+        .sw-ai-fab { justify-content: center; width: 54px; min-height: 54px; padding: 0; border-radius: 19px; }
+        .sw-ai-fab > span:last-child { display: none; }
+        .sw-ai-fab-dot { width: 32px; height: 32px; font-size: 12px; }
         .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: 72px; width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 112px)); border-radius: 22px; }
       }
     `;
@@ -91,9 +93,21 @@
     style.id = "swadakta-site-polish-style";
     style.textContent = `
       html, body { max-width: 100%; overflow-x: clip; }
+      body [hidden] { display: none !important; }
       body header, body nav, body main, body section, body article, body form, body aside, body footer, body .glass-panel, body .glass-card { min-width: 0; }
       body .grid > *, body .flex > * { min-width: 0; }
       body a, body button, body label, body summary { overflow-wrap: anywhere; }
+      body .material-symbols-outlined {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1em;
+        max-width: 1.35em;
+        overflow: hidden;
+        white-space: nowrap;
+        line-height: 1;
+        letter-spacing: 0;
+      }
       body a[class*="inline-flex"], body button[class*="inline-flex"], body a[class*="flex"], body button[class*="flex"], body .button, body .header-action {
         min-width: 0;
         max-width: 100%;
@@ -104,12 +118,12 @@
       }
       body main a[class*="inline-flex"], body main button[class*="inline-flex"], body main a[class*="flex"], body main button[class*="flex"],
       body section a[class*="inline-flex"], body section button[class*="inline-flex"], body section a[class*="flex"], body section button[class*="flex"] {
-        flex-shrink: 0;
+        flex-shrink: 1;
       }
       body main .flex-wrap > a[class*="inline-flex"], body main .flex-wrap > button[class*="inline-flex"],
       body section .flex-wrap > a[class*="inline-flex"], body section .flex-wrap > button[class*="inline-flex"] {
-        flex: 0 0 fit-content;
-        min-width: fit-content;
+        flex: 0 1 auto;
+        min-width: 0;
       }
       body button, body a, body label { -webkit-tap-highlight-color: transparent; }
       body header a, body header button {
@@ -177,7 +191,7 @@
         }
         body main a[class*="inline-flex"], body main button[class*="inline-flex"], body section a[class*="inline-flex"], body section button[class*="inline-flex"],
         body main a[class*="flex"], body main button[class*="flex"], body section a[class*="flex"], body section button[class*="flex"] {
-          min-width: fit-content;
+          min-width: 0;
         }
       }
     `;
@@ -939,6 +953,7 @@
 
   function buildDock() {
     if (document.querySelector(`#${rootId}`)) return;
+    if (/\/assistant(?:\.html)?$/i.test(location.pathname)) return;
     injectStyles();
     const context = collectPageContext();
     const root = document.createElement("section");
