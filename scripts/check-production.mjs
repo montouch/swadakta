@@ -49,6 +49,7 @@ const requiredPages = [
   "/rules",
   "/admin-ops",
   "/admin-verification",
+  "/admin-readiness",
 ];
 const paymentProviderEndpoints = [
   "/api/payments/stripe-webhook",
@@ -190,9 +191,11 @@ const requiredAssistantMarkers = [
   "renderConversation",
 ];
 const requiredAssistantHtmlMarkers = [
+  'data-stitch-source="ai_assistant_swadakta_final_ux_coverage"',
   "Manual mode shortcuts",
   "data-ai-disabled-when-off",
   "data-ai-mode-status",
+  'href="brief.html"',
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
@@ -241,6 +244,8 @@ const requiredBriefHtmlMarkers = [
   "In-country Africa job",
   "brief-budget",
   "Budget and quote safety",
+  "Payments &amp; Milestone Protection",
+  "provider-confirmed milestone protection",
 ];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
@@ -412,6 +417,11 @@ const requiredAdminReadinessMarkers = [
   "copy-category-pack",
   "Provider setup pack copied",
   "Do not paste secret keys",
+];
+const requiredAdminThemeMarkers = [
+  '<html class="dark" lang="en">',
+  'data-admin-theme="dark"',
+  "admin-theme.css?v=1",
 ];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
@@ -970,6 +980,13 @@ for (const page of requiredPages) {
   }
   if (["/portal", "/assistant", "/brief", "/admin-ops"].includes(page) && !text.includes("ai-preferences.js?v=3")) {
     fail(failures, `${page} does not reference ai-preferences.js?v=3`);
+  }
+  if (["/admin-ops", "/admin-verification", "/admin-readiness"].includes(page)) {
+    for (const marker of requiredAdminThemeMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing dark admin theme marker ${marker}`);
+      }
+    }
   }
   if (page === "/brief" && !text.includes("stitch-brief.js?v=12")) {
     fail(failures, `${page} does not reference stitch-brief.js?v=12`);

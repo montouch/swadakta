@@ -1,0 +1,142 @@
+html.dark {
+  color-scheme: dark;
+}
+
+body[data-admin-theme="dark"] {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(92, 104, 255, 0.22), transparent 32%),
+    radial-gradient(circle at 88% 10%, rgba(199, 104, 255, 0.14), transparent 30%),
+    linear-gradient(145deg, #05060d 0%, #090b16 48%, #101125 100%) !important;
+  color: #f7f6ff;
+}
+
+body[data-admin-theme="dark"] .glass-panel {
+  background: rgba(12, 14, 27, 0.76) !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+body[data-admin-theme="dark"] .glass-input {
+  background: rgba(255, 255, 255, 0.07) !important;
+  border-color: rgba(255, 255, 255, 0.14) !important;
+  color: #f7f6ff !important;
+}
+
+body[data-admin-theme="dark"] .glass-input:focus {
+  border-color: #a8b1ff !important;
+  box-shadow: 0 0 0 3px rgba(168, 177, 255, 0.18) !important;
+}
+
+body[data-admin-theme="dark"] .text-on-surface,
+body[data-admin-theme="dark"] .font-display,
+body[data-admin-theme="dark"] h1,
+body[data-admin-theme="dark"] h2,
+body[data-admin-theme="dark"] h3,
+body[data-admin-theme="dark"] strong {
+  color: #f7f6ff !important;
+}
+
+body[data-admin-theme="dark"] .text-on-surface-variant {
+  color: #b9b8cb !important;
+}
+
+body[data-admin-theme="dark"] .text-secondary {
+  color: #a6abc0 !important;
+}
+
+body[data-admin-theme="dark"] .text-primary {
+  color: #a8b1ff !important;
+}
+
+body[data-admin-theme="dark"] .text-tertiary {
+  color: #d8a7ff !important;
+}
+
+body[data-admin-theme="dark"] .bg-surface\/76 {
+  background-color: rgba(8, 10, 20, 0.78) !important;
+}
+
+body[data-admin-theme="dark"] .bg-surface-container,
+body[data-admin-theme="dark"] .hover\:bg-surface-container\/60:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+body[data-admin-theme="dark"] .bg-white\/70,
+body[data-admin-theme="dark"] .bg-white\/66,
+body[data-admin-theme="dark"] .bg-white\/62,
+body[data-admin-theme="dark"] .bg-white\/58 {
+  background-color: rgba(255, 255, 255, 0.075) !important;
+}
+
+body[data-admin-theme="dark"] .border-white\/30,
+body[data-admin-theme="dark"] .border-white\/40,
+body[data-admin-theme="dark"] .border-outline-variant\/30,
+body[data-admin-theme="dark"] .border-outline-variant\/50,
+body[data-admin-theme="dark"] .border-outline-variant\/60 {
+  border-color: rgba(255, 255, 255, 0.13) !important;
+}
+
+body[data-admin-theme="dark"] .bg-primary-container\/20,
+body[data-admin-theme="dark"] .bg-primary\/10 {
+  background-color: rgba(116, 126, 255, 0.16) !important;
+}
+
+body[data-admin-theme="dark"] .bg-on-surface {
+  background-color: #f7f6ff !important;
+}
+
+body[data-admin-theme="dark"] .bg-on-surface.text-white {
+  color: #05060d !important;
+}
+
+body[data-admin-theme="dark"] .bg-error-container,
+body[data-admin-theme="dark"] .hover\:bg-error-container:hover {
+  background-color: rgba(255, 92, 92, 0.16) !important;
+}
+
+body[data-admin-theme="dark"] .text-on-error-container,
+body[data-admin-theme="dark"] .hover\:text-on-error-container:hover {
+  color: #ffd7d7 !important;
+}
+
+body[data-admin-theme="dark"] .bg-emerald-500\/10 {
+  background-color: rgba(16, 185, 129, 0.16) !important;
+}
+
+body[data-admin-theme="dark"] .text-emerald-700 {
+  color: #7ee6b5 !important;
+}
+
+body[data-admin-theme="dark"] .bg-amber-400\/20 {
+  background-color: rgba(251, 191, 36, 0.16) !important;
+}
+
+body[data-admin-theme="dark"] .text-amber-800 {
+  color: #ffd479 !important;
+}
+
+body[data-admin-theme="dark"] .bg-sky-500\/10 {
+  background-color: rgba(14, 165, 233, 0.15) !important;
+}
+
+body[data-admin-theme="dark"] .text-sky-800 {
+  color: #9bddff !important;
+}
+
+body[data-admin-theme="dark"] input,
+body[data-admin-theme="dark"] select,
+body[data-admin-theme="dark"] textarea {
+  background-color: rgba(255, 255, 255, 0.07);
+  border-color: rgba(255, 255, 255, 0.14);
+  color: #f7f6ff;
+}
+
+body[data-admin-theme="dark"] input::placeholder,
+body[data-admin-theme="dark"] textarea::placeholder {
+  color: rgba(247, 246, 255, 0.54);
+}
+
+body[data-admin-theme="dark"] option {
+  background: #0d1020;
+  color: #f7f6ff;
+}
