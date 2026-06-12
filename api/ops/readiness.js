@@ -12,6 +12,15 @@ const PUBLIC_BASE_URL =
   "https://swadakta.com";
 const EXPECTED_APP_DATA_REF = "app-data.js?v=54";
 const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=34";
+const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=1";
+const FINAL_UX_THEME_MARKERS = [
+  "--sw-primary: #000105",
+  'body:not([data-admin-theme="dark"])',
+  ".primary-glass-button",
+  "overflow-wrap: anywhere",
+];
+const FINAL_UX_PORTAL_MARKERS = ["account-home-workflow-first-final-ux", "What do you want to do?"];
+const LEGACY_PURPLE_UI_MARKERS = ["#4648d4", "#8127cf", "rgba(70,72,212", "rgba(70, 72, 212"];
 const PROOF_BUCKET_ID = "swadakta-proof";
 
 function sendJson(res, status, body) {
@@ -787,9 +796,10 @@ async function storageBackendItems(user, authHeader) {
 }
 
 async function siteTrustItems() {
-  const [home, portal, security, privacy, terms, robots, sitemap, adminReadiness] = await Promise.all([
+  const [home, portal, finalUxTheme, security, privacy, terms, robots, sitemap, adminReadiness] = await Promise.all([
     fetchPublic("/", { readText: false }),
     fetchPublic("/portal"),
+    fetchPublic(`/${EXPECTED_FINAL_UX_THEME_REF}`),
     fetchPublic("/.well-known/security.txt"),
     fetchPublic("/privacy"),
     fetchPublic("/terms"),
@@ -825,6 +835,19 @@ async function siteTrustItems() {
     portal.ok && portal.text.includes(EXPECTED_APP_DATA_REF) ? "" : EXPECTED_APP_DATA_REF,
     portal.ok && portal.text.includes(EXPECTED_PORTAL_SCRIPT_REF) ? "" : EXPECTED_PORTAL_SCRIPT_REF,
   ].filter(Boolean);
+  const finalUxCacheControl = String(finalUxTheme.headers.get("cache-control") || "");
+  const finalUxMissing = [
+    portal.ok && portal.text.includes(EXPECTED_FINAL_UX_THEME_REF) ? "" : EXPECTED_FINAL_UX_THEME_REF,
+    ...FINAL_UX_PORTAL_MARKERS.map((marker) => (portal.ok && portal.text.includes(marker) ? "" : marker)),
+    finalUxTheme.ok ? "" : EXPECTED_FINAL_UX_THEME_REF,
+    ...FINAL_UX_THEME_MARKERS.map((marker) => (finalUxTheme.ok && finalUxTheme.text.includes(marker) ? "" : marker)),
+    /no-store/i.test(finalUxCacheControl) ? "" : "final UX theme no-store cache header",
+    LEGACY_PURPLE_UI_MARKERS.some(
+      (marker) => (portal.ok && portal.text.includes(marker)) || (finalUxTheme.ok && finalUxTheme.text.includes(marker)),
+    )
+      ? "legacy purple UI marker"
+      : "",
+  ].filter(Boolean);
 
   return [
     item(
@@ -841,6 +864,24 @@ async function siteTrustItems() {
       {
         copy_value: `${publicUrl() || "https://swadakta.com"}/portal`,
         priority: 13,
+        owner: "Founder/Vercel admin",
+      },
+    ),
+    item(
+      "final_ux_live_freshness",
+      "Final UX freshness",
+      finalUxMissing.length === 0 ? "ready" : "warning",
+      finalUxTheme.ok
+        ? "Live portal and shared final UX theme were checked for workflow-first account home markers, no-store caching, and old purple UI markers."
+        : `Could not check final UX theme: ${finalUxTheme.error || finalUxTheme.status}.`,
+      finalUxMissing.length
+        ? "Redeploy, clear stale cache, or relink the final UX theme before showing the signed-in home to users."
+        : "Final UX is live on the account portal and the theme is freshness-protected.",
+      finalUxMissing,
+      {
+        docs_url: DOCS.vercelHeaders,
+        copy_value: `${publicUrl() || "https://swadakta.com"}/${EXPECTED_FINAL_UX_THEME_REF}`,
+        priority: 12,
         owner: "Founder/Vercel admin",
       },
     ),
@@ -1312,6 +1353,7 @@ async function readinessReport(user, authHeader) {
       paystack_webhook_url: paystackWebhookUrl,
       flutterwave_webhook_url: flutterwaveWebhookUrl,
       identity_start_url: identityStartUrl,
+      final_ux_theme_url: `${publicUrl() || "https://swadakta.com"}/${EXPECTED_FINAL_UX_THEME_REF}`,
     },
     protected_actions: [
       "Money release, refund, paid status, and milestone release stay founder/admin decisions.",
