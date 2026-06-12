@@ -307,6 +307,7 @@ const requiredPortalHtmlMarkers = [
   "pointer-events: none",
   'id="marketplace-job-list"',
   'id="marketplace-offer-form"',
+  'id="account-google-sign-in" type="button" hidden',
   "Controlled offers",
   "Make an offer without racing to the bottom",
   "Lowest price does not automatically win",

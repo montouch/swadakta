@@ -444,8 +444,13 @@ function routeStitchLogin(html) {
                     Sign in
                     <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
 </button>
+<div class="relative py-1 flex items-center" id="login-oauth-divider" hidden>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+<span class="flex-shrink mx-4 text-label-sm text-outline font-label-sm">OR</span>
+<div class="flex-grow border-t border-outline-variant/30"></div>
+</div>
 <div class="grid gap-3 sm:grid-cols-2">
-<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-google" type="button">Continue with Google</button>
+<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-google" type="button" hidden>Continue with Google</button>
 <button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-reset" type="button">Reset password</button>
 </div>`,
   );
@@ -467,13 +472,13 @@ function routeStitchLogin(html) {
     /<!-- Micro-interaction Script -->[\s\S]*?<\/script>\s*<\/body>/,
     `<script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=52"></script>
-<script src="login.js?v=1"></script>
+<script src="login.js?v=3"></script>
 <script src="assistant-dock.js?v=14"></script>
 </body>`,
   );
   output = output.replace(
     "<body ",
-    '<body data-stitch-source="sign_in_swadakta_1" data-stitch-integration="auth" ',
+    '<body data-stitch-source="welcome_swadakta_final_ux" data-stitch-integration="auth" ',
   );
   return output;
 }
