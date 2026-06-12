@@ -289,21 +289,38 @@
     };
   }
 
+  function withTimeout(promise, milliseconds, message) {
+    let timeoutId;
+    const timeout = new Promise((_, reject) => {
+      timeoutId = window.setTimeout(() => reject(new Error(message)), milliseconds);
+    });
+    return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
+  }
+
+  function createSupabaseClient(createClient) {
+    return createClient(config().supabaseUrl, config().supabasePublishableKey, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+      },
+    });
+  }
+
   async function getSupabase() {
     if (!isSupabaseConfigured()) {
       return null;
     }
 
     if (!supabaseClientPromise) {
-      supabaseClientPromise = import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm").then(
-        ({ createClient }) =>
-          createClient(config().supabaseUrl, config().supabasePublishableKey, {
-            auth: {
-              persistSession: true,
-              autoRefreshToken: true,
-            },
-          }),
-      );
+      if (window.supabase?.createClient) {
+        supabaseClientPromise = Promise.resolve(createSupabaseClient(window.supabase.createClient.bind(window.supabase)));
+      } else {
+        supabaseClientPromise = withTimeout(
+          import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm"),
+          7000,
+          "Could not load the secure account client. Refresh and try again.",
+        ).then(({ createClient }) => createSupabaseClient(createClient));
+      }
     }
 
     return supabaseClientPromise;
@@ -2887,7 +2904,11 @@
       return { session: null, mode: "local" };
     }
 
-    const { data, error } = await supabase.auth.getSession();
+    const { data, error } = await withTimeout(
+      supabase.auth.getSession(),
+      7000,
+      "Could not confirm your account session. Refresh and try again.",
+    );
     if (error) {
       throw error;
     }

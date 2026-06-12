@@ -514,6 +514,8 @@
 
   async function refresh() {
     try {
+      setPill("Checking account", "bg-primary/10 text-primary");
+      summaryCopy.textContent = "Checking your signed-in Swadakta account before opening verification.";
       const sessionResult = await window.SwadaktaData.getSession();
       const email = sessionResult.session?.user?.email || "";
       if (!email) {
@@ -521,7 +523,9 @@
         populate({});
         setPill("Sign in required", "bg-error-container text-on-error-container");
         summaryCopy.textContent = "Sign in or create an account before requesting verification.";
-        signInLink.href = `/portal#home`;
+        signInLink.href = "/portal.html#home";
+        signInLink.textContent = "Sign in to verify";
+        signInLink.removeAttribute("data-swadakta-auth-state");
         renderRequests([]);
         renderGates({}, null, false);
         renderVerificationTimeline({}, [], false);
@@ -529,7 +533,9 @@
       }
 
       setEnabled(true);
-      signInLink.href = "/portal#home";
+      signInLink.href = "/portal.html#home";
+      signInLink.textContent = "Back to account home";
+      signInLink.setAttribute("data-swadakta-auth-state", "signed-in");
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
       populate(profile);
@@ -544,6 +550,11 @@
         "text-primary",
       );
     } catch (error) {
+      setPill("Session check failed", "bg-error-container text-on-error-container");
+      summaryCopy.textContent =
+        "Swadakta could not confirm the signed-in session on this page. Refresh once, or return to Account Home and open verification again.";
+      signInLink.href = "/portal.html#home";
+      signInLink.textContent = "Back to account home";
       setFormStatus(error.message || "Could not load verification.", "text-error");
     }
   }
@@ -593,6 +604,8 @@
   populateCountryOptions();
   setEnabled(false);
   populate({});
+  setPill("Checking account", "bg-primary/10 text-primary");
+  summaryCopy.textContent = "Checking your signed-in Swadakta account before opening verification.";
   renderVerificationTimeline({}, [], false);
   refresh();
 })();

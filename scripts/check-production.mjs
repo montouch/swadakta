@@ -88,6 +88,8 @@ const requiredAppDataMarkers = [
   "listMyJobOffers",
   "listJobOffersForAdmin",
   "updateJobOfferStatus",
+  "withTimeout",
+  "createSupabaseClient",
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
@@ -153,6 +155,9 @@ const requiredVerificationMarkers = [
   "Paid actions unlock",
   "Automation boundary",
   "release money, assign paid work",
+  "Checking your signed-in Swadakta account",
+  "Back to account home",
+  "Session check failed",
 ];
 const requiredAssistantMarkers = [
   "applyQueryContext",
@@ -864,8 +869,8 @@ for (const page of requiredPages) {
   if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
     fail(failures, `${page} does not reference admin-readiness.js?v=4`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=5")) {
-    fail(failures, `${page} does not reference verification.js?v=5`);
+  if (page === "/verification" && !text.includes("verification.js?v=6")) {
+    fail(failures, `${page} does not reference verification.js?v=6`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
