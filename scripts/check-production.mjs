@@ -294,6 +294,7 @@ const requiredPortalHtmlMarkers = [
   'aria-label="Post a job"',
   "data-ai-mode-status",
   "Manual mode",
+  "What do you want to do first?",
   "Open verification steps",
   "Set up once, then get matched to suitable work",
   "find-job-step",
@@ -724,6 +725,9 @@ const requiredLoginHtmlMarkers = [
   'id="login-oauth-divider"',
   "Mobile / WhatsApp backup",
   "One account for giving and receiving work",
+  "What do you want to do first?",
+  "Give jobs",
+  "Find jobs",
   "login.js?v=3",
 ];
 const requiredFinalUxSupportPageMarkers = [

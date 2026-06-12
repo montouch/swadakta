@@ -617,14 +617,14 @@
 </div>
 <!-- Account Type Selector (Tiles) -->
 <div class="space-y-3">
-<label class="font-label-md text-label-md text-on-surface-variant ml-1">Continue as</label>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">What do you want to do first?</label>
 <div class="grid grid-cols-3 gap-3">
 <!-- Client Tile -->
 <div class="relative">
 <input checked="" class="peer hidden account-tile-radio" id="client" name="accountRole" type="radio" value="client"/>
 <label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="client">
 <span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">corporate_fare</span>
-<span class="font-label-sm text-[11px] uppercase tracking-wider">Client</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Give jobs</span>
 </label>
 </div>
 <!-- Job Seeker Tile -->
@@ -632,7 +632,7 @@
 <input class="peer hidden account-tile-radio" id="seeker" name="accountRole" type="radio" value="receiver"/>
 <label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="seeker">
 <span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">person_search</span>
-<span class="font-label-sm text-[11px] uppercase tracking-wider">Seeker</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Find jobs</span>
 </label>
 </div>
 <!-- Both Tile -->
@@ -1344,9 +1344,9 @@ Submit offer
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="account-work-role">Working mode</label>
 <select class="w-full h-12 px-4 rounded-xl sunken-input font-body-md text-on-surface" id="account-work-role" name="account_role">
-<option value="client">Client only</option>
-<option value="receiver">Job seeker only</option>
-<option value="both">Client and job seeker</option>
+<option value="client">Give jobs only</option>
+<option value="receiver">Find jobs only</option>
+<option value="both">Give and find jobs</option>
 </select>
 </div>
 <div class="md:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
