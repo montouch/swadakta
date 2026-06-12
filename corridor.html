@@ -63,9 +63,18 @@
         border: 1px solid rgba(255, 255, 255, 0.48);
         box-shadow: 0 26px 70px rgba(48, 52, 150, 0.11);
       }
+      .glass-panel,
+      .route-card,
+      label,
+      select,
+      input,
+      textarea {
+        min-width: 0;
+      }
       .sunken-input {
         background: rgba(218, 226, 253, 0.34);
         border: 1px solid rgba(118, 117, 134, 0.14);
+        max-width: 100%;
       }
       .sunken-input:focus {
         background: rgba(218, 226, 253, 0.55);
@@ -76,6 +85,17 @@
       .material-symbols-outlined {
         font-variation-settings: "FILL" 0, "wght" 420, "GRAD" 0, "opsz" 24;
       }
+      .top-link {
+        display: inline-flex;
+        min-height: 2.5rem;
+        align-items: center;
+        border-radius: 999px;
+        padding-inline: 0.75rem;
+      }
+      .top-link:hover {
+        background: rgba(255, 255, 255, 0.68);
+        color: #4648d4;
+      }
     </style>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -83,14 +103,14 @@
 <meta name="application-name" content="Swadakta" /></head>
   <body class="min-h-screen font-body text-on-surface">
     <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
-      <a class="font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
-      <nav class="hidden md:flex items-center gap-7 text-sm font-label text-on-surface-variant">
-        <a class="hover:text-primary" href="portal.html#home">Account</a>
-        <a class="text-primary border-b-2 border-primary" href="corridor.html">Corridors</a>
-        <a class="hover:text-primary" href="rules.html">Item rules</a>
-        <a class="hover:text-primary" href="payments.html">Payments</a>
-        <a class="hover:text-primary" href="verification.html">Verify ID</a>
-        <a class="hover:text-primary" href="assistant.html">AI Assistant</a>
+      <a class="inline-flex min-h-10 items-center font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
+      <nav class="hidden md:flex items-center gap-2 text-sm font-label text-on-surface-variant">
+        <a class="top-link" href="portal.html#home">Account</a>
+        <a class="top-link text-primary bg-white/60" href="corridor.html">Corridors</a>
+        <a class="top-link" href="rules.html">Item rules</a>
+        <a class="top-link" href="payments.html">Payments</a>
+        <a class="top-link" href="verification.html">Verify ID</a>
+        <a class="top-link" href="assistant.html">AI Assistant</a>
       </nav>
       <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-label font-bold shadow-[0_16px_36px_rgba(70,72,212,0.22)]" href="portal.html#home">Sign in</a>
     </header>
@@ -182,25 +202,25 @@
             <span class="font-label text-sm text-on-surface-variant ml-1">City, town, or online context</span>
             <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-location" name="task_location" placeholder="London, Lagos, Guangzhou, Adelaide, remote..." required />
           </label>
-          <section class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4" id="corridor-route-intelligence">
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-              <div>
+          <section class="route-card overflow-hidden rounded-2xl bg-white/62 border border-outline-variant/30 p-4" id="corridor-route-intelligence">
+            <div class="grid min-w-0 gap-3">
+              <div class="min-w-0">
                 <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Route intelligence</p>
                 <h2 class="mt-1 font-display text-xl font-extrabold" id="corridor-route-title">Choose a route</h2>
                 <p class="mt-2 text-sm text-on-surface-variant" id="corridor-route-copy">Swadakta checks whether the lane is active, pilot, or founder-review before a paid brief moves forward.</p>
               </div>
-              <span class="inline-flex min-h-10 items-center rounded-full bg-white/80 px-4 font-label text-sm text-on-surface-variant" id="corridor-route-pill">Pending</span>
+              <span class="inline-flex min-h-10 w-fit items-center justify-center rounded-full bg-white/80 px-4 font-label text-sm text-on-surface-variant" id="corridor-route-pill">Pending</span>
             </div>
           </section>
           <div class="grid gap-5 md:grid-cols-2">
             <label class="space-y-2">
               <span class="font-label text-sm text-on-surface-variant ml-1">Direction</span>
               <select class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-direction" name="service_direction">
-                <option value="origin_to_destination">From client country to work country</option>
-                <option value="destination_to_origin">From work country back to client country</option>
+                <option value="origin_to_destination">Client to work country</option>
+                <option value="destination_to_origin">Work back to client</option>
                 <option value="two_way">Both ways</option>
-                <option value="local_in_country">Local work inside one country</option>
-                <option value="digital_global">Digital / virtual only</option>
+                <option value="local_in_country">Local in one country</option>
+                <option value="digital_global">Digital only</option>
               </select>
             </label>
             <label class="space-y-2">
@@ -258,7 +278,7 @@
               <div class="space-y-2">
                 <strong class="font-label text-on-surface" id="corridor-risk-title">Standard route</strong>
                 <p class="text-sm text-on-surface-variant" id="corridor-risk-copy">Swadakta will still check the route before payment or assignment.</p>
-                <p class="text-sm text-on-surface-variant">Need a deeper item check? <a class="font-bold text-primary underline" href="rules.html">Open item rules</a>.</p>
+                <p class="text-sm text-on-surface-variant">Need a deeper item check? <a class="inline-flex min-h-10 items-center rounded-full font-bold text-primary underline" href="rules.html">Open item rules</a>.</p>
                 <ul class="grid gap-1 text-sm text-on-surface-variant list-disc pl-5" id="corridor-required-checks"></ul>
               </div>
             </div>

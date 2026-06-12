@@ -165,23 +165,89 @@
         #account-setup-checklist .setup-tile > div {
             min-width: 0;
         }
+        .workspace-link,
+        .quick-action-card,
+        .find-job-step {
+            min-width: 0;
+        }
+        .workspace-link {
+            min-height: 2.75rem;
+        }
+        .workspace-link .material-symbols-outlined,
+        .quick-action-card .material-symbols-outlined,
+        .find-job-step .material-symbols-outlined {
+            pointer-events: none;
+        }
+        .quick-action-card {
+            display: flex;
+            min-height: 14rem;
+            flex-direction: column;
+            border-radius: 1.5rem;
+            padding: 1.25rem;
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+        .quick-action-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 24px 46px rgba(70, 72, 212, 0.1);
+        }
+        .quick-action-icon {
+            display: inline-flex;
+            height: 3.25rem;
+            width: 3.25rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.15rem;
+            background: rgba(96, 99, 238, 0.1);
+            color: #4648d4;
+        }
+        .quick-action-cta {
+            margin-top: auto;
+            display: inline-flex;
+            min-height: 2.5rem;
+            width: fit-content;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px solid rgba(199, 196, 215, 0.42);
+            padding: 0 0.9rem;
+            color: #4648d4;
+            font-weight: 800;
+            font-size: 0.86rem;
+        }
+        .find-job-step {
+            border-radius: 1.25rem;
+            border: 1px solid rgba(199, 196, 215, 0.34);
+            background: rgba(255, 255, 255, 0.72);
+            padding: 1rem;
+        }
+        #find-work fieldset label {
+            min-height: 3.25rem;
+            cursor: pointer;
+        }
+        #find-work input[type="checkbox"] {
+            width: 1rem;
+            height: 1rem;
+            flex: 0 0 auto;
+        }
         @media (max-width: 1023px) {
             #home > div {
                 gap: 1rem;
             }
-            #home aside {
+            #home > div > aside:first-child {
                 position: sticky;
                 top: 0.6rem;
                 z-index: 40;
-                display: flex;
-                align-items: center;
+                display: grid;
+                grid-template-columns: 2.75rem minmax(0, 1fr) auto;
+                align-items: start;
                 gap: 0.45rem;
                 padding: 0.55rem;
                 border-radius: 1.35rem;
             }
-            #home aside > div {
+            #home > div > aside:first-child > div {
                 display: grid;
-                flex: 0 0 2.75rem;
                 height: 2.75rem;
                 place-items: center;
                 padding: 0;
@@ -190,41 +256,45 @@
                 color: #fff;
                 box-shadow: 0 14px 30px rgba(70,72,212,0.22);
             }
-            #home aside > div::before {
+            #home > div > aside:first-child > div::before {
                 content: "S";
                 font-family: Manrope, Inter, sans-serif;
                 font-size: 1rem;
                 font-weight: 800;
             }
-            #home aside > div > * {
+            #home > div > aside:first-child > div > * {
                 display: none !important;
             }
-            #home aside nav {
-                display: flex;
+            #home > div > aside:first-child nav {
+                display: grid;
+                grid-column: 1 / -1;
+                grid-row: 2;
+                grid-template-columns: repeat(4, minmax(0, 1fr));
                 min-width: 0;
-                flex: 1 1 auto;
+                width: 100%;
                 gap: 0.2rem;
-                overflow-x: auto;
+                overflow: visible;
                 scrollbar-width: none;
             }
-            #home aside nav::-webkit-scrollbar {
+            #home > div > aside:first-child nav::-webkit-scrollbar {
                 display: none;
             }
-            #home aside nav a {
-                flex: 0 0 2.55rem;
-                width: 2.55rem;
+            #home > div > aside:first-child nav a {
+                width: 100%;
                 height: 2.55rem;
                 justify-content: center;
                 padding: 0;
                 border-radius: 1rem;
                 font-size: 0;
             }
-            #home aside nav a span {
+            #home > div > aside:first-child nav a span {
                 margin: 0;
                 font-size: 20px !important;
             }
-            #home aside [data-ai-toggle] {
-                flex: 0 0 auto;
+            #home > div > aside:first-child [data-ai-toggle] {
+                grid-column: 3;
+                grid-row: 1;
+                justify-self: end;
                 width: auto;
                 height: 2.55rem;
                 margin: 0;
@@ -388,14 +458,14 @@
 <p class="font-label-sm text-on-surface-variant mt-2 break-all" id="account-home-email">your account</p>
 </div>
 <nav class="grid min-w-0 gap-1 font-label-md text-sm" aria-label="Workspace tools">
-<a class="flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="#dashboard"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="corridor.html"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="#find-work"><span class="material-symbols-outlined text-[20px]">work</span>Find jobs</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html"><span class="material-symbols-outlined text-[20px]">fact_check</span>My jobs</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="payments.html"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Money</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="verification.html"><span class="material-symbols-outlined text-[20px]">verified_user</span>Verify</a>
-<a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" data-ai-only href="assistant.html?context=home"><span class="material-symbols-outlined text-[20px]">auto_awesome</span>AI</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="#dashboard" aria-label="Home" title="Home"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="corridor.html" aria-label="Give a job" title="Give a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="#find-work" aria-label="Find jobs" title="Find jobs"><span class="material-symbols-outlined text-[20px]">work</span>Find jobs</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html" aria-label="My jobs" title="My jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>My jobs</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html" aria-label="Messages" title="Messages"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="payments.html" aria-label="Money" title="Money"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Money</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="verification.html" aria-label="Verify ID" title="Verify ID"><span class="material-symbols-outlined text-[20px]">verified_user</span>Verify</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" data-ai-only href="assistant.html?context=home" aria-label="AI assistant" title="AI assistant"><span class="material-symbols-outlined text-[20px]">auto_awesome</span>AI</a>
 </nav>
 <button class="mt-3 w-full h-10 rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle type="button" aria-pressed="true">AI on</button>
 <button class="mt-4 w-full h-11 rounded-full bg-white/70 border border-outline-variant/40 text-on-surface font-bold" id="account-home-sign-out" type="button">Sign out</button>
@@ -555,21 +625,30 @@
 </article>
 </div>
 </section>
-<section class="grid gap-4 md:grid-cols-3" aria-label="Main actions">
-<a class="glass-panel rounded-[1.5rem] p-5 hover:bg-white/90 transition-colors" href="corridor.html">
-<span class="material-symbols-outlined text-primary text-4xl">add_circle</span>
+<section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Main actions">
+<a class="quick-action-card glass-panel" href="corridor.html" aria-label="Give a job">
+<span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">add_task</span></span>
 <h2 class="font-headline-sm text-headline-sm mt-4">Give a job</h2>
-<p class="font-body-md text-on-surface-variant mt-2">Choose a corridor, upload photos, set proof, get a quote, and pay when ready.</p>
+<p class="font-body-md text-on-surface-variant mt-2">Choose the route, upload details, set proof, and get a quote.</p>
+<span class="quick-action-cta">Start request</span>
 </a>
-<a class="glass-panel rounded-[1.5rem] p-5 hover:bg-white/90 transition-colors" href="#find-work">
-<span class="material-symbols-outlined text-tertiary text-4xl">work_history</span>
-<h2 class="font-headline-sm text-headline-sm mt-4">Apply for jobs</h2>
-<p class="font-body-md text-on-surface-variant mt-2">Verify once, set your coverage, and receive eligible paid work in your location.</p>
+<a class="quick-action-card glass-panel" href="#find-work" aria-label="Find jobs">
+<span class="quick-action-icon bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[28px]">work_history</span></span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Find jobs</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Set your base, coverage, proof tools, and availability.</p>
+<span class="quick-action-cta">Set profile</span>
 </a>
-<a class="glass-panel rounded-[1.5rem] p-5 hover:bg-white/90 transition-colors" href="tracking.html">
-<span class="material-symbols-outlined text-primary text-4xl">timeline</span>
-<h2 class="font-headline-sm text-headline-sm mt-4">See my work</h2>
-<p class="font-body-md text-on-surface-variant mt-2">Open requests, assigned jobs, proof, messages, milestones, and issues.</p>
+<a class="quick-action-card glass-panel" href="tracking.html" aria-label="Track my jobs">
+<span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">fact_check</span></span>
+<h2 class="font-headline-sm text-headline-sm mt-4">My jobs</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Track requests, assigned work, proof, milestones, and issues.</p>
+<span class="quick-action-cta">Open tracking</span>
+</a>
+<a class="quick-action-card glass-panel" href="messages.html" aria-label="Open messages">
+<span class="quick-action-icon bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[28px]">forum</span></span>
+<h2 class="font-headline-sm text-headline-sm mt-4">Messages</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Send updates, photos, voice-note notes, receipts, and proof.</p>
+<span class="quick-action-cta">Open room</span>
 </a>
 </section>
 <section class="glass-panel rounded-[1.5rem] p-5" id="receiver-profile-setup">
@@ -708,15 +787,36 @@
 </div>
 </article>
 <section class="glass-panel rounded-[1.5rem] p-5" id="find-work">
-<div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+<div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
-<h2 class="font-headline-sm text-headline-sm text-on-surface mt-1">Apply once, then receive matched work</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Set your base, coverage lanes, categories, availability, and proof tools. Paid work stays locked until verification is complete.</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Set up once, then get matched to suitable work</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">A job seeker profile is not a separate account. Add where you are, what you can do, and how you prove work. Paid jobs stay locked until ID verification and route checks pass.</p>
+<div class="mt-5 grid gap-3 md:grid-cols-3">
+<article class="find-job-step">
+<span class="material-symbols-outlined text-primary text-3xl">badge</span>
+<p class="font-label-md text-on-surface mt-3">1. Real profile</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, base, photo, languages, and proof tools.</p>
+</article>
+<article class="find-job-step">
+<span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
+<p class="font-label-md text-on-surface mt-3">2. Verify ID</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive receiver work.</p>
+</article>
+<article class="find-job-step">
+<span class="material-symbols-outlined text-tertiary text-3xl">rule</span>
+<p class="font-label-md text-on-surface mt-3">3. Match safely</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Only lawful routes, proof-ready jobs, and confirmed payment rails.</p>
+</article>
 </div>
-<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
 </div>
-<div class="mt-5 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+<aside class="rounded-[1.35rem] border border-outline-variant/30 bg-white/66 p-4">
+<p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Status</p>
+<span class="mt-3 inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
+<p class="font-body-md text-on-surface-variant text-sm mt-3">You can save this now. Swadakta will not assign paid work until provider ID evidence is complete.</p>
+</aside>
+</div>
+<div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
 <form class="grid grid-cols-1 md:grid-cols-2 gap-4" id="receiver-application-form">
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-full-name">Full name</label>

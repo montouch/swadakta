@@ -87,6 +87,14 @@ const requiredPortalMarkers = [
   "Base change check needed",
   "Photo uploaded privately",
 ];
+const requiredPortalHtmlMarkers = [
+  "quick-action-card",
+  'aria-label="Find jobs"',
+  "Set up once, then get matched to suitable work",
+  "find-job-step",
+  "workspace-link",
+  "pointer-events: none",
+];
 const requiredVerificationMarkers = [
   "providerActionCopy",
   "renderVerificationTimeline",
@@ -505,6 +513,12 @@ for (const marker of requiredPortalMarkers) {
     fail(failures, `Local stitch-portal.js is missing marker ${marker}`);
   }
 }
+const localPortalHtml = await readLocal("portal.html");
+for (const marker of requiredPortalHtmlMarkers) {
+  if (!localPortalHtml.includes(marker)) {
+    fail(failures, `Local portal.html is missing account-home UX marker ${marker}`);
+  }
+}
 
 const localVerification = await readLocal("verification.js");
 const localVerificationHtml = await readLocal("verification.html");
@@ -683,6 +697,13 @@ for (const page of requiredPages) {
   }
   if (page === "/portal" && !text.includes("receiver-application-form")) {
     fail(failures, `${page} does not include receiver application form`);
+  }
+  if (page === "/portal") {
+    for (const marker of requiredPortalHtmlMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing account-home UX marker ${marker}`);
+      }
+    }
   }
   if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
     fail(failures, `${page} does not reference ai-preferences.js?v=1`);
