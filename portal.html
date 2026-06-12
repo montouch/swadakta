@@ -134,6 +134,9 @@
         body.is-account-signed-in > main {
             display: none !important;
         }
+        body.is-account-signed-in > header {
+            display: none !important;
+        }
         body.is-account-signed-in #home {
             display: block !important;
         }
@@ -437,7 +440,7 @@
 <link rel="apple-touch-icon" href="/favicon.svg" />
 <link rel="manifest" href="/site.webmanifest" />
 <meta name="application-name" content="Swadakta" /></head>
-<body class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
+<body data-stitch-source="dashboard_swadakta_mobile_final_ux account_setup_profile_swadakta_final_ux_coverage find_work_swadakta_final_ux" class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
 <!-- Global Background Animation -->
 <div class="fixed inset-0 -z-10 overflow-hidden">
 
@@ -576,7 +579,7 @@
 </div>
 </div>
 </main>
-<section class="w-full max-w-full overflow-x-hidden px-margin-mobile md:px-margin-desktop pb-section-gap" id="home" hidden>
+<section class="w-full max-w-full overflow-x-hidden px-margin-mobile md:px-margin-desktop pb-section-gap pt-4" id="home" hidden>
 <div class="max-w-[1440px] mx-auto grid min-w-0 w-full max-w-full gap-5 lg:grid-cols-[236px_minmax(0,1fr)]">
 <aside class="glass-panel min-w-0 w-full rounded-[1.5rem] p-3 lg:sticky lg:top-6 lg:h-[calc(100vh-3rem)]">
 <div class="px-3 py-4">
@@ -584,11 +587,11 @@
 <strong class="block font-display-lg text-headline-sm text-on-surface mt-1">Swadakta</strong>
 <p class="font-label-sm text-on-surface-variant mt-2 break-all" id="account-home-email">your account</p>
 </div>
-<nav class="grid min-w-0 gap-1 font-label-md text-sm" aria-label="Workspace tools">
+<nav class="grid min-w-0 gap-1 font-label-md text-sm" aria-label="Workspace tools" data-final-ux-shell="account-tools">
 <a class="workspace-link flex items-center gap-3 rounded-2xl bg-primary text-white px-3 py-3" href="#dashboard" aria-label="Home" title="Home"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
-<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="corridor.html" aria-label="Give a job" title="Give a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="brief.html" aria-label="Post a job" title="Post a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Post a job</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="#find-work" aria-label="Find jobs" title="Find jobs"><span class="material-symbols-outlined text-[20px]">work</span>Find jobs</a>
-<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html" aria-label="My jobs" title="My jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>My jobs</a>
+<a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html" aria-label="Track jobs" title="Track jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>Track</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html" aria-label="Messages" title="Messages"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="notifications.html" aria-label="Notifications" title="Notifications"><span class="material-symbols-outlined text-[20px]">notifications</span>Notifications</a>
 <a class="workspace-link flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="payments.html" aria-label="Money" title="Money"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Money</a>
@@ -604,12 +607,12 @@
 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.18em]">Account home</p>
-<h1 class="font-display-lg text-headline-lg text-on-surface mt-1">What needs to happen?</h1>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Give a job, find jobs, track active work, message people, or ask AI to choose the next safe step.</p>
+<h1 class="font-display-lg text-headline-lg text-on-surface mt-1">Home</h1>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Post a job, find work, track active requests, message safely, or ask AI to choose the next safe step.</p>
 <p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence." data-ai-status-off="Manual mode is on. Nothing breaks: use jobs, verification, messages, payments, tracking, and issues yourself.">AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence.</p>
 </div>
 <div class="flex flex-wrap gap-3 xl:justify-end">
-<a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Give a job</a>
+<a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="brief.html">Post a job</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=home&links=portal,corridor,verification">Ask AI</a>
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="tracking.html">Use normal tools</a>
 </div>
@@ -756,10 +759,10 @@
 </div>
 </section>
 <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Main actions">
-<a class="quick-action-card glass-panel" href="corridor.html" aria-label="Give a job">
+<a class="quick-action-card glass-panel" href="brief.html" aria-label="Post a job">
 <span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">add_task</span></span>
-<h2 class="font-headline-sm text-headline-sm mt-4">Give a job</h2>
-<p class="font-body-md text-on-surface-variant mt-2">Choose the route, upload details, set proof, and get a quote.</p>
+<h2 class="font-headline-sm text-headline-sm mt-4">Post a job</h2>
+<p class="font-body-md text-on-surface-variant mt-2">Describe the job, choose the route, upload details, set proof, and get a quote.</p>
 <span class="quick-action-cta">Start request <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
 <a class="quick-action-card glass-panel" href="#find-work" aria-label="Find jobs">

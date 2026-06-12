@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Swadakta | Sign in</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Manrope:wght@600;700;800&amp;family=Geist:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#131b2e",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed": "#e1e0ff",
+                        "surface": "#faf8ff",
+                        "tertiary-fixed": "#f0dbff",
+                        "background": "#faf8ff",
+                        "on-secondary-fixed": "#141d21",
+                        "surface-tint": "#494bd6",
+                        "surface-bright": "#faf8ff",
+                        "tertiary": "#8127cf",
+                        "secondary": "#576065",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "error": "#ba1a1a",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "surface-container": "#eaedff",
+                        "tertiary-container": "#9c48ea",
+                        "on-error-container": "#93000a",
+                        "outline-variant": "#c7c4d7",
+                        "on-primary": "#ffffff",
+                        "outline": "#767586",
+                        "tertiary-fixed-dim": "#ddb7ff",
+                        "on-background": "#131b2e",
+                        "surface-variant": "#dae2fd",
+                        "inverse-surface": "#283044",
+                        "on-secondary": "#ffffff",
+                        "surface-dim": "#d2d9f4",
+                        "on-secondary-container": "#5d666b",
+                        "surface-container-high": "#e2e7ff",
+                        "on-error": "#ffffff",
+                        "on-secondary-fixed-variant": "#3f484d",
+                        "on-primary-fixed": "#07006c",
+                        "surface-container-highest": "#dae2fd",
+                        "surface-container-low": "#f2f3ff",
+                        "on-tertiary-container": "#fffbff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-surface-variant": "#464554",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#bfc8ce",
+                        "primary-container": "#6063ee",
+                        "inverse-on-surface": "#eef0ff",
+                        "secondary-fixed": "#dbe4ea",
+                        "secondary-container": "#dbe4ea",
+                        "primary": "#4648d4",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6900b3",
+                        "inverse-primary": "#c0c1ff",
+                        "on-tertiary-fixed": "#2c0051"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "section-gap": "120px",
+                        "base": "8px",
+                        "margin-mobile": "16px",
+                        "margin-desktop": "48px",
+                        "gutter": "24px",
+                        "container-max": "1280px"
+                    },
+                    "fontFamily": {
+                        "display-lg": ["Manrope"],
+                        "label-md": ["Geist"],
+                        "body-lg": ["Inter"],
+                        "headline-sm": ["Manrope"],
+                        "headline-lg": ["Manrope"],
+                        "label-sm": ["Geist"],
+                        "display-lg-mobile": ["Manrope"],
+                        "body-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "0", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "700"}],
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "0", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0px 20px 40px rgba(0, 0, 0, 0.04);
+        }
+        .sunken-input {
+            background: rgba(218, 226, 253, 0.3);
+            border: 1px solid rgba(118, 117, 134, 0.1);
+            transition: all 0.2s ease-in-out;
+        }
+        .sunken-input:focus {
+            background: rgba(218, 226, 253, 0.5);
+            border-color: #4648d4;
+            outline: none;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .account-tile-radio:checked + label {
+            background: #F5F3FF;
+            border-color: #4648d4;
+            color: #4648d4;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+            * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        [hidden] {
+            display: none !important;
+        }
+        main,
+        #swadakta-login-form,
+        .swadakta-login-card,
+        .swadakta-login-card .grid,
+        .swadakta-login-card input {
+            min-width: 0;
+        }
+        .swadakta-login-card {
+            box-sizing: border-box;
+            width: min(100%, 480px) !important;
+            max-width: min(480px, calc(100vw - 32px)) !important;
+            overflow: hidden;
+        }
+        @media (max-width: 767px) {
+            main {
+                padding-top: 2rem !important;
+                padding-bottom: 2rem !important;
+            }
+            .swadakta-login-card {
+                width: min(358px, calc(100vw - 32px)) !important;
+                max-width: 358px !important;
+                border-radius: 1.5rem !important;
+                padding: 1.25rem !important;
+            }
+            .swadakta-login-card h1 {
+                font-size: 1.9rem !important;
+                line-height: 1.18 !important;
+            }
+            .swadakta-login-card .grid-cols-3 {
+                gap: 0.5rem !important;
+            }
+            .account-tile-radio + label {
+                padding: 0.75rem 0.35rem !important;
+            }
+            #login-mode-signin,
+            #login-mode-create {
+                min-width: 0;
+                padding-inline: 0.25rem;
+                font-size: 0.82rem;
+            }
+        }
+    </style>
+<!-- Swadakta production metadata layered onto the direct Google Stitch export. -->
+<meta name="description" content="Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance." />
+<meta name="theme-color" content="#101A3A" />
+<link rel="canonical" href="https://swadakta.com/login" />
+<meta property="og:title" content="Swadakta | Sign in" />
+<meta property="og:description" content="Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://swadakta.com/login" />
+<meta property="og:image" content="https://swadakta.com/assets/saas-burst.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Swadakta | Sign in" />
+<meta name="twitter:description" content="Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance." />
+<meta name="twitter:image" content="https://swadakta.com/assets/saas-burst.png" />
+<link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="/favicon.svg" />
+<link rel="manifest" href="/site.webmanifest" />
+<meta name="application-name" content="Swadakta" />
+<meta name="robots" content="noindex,nofollow" />
+</head>
+<body data-stitch-source="sign_in_swadakta_1" class="bg-background min-h-screen flex flex-col font-body-md text-on-surface selection:bg-primary/20">
+<!-- Global Background Animation -->
+<div class="fixed inset-0 -z-10 overflow-hidden">
+
+<div class="absolute inset-0 bg-gradient-to-tr from-surface-container-lowest via-surface-container-low to-primary-fixed/20"></div>
+</div>
+<!-- Header (Suppressed Nav for Transactional Flow) -->
+<header class="w-full h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between z-50">
+<div class="font-display-lg text-headline-sm font-extrabold text-primary">
+            Swadakta
+        </div>
+<a class="text-on-surface-variant hover:text-primary transition-colors flex items-center gap-2 font-label-md" href="/">
+<span class="material-symbols-outlined text-[20px]">close</span>
+            Exit
+        </a>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-grow flex items-center justify-center px-margin-mobile py-section-gap">
+<div class="swadakta-login-card glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">
+<!-- Hero Header inside Panel -->
+<div class="text-center mb-10">
+<h1 class="font-display-lg text-headline-lg text-on-surface mb-2">Welcome back</h1>
+<p class="font-body-md text-on-surface-variant">Sign in to your global corridor concierge.</p>
+</div>
+<!-- Login Form -->
+<form class="space-y-7" id="swadakta-login-form">
+<!-- Email Input Group -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-email">Email</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">mail</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-email" name="email" placeholder="you@example.com" required="" type="email" autocomplete="email"/>
+</div>
+</div>
+<!-- Password Input Group -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-password" name="password" placeholder="At least 8 characters" required="" minlength="8" type="password" autocomplete="current-password"/>
+</div>
+</div>
+<!-- Account Type Selector (Tiles) -->
+<div class="space-y-3">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1">Continue as</label>
+<div class="grid grid-cols-3 gap-3">
+<!-- Client Tile -->
+<div class="relative">
+<input checked="" class="peer hidden account-tile-radio" id="client" name="account_type" type="radio" value="client"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="client">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">corporate_fare</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Client</span>
+</label>
+</div>
+<!-- Job Seeker Tile -->
+<div class="relative">
+<input class="peer hidden account-tile-radio" id="seeker" name="account_type" type="radio" value="seeker"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="seeker">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">person_search</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Seeker</span>
+</label>
+</div>
+<!-- Both Tile -->
+<div class="relative">
+<input class="peer hidden account-tile-radio" id="both" name="account_type" type="radio" value="both"/>
+<label class="flex flex-col items-center justify-center p-4 rounded-xl border border-outline-variant/30 bg-surface-container-lowest/50 cursor-pointer transition-all hover:bg-surface-variant/20 peer-checked:border-primary peer-checked:bg-primary-container/10 peer-checked:text-primary group" for="both">
+<span class="material-symbols-outlined mb-1 group-hover:scale-110 transition-transform">sync_alt</span>
+<span class="font-label-sm text-[11px] uppercase tracking-wider">Both</span>
+</label>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-2 rounded-full bg-white/70 border border-outline-variant/30 p-1">
+<button class="h-11 rounded-full bg-primary text-on-primary font-label-md text-label-md" id="login-mode-signin" type="button">Sign in</button>
+<button class="h-11 rounded-full text-on-surface-variant font-label-md text-label-md" id="login-mode-create" type="button">Create account</button>
+</div>
+<div class="space-y-2" data-login-create-only hidden>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-phone">Mobile / WhatsApp backup</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">phone_iphone</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-phone" name="phone" placeholder="+61 431 455 174" type="tel" autocomplete="tel"/>
+</div>
+</div>
+<!-- Trust Message -->
+<div class="flex items-start gap-3 p-4 rounded-xl bg-primary-container/5 border border-primary/10">
+<span class="material-symbols-outlined text-primary text-[20px] mt-0.5" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<p class="font-label-sm text-on-surface-variant leading-relaxed">
+                        Verification follows you. Roles can be changed at any time.
+                    </p>
+</div>
+<!-- Action Button -->
+<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="login-status" role="status"></p>
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="login-submit" type="submit">
+                    Sign in
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="grid gap-3 sm:grid-cols-2">
+<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-google" type="button">Continue with Google</button>
+<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-reset" type="button">Reset password</button>
+</div>
+<!-- Footer Links -->
+<div class="pt-4 text-center">
+<p class="font-body-md text-on-surface-variant text-[14px]">
+                        New here? <button class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" id="login-create-inline" type="button">Create your account</button>
+</p>
+</div>
+</form>
+</div>
+</main>
+<!-- Simple Footer -->
+<footer class="w-full py-8 px-margin-mobile md:px-margin-desktop border-t border-outline-variant/10">
+<div class="max-w-container-max mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+<span class="font-label-sm text-on-surface-variant">&copy; 2026 Swadakta. Global Corridor Concierge.</span>
+<div class="flex gap-6">
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="privacy.html">Privacy Policy</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="terms.html">Terms of Service</a>
+<a class="font-label-sm text-on-surface-variant hover:text-primary transition-colors" href="mailto:swadakta111@gmail.com">Help Center</a>
+</div>
+</div>
+</footer>
+<script src="app-config.js?v=4"></script>
+<script src="app-data.js?v=50"></script>
+<script src="login.js?v=1"></script>
+<script src="assistant-dock.js?v=11"></script>
+</body></html>

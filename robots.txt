@@ -10,6 +10,8 @@ Disallow: /admin-verification
 Disallow: /admin-verification.html
 Disallow: /auth
 Disallow: /auth.html
+Disallow: /login
+Disallow: /login.html
 Disallow: /notifications
 Disallow: /notifications.html
 Disallow: /resolution

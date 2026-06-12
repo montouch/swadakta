@@ -18,6 +18,7 @@ const htmlFiles = [
   "brief.html",
   "corridor.html",
   "index.html",
+  "login.html",
   "messages.html",
   "notifications.html",
   "payments.html",
@@ -35,6 +36,7 @@ const requiredPages = [
   "/",
   "/portal",
   "/auth",
+  "/login",
   "/brief",
   "/corridor",
   "/tracking",
@@ -68,6 +70,7 @@ const privateNoStorePages = [
   "/admin-readiness",
   "/admin-verification",
   "/auth",
+  "/login",
   "/portal",
   "/brief",
   "/tracking",
@@ -135,8 +138,11 @@ const requiredPortalMarkers = [
   "Lowest price does not automatically win",
 ];
 const requiredPortalHtmlMarkers = [
+  'data-stitch-source="dashboard_swadakta_mobile_final_ux account_setup_profile_swadakta_final_ux_coverage find_work_swadakta_final_ux"',
+  "data-final-ux-shell=\"account-tools\"",
   "quick-action-card",
   'aria-label="Find jobs"',
+  'aria-label="Post a job"',
   "data-ai-mode-status",
   "Manual mode",
   "Open verification steps",
@@ -486,6 +492,7 @@ const requiredRobotsMarkers = [
   "Disallow: /admin-readiness",
   "Disallow: /admin-verification",
   "Disallow: /auth",
+  "Disallow: /login",
   "Disallow: /notifications",
   "Disallow: /resolution",
 ];

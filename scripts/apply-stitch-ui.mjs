@@ -127,7 +127,7 @@ function routeStitchHome(html) {
 
   const replacements = new Map([
     ['href="#">Home', 'href="/">Home'],
-    ['href="#">Marketplace', 'href="portal.html#jobs-board">Marketplace'],
+    ['href="#">Marketplace', 'href="login.html?next=%2Fportal.html%23jobs-board">Marketplace'],
     ['href="#">Concierge', 'href="brief.html">Concierge'],
     ['href="#">Verification', 'href="verification.html">Verification'],
     ['href="#">Analytics', 'href="trust.html">Trust'],
@@ -141,7 +141,7 @@ function routeStitchHome(html) {
 
   output = output.replace(
     '<button class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-surface-container transition-colors">account_circle</button>',
-    '<a class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-surface-container transition-colors" href="portal.html" aria-label="Open account">account_circle</a>',
+    '<a class="material-symbols-outlined text-primary p-2 rounded-full hover:bg-surface-container transition-colors" href="login.html" aria-label="Open account">account_circle</a>',
   );
   output = output.replace(
     '<button class="md:hidden material-symbols-outlined text-primary">menu</button>',
@@ -163,7 +163,7 @@ function routeStitchHome(html) {
     `<button class="px-lg py-md bg-secondary-container border border-outline-variant text-on-secondary-container rounded-lg font-bold hover:bg-surface-container-high transition-colors">
                         Find work
                     </button>`,
-    `<a class="px-lg py-md bg-secondary-container border border-outline-variant text-on-secondary-container rounded-lg font-bold hover:bg-surface-container-high transition-colors" href="portal.html#jobs-board">
+    `<a class="px-lg py-md bg-secondary-container border border-outline-variant text-on-secondary-container rounded-lg font-bold hover:bg-surface-container-high transition-colors" href="login.html?next=%2Fportal.html%23jobs-board">
                         Find work
                     </a>`,
   );
@@ -172,7 +172,7 @@ function routeStitchHome(html) {
     `<button class="px-xl py-lg bg-primary-container text-on-primary rounded-xl font-bold shadow-lg hover:shadow-primary-container/20 hover:-translate-y-1 transition-all">
                         Get Started Now
                     </button>`,
-    `<a class="px-xl py-lg bg-primary-container text-on-primary rounded-xl font-bold shadow-lg hover:shadow-primary-container/20 hover:-translate-y-1 transition-all" href="portal.html">
+    `<a class="px-xl py-lg bg-primary-container text-on-primary rounded-xl font-bold shadow-lg hover:shadow-primary-container/20 hover:-translate-y-1 transition-all" href="login.html">
                         Get Started Now
                     </a>`,
   );
@@ -247,10 +247,175 @@ function routeStitchHome(html) {
   return output;
 }
 
+function routeStitchLogin(html) {
+  let output = html;
+
+  output = output.replace("<title>Login | Swadakta</title>", "<title>Swadakta | Sign in</title>");
+  output = output.replaceAll('"letterSpacing": "-0.02em"', '"letterSpacing": "0"');
+  output = output.replaceAll('"letterSpacing": "-0.01em"', '"letterSpacing": "0"');
+  output = output.replaceAll("px-margin-desktop", "px-margin-mobile md:px-margin-desktop");
+  output = output
+    .replace("\u00a9 2024 Swadakta.", "&copy; 2026 Swadakta.")
+    .replace("\u00c2\u00a9 2024 Swadakta.", "&copy; 2026 Swadakta.");
+
+  output = output.replace(
+    "</style>",
+    `        * {
+            box-sizing: border-box;
+        }
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
+        [hidden] {
+            display: none !important;
+        }
+        main,
+        #swadakta-login-form,
+        .swadakta-login-card,
+        .swadakta-login-card .grid,
+        .swadakta-login-card input {
+            min-width: 0;
+        }
+        .swadakta-login-card {
+            box-sizing: border-box;
+            width: min(100%, 480px) !important;
+            max-width: min(480px, calc(100vw - 32px)) !important;
+            overflow: hidden;
+        }
+        @media (max-width: 767px) {
+            main {
+                padding-top: 2rem !important;
+                padding-bottom: 2rem !important;
+            }
+            .swadakta-login-card {
+                width: min(358px, calc(100vw - 32px)) !important;
+                max-width: 358px !important;
+                border-radius: 1.5rem !important;
+                padding: 1.25rem !important;
+            }
+            .swadakta-login-card h1 {
+                font-size: 1.9rem !important;
+                line-height: 1.18 !important;
+            }
+            .swadakta-login-card .grid-cols-3 {
+                gap: 0.5rem !important;
+            }
+            .account-tile-radio + label {
+                padding: 0.75rem 0.35rem !important;
+            }
+            #login-mode-signin,
+            #login-mode-create {
+                min-width: 0;
+                padding-inline: 0.25rem;
+                font-size: 0.82rem;
+            }
+        }
+    </style>`,
+  );
+
+  output = injectBeforeHeadClose(
+    output,
+    `${commonHead({
+      title: "Swadakta | Sign in",
+      description:
+        "Sign in to Swadakta with one account for giving jobs, finding work, tracking proof, verification, payments, and AI assistance.",
+      canonical: "https://swadakta.com/login",
+    })}
+<meta name="robots" content="noindex,nofollow" />`,
+  );
+
+  output = output.replace(
+    '<div class="w-full max-w-[480px] glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">',
+    '<div class="swadakta-login-card glass-panel p-8 md:p-12 rounded-[2rem] animate-in fade-in slide-in-from-bottom-4 duration-700">',
+  );
+  output = output.replace(
+    '<form class="space-y-8" onsubmit="event.preventDefault();">',
+    '<form class="space-y-7" id="swadakta-login-form">',
+  );
+  output = output.replace('for="email">Work Email', 'for="login-email">Email');
+  output = output.replace(
+    'id="email" name="email" placeholder="name@company.com" required="" type="email"',
+    'id="login-email" name="email" placeholder="you@example.com" required="" type="email" autocomplete="email"',
+  );
+
+  output = output.replace(
+    "<!-- Account Type Selector (Tiles) -->",
+    `<!-- Password Input Group -->
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-password">Password</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-password" name="password" placeholder="At least 8 characters" required="" minlength="8" type="password" autocomplete="current-password"/>
+</div>
+</div>
+<!-- Account Type Selector (Tiles) -->`,
+  );
+
+  output = output.replace(
+    "<!-- Trust Message -->",
+    `<div class="grid grid-cols-2 gap-2 rounded-full bg-white/70 border border-outline-variant/30 p-1">
+<button class="h-11 rounded-full bg-primary text-on-primary font-label-md text-label-md" id="login-mode-signin" type="button">Sign in</button>
+<button class="h-11 rounded-full text-on-surface-variant font-label-md text-label-md" id="login-mode-create" type="button">Create account</button>
+</div>
+<div class="space-y-2" data-login-create-only hidden>
+<label class="font-label-md text-label-md text-on-surface-variant ml-1" for="login-phone">Mobile / WhatsApp backup</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">phone_iphone</span>
+<input class="w-full h-14 pl-12 pr-4 rounded-xl sunken-input font-body-md text-on-surface" id="login-phone" name="phone" placeholder="+61 431 455 174" type="tel" autocomplete="tel"/>
+</div>
+</div>
+<!-- Trust Message -->`,
+  );
+
+  output = output.replace(
+    `<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" type="submit">
+                    Continue
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>`,
+    `<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="login-status" role="status"></p>
+<button class="w-full h-14 bg-primary text-on-primary rounded-full font-headline-sm flex items-center justify-center gap-2 shadow-[0px_20px_40px_rgba(70,72,212,0.2)] hover:scale-[1.02] active:scale-[0.98] transition-all duration-200 group" id="login-submit" type="submit">
+                    Sign in
+                    <span class="material-symbols-outlined group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+<div class="grid gap-3 sm:grid-cols-2">
+<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-google" type="button">Continue with Google</button>
+<button class="h-12 glass-panel rounded-full font-label-md text-on-surface-variant" id="login-reset" type="button">Reset password</button>
+</div>`,
+  );
+
+  output = output.replace(
+    `Don't have an account? <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="/">Get Started</a>`,
+    `New here? <button class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" id="login-create-inline" type="button">Create your account</button>`,
+  );
+  output = output.replace(
+    `Don't have an account? <a class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" href="#">Get Started</a>`,
+    `New here? <button class="text-primary font-semibold hover:underline decoration-2 underline-offset-4" id="login-create-inline" type="button">Create your account</button>`,
+  );
+  output = output.replaceAll('href="#">Privacy Policy', 'href="privacy.html">Privacy Policy');
+  output = output.replaceAll('href="#">Terms of Service', 'href="terms.html">Terms of Service');
+  output = output.replaceAll('href="#">Help Center', 'href="mailto:swadakta111@gmail.com">Help Center');
+  output = output.replaceAll('href="#"', 'href="/"');
+
+  output = output.replace(
+    /<!-- Micro-interaction Script -->[\s\S]*?<\/script>\s*<\/body>/,
+    `<script src="app-config.js?v=4"></script>
+<script src="app-data.js?v=50"></script>
+<script src="login.js?v=1"></script>
+<script src="assistant-dock.js?v=11"></script>
+</body>`,
+  );
+  output = output.replace("<body ", '<body data-stitch-source="sign_in_swadakta_1" ');
+  return output;
+}
+
 async function main() {
   const home = routeStitchHome(await readStitchPage("swadakta_home_final_ux_coverage"));
+  const login = routeStitchLogin(await readStitchPage("sign_in_swadakta_1"));
   await writeFile(path.join(root, "index.html"), home, "utf8");
-  console.log("Applied direct Stitch home export to index.html");
+  await writeFile(path.join(root, "login.html"), login, "utf8");
+  console.log("Applied direct Stitch exports to index.html and login.html");
 }
 
 main().catch((error) => {
