@@ -146,6 +146,115 @@
         </div>
       </section>
 
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20" id="rail-readiness">
+        <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+          <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment rails readiness matrix</p>
+              <h2 class="mt-2 font-display text-3xl md:text-4xl font-extrabold">Show a rail only after its evidence chain works.</h2>
+              <p class="mt-3 max-w-3xl text-on-surface-variant">
+                The client should see simple choices. Swadakta operations should see readiness gates: merchant approval, live credentials, callback/webhook proof, amount matching, and milestone release controls.
+              </p>
+            </div>
+            <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="admin-readiness.html">
+              Open readiness desk
+            </a>
+          </div>
+
+          <div class="mt-7 grid gap-4 xl:grid-cols-3">
+            <article class="rounded-3xl bg-white/76 border border-outline-variant/40 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Client-visible rail gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">Stripe / card</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">credit_card</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Use first for AUD, USD, GBP, and EUR checkout after live secret key, webhook signing secret, return URLs, and a low-value test pass.</p>
+              <div class="mt-4 rounded-2xl bg-surface-container-low/80 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">Checkout Session or PaymentIntent matched to request code, amount, and currency.</span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl bg-white/76 border border-outline-variant/40 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Client-visible rail gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">PayPal order</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">account_balance_wallet</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Use when a payer wants PayPal. Keep creation idempotent with a stable request reference, then capture/confirm before paid status.</p>
+              <div class="mt-4 rounded-2xl bg-surface-container-low/80 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">Order ID, capture result, payer status, amount, currency, and request code reconciliation.</span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl bg-white/76 border border-outline-variant/40 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Kenya KES gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">M-Pesa Daraja</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">phone_iphone</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Use only after business shortcode/Till setup, Daraja credentials, callback URL, duplicate-prompt guard, and receipt matching are live.</p>
+              <div class="mt-4 rounded-2xl bg-surface-container-low/80 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">MerchantRequestID, CheckoutRequestID, M-Pesa receipt, payer phone, KES amount, and request code.</span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl bg-white/76 border border-outline-variant/40 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Expansion gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">Paystack / Flutterwave</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">public</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Keep hidden until country, currency, merchant approval, settlement, chargeback rules, webhook verification, and a test payment all pass.</p>
+              <div class="mt-4 rounded-2xl bg-surface-container-low/80 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">Provider transaction ID, verified webhook or server-side transaction check, amount, currency, and customer reference.</span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl bg-white/76 border border-outline-variant/40 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Fallback gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">Bank / Wise</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">sync_alt</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Do not expose as normal self-serve checkout. Use only after easier rails fail or when bank evidence is genuinely cleaner.</p>
+              <div class="mt-4 rounded-2xl bg-surface-container-low/80 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">Receipt or statement line matched to sender, date, amount, currency, and Swadakta reference.</span>
+              </div>
+            </article>
+
+            <article class="rounded-3xl bg-primary/10 border border-primary/20 p-5">
+              <div class="flex items-start justify-between gap-4">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Protected gate</p>
+                  <h3 class="mt-2 font-display text-xl font-bold">Regulated escrow/provider-held funds</h3>
+                </div>
+                <span class="grid h-11 w-11 place-items-center rounded-2xl bg-white/78 text-primary"><span class="material-symbols-outlined">shield_lock</span></span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant">Use for high-value property, title, construction, supplier deposits, or legally sensitive jobs where ordinary payment links are not enough.</p>
+              <div class="mt-4 rounded-2xl bg-white/72 p-4 text-sm">
+                <strong class="block text-primary">Evidence needed</strong>
+                <span class="mt-1 block text-on-surface-variant">Provider contract/reference, written milestone terms, release authority, proof pack, and dispute path.</span>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20">
         <div class="grid gap-6 lg:grid-cols-[0.88fr_1.12fr]">
           <article class="glass-panel rounded-[2rem] p-6 md:p-8">

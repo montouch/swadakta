@@ -14,6 +14,21 @@ Swadakta should stay quote-first at launch. Each request can vary by travel, acc
 6. Wise Business payment links or account details only as an admin fallback when Stripe, PayPal, M-Pesa, Paystack/Flutterwave, or normal bank transfer is unsuitable or has failed.
 7. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
 
+## Launch Rail Visibility Matrix
+
+The public site should keep payment choices simple. The admin/readiness layer decides whether a rail is visible, hidden, or fallback-only.
+
+| Rail | Public visibility | Must be true first | Evidence before funds count as protected |
+| --- | --- | --- | --- |
+| Stripe / card | Show for supported global checkout currencies after setup | Live Stripe account, server secret, return URLs, webhook signing secret, idempotency key, and a low-value test | Checkout Session or PaymentIntent matched to request code, amount, and currency |
+| PayPal order/invoice | Show when payer prefers PayPal and quote currency is supported | REST app credentials, order creation, `PayPal-Request-Id`, capture workflow, and saved provider reference | Order/capture ID, payer status, amount, currency, and request-code reconciliation |
+| M-Pesa Daraja | Show for Kenya KES only after business setup | Safaricom shortcode/Till/Paybill, Daraja credentials, callback URL, STK duplicate guard, and receipt mapping | MerchantRequestID, CheckoutRequestID, M-Pesa receipt, payer phone, KES amount, and request code |
+| Paystack / Flutterwave | Keep hidden as expansion pilot until approved | Merchant approval, country/currency support, settlement account, webhook verification, and test payment | Provider transaction ID plus verified webhook or server-side transaction lookup matched to amount/currency/customer |
+| Bank / Wise | Fallback-only, not normal self-serve checkout | Simpler rails are unsuitable, unavailable, failed, or genuinely less clean than bank evidence | Receipt or statement line matched to sender, date, amount, currency, and Swadakta reference |
+| Regulated escrow/provider-held funds | Use only for high-value or legally sensitive jobs | Provider/escrow account, written milestone terms, release authority, dispute path, and proof pack | Provider contract/reference, milestone status, release authority, proof review, and dispute status |
+
+Client-visible rail gate rule: no payment rail becomes a normal public choice until the readiness cockpit proves provider setup, evidence reconciliation, and milestone-release boundaries. Provider confirmation never releases receiver money by itself.
+
 ## Funds Protection and Milestones
 
 Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:
