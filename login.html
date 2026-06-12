@@ -154,7 +154,7 @@
             </span>
 </div>
 <div class="hidden md:flex items-center space-x-md">
-<p class="text-label-sm font-label-sm text-outline uppercase tracking-wider">Trusted by 10k+ Caregivers</p>
+<p class="text-label-sm font-label-sm text-outline uppercase tracking-wider">One account for giving and receiving work</p>
 </div>
 </header>
 <main class="relative z-10 flex-grow flex items-center justify-center px-margin-mobile md:px-0 py-xl">
@@ -164,7 +164,7 @@
 <div class="mb-xl text-center">
 <h1 class="text-headline-lg font-headline-lg text-primary mb-2">Welcome to Swadakta</h1>
 <p class="text-body-md font-body-md text-on-surface-variant max-w-[340px] mx-auto leading-relaxed">
-                        Access your workspace or join our community of trusted professionals.
+                        Give jobs, find verified work, track proof, and move money through clear milestones.
                     </p>
 </div>
 <!-- Toggle Segment -->
@@ -186,16 +186,15 @@
 </div>
 <div class="space-y-xs">
 <label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-password">Password</label>
-<input class="w-full h-12 px-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-password" name="password" autocomplete="current-password" required minlength="8" placeholder="••••••••" type="password"/>
+<input class="w-full h-12 px-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-password" name="password" autocomplete="current-password" required minlength="8" placeholder="8+ characters" type="password"/>
 </div>
 </div>
 <!-- Account Creation Fields (Hidden by default) -->
 <div data-login-create-only hidden class="space-y-lg animate-in fade-in slide-in-from-top-4 duration-500" id="signup-fields">
 <div class="space-y-xs">
-<label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-phone">Mobile/WhatsApp number</label>
+<label class="text-label-md font-label-md text-on-surface-variant px-1" for="login-phone">Mobile / WhatsApp backup</label>
 <div class="relative">
-<span class="absolute left-md top-1/2 -translate-y-1/2 text-on-surface-variant text-label-md">+254</span>
-<input class="w-full h-12 pl-[54px] pr-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-phone" name="phone" autocomplete="tel" placeholder="700 000 000" type="tel"/>
+<input class="w-full h-12 px-md bg-surface-container-lowest border border-secondary-container rounded-lg focus:ring-2 focus:ring-primary-container focus:border-primary-container transition-all text-body-md outline-none" id="login-phone" name="phone" autocomplete="tel" placeholder="+61 431 455 174" type="tel"/>
 </div>
 </div>
 <div class="space-y-md">
@@ -227,7 +226,7 @@
 <!-- Verification Note -->
 <div class="flex items-start gap-md p-md bg-primary-container/5 rounded-lg border border-primary-container/10">
 <span class="material-symbols-outlined text-primary-container">info</span>
-<p class="text-label-sm font-label-sm text-on-primary-container">ID Verification required before paid work can be initiated or accepted on the platform.</p>
+<p class="text-label-sm font-label-sm text-on-primary-container">ID verification is required before paid posting, paid receiver work, sensitive tasks, or higher-value milestones.</p>
 </div>
 </div>
 <!-- Action Buttons -->
@@ -236,12 +235,12 @@
 <button class="w-full h-14 bg-primary-container text-white rounded-lg font-headline-md text-label-md inner-glow hover:bg-primary-container/90 active:scale-[0.98] transition-all-300 shadow-lg" id="login-submit" type="submit">
                             Sign In
                         </button>
-<div class="relative py-2 flex items-center">
+<div class="relative py-2 flex items-center" id="login-oauth-divider">
 <div class="flex-grow border-t border-outline-variant/30"></div>
 <span class="flex-shrink mx-4 text-label-sm text-outline font-label-sm">OR</span>
 <div class="flex-grow border-t border-outline-variant/30"></div>
 </div>
-<button class="w-full h-12 flex items-center justify-center gap-md bg-white border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-google" type="button">
+<button class="w-full h-12 flex items-center justify-center gap-md bg-white border border-secondary-container rounded-lg text-label-md font-label-md text-on-surface hover:bg-surface transition-all-300 active:scale-[0.98]" id="login-google" type="button" hidden>
 <img alt="Google" class="w-5 h-5" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDoGO_JmuT_-I2PEApjuzFCwJ4fqPpdanv3UjEDgiavKOYpopCv345sjtUKoqdS1cUKHOCPYFuF3t6Sqol2_KK3W2fsWrOzauAyXQbaTo6SwYEeS-3MBRUW5uN7CH6oETJ7Vfplj6iB4mApT5rr44e_YzDwGs58V0qLvq2i7Ezv9bt0zMthZ4rpm3ChnkUCUwqzbjTVBrPUzosVLlP2xC6gm8lQtGeE9AUNH416XvrTgnWmyxRv98TlHvfoHDqucp8VmPWQTuvUIx_Y"/>
                             Continue with Google
                         </button>
@@ -275,12 +274,12 @@
 <div class="absolute inset-0 bg-gradient-to-t from-primary-container/60 to-transparent"></div>
 <div class="absolute bottom-md left-md right-md p-md glass-panel rounded-xl">
 <p class="text-label-sm font-label-sm text-primary mb-1">Community Spotlight</p>
-<p class="text-body-md font-bold text-primary">"Swadakta provided the ethical clarity I needed for my caregiving practice."</p>
+<p class="text-body-md font-bold text-primary">"Swadakta gave me one clear place for the brief, proof, and payment route."</p>
 </div>
 </div>
 </aside>
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=52"></script>
-<script src="login.js?v=2"></script>
+<script src="login.js?v=3"></script>
 <script src="assistant-dock.js?v=14"></script>
 </body></html>

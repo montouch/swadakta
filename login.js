@@ -9,6 +9,7 @@
   const createModeButton = document.querySelector("#login-mode-create");
   const createInlineButton = document.querySelector("#login-create-inline");
   const googleButton = document.querySelector("#login-google");
+  const oauthDivider = document.querySelector("#login-oauth-divider");
   const resetButton = document.querySelector("#login-reset");
   const createOnlyFields = document.querySelectorAll("[data-login-create-only]");
   let mode = "signin";
@@ -67,6 +68,21 @@
     status.textContent = message || "";
     status.classList.remove("text-error", "text-primary", "text-on-surface-variant");
     status.classList.add(tone === "error" ? "text-error" : tone === "success" ? "text-primary" : "text-on-surface-variant");
+  }
+
+  function googleProviderEnabled() {
+    return Boolean(window.SWADAKTA_CONFIG?.authProviders?.google);
+  }
+
+  function syncGoogleProvider() {
+    const enabled = googleProviderEnabled();
+    if (googleButton) {
+      googleButton.hidden = !enabled;
+      googleButton.disabled = !enabled;
+    }
+    if (oauthDivider) {
+      oauthDivider.hidden = !enabled;
+    }
   }
 
   function selectedRole() {
@@ -184,7 +200,12 @@
     }
   });
 
-  googleButton.addEventListener("click", async () => {
+  googleButton?.addEventListener("click", async () => {
+    if (!googleProviderEnabled()) {
+      setStatus("Google sign-in is not enabled for this Swadakta site yet. Use email and password.", "error");
+      syncGoogleProvider();
+      return;
+    }
     rememberIntent();
     googleButton.disabled = true;
     setStatus("Opening Google sign-in...");
@@ -196,6 +217,7 @@
     }
   });
 
+  syncGoogleProvider();
   setMode("signin");
   continueIfAlreadySignedIn();
 })();

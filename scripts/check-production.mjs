@@ -720,7 +720,10 @@ const requiredLoginHtmlMarkers = [
   'id="login-mode-signin"',
   'id="login-mode-create"',
   'id="login-submit"',
-  "login.js?v=2",
+  'id="login-oauth-divider"',
+  "Mobile / WhatsApp backup",
+  "One account for giving and receiving work",
+  "login.js?v=3",
 ];
 const requiredFinalUxSupportPageMarkers = [
   ['auth.html', 'data-final-ux-shell="support-auth"'],
@@ -738,6 +741,10 @@ const requiredFinalUxSupportPageMarkers = [
   ['terms.html', "styles.css?v=29"],
 ];
 const forbiddenUserFacingIncompleteMarkers = [
+  ["login.html", "Trusted by 10k+ Caregivers"],
+  ["login.html", "caregiving practice"],
+  ["login.html", "+254"],
+  ["login.html", "placeholder=\"••••••••\""],
   ["portal.html", "until proper storage is connected"],
   ["portal.html", "until secure storage is connected"],
   ["stitch-portal.js", "Proper profile storage will handle larger files later"],
