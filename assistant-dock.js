@@ -161,6 +161,12 @@
         text-overflow: ellipsis;
         white-space: nowrap;
       }
+      body footer a {
+        display: inline-flex;
+        align-items: center;
+        min-height: 40px;
+        max-width: 100%;
+      }
       body header a:not(.brand), body header button,
       body nav a:not(.brand), body nav button,
       body .top-link,

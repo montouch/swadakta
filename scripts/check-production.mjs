@@ -1045,8 +1045,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=13")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=13`);
+  if (!content.includes("assistant-dock.js?v=14")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=14`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1271,8 +1271,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=13")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=13`);
+  if (!text.includes("assistant-dock.js?v=14")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=14`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
@@ -1664,11 +1664,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=13");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=14");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=13 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=14 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=13 returned 200");
+  pass("assistant-dock.js?v=14 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
