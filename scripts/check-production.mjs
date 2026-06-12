@@ -442,6 +442,7 @@ const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
   "uploadProofFiles",
   "Live proof submit is only for the assigned verified receiver",
+  "Video call request added with proof-safe agenda note",
 ];
 const requiredNotificationPageMarkers = [
   "Swadakta notifications",
@@ -1401,8 +1402,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/messages" && !text.includes("messages.js?v=3")) {
-    fail(failures, `${page} does not reference messages.js?v=3`);
+  if (page === "/messages" && !text.includes("messages.js?v=4")) {
+    fail(failures, `${page} does not reference messages.js?v=4`);
   }
   if (page === "/notifications") {
     for (const marker of requiredNotificationPageMarkers) {
@@ -1793,11 +1794,11 @@ for (const marker of requiredResolutionScriptMarkers) {
   }
 }
 
-const { response: messagesResponse, text: messagesText } = await fetchText("/messages.js?v=3");
+const { response: messagesResponse, text: messagesText } = await fetchText("/messages.js?v=4");
 if (messagesResponse.status !== 200) {
-  fail(failures, `messages.js?v=3 returned ${messagesResponse.status}`);
+  fail(failures, `messages.js?v=4 returned ${messagesResponse.status}`);
 } else {
-  pass("messages.js?v=3 returned 200");
+  pass("messages.js?v=4 returned 200");
 }
 
 for (const marker of requiredMessagesMarkers) {

@@ -61,7 +61,7 @@
     if (!mediaList) return;
     const items = [...files].map((file) => `<li>${fileSummary(file)}</li>`);
     if (voiceBlob) items.push(`<li>Voice note ready (${Math.max(1, Math.round(voiceBlob.size / 1024))} KB)</li>`);
-    if (videoRequested) items.push("<li>Video call request added</li>");
+    if (videoRequested) items.push("<li>Video call request added with proof-safe agenda note</li>");
 
     mediaList.innerHTML = items.length
       ? `<ul class="grid gap-2 rounded-2xl bg-white/72 border border-outline-variant/40 p-4 text-sm text-on-surface-variant">${items.join("")}</ul>`
@@ -276,7 +276,7 @@
     videoCall.addEventListener("click", () => {
       videoRequested = true;
       renderMediaList(mediaInput?.files || []);
-      setStatus("Video call request added to draft.");
+      setStatus("Video call request added. Keep scheduling inside the job room and do not make payment, release, ID, or assignment decisions on the call alone.");
     });
   }
 
