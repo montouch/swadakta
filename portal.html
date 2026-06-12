@@ -537,6 +537,18 @@
             flex-direction: column;
             gap: 1rem;
         }
+        /* account-home-find-work-before-profile */
+        #dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        #dashboard > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0 !important;
+        }
+        #dashboard > section[aria-label="Jobs and account status"] {
+            order: 5;
+        }
         #find-work {
             order: 0;
             scroll-margin-top: 6.5rem;
@@ -546,6 +558,7 @@
             scroll-margin-top: 6.5rem;
         }
         #receiver-profile-setup {
+            order: 6;
             scroll-margin-top: 6.5rem;
         }
         #marketplace-job-list > article,
