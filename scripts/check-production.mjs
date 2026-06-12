@@ -423,6 +423,11 @@ const requiredAdminThemeMarkers = [
   'data-admin-theme="dark"',
   "admin-theme.css?v=1",
 ];
+const requiredAdminThemeCssMarkers = [
+  'body[data-admin-theme="dark"]',
+  "rgba(12, 14, 27, 0.76)",
+  ".bg-white\\/70",
+];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
   "storageBackendItems",
@@ -1130,6 +1135,20 @@ if (!manifestText.includes('"name": "Swadakta"') || !manifestText.includes("/fav
   fail(failures, "Production site.webmanifest is missing favicon metadata");
 } else {
   pass("Production site.webmanifest contains favicon metadata");
+}
+
+const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=1");
+if (adminThemeResponse.status !== 200) {
+  fail(failures, `admin-theme.css?v=1 returned ${adminThemeResponse.status}`);
+} else {
+  pass("admin-theme.css?v=1 returned 200");
+}
+for (const marker of requiredAdminThemeCssMarkers) {
+  if (!adminThemeText.includes(marker)) {
+    fail(failures, `admin-theme.css?v=1 is missing marker ${marker}`);
+  } else {
+    pass(`admin-theme.css contains ${marker}`);
+  }
 }
 
 if (isLocalBaseUrl()) {
