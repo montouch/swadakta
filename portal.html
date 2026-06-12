@@ -92,13 +92,13 @@
                         "body-md": ["Inter"]
                     },
                     "fontSize": {
-                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
-                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.02em", "fontWeight": "500"}],
+                        "display-lg": ["64px", {"lineHeight": "72px", "letterSpacing": "0", "fontWeight": "800"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0", "fontWeight": "500"}],
                         "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
                         "headline-sm": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
-                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "700"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "0", "fontWeight": "700"}],
                         "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
-                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "display-lg-mobile": ["40px", {"lineHeight": "48px", "letterSpacing": "0", "fontWeight": "800"}],
                         "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
                     }
                 },
@@ -130,6 +130,9 @@
         }
         .material-symbols-outlined {
             font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        [class*="tracking-"] {
+            letter-spacing: 0 !important;
         }
         body.is-account-signed-in > main {
             display: none !important;
@@ -175,6 +178,15 @@
         }
         .workspace-link {
             min-height: 2.75rem;
+            border: 1px solid transparent;
+            white-space: nowrap;
+            transition: transform 0.18s ease, background 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+        }
+        .workspace-link:hover,
+        .workspace-link:focus-visible {
+            transform: translateY(-1px);
+            border-color: rgba(16, 26, 58, 0.12);
+            outline: none;
         }
         .workspace-link .material-symbols-outlined,
         .quick-action-card .material-symbols-outlined,
@@ -183,7 +195,7 @@
         }
         .quick-action-card {
             display: flex;
-            min-height: 14rem;
+            min-height: 12.5rem;
             flex-direction: column;
             border-radius: 1.5rem;
             padding: 1.25rem;
@@ -191,6 +203,73 @@
             color: inherit;
             text-decoration: none;
             transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+        .portal-top-tools {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
+            width: 100%;
+        }
+        body #home header nav.portal-top-tools {
+            display: grid !important;
+        }
+        .portal-tool-button {
+            display: inline-flex;
+            min-height: 3rem;
+            min-width: 0;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            border-radius: 999px;
+            border: 1px solid rgba(199, 196, 215, 0.42);
+            background: rgba(255, 255, 255, 0.74);
+            padding: 0 1rem;
+            color: #101a3a;
+            font-weight: 800;
+            text-decoration: none;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+        }
+        .portal-tool-button:hover,
+        .portal-tool-button:focus-visible {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.92);
+            box-shadow: 0 16px 32px rgba(16, 26, 58, 0.09);
+            outline: none;
+        }
+        .portal-tool-button.is-primary {
+            border-color: rgba(16, 26, 58, 0.18);
+            background: #000105;
+            color: #fff;
+            box-shadow: 0 18px 34px rgba(16, 26, 58, 0.18);
+        }
+        .portal-tool-button .material-symbols-outlined {
+            flex: 0 0 auto;
+        }
+        .portal-section-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.9rem;
+        }
+        .portal-section-header > div {
+            min-width: 0;
+        }
+        .portal-section-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.6rem;
+        }
+        .portal-mini-button {
+            display: inline-flex;
+            min-height: 2.65rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: 1px solid rgba(199, 196, 215, 0.42);
+            background: rgba(255, 255, 255, 0.74);
+            padding: 0 1rem;
+            color: #101a3a;
+            font-weight: 800;
         }
         .quick-action-card:hover {
             transform: translateY(-2px);
@@ -336,7 +415,24 @@
             height: 1rem;
             flex: 0 0 auto;
         }
+        #home :is(a, button, input, select, textarea) {
+            position: relative;
+            z-index: 1;
+        }
+        #home :is(a, button) {
+            touch-action: manipulation;
+        }
+        #home :is(p, span, strong, h1, h2, h3, label, button, a) {
+            overflow-wrap: anywhere;
+        }
         @media (max-width: 767px) {
+            .portal-top-tools {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            body #home header nav.portal-top-tools {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
             .find-job-step {
                 grid-template-columns: 3rem minmax(0, 1fr);
                 align-items: start;
@@ -383,21 +479,22 @@
                 display: none !important;
             }
             #home > div > aside:first-child nav {
-                display: grid;
+                display: flex;
                 grid-column: 1 / -1;
                 grid-row: 2;
-                grid-template-columns: repeat(4, minmax(0, 1fr));
                 min-width: 0;
                 width: 100%;
                 gap: 0.2rem;
-                overflow: visible;
+                overflow-x: auto;
+                overflow-y: hidden;
                 scrollbar-width: none;
             }
             #home > div > aside:first-child nav::-webkit-scrollbar {
                 display: none;
             }
             #home > div > aside:first-child nav a {
-                width: 100%;
+                flex: 0 0 2.75rem;
+                width: 2.75rem;
                 height: 2.55rem;
                 justify-content: center;
                 padding: 0;
@@ -617,11 +714,13 @@
 <a class="inline-flex h-12 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="tracking.html">Use normal tools</a>
 </div>
 </div>
-<div class="mt-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-<div class="relative flex-1">
-<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
-<input class="w-full h-12 pl-12 pr-4 rounded-full sunken-input font-body-md text-on-surface" placeholder="Search jobs or messages..." type="search"/>
-</div>
+<div class="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+<nav class="portal-top-tools" aria-label="Primary account actions">
+<a class="portal-tool-button is-primary" href="brief.html" aria-label="Give a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
+<a class="portal-tool-button" href="#find-work" aria-label="Find jobs"><span class="material-symbols-outlined text-[20px]">work_history</span>Find jobs</a>
+<a class="portal-tool-button" href="tracking.html" aria-label="Track jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>Track</a>
+<a class="portal-tool-button" href="messages.html" aria-label="Messages and proof"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
+</nav>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="account-home-verification-pill">Checking verification</span>
 </div>
 </header>
@@ -974,24 +1073,24 @@ Submit offer
 </section>
 </article>
 <section class="glass-panel rounded-[1.5rem] p-5 md:p-6" id="find-work">
-<div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+<div class="grid gap-5 2xl:grid-cols-[minmax(0,1fr)_340px] 2xl:items-start">
 <div class="min-w-0">
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Set up once, then get matched to suitable work</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">A job seeker profile is not a separate account. Add where you are, what you can do, and how you prove work. Paid jobs stay locked until ID verification and route checks pass.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and receive jobs. Your receiver side opens in four simple steps, and paid work stays locked until ID, route, payment, and proof checks pass.</p>
 <div class="find-job-path mt-5">
 <a class="find-job-step" href="#receiver-profile-setup" aria-label="Complete job seeker profile">
 <span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">badge</span></span>
 <span class="find-job-step-body">
-<span class="block font-label-md text-on-surface">Real profile</span>
-<span class="block font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, base, photo, languages, and proof tools.</span>
+<span class="block font-label-md text-on-surface">1. Real profile</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, current base, face photo, languages, and proof tools.</span>
 </span>
 <span class="find-job-step-action">Open <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
 </a>
 <a class="find-job-step" href="verification.html?reason=receiver_work" aria-label="Verify identity for paid jobs">
 <span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">verified_user</span></span>
 <span class="find-job-step-body">
-<span class="block font-label-md text-on-surface">Verify ID</span>
+<span class="block font-label-md text-on-surface">2. Verify ID</span>
 <span class="block font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive receiver work.</span>
 </span>
 <span class="find-job-step-action">Start <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
@@ -999,8 +1098,8 @@ Submit offer
 <a class="find-job-step" href="#jobs-board" aria-label="Browse available jobs">
 <span class="find-job-step-icon bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[26px]">work_history</span></span>
 <span class="find-job-step-body">
-<span class="block font-label-md text-on-surface">Browse suitable jobs</span>
-<span class="block font-body-md text-on-surface-variant text-sm mt-1">Only lawful routes, proof-ready jobs, and confirmed payment rails.</span>
+<span class="block font-label-md text-on-surface">3. Browse jobs</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">See lawful routes, proof-ready work, and payment-protected briefs.</span>
 </span>
 <span class="find-job-step-action">See <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1009,7 +1108,7 @@ Submit offer
 <aside class="rounded-[1.35rem] border border-outline-variant/30 bg-white/66 p-4 min-w-0">
 <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Status</p>
 <span class="mt-3 inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
-<p class="font-body-md text-on-surface-variant text-sm mt-3">You can save this now. Paid work stays locked until provider ID evidence, route fit, and payment protection are complete.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-3">You can save the profile now. Offers are reviewed by price, timing, proof quality, route fit, and provenance. Lowest price does not automatically win.</p>
 <div class="find-job-metrics mt-4">
 <div class="find-job-metric">
 <span class="font-label-sm text-on-surface-variant">Account</span>
@@ -1160,7 +1259,7 @@ Submit offer
 <article class="glass-panel rounded-[1.5rem] p-5">
 <div class="flex items-start justify-between gap-3">
 <p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">AI / manual mode</p>
-<button class="h-9 shrink-0 rounded-full border border-outline-variant/40 bg-white/70 px-3 text-xs font-bold text-primary" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
+<button class="h-10 shrink-0 rounded-full border border-outline-variant/40 bg-white/70 px-4 text-xs font-bold text-primary" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
 </div>
 <h2 class="font-headline-sm text-headline-sm mt-1">Tell AI what you need</h2>
 <p class="font-body-md text-on-surface-variant mt-2">It can draft a brief, write replies, predict blockers, and send you to the right tool. Protected decisions still need system evidence.</p>
