@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "7";
+  const DOCK_VERSION = "8";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
@@ -77,11 +77,11 @@
       .sw-ai-send:disabled { opacity: .58; cursor: not-allowed; }
       .sw-ai-note { margin: 8px 2px 0; font-size: 11px; line-height: 1.4; color: #464554; }
       @media (max-width: 640px) {
-        #${rootId} { left: auto; right: 14px; bottom: max(14px, env(safe-area-inset-bottom)); width: auto; }
-        .sw-ai-fab { justify-content: center; width: 54px; min-height: 54px; padding: 0; border-radius: 19px; }
+        #${rootId} { left: auto; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)); width: auto; }
+        .sw-ai-fab { justify-content: center; width: 50px; min-height: 50px; padding: 0; border-radius: 18px; }
         .sw-ai-fab > span:last-child { display: none; }
-        .sw-ai-fab-dot { width: 32px; height: 32px; font-size: 12px; }
-        .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: 72px; width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 112px)); border-radius: 22px; }
+        .sw-ai-fab-dot { width: 30px; height: 30px; font-size: 12px; }
+        .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: max(132px, calc(env(safe-area-inset-bottom) + 132px)); width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 172px)); border-radius: 22px; }
       }
     `;
     document.head.append(style);
