@@ -36,6 +36,15 @@
   const accountHomeNextCopy = document.querySelector("#account-home-next-copy");
   const accountHomeVerificationSummary = document.querySelector("#account-home-verification-summary");
   const accountHomeVerificationAction = document.querySelector("#account-home-verification-action");
+  const accountHomeModeTitle = document.querySelector("#account-home-mode-title");
+  const accountHomeModeCopy = document.querySelector("#account-home-mode-copy");
+  const accountHomeModePill = document.querySelector("#account-home-mode-pill");
+  const accountHomeRouteTitle = document.querySelector("#account-home-route-title");
+  const accountHomeRouteCopy = document.querySelector("#account-home-route-copy");
+  const accountHomeRoutePill = document.querySelector("#account-home-route-pill");
+  const accountHomeNextStepTitle = document.querySelector("#account-home-next-step-title");
+  const accountHomeNextStepCopy = document.querySelector("#account-home-next-step-copy");
+  const accountHomeNextStepAction = document.querySelector("#account-home-next-step-action");
   const accountHomeGateAccount = document.querySelector("#account-home-gate-account");
   const accountHomeGatePosting = document.querySelector("#account-home-gate-posting");
   const accountHomeGateWork = document.querySelector("#account-home-gate-work");
@@ -605,13 +614,189 @@
     if (copyNode && copy) copyNode.textContent = copy;
   }
 
+  function accountRole(profile = {}) {
+    const role = profile.account_role || roleIntent();
+    return ["client", "receiver", "both"].includes(role) ? role : "client";
+  }
+
+  function accountRoleLabel(role) {
+    return (
+      {
+        client: "Client",
+        receiver: "Job seeker",
+        both: "Client + job seeker",
+      }[role] || "Client"
+    );
+  }
+
+  function hasProfileBasics(profile = {}) {
+    return Boolean(profile.full_name && (profile.whatsapp || phoneInput?.value) && (profile.country || profile.kenya_base));
+  }
+
+  function uniqueList(values = []) {
+    return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+  }
+
+  function profileRouteText(profile = {}) {
+    const country = String(profile.country || "").trim();
+    const base = String(profile.kenya_base || "").trim();
+    if (country && base) return `${country} / ${base}`;
+    return country || base || "";
+  }
+
+  function accountHomeNextStep(profile = {}, context = {}) {
+    const role = accountRole(profile);
+    const requests = context.requests || [];
+    const jobs = context.jobs || [];
+    const applications = context.applications || [];
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const canGiveJobs = role === "client" || role === "both";
+    const canReceiveJobs = role === "receiver" || role === "both";
+
+    if (!hasProfileBasics(profile)) {
+      return {
+        title: "Save profile basics",
+        copy: "Add legal name, mobile, current country, and operating base so Swadakta can route work properly.",
+        href: "#work",
+        label: "Save profile",
+      };
+    }
+
+    if (!verified && latestRequest?.provider_link) {
+      return {
+        title: "Finish provider verification",
+        copy: "Your provider link is ready. Complete ID, document, and selfie/liveness checks before paid actions unlock.",
+        href: latestRequest.provider_link,
+        label: "Open provider",
+        external: true,
+      };
+    }
+
+    if (!verified) {
+      return {
+        title: latestRequest ? "Wait for verification result" : "Request verification",
+        copy: latestRequest
+          ? "Verification is queued. You can still prepare briefs, profile, and messages while Swadakta waits for provider evidence."
+          : "Verification is not needed to hold an account, but it is required before paid posting, paid receiver work, or sensitive jobs.",
+        href: "verification.html?reason=account_required",
+        label: "Open verification",
+      };
+    }
+
+    if (jobs.length) {
+      return {
+        title: "Update assigned work",
+        copy: "Open tracking to submit proof, photos, notes, receipts, milestones, or issue updates for assigned jobs.",
+        href: "tracking.html",
+        label: "Track jobs",
+      };
+    }
+
+    if (canGiveJobs && !requests.length) {
+      return {
+        title: "Create your first brief",
+        copy: "Choose a route, describe the task, upload helpful media, and let Swadakta shape it into a quote-ready job.",
+        href: "corridor.html",
+        label: "Give a job",
+      };
+    }
+
+    if (canReceiveJobs && !applications.length) {
+      return {
+        title: "Set job coverage",
+        copy: "Tell Swadakta where you can work, what proof tools you can use, and which categories fit you.",
+        href: "#find-work",
+        label: "Apply for jobs",
+      };
+    }
+
+    if (requests.length) {
+      return {
+        title: "Track active work",
+        copy: "Open your jobs to check proof, payment route, messages, milestones, and any resolution cases.",
+        href: "tracking.html",
+        label: "Open tracking",
+      };
+    }
+
+    return {
+      title: "Keep route rules current",
+      copy: "Review lawful-goods, proof, payment, and corridor rules before taking or giving cross-border work.",
+      href: "rules.html",
+      label: "Check rules",
+    };
+  }
+
+  function renderAccountHomeDashboard(profile = {}, context = {}) {
+    const role = accountRole(profile);
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const applications = context.applications || [];
+    const receiverSetup = readReceiverProfileSetup();
+    const coverageLabels = uniqueList(applications.flatMap((application) => receiverApplicationCoverageLabels(application)));
+    const routeText = profileRouteText(profile) || receiverSetup.location || "";
+    const nextStep = accountHomeNextStep(profile, context);
+
+    if (accountHomeModeTitle) accountHomeModeTitle.textContent = accountRoleLabel(role);
+    if (accountHomeModeCopy) {
+      accountHomeModeCopy.textContent =
+        role === "both"
+          ? "You can give jobs and receive matched work from this same account."
+          : role === "receiver"
+            ? "This account is set up for paid work. You can still create client briefs later."
+            : "This account is set up to give jobs. You can add job-seeker coverage later.";
+    }
+    if (accountHomeModePill) {
+      accountHomeModePill.textContent = verified ? "Verified gate ready" : "Account open";
+      accountHomeModePill.className = `inline-flex min-h-8 px-3 items-center justify-center rounded-full font-label-sm mt-4 ${
+        verified ? "bg-emerald-50 text-emerald-700" : "bg-primary-container/10 text-primary"
+      }`.trim();
+    }
+
+    if (accountHomeRouteTitle) {
+      accountHomeRouteTitle.textContent = coverageLabels.length ? "Coverage on file" : routeText ? "Route context" : "Set your corridor";
+    }
+    if (accountHomeRouteCopy) {
+      accountHomeRouteCopy.textContent = coverageLabels.length
+        ? `Coverage: ${coverageLabels.slice(0, 3).join(", ")}${coverageLabels.length > 3 ? "..." : ""}.`
+        : routeText
+          ? `Current route context is ${routeText}. Choose a corridor per job before money or assignment.`
+          : "Add country, base, and coverage so Swadakta can match lawful work properly.";
+    }
+    if (accountHomeRoutePill) {
+      accountHomeRoutePill.textContent = coverageLabels.length
+        ? `${coverageLabels.length} coverage lane${coverageLabels.length === 1 ? "" : "s"}`
+        : routeText || "No route yet";
+      accountHomeRoutePill.className = `inline-flex min-h-8 px-3 items-center justify-center rounded-full font-label-sm mt-4 ${
+        coverageLabels.length || routeText
+          ? "bg-primary-container/10 text-primary"
+          : "bg-white/70 border border-outline-variant/40 text-on-surface-variant"
+      }`.trim();
+    }
+
+    if (accountHomeNextStepTitle) accountHomeNextStepTitle.textContent = nextStep.title;
+    if (accountHomeNextStepCopy) accountHomeNextStepCopy.textContent = nextStep.copy;
+    if (accountHomeNextStepAction) {
+      accountHomeNextStepAction.href = nextStep.href;
+      accountHomeNextStepAction.textContent = nextStep.label;
+      if (nextStep.external) {
+        accountHomeNextStepAction.target = "_blank";
+        accountHomeNextStepAction.rel = "noopener";
+      } else {
+        accountHomeNextStepAction.removeAttribute("target");
+        accountHomeNextStepAction.removeAttribute("rel");
+      }
+    }
+  }
+
   function renderAccountSetupChecklist(profile = {}, context = {}) {
     const verifications = context.verifications || [];
     const applications = context.applications || [];
     const requests = context.requests || [];
     const latestRequest = latestVerificationRequest(verifications);
     const verified = accountIsVerified(profile, latestRequest);
-    const hasProfile = Boolean(profile.full_name && (profile.whatsapp || phoneInput?.value) && profile.country);
+    const hasProfile = hasProfileBasics(profile);
     const receiverSetup = readReceiverProfileSetup();
     const hasReceiverProfile = Boolean(receiverSetup.headline && receiverSetup.location && (receiverSetup.photo_data_url || receiverSetup.proof_tools));
     const hasApplication = applications.length > 0;
@@ -1225,6 +1410,7 @@
     if (accountHomeEmail) accountHomeEmail.textContent = displayEmail;
     renderAccountHomeVerification(profile, []);
     renderAccountSetupChecklist(profile);
+    renderAccountHomeDashboard(profile);
 
     if (accountHomeNextCopy) {
       accountHomeNextCopy.textContent = verified
@@ -1264,6 +1450,7 @@
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
     renderAccountHomeVerification(profile, verifications);
     renderAccountSetupChecklist(profile, { requests, jobs, verifications, applications });
+    renderAccountHomeDashboard(profile, { requests, jobs, verifications, applications });
     if (accountHomeNextCopy) {
       const latestRequest = latestVerificationRequest(verifications);
       const verified = accountIsVerified(profile, latestRequest);
