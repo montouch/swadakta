@@ -10,7 +10,7 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
-const EXPECTED_APP_DATA_REF = "app-data.js?v=49";
+const EXPECTED_APP_DATA_REF = "app-data.js?v=50";
 const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=31";
 const PROOF_BUCKET_ID = "swadakta-proof";
 

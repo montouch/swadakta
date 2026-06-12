@@ -7,6 +7,7 @@
   const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
   const IDENTITY_VERIFICATION_STORAGE_KEY = "swadakta_identity_verification_requests";
   const RESOLUTION_CASE_STORAGE_KEY = "swadakta_resolution_cases";
+  const NOTIFICATION_STORAGE_KEY = "swadakta_account_notifications";
   const PROOF_BUCKET = "swadakta-proof";
   const MAX_STANDARD_UPLOAD_BYTES = 6 * 1024 * 1024;
   let supabaseClientPromise = null;
@@ -80,6 +81,11 @@
   function createResolutionCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `RC-${token}`;
+  }
+
+  function createNotificationCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `NT-${token}`;
   }
 
   function safeStorageSegment(value, fallback = "file") {
@@ -216,6 +222,18 @@
 
   function writeLocalResolutionCases(cases) {
     localStorage.setItem(RESOLUTION_CASE_STORAGE_KEY, JSON.stringify(cases));
+  }
+
+  function readLocalNotifications() {
+    try {
+      return JSON.parse(localStorage.getItem(NOTIFICATION_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalNotifications(notifications) {
+    localStorage.setItem(NOTIFICATION_STORAGE_KEY, JSON.stringify(notifications));
   }
 
   function normalizeRequest(payload) {
@@ -526,6 +544,47 @@
       identity_verification_notes: payload.identity_verification_notes || "",
       created_at: payload.created_at || now,
       updated_at: now,
+    };
+  }
+
+  function cleanNotificationCategory(value) {
+    const clean = String(value || "account").trim().toLowerCase();
+    return [
+      "account",
+      "payment",
+      "verification",
+      "message",
+      "proof",
+      "dispute",
+      "ai_summary",
+      "milestone",
+      "system",
+    ].includes(clean)
+      ? clean
+      : "account";
+  }
+
+  function cleanNotificationPriority(value) {
+    const clean = String(value || "info").trim().toLowerCase();
+    return ["info", "success", "attention", "urgent"].includes(clean) ? clean : "info";
+  }
+
+  function normalizeNotification(payload = {}) {
+    const now = new Date().toISOString();
+    const cleanTitle = String(payload.title || "").trim() || "Swadakta update";
+    return {
+      notification_code: String(payload.notification_code || payload.code || createNotificationCode()).trim().toUpperCase(),
+      category: cleanNotificationCategory(payload.category),
+      priority: cleanNotificationPriority(payload.priority),
+      title: cleanTitle.slice(0, 160),
+      body: String(payload.body || payload.message || "").trim().slice(0, 1200),
+      action_label: String(payload.action_label || "").trim().slice(0, 80),
+      action_href: String(payload.action_href || "").trim().slice(0, 240),
+      request_code: String(payload.request_code || "").trim().toUpperCase().slice(0, 32),
+      read_at: payload.read_at || null,
+      dismissed_at: payload.dismissed_at || null,
+      created_at: payload.created_at || now,
+      updated_at: payload.updated_at || now,
     };
   }
 
@@ -2444,6 +2503,126 @@
     return { data, mode: "supabase" };
   }
 
+  async function listMyNotifications(options = {}) {
+    const includeDismissed = Boolean(options.includeDismissed || options.include_dismissed);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const notifications = readLocalNotifications()
+        .map(normalizeNotification)
+        .filter((notification) => includeDismissed || !notification.dismissed_at)
+        .sort((first, second) => {
+          if (!first.read_at && second.read_at) return -1;
+          if (first.read_at && !second.read_at) return 1;
+          return new Date(second.created_at || 0) - new Date(first.created_at || 0);
+        });
+
+      return { data: notifications, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_notifications", {
+      include_dismissed: includeDismissed,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data.map(normalizeNotification) : [], mode: "supabase" };
+  }
+
+  async function markNotification(notificationCode, action = "read") {
+    const cleanCode = String(notificationCode || "").trim().toUpperCase();
+    const cleanAction = String(action || "read").trim().toLowerCase();
+    const supabase = await getSupabase();
+
+    if (!cleanCode) {
+      throw new Error("Choose a notification first.");
+    }
+
+    if (!["read", "unread", "dismiss", "restore"].includes(cleanAction)) {
+      throw new Error("Unsupported notification action.");
+    }
+
+    if (!supabase) {
+      let updated = null;
+      const notifications = readLocalNotifications().map((notification) => {
+        const normalized = normalizeNotification(notification);
+        if (normalized.notification_code !== cleanCode) return normalized;
+
+        const now = new Date().toISOString();
+        updated = normalizeNotification({
+          ...normalized,
+          read_at:
+            cleanAction === "read"
+              ? normalized.read_at || now
+              : cleanAction === "unread"
+                ? null
+                : normalized.read_at,
+          dismissed_at:
+            cleanAction === "dismiss"
+              ? normalized.dismissed_at || now
+              : cleanAction === "restore"
+                ? null
+                : normalized.dismissed_at,
+          updated_at: now,
+        });
+        return updated;
+      });
+
+      if (!updated) {
+        throw new Error("Notification not found.");
+      }
+
+      writeLocalNotifications(notifications);
+      return { data: updated, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("mark_my_notification", {
+      input_notification_code: cleanCode,
+      input_action: cleanAction,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? normalizeNotification(data[0] || {}) : normalizeNotification(data), mode: "supabase" };
+  }
+
+  async function createAccountNotification(payload = {}) {
+    const normalized = normalizeNotification(payload);
+    const targetUserId = payload.user_id || payload.userId || "";
+    const supabase = await getSupabase();
+
+    if (!targetUserId) {
+      throw new Error("Choose the notification recipient.");
+    }
+
+    if (!supabase) {
+      const notification = normalizeNotification(normalized);
+      writeLocalNotifications([notification, ...readLocalNotifications()]);
+      return { data: notification, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("create_account_notification", {
+      input_user_id: targetUserId,
+      input_category: normalized.category,
+      input_priority: normalized.priority,
+      input_title: normalized.title,
+      input_body: normalized.body,
+      input_action_label: normalized.action_label,
+      input_action_href: normalized.action_href,
+      input_request_code: normalized.request_code,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? normalizeNotification(data[0] || {}) : normalizeNotification(data), mode: "supabase" };
+  }
+
   async function assist(payload) {
     const supabase = await getSupabase();
 
@@ -3042,6 +3221,9 @@
     listMyIdentityVerificationRequests,
     listIdentityVerificationRequests,
     updateIdentityVerificationRequest,
+    listMyNotifications,
+    markNotification,
+    createAccountNotification,
     assist,
     getOperationsReadiness,
     createStripeCheckoutSession,

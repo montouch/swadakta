@@ -86,6 +86,8 @@ const requiredAppDataMarkers = [
   "listMarketplaceJobs",
   "submitJobOffer",
   "listTrackingJobOffers",
+  "listMyNotifications",
+  "markNotification",
   "listMyJobOffers",
   "listJobOffersForAdmin",
   "updateJobOfferStatus",
