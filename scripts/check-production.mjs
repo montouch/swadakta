@@ -92,6 +92,12 @@ const requiredPortalHtmlMarkers = [
   'aria-label="Find jobs"',
   "Set up once, then get matched to suitable work",
   "find-job-step",
+  "find-job-step-action",
+  'href="#receiver-profile-setup"',
+  'href="verification.html?reason=receiver_work"',
+  'href="#jobs-board"',
+  'id="jobs-board"',
+  "cursor: pointer",
   "workspace-link",
   "pointer-events: none",
 ];

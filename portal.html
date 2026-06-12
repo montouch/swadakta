@@ -217,10 +217,58 @@
             font-size: 0.86rem;
         }
         .find-job-step {
+            display: grid;
+            min-height: 8rem;
+            grid-template-columns: 3rem minmax(0, 1fr);
+            align-items: start;
+            gap: 0.85rem;
             border-radius: 1.25rem;
             border: 1px solid rgba(199, 196, 215, 0.34);
             background: rgba(255, 255, 255, 0.72);
             padding: 1rem;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+        .find-job-step:hover,
+        .find-job-step:focus-visible {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(70, 72, 212, 0.24);
+            box-shadow: 0 18px 38px rgba(70, 72, 212, 0.09);
+        }
+        .find-job-step:focus-visible {
+            outline: 3px solid rgba(70, 72, 212, 0.28);
+            outline-offset: 2px;
+        }
+        .find-job-step-icon {
+            display: inline-flex;
+            height: 2.75rem;
+            width: 2.75rem;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1rem;
+            background: rgba(70, 72, 212, 0.1);
+            color: #4648d4;
+        }
+        .find-job-step-body {
+            min-width: 0;
+        }
+        .find-job-step-action {
+            grid-column: 2;
+            display: inline-flex;
+            min-height: 2.1rem;
+            width: fit-content;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(70, 72, 212, 0.09);
+            padding: 0 0.75rem;
+            color: #4648d4;
+            font-size: 0.78rem;
+            font-weight: 800;
+            line-height: 1;
         }
         #find-work fieldset label {
             min-height: 3.25rem;
@@ -303,6 +351,16 @@
             }
             #account-home-sign-out {
                 display: none;
+            }
+        }
+        @media (min-width: 768px) {
+            .find-job-step {
+                display: flex;
+                min-height: 11.5rem;
+                flex-direction: column;
+            }
+            .find-job-step-action {
+                margin-top: auto;
             }
         }
     </style>
@@ -734,9 +792,9 @@
 </article>
 </div>
 </section>
-<section class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_360px]" aria-label="Jobs and account status">
+<section class="grid gap-4 2xl:grid-cols-[minmax(0,1fr)_360px]" aria-label="Jobs and account status">
 <div class="space-y-4">
-<article class="glass-panel rounded-[1.5rem] p-5">
+<article class="glass-panel rounded-[1.5rem] p-5" id="jobs-board">
 <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Jobs board</p>
@@ -787,27 +845,36 @@
 </div>
 </article>
 <section class="glass-panel rounded-[1.5rem] p-5" id="find-work">
-<div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+<div class="grid gap-5">
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Set up once, then get matched to suitable work</h2>
 <p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">A job seeker profile is not a separate account. Add where you are, what you can do, and how you prove work. Paid jobs stay locked until ID verification and route checks pass.</p>
 <div class="mt-5 grid gap-3 md:grid-cols-3">
-<article class="find-job-step">
-<span class="material-symbols-outlined text-primary text-3xl">badge</span>
-<p class="font-label-md text-on-surface mt-3">1. Real profile</p>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, base, photo, languages, and proof tools.</p>
-</article>
-<article class="find-job-step">
-<span class="material-symbols-outlined text-primary text-3xl">verified_user</span>
-<p class="font-label-md text-on-surface mt-3">2. Verify ID</p>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive receiver work.</p>
-</article>
-<article class="find-job-step">
-<span class="material-symbols-outlined text-tertiary text-3xl">rule</span>
-<p class="font-label-md text-on-surface mt-3">3. Match safely</p>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Only lawful routes, proof-ready jobs, and confirmed payment rails.</p>
-</article>
+<a class="find-job-step" href="#receiver-profile-setup" aria-label="Complete job seeker profile">
+<span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">badge</span></span>
+<span class="find-job-step-body">
+<span class="block font-label-md text-on-surface">1. Real profile</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, base, photo, languages, and proof tools.</span>
+</span>
+<span class="find-job-step-action">Open profile</span>
+</a>
+<a class="find-job-step" href="verification.html?reason=receiver_work" aria-label="Verify identity for paid jobs">
+<span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">verified_user</span></span>
+<span class="find-job-step-body">
+<span class="block font-label-md text-on-surface">2. Verify ID</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Provider checks unlock paid and sensitive receiver work.</span>
+</span>
+<span class="find-job-step-action">Start verification</span>
+</a>
+<a class="find-job-step" href="#jobs-board" aria-label="Browse available jobs">
+<span class="find-job-step-icon bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[26px]">work_history</span></span>
+<span class="find-job-step-body">
+<span class="block font-label-md text-on-surface">3. Browse suitable jobs</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Only lawful routes, proof-ready jobs, and confirmed payment rails.</span>
+</span>
+<span class="find-job-step-action">See jobs</span>
+</a>
 </div>
 </div>
 <aside class="rounded-[1.35rem] border border-outline-variant/30 bg-white/66 p-4">
