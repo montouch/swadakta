@@ -18,6 +18,12 @@
   const routePill = document.querySelector("#brief-route-pill");
   const routeChecks = document.querySelector("#brief-route-checks");
   const routePlannerLink = document.querySelector("#brief-route-planner-link");
+  const routeShortcutButtons = Array.from(document.querySelectorAll("[data-brief-route-preset]"));
+  const routeShortcutStatus = document.querySelector("#brief-route-shortcut-status");
+  const africaCountryInput = document.querySelector("#brief-africa-country");
+  const useAfricaCountryButton = document.querySelector("#brief-use-africa-country");
+  const africaCountryOptions = document.querySelector("#brief-africa-country-options");
+  const globalCountryOptions = document.querySelector("#brief-global-country-options");
   const placePanel = document.querySelector("#brief-place-intelligence");
   const placeTitle = document.querySelector("#brief-place-title");
   const placeCopy = document.querySelector("#brief-place-copy");
@@ -36,6 +42,82 @@
   let placeIntelligence = null;
   let placeTimer = 0;
   let placeRequestId = 0;
+  const AFRICA_COUNTRY_OPTIONS = [
+    "Algeria",
+    "Angola",
+    "Benin",
+    "Botswana",
+    "Burkina Faso",
+    "Burundi",
+    "Cameroon",
+    "Cape Verde",
+    "Central African Republic",
+    "Chad",
+    "Comoros",
+    "Congo",
+    "Democratic Republic of Congo",
+    "Djibouti",
+    "Egypt",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Eswatini",
+    "Ethiopia",
+    "Gabon",
+    "Gambia",
+    "Ghana",
+    "Guinea",
+    "Guinea-Bissau",
+    "Ivory Coast",
+    "Kenya",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Madagascar",
+    "Malawi",
+    "Mali",
+    "Mauritania",
+    "Mauritius",
+    "Morocco",
+    "Mozambique",
+    "Namibia",
+    "Niger",
+    "Nigeria",
+    "Rwanda",
+    "Sao Tome and Principe",
+    "Senegal",
+    "Seychelles",
+    "Sierra Leone",
+    "Somalia",
+    "South Africa",
+    "South Sudan",
+    "Sudan",
+    "Tanzania",
+    "Togo",
+    "Tunisia",
+    "Uganda",
+    "Zambia",
+    "Zimbabwe",
+  ];
+  const GLOBAL_COUNTRY_OPTIONS = [
+    ...AFRICA_COUNTRY_OPTIONS,
+    "Australia",
+    "Canada",
+    "China",
+    "France",
+    "Germany",
+    "India",
+    "Ireland",
+    "Italy",
+    "Netherlands",
+    "New Zealand",
+    "Qatar",
+    "Saudi Arabia",
+    "Spain",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+    "Remote",
+  ];
   const directionLabels = {
     origin_to_destination: "From client country to work country",
     destination_to_origin: "From work country back to client country",
@@ -166,6 +248,86 @@
   function setValue(selector, value, options = {}) {
     const node = document.querySelector(selector);
     if (node && value && (options.force || !node.value)) node.value = value;
+  }
+
+  function populateBriefCountryLists() {
+    const optionHtml = (countries) =>
+      [...new Set(countries)]
+        .map((country) => `<option value="${escapeHtml(country)}"></option>`)
+        .join("");
+
+    if (africaCountryOptions) {
+      africaCountryOptions.innerHTML = optionHtml(AFRICA_COUNTRY_OPTIONS);
+    }
+    if (globalCountryOptions) {
+      globalCountryOptions.innerHTML = optionHtml(GLOBAL_COUNTRY_OPTIONS);
+    }
+  }
+
+  function routeShortcutClass(active = false) {
+    return active
+      ? "h-11 rounded-full bg-primary px-4 font-label-md text-white shadow-[0px_16px_32px_rgba(70,72,212,0.18)]"
+      : "h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary";
+  }
+
+  function renderRouteShortcuts() {
+    const mode = selectedRouteMode();
+    routeShortcutButtons.forEach((button) => {
+      button.className = routeShortcutClass(button.dataset.briefRoutePreset === mode);
+    });
+    if (routeShortcutStatus) {
+      routeShortcutStatus.textContent = labelFromMap(directionLabels, mode, "No quick lane selected");
+    }
+  }
+
+  function setRouteMode(mode) {
+    if (routeModeSelect && routeModeGuidance[mode]) {
+      routeModeSelect.value = mode;
+    }
+    syncBriefRoutePlan();
+    renderRouteShortcuts();
+  }
+
+  function applyAfricaCountryBrief(options = {}) {
+    const country = String(africaCountryInput?.value || "").trim();
+    if (!country) {
+      if (options.focus !== false) africaCountryInput?.focus();
+      if (routeShortcutStatus) routeShortcutStatus.textContent = "Choose an African country first";
+      return false;
+    }
+
+    setRouteMode("local_in_country");
+    setValue("#brief-origin-country", country, { force: true });
+    setValue("#brief-destination-country", country, { force: true });
+
+    const locationInput = document.querySelector("#brief-location");
+    if (locationInput && !locationInput.value) {
+      locationInput.placeholder = `${country} city, town, address, or area`;
+    }
+
+    syncBriefRoutePlan();
+    schedulePlaceIntelligence();
+    if (routeShortcutStatus) routeShortcutStatus.textContent = `In-country ${country} job`;
+    return true;
+  }
+
+  function applyBriefRoutePreset(mode) {
+    setRouteMode(mode);
+    if (mode === "local_in_country") {
+      applyAfricaCountryBrief({ focus: true });
+      return;
+    }
+    if (mode === "africa_to_africa" && africaCountryInput?.value && !value("#brief-destination-country")) {
+      setValue("#brief-destination-country", africaCountryInput.value, { force: true });
+    }
+    if (mode === "digital_global") {
+      setValue("#brief-origin-country", "Remote", { force: true });
+      setValue("#brief-destination-country", "Remote", { force: true });
+      setValue("#brief-location", "Remote", { force: true });
+      renderPlaceIntelligence(null);
+    }
+    syncBriefRoutePlan();
+    schedulePlaceIntelligence();
   }
 
   function escapeHtml(value) {
@@ -484,6 +646,7 @@
       url.searchParams.set("direction", mode);
       routePlannerLink.href = url.toString();
     }
+    renderRouteShortcuts();
   }
 
   function renderCorridorSummary() {
@@ -720,6 +883,7 @@
     }
   });
 
+  populateBriefCountryLists();
   applyCorridorContext();
   loadPlaceIntelligence();
   refreshPostingGate();
@@ -740,6 +904,18 @@
     syncBriefRoutePlan();
     if (selectedRouteMode() === "digital_global") {
       loadPlaceIntelligence();
+    }
+  });
+
+  routeShortcutButtons.forEach((button) => {
+    button.addEventListener("click", () => applyBriefRoutePreset(button.dataset.briefRoutePreset));
+  });
+
+  useAfricaCountryButton?.addEventListener("click", () => applyAfricaCountryBrief());
+  africaCountryInput?.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      applyAfricaCountryBrief();
     }
   });
 

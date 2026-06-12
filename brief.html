@@ -365,6 +365,30 @@
 </ul>
 <a class="mt-4 inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" id="brief-route-planner-link" href="corridor.html">Open detailed corridor planner</a>
 </section>
+<section class="rounded-[1.5rem] bg-white/64 border border-outline-variant/30 p-5" id="brief-route-shortcuts">
+<div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+<div>
+<p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">Quick route</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Start from the lane, then add details</h3>
+<p class="font-body-md text-on-surface-variant mt-2">Use these when you already know whether the job is local, Africa-wide, diaspora-to-Africa, Africa-to-diaspora, or remote.</p>
+</div>
+<span class="inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm" id="brief-route-shortcut-status">No quick lane selected</span>
+</div>
+<div class="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+<button class="h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary" data-brief-route-preset="local_in_country" type="button">In-country Africa job</button>
+<button class="h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary" data-brief-route-preset="africa_to_africa" type="button">Africa to Africa</button>
+<button class="h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary" data-brief-route-preset="diaspora_to_africa" type="button">Diaspora to Africa</button>
+<button class="h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary" data-brief-route-preset="africa_to_diaspora" type="button">Africa to diaspora</button>
+<button class="h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary" data-brief-route-preset="digital_global" type="button">Remote only</button>
+</div>
+<div class="mt-4 grid gap-3 md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+<div class="space-y-2">
+<label class="font-label-md text-label-md text-on-surface ml-1" for="brief-africa-country">Country for local Africa work</label>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-africa-country" list="brief-africa-country-options" placeholder="Nigeria, Kenya, Ghana, South Africa..." type="text"/>
+</div>
+<button class="h-12 rounded-full bg-primary px-5 font-bold text-white" id="brief-use-africa-country" type="button">Use same country</button>
+</div>
+</section>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-location">Task Location / Destination</label>
 <input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-location" name="task_location" placeholder="e.g., Lagos, Accra, Nairobi, Adelaide, Guangzhou, or remote" required="" type="text"/>
@@ -413,12 +437,14 @@
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-origin-country">Origin country</label>
-<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-origin-country" name="origin_country" placeholder="Australia, Nigeria, Kenya, Ghana, USA..." type="text"/>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-origin-country" name="origin_country" list="brief-global-country-options" placeholder="Australia, Nigeria, Kenya, Ghana, USA..." type="text"/>
 </div>
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface ml-1" for="brief-destination-country">Destination country</label>
-<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-destination-country" name="destination_country" placeholder="Kenya, Ghana, South Africa, China, remote..." type="text"/>
+<input class="sunken-input w-full h-12 px-4 rounded-xl text-body-md" id="brief-destination-country" name="destination_country" list="brief-global-country-options" placeholder="Nigeria, Kenya, Ghana, South Africa, China, remote..." type="text"/>
 </div>
+<datalist id="brief-africa-country-options"></datalist>
+<datalist id="brief-global-country-options"></datalist>
 </div>
 </section>
 <!-- Section 2: Logistics & Documentation -->
@@ -532,6 +558,6 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=45"></script>
 <script src="ai-preferences.js?v=1"></script>
-<script src="stitch-brief.js?v=10"></script>
+<script src="stitch-brief.js?v=11"></script>
 <script src="assistant-dock.js?v=4"></script>
 </body></html>
