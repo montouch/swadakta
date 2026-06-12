@@ -614,7 +614,7 @@
 
   function accountProfileStorageError(error) {
     if (permissionDenied(error)) {
-      return new Error("Account profile storage is not fully activated yet. Your sign-in is working; Swadakta needs the database profile grant or RPC applied before this can save.");
+      return new Error("Your account is signed in, but profile saving is temporarily unavailable. Paid posting and paid work stay safely locked until account setup is fully available.");
     }
 
     return error;
@@ -622,7 +622,7 @@
 
   function identityVerificationStorageError(error) {
     if (permissionDenied(error) || missingFunction(error)) {
-      return new Error("Verification storage is not fully activated yet. Your account is open; Swadakta needs the identity verification RPC/grants applied before this request can save.");
+      return new Error("Your account is open, but verification requests are temporarily unavailable while provider setup is completed. Paid actions stay locked until provider evidence is recorded.");
     }
 
     return error;
@@ -2177,7 +2177,7 @@
       return {
         data: minimalAccountProfile(
           user,
-          "Profile storage is reachable only after the account_profiles grant or get_my_account_profile RPC is applied.",
+          "Profile details are temporarily limited. You can still enter the app, but paid posting and paid work stay locked until account setup is fully available.",
         ),
         mode: "supabase",
         warning: error.message,
