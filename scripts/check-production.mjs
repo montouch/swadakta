@@ -1287,7 +1287,7 @@ for (const marker of requiredIdentityEndpointMarkers) {
     fail(failures, `Local identity start endpoint is missing marker ${marker}`);
   }
 }
-const localSumsubWebhook = await readLocal("api/identity/sumsub-webhook.js");
+const localSumsubWebhook = localIdentityEndpoint;
 for (const marker of requiredSumsubWebhookMarkers) {
   if (!localSumsubWebhook.includes(marker)) {
     fail(failures, `Local Sumsub webhook is missing marker ${marker}`);
