@@ -1,5 +1,5 @@
 User-agent: *
-# Deployment marker: identity-provider rewrite ready.
+# Deployment marker: first-paid-pilot-script ready.
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
