@@ -10,6 +10,9 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
+const ACTIVE_MPESA_PAYMENT_STATUS = "invoice_sent";
+const ACTIVE_MPESA_FUNDS_STATUS = "payment_link_sent";
+const MPESA_REFERENCE_PREFIX = "M-Pesa STK";
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -87,6 +90,45 @@ function normalizeKenyanPhone(value) {
   }
 
   return digits;
+}
+
+function sameMoneyAmount(left, right) {
+  const leftAmount = Number(left);
+  const rightAmount = Number(right);
+  return Number.isFinite(leftAmount) && Number.isFinite(rightAmount) && Math.round(leftAmount) === Math.round(rightAmount);
+}
+
+function forceNewStk(value) {
+  return value === true || String(value || "").trim().toLowerCase() === "true";
+}
+
+function maskPhone(phoneNumber) {
+  return String(phoneNumber || "").replace(/^(\d{3})(\d+)(\d{4})$/, "$1****$3");
+}
+
+function mpesaReferenceParts(reference = "") {
+  return String(reference || "")
+    .split("/")
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
+function activeMpesaPromptFromRequest(request, amount, currency) {
+  if (!request) return null;
+  if (request.payment_status !== ACTIVE_MPESA_PAYMENT_STATUS || request.funds_status !== ACTIVE_MPESA_FUNDS_STATUS) {
+    return null;
+  }
+  if (String(request.quote_currency || "").toUpperCase() !== currency) return null;
+  if (!sameMoneyAmount(request.quote_amount, amount)) return null;
+
+  const parts = mpesaReferenceParts(request.payment_reference);
+  if (!parts[0] || !parts[0].startsWith(MPESA_REFERENCE_PREFIX)) return null;
+
+  return {
+    provider_reference: request.payment_reference,
+    merchant_request_id: parts[1] || "",
+    checkout_request_id: parts[2] || "",
+  };
 }
 
 function mpesaBaseUrl() {
@@ -226,11 +268,54 @@ async function updateRequestAfterStk(authHeader, requestCode, updatePayload) {
   return Array.isArray(data) ? data[0] || null : null;
 }
 
+async function findRequestByCode(authHeader, requestCode) {
+  const response = await fetch(
+    `${SUPABASE_URL}/rest/v1/service_requests?request_code=eq.${encodeURIComponent(requestCode)}&select=id,request_code,quote_amount,quote_currency,payment_status,funds_status,payment_reference,release_notes&limit=1`,
+    {
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        authorization: authHeader,
+        accept: "application/json",
+      },
+    },
+  );
+
+  const data = await response.json().catch(() => []);
+  if (!response.ok) {
+    const error = new Error(data?.message || "Could not inspect existing M-Pesa payment state.");
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return Array.isArray(data) ? data[0] || null : null;
+}
+
 async function createMpesaStk(authHeader, payload) {
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const amount = normalizeAmount(payload.quote_amount);
   const currency = normalizeCurrency(payload.quote_currency);
   const phoneNumber = normalizeKenyanPhone(payload.mpesa_phone || payload.phone_number || payload.whatsapp);
+  const existingRequest = await findRequestByCode(authHeader, requestCode);
+  const existingPrompt = forceNewStk(payload.force_new_stk)
+    ? null
+    : activeMpesaPromptFromRequest(existingRequest, amount, currency);
+
+  if (existingPrompt) {
+    return {
+      id: existingPrompt.checkout_request_id || null,
+      checkout_request_id: existingPrompt.checkout_request_id || null,
+      merchant_request_id: existingPrompt.merchant_request_id || null,
+      reused: true,
+      customer_message:
+        "An active M-Pesa STK prompt is already recorded for this quote. Wait for the callback or send a new prompt only after confirming the previous one expired or failed.",
+      payment_status: existingRequest.payment_status,
+      funds_status: existingRequest.funds_status,
+      provider_reference: existingPrompt.provider_reference,
+      release_notes: existingRequest.release_notes,
+      updated_request_id: existingRequest.id || null,
+    };
+  }
+
   const baseUrl = mpesaBaseUrl();
   const accessToken = await getMpesaAccessToken(baseUrl);
   const shortcode = requiredText(process.env.MPESA_SHORTCODE, "MPESA_SHORTCODE");
@@ -275,10 +360,11 @@ async function createMpesaStk(authHeader, payload) {
     .filter(Boolean)
     .join(" / ");
   const releaseNotes =
-    "M-Pesa STK Push sent. Callback must confirm payment before funds are marked paid. Founder/admin must still review milestone proof before any receiver release.";
+    `M-Pesa STK Push sent for ${currency} ${amount} to ${maskPhone(phoneNumber)}. Callback must confirm payment before funds are marked paid. Duplicate STK prompts are suppressed for the same active quote unless force_new_stk is explicitly set after expiry/failure. Founder/admin must still review milestone proof before any receiver release.`;
   const updatePayload = {
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
+    quote_amount: amount,
     quote_currency: currency,
     payment_reference: providerReference,
     release_notes: releaseNotes,
@@ -289,6 +375,7 @@ async function createMpesaStk(authHeader, payload) {
     id: data.CheckoutRequestID,
     checkout_request_id: data.CheckoutRequestID,
     merchant_request_id: data.MerchantRequestID,
+    reused: false,
     customer_message: data.CustomerMessage || data.ResponseDescription || "M-Pesa prompt sent.",
     payment_status: updatePayload.payment_status,
     funds_status: updatePayload.funds_status,

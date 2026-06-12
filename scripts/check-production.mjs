@@ -641,8 +641,13 @@ const requiredPaymentIdempotencyMarkers = [
   ["api/payments/paypal-order.js", "paypalRequestId"],
   ["api/payments/paypal-order.js", '"PayPal-Request-Id": paypalRequestId'],
   ["api/payments/paypal-order.js", "swadakta-order"],
+  ["api/payments/mpesa-stk.js", "activeMpesaPromptFromRequest"],
+  ["api/payments/mpesa-stk.js", "force_new_stk"],
+  ["api/payments/mpesa-stk.js", "Duplicate STK prompts are suppressed"],
   ["PAYMENTS_SETUP.md", "Idempotency-Key"],
   ["PAYMENTS_SETUP.md", "PayPal-Request-Id"],
+  ["PAYMENTS_SETUP.md", "force_new_stk"],
+  ["PAYMENTS_SETUP.md", "returns the existing `CheckoutRequestID`"],
 ];
 const requiredIdentityEndpointMarkers = [
   "startVerification",

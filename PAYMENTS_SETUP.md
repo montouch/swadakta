@@ -302,6 +302,8 @@ The endpoint:
 - Exchanges `MPESA_CONSUMER_KEY` and `MPESA_CONSUMER_SECRET` for a Daraja access token server-side.
 - Sends an STK Push through the configured Paybill/Till shortcode.
 - Records the `MerchantRequestID` and `CheckoutRequestID` in `Payment/provider ref`.
+- Checks whether the same request already has an active `M-Pesa STK` provider reference for the same KES quote amount and `Payment link sent` funds state. If it does, it returns the existing `CheckoutRequestID` instead of sending a second phone prompt.
+- Allows `force_new_stk` only after the previous prompt has expired, failed, or been confirmed by admin as safe to replace.
 - Sets `Payment: Invoice sent` and `Funds: Payment link sent` while waiting for callback confirmation.
 - Does not mark money paid, release funds, assign receivers, or mark milestones released.
 
@@ -342,9 +344,11 @@ Admin workflow:
 1. Quote the request in `KES`.
 2. Click `Send M-Pesa STK`.
 3. Enter the Kenyan M-Pesa phone number that should receive the prompt.
-4. Wait for the client/payer to approve on their phone.
-5. The callback marks the request paid only after Safaricom confirms success.
-6. Review the M-Pesa receipt and protected amount before assigning or releasing any receiver payout.
+4. Do not keep clicking if the payer says nothing happened. If the same quote already has an active STK prompt, Swadakta reuses the existing checkout reference instead of prompting the phone again.
+5. Wait for the client/payer to approve on their phone.
+6. The callback marks the request paid only after Safaricom confirms success.
+7. Use `force_new_stk` only after confirming the previous prompt expired, failed, or was sent to the wrong number.
+8. Review the M-Pesa receipt and protected amount before assigning or releasing any receiver payout.
 
 Manual M-Pesa fallback:
 
