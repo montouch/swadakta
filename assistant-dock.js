@@ -1,8 +1,9 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "10";
+  const DOCK_VERSION = "11";
   const rootId = "swadakta-ai-dock";
+  const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
   const protectedIntentPattern =
@@ -61,7 +62,7 @@
     style.id = "swadakta-ai-dock-style";
     style.textContent = `
       #${rootId} { position: fixed; inset: auto 18px 18px auto; z-index: 9998; font-family: Inter, Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #131b2e; }
-      #${rootId}, #${rootId} * { box-sizing: border-box; }
+      #${rootId}, #${rootId} *, #${manualModeId}, #${manualModeId} * { box-sizing: border-box; }
       .sw-ai-fab { display: inline-flex; align-items: center; gap: 9px; min-height: 52px; padding: 0 16px; border: 1px solid rgba(255,255,255,.72); border-radius: 999px; background: linear-gradient(135deg, rgba(70,72,212,.94), rgba(129,39,207,.88)); color: #fff; box-shadow: 0 22px 50px rgba(48,52,150,.27); cursor: pointer; font-weight: 800; letter-spacing: 0; }
       .sw-ai-fab-dot { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 999px; background: rgba(255,255,255,.18); }
       .sw-ai-panel { position: absolute; right: 0; bottom: 66px; width: min(390px, calc(100vw - 24px)); max-height: min(720px, calc(100vh - 96px)); display: none; overflow: hidden; border-radius: 24px; border: 1px solid rgba(255,255,255,.62); background: rgba(250,248,255,.88); backdrop-filter: blur(24px); box-shadow: 0 34px 90px rgba(35,42,105,.24); }
@@ -86,12 +87,16 @@
       .sw-ai-send { display: grid; place-items: center; width: 38px; height: 38px; border: 0; border-radius: 999px; background: #4648d4; color: #fff; cursor: pointer; font-weight: 900; }
       .sw-ai-send:disabled { opacity: .58; cursor: not-allowed; }
       .sw-ai-note { margin: 8px 2px 0; font-size: 11px; line-height: 1.4; color: #464554; }
+      #${manualModeId} { position: fixed; inset: auto 18px 18px auto; z-index: 9998; display: flex; align-items: center; gap: 8px; min-height: 48px; max-width: min(340px, calc(100vw - 24px)); padding: 7px 8px 7px 14px; border: 1px solid rgba(199,196,215,.58); border-radius: 999px; background: rgba(255,255,255,.86); backdrop-filter: blur(22px); box-shadow: 0 18px 44px rgba(48,52,150,.16); color: #131b2e; font-family: Inter, Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .sw-manual-copy { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; }
+      .sw-manual-action { flex: 0 0 auto; min-height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: #4648d4; color: #fff; cursor: pointer; font-size: 12px; font-weight: 900; }
       @media (max-width: 640px) {
         #${rootId} { left: auto; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)); width: auto; }
         .sw-ai-fab { justify-content: center; width: 50px; min-height: 50px; padding: 0; border-radius: 18px; }
         .sw-ai-fab > span:last-child { display: none; }
         .sw-ai-fab-dot { width: 30px; height: 30px; font-size: 12px; }
         .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: max(132px, calc(env(safe-area-inset-bottom) + 132px)); width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 172px)); border-radius: 22px; }
+        #${manualModeId} { right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)); max-width: calc(100vw - 24px); }
       }
     `;
     document.head.append(style);
@@ -964,8 +969,10 @@
   function buildDock() {
     if (!aiDockEnabled()) {
       removeDock();
+      buildManualModeChip();
       return;
     }
+    removeManualModeChip();
     if (document.querySelector(`#${rootId}`)) return;
     if (/\/assistant(?:\.html)?$/i.test(location.pathname)) return;
     injectStyles();
@@ -1024,8 +1031,53 @@
     document.querySelector(`#${rootId}`)?.remove();
   }
 
+  function hasVisibleModeToggle() {
+    return [...document.querySelectorAll("[data-ai-toggle]")].some((node) => isVisible(node));
+  }
+
+  function buildManualModeChip() {
+    if (hasVisibleModeToggle()) {
+      removeManualModeChip();
+      return;
+    }
+    if (document.querySelector(`#${manualModeId}`)) return;
+    injectStyles();
+    const chip = document.createElement("aside");
+    chip.id = manualModeId;
+    chip.dataset.version = DOCK_VERSION;
+    chip.setAttribute("aria-label", "Swadakta manual mode");
+    chip.innerHTML = `
+      <span class="sw-manual-copy">Manual mode</span>
+      <button class="sw-manual-action" type="button" data-sw-ai-enable>Turn AI on</button>
+    `;
+    document.body.append(chip);
+  }
+
+  function removeManualModeChip() {
+    document.querySelector(`#${manualModeId}`)?.remove();
+  }
+
+  function enableAiMode() {
+    if (window.SwadaktaAiPreference?.set) {
+      window.SwadaktaAiPreference.set(true);
+      return;
+    }
+    try {
+      localStorage.setItem("swadakta_ai_mode", "on");
+    } catch {}
+    document.documentElement.dataset.aiMode = "on";
+    document.body.dataset.aiMode = "on";
+    window.dispatchEvent(new CustomEvent("swadakta:ai-mode-change", { detail: { enabled: true } }));
+    buildDock();
+  }
+
   function bindEvents() {
     document.addEventListener("click", (event) => {
+      if (event.target.closest("[data-sw-ai-enable]")) {
+        event.preventDefault();
+        enableAiMode();
+        return;
+      }
       const root = document.querySelector(`#${rootId}`);
       if (!root) return;
       if (event.target.closest(".sw-ai-fab")) {
@@ -1073,7 +1125,9 @@
     window.addEventListener("swadakta:ai-mode-change", (event) => {
       if (event.detail?.enabled === false) {
         removeDock();
+        buildManualModeChip();
       } else {
+        removeManualModeChip();
         buildDock();
       }
     });
@@ -1098,7 +1152,7 @@
     protectedBoundary,
     open: () => setOpen(true),
     close: () => setOpen(false),
-    syncMode: () => (aiDockEnabled() ? buildDock() : removeDock()),
+    syncMode: () => (aiDockEnabled() ? buildDock() : (removeDock(), buildManualModeChip())),
   };
 
   if (document.readyState === "loading") {

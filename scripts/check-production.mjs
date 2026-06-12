@@ -202,6 +202,10 @@ const requiredDockMarkers = [
   "performSafeAction",
   "swadakta-site-polish-style",
   "aiDockEnabled",
+  "swadakta-manual-mode-chip",
+  "buildManualModeChip",
+  "data-sw-ai-enable",
+  "enableAiMode",
   "removeDock",
   "swadakta:ai-mode-change",
   "syncAccountCtas",
@@ -737,8 +741,8 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=10")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=10`);
+  if (!content.includes("assistant-dock.js?v=11")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=11`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -922,8 +926,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=10")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=10`);
+  if (!text.includes("assistant-dock.js?v=11")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=11`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -1227,11 +1231,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=10");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=11");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=10 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=11 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=10 returned 200");
+  pass("assistant-dock.js?v=11 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
