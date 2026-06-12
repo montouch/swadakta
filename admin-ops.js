@@ -15,6 +15,9 @@
   const opsAutopilotSummary = document.querySelector("#ops-autopilot-summary");
   const opsAutopilotList = document.querySelector("#ops-autopilot-list");
   const copyOpsAutopilotButton = document.querySelector("#copy-ops-autopilot");
+  const adminAiDecisionSummary = document.querySelector("#admin-ai-decision-summary");
+  const adminAiDecisionList = document.querySelector("#admin-ai-decision-list");
+  const copyAdminAiBriefButton = document.querySelector("#copy-admin-ai-brief");
   const offerMarketList = document.querySelector("#ops-offer-market-list");
   const resolutionList = document.querySelector("#ops-resolution-list");
   const filterButtons = document.querySelectorAll(".ops-filter");
@@ -459,6 +462,209 @@
     return lines.join("\n");
   }
 
+  function adminAiDecisionPrompts() {
+    const groups = groupedAutomationRequests();
+    const unresolvedCases = currentResolutionCases.filter((item) => !["resolved", "closed"].includes(String(item.status || "").toLowerCase()));
+    const offers = currentJobOffers.filter((offer) => !["declined", "blocked", "accepted"].includes(String(offer.status || "submitted").toLowerCase()));
+    const prompts = [];
+
+    groups.founder_gate.slice(0, 4).forEach((request) => {
+      prompts.push({
+        code: request.request_code || "Request",
+        lane: "Founder gate",
+        question: `Should AI prepare the next draft for ${request.request_code || "this request"} while keeping the protected action locked?`,
+        detail: nextAction(request, requestFlags(request)),
+        yes: "Yes, draft only",
+        no: "No, hold",
+        hold: "Need evidence",
+        protectedStop: "AI cannot approve ID, assign paid work, release/refund money, or clear legal/customs risk.",
+      });
+    });
+
+    groups.provider_evidence.slice(0, 4).forEach((request) => {
+      prompts.push({
+        code: request.request_code || "Request",
+        lane: "Provider evidence",
+        question: `Has provider-grade evidence arrived for ${request.request_code || "this request"}?`,
+        detail: laneNextStep("provider_evidence", request),
+        yes: "Yes, review evidence",
+        no: "No, chase evidence",
+        hold: "Ask provider",
+        protectedStop: "AI may draft the chase or review checklist only; paid status and ID status remain locked.",
+      });
+    });
+
+    offers.slice(0, 3).forEach((offer) => {
+      prompts.push({
+        code: offer.offer_code || "Offer",
+        lane: "Receiver offer",
+        question: `Should AI shortlist ${offer.offer_code || "this offer"} for admin review?`,
+        detail: `${offerTrustLabel(offer)}. Fit score ${offerFitScore(offer)}%. Lowest price does not automatically win.`,
+        yes: "Yes, shortlist draft",
+        no: "No, decline draft",
+        hold: "Need vetting",
+        protectedStop: "AI cannot accept the offer or assign work; verification, vetting, and protected funds must be checked first.",
+      });
+    });
+
+    unresolvedCases.slice(0, 3).forEach((item) => {
+      prompts.push({
+        code: item.resolution_code || "Case",
+        lane: "User issue",
+        question: `Should AI draft a calm reply for ${item.resolution_code || "this issue"}?`,
+        detail: `${formatStatus(item.issue_type)} / ${formatStatus(item.status)}. Keep payment, ID, safety, and legal decisions gated.`,
+        yes: "Yes, draft reply",
+        no: "No, hold",
+        hold: "Escalate",
+        protectedStop: "AI can summarize and draft, but it cannot promise refunds, releases, legal outcomes, or verification results.",
+      });
+    });
+
+    if (!prompts.length && groups.ai_routine.length) {
+      groups.ai_routine.slice(0, 3).forEach((request) => {
+        prompts.push({
+          code: request.request_code || "Request",
+          lane: "AI routine",
+          question: `Let AI prepare the routine update for ${request.request_code || "this request"}?`,
+          detail: laneNextStep("ai_routine", request),
+          yes: "Yes, draft",
+          no: "No, wait",
+          hold: "Later",
+          protectedStop: "Routine drafts are allowed; any new protected decision must return to this admin prompt queue.",
+        });
+      });
+    }
+
+    return prompts.slice(0, 8);
+  }
+
+  function adminAiDecisionBrief() {
+    if (!adminAiEnabled()) {
+      const groups = groupedAutomationRequests();
+      const unresolvedCases = currentResolutionCases.filter((item) => !["resolved", "closed"].includes(String(item.status || "").toLowerCase()));
+      return [
+        "Swadakta manual admin checklist",
+        "AI mode is off. Handle the queue manually using provider evidence and founder/admin judgment.",
+        "",
+        `Founder gates: ${groups.founder_gate.length}`,
+        `Provider evidence gates: ${groups.provider_evidence.length}`,
+        `Routine requests: ${groups.ai_routine.length}`,
+        `Unresolved user issues: ${unresolvedCases.length}`,
+        "",
+        "Manual order:",
+        "1. Check payment/provider evidence before marking funds paid.",
+        "2. Check ID-provider evidence before allowing paid work or receiver assignment.",
+        "3. Check route legality, restricted goods, customs, tax, and safety blockers.",
+        "4. Confirm milestone proof before release decisions.",
+        "5. Write user-facing messages manually and do not promise refunds, releases, or legal outcomes unless confirmed.",
+      ].join("\n");
+    }
+
+    const prompts = adminAiDecisionPrompts();
+    const lines = [
+      "Swadakta admin AI prompt pack",
+      "Admin AI should reduce founder stress by asking compact Yes/No/Need evidence questions.",
+      "User AI cannot access admin-only context; admin AI can only send sanitized summaries or notifications back to users.",
+      "Every protected decision remains locked until provider evidence or founder/admin confirmation exists in the system.",
+      "",
+      "Prompts:",
+    ];
+
+    if (!prompts.length) {
+      lines.push("- No admin AI prompts right now. Keep monitoring routine intake, proof, payments, and user issues.");
+    } else {
+      prompts.forEach((prompt, index) => {
+        lines.push(
+          `${index + 1}. [${prompt.lane}] ${prompt.code}: ${prompt.question}`,
+          `   Context: ${prompt.detail}`,
+          `   Answer choices: ${prompt.yes} / ${prompt.no} / ${prompt.hold}`,
+          `   Boundary: ${prompt.protectedStop}`,
+        );
+      });
+    }
+
+    return lines.join("\n");
+  }
+
+  function decisionAnswerText(prompt, answer) {
+    return [
+      "Swadakta admin AI decision",
+      `Answer: ${answer.toUpperCase()}`,
+      `Lane: ${prompt.lane}`,
+      `Record: ${prompt.code}`,
+      `Prompt: ${prompt.question}`,
+      `Context: ${prompt.detail}`,
+      `Boundary: ${prompt.protectedStop}`,
+      "Instruction: prepare drafts, summaries, or checklists only. Do not execute protected actions unless provider evidence or founder/admin approval is separately recorded.",
+    ].join("\n");
+  }
+
+  function renderAdminAiDecisionDesk() {
+    if (!adminAiDecisionList && !adminAiDecisionSummary) return;
+    const isAiEnabled = adminAiEnabled();
+    const prompts = adminAiDecisionPrompts();
+
+    if (copyAdminAiBriefButton) {
+      copyAdminAiBriefButton.disabled = false;
+      copyAdminAiBriefButton.textContent = isAiEnabled ? "Copy prompt pack" : "Copy manual checklist";
+    }
+
+    if (!isAiEnabled) {
+      const groups = groupedAutomationRequests();
+      const unresolvedCases = currentResolutionCases.filter((item) => !["resolved", "closed"].includes(String(item.status || "").toLowerCase()));
+      if (adminAiDecisionSummary) {
+        adminAiDecisionSummary.textContent =
+          "AI mode is off. Swadakta stays usable manually: use the queue, provider dashboards, payment evidence, verification pages, and messages without AI prompt help.";
+      }
+      if (adminAiDecisionList) {
+        adminAiDecisionList.innerHTML = `
+          <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+            <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">Manual operations mode</p>
+            <h3 class="mt-1 font-display text-xl font-extrabold">Work the gates yourself, in order.</h3>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">Founder gates: ${escapeHtml(groups.founder_gate.length)}. Provider evidence gates: ${escapeHtml(groups.provider_evidence.length)}. Routine requests: ${escapeHtml(groups.ai_routine.length)}. Unresolved user issues: ${escapeHtml(unresolvedCases.length)}.</p>
+            <ul class="mt-4 grid gap-2 text-sm leading-6 text-on-surface-variant">
+              <li class="rounded-2xl bg-white/70 p-3">Check Stripe, PayPal, M-Pesa, Paystack, Flutterwave, Wise, or bank evidence before marking funds paid.</li>
+              <li class="rounded-2xl bg-white/70 p-3">Check provider ID evidence before allowing paid posting, receiver work, or assignment.</li>
+              <li class="rounded-2xl bg-white/70 p-3">Use the priority queue, verification desk, messages, and tracking pages manually until AI mode is turned back on.</li>
+            </ul>
+          </article>
+        `;
+      }
+      return;
+    }
+
+    if (adminAiDecisionSummary) {
+      adminAiDecisionSummary.textContent = prompts.length
+        ? `${prompts.length} compact admin prompt${prompts.length === 1 ? "" : "s"} are ready. Answer Yes, No, or Need evidence; AI remains draft-only until the protected gate is cleared.`
+        : "No admin prompts right now. Routine work can stay with AI, and protected actions remain locked until something needs founder/provider confirmation.";
+    }
+
+    if (!adminAiDecisionList) return;
+    adminAiDecisionList.innerHTML = prompts.length
+      ? prompts
+          .map(
+            (prompt, index) => `
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div>
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(prompt.lane)} / ${escapeHtml(prompt.code)}</p>
+                    <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(prompt.question)}</h3>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(prompt.detail)}</p>
+                    <p class="mt-3 rounded-2xl bg-amber-400/12 p-3 text-xs leading-5 text-amber-800">${escapeHtml(prompt.protectedStop)}</p>
+                  </div>
+                  <div class="flex shrink-0 flex-wrap gap-2 lg:max-w-[18rem] lg:justify-end" role="group" aria-label="Admin AI answer ${escapeHtml(String(index + 1))}">
+                    <button class="admin-ai-answer inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 font-label text-sm font-bold text-white" data-admin-ai-index="${index}" data-admin-ai-answer="yes" type="button">${escapeHtml(prompt.yes)}</button>
+                    <button class="admin-ai-answer inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-on-surface-variant" data-admin-ai-index="${index}" data-admin-ai-answer="no" type="button">${escapeHtml(prompt.no)}</button>
+                    <button class="admin-ai-answer inline-flex h-10 items-center justify-center rounded-full border border-amber-300/70 bg-amber-400/12 px-4 font-label text-sm font-bold text-amber-800" data-admin-ai-index="${index}" data-admin-ai-answer="need evidence" type="button">${escapeHtml(prompt.hold)}</button>
+                  </div>
+                </div>
+              </article>
+            `,
+          )
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No yes/no founder prompts are needed right now.</div>`;
+  }
+
   function normalizedText(...values) {
     return values
       .filter(Boolean)
@@ -661,6 +867,15 @@
     opsStatus.className = `mt-4 min-h-6 text-sm ${tone}`.trim();
   }
 
+  function adminAiEnabled() {
+    if (window.SwadaktaAiPreference?.enabled) return window.SwadaktaAiPreference.enabled();
+    try {
+      return localStorage.getItem("swadakta_ai_mode") !== "off";
+    } catch {
+      return true;
+    }
+  }
+
   function setLoginStatus(message, tone = "text-on-surface-variant") {
     loginStatus.textContent = message;
     loginStatus.className = `min-h-6 text-sm ${tone}`.trim();
@@ -854,7 +1069,7 @@
         <div class="mt-4 flex flex-wrap gap-2">
           <button class="copy-request rounded-full border border-outline-variant/50 bg-white/72 px-4 py-2 font-label text-sm font-bold text-primary" data-request-id="${escapeHtml(request.id)}" type="button">Copy founder brief</button>
           <a class="rounded-full border border-outline-variant/50 bg-white/72 px-4 py-2 font-label text-sm font-bold text-on-surface-variant" href="tracking.html">Open tracking</a>
-          <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" href="assistant.html">Ask AI</a>
+          <a class="rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" data-ai-only href="assistant.html">Ask AI</a>
         </div>
         ${renderMatchRecommendations(request)}
         ${renderFounderEconomicsGuard(request)}
@@ -874,6 +1089,7 @@
     setStat("#stat-payments", payments.length);
     setStat("#stat-margin", marginRisk.length);
     renderOpsAutopilot();
+    renderAdminAiDecisionDesk();
 
     const visible =
       currentFilter === "all" ? open : currentFilter === "payments" ? payments : exceptions.length ? exceptions : open;
@@ -958,7 +1174,7 @@
         }
         <div class="mt-4 flex flex-wrap gap-2">
           ${actionButtons}
-          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" href="assistant.html">Ask AI to compare</a>
+          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" data-ai-only href="assistant.html">Ask AI to compare</a>
         </div>
       </article>
     `;
@@ -1034,7 +1250,7 @@
         </div>
         <div class="mt-4 flex flex-wrap gap-2">
           ${statusButtons}
-          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" href="assistant.html">Ask AI</a>
+          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" data-ai-only href="assistant.html">Ask AI</a>
         </div>
       </article>
     `;
@@ -1046,11 +1262,13 @@
     if (!currentResolutionCases.length) {
       resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No resolution cases yet. User issues will appear here after they are opened from tracking or Account Home.</div>`;
       renderOpsAutopilot();
+      renderAdminAiDecisionDesk();
       return;
     }
 
     resolutionList.innerHTML = currentResolutionCases.map(renderResolutionCase).join("");
     renderOpsAutopilot();
+    renderAdminAiDecisionDesk();
   }
 
   async function loadOps() {
@@ -1239,7 +1457,38 @@
     }
   });
 
+  copyAdminAiBriefButton?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(adminAiDecisionBrief());
+      setStatus(adminAiEnabled() ? "Copied admin AI prompt pack." : "Copied manual admin checklist.", "text-primary");
+    } catch {
+      setStatus("Could not copy the admin checklist.", "text-on-error-container");
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-ai-toggle]")) return;
+    setTimeout(() => {
+      renderOpsAutopilot();
+      renderAdminAiDecisionDesk();
+    }, 0);
+  });
+
   document.addEventListener("click", async (event) => {
+    const adminAiAnswerButton = event.target.closest(".admin-ai-answer");
+    if (adminAiAnswerButton) {
+      const prompts = adminAiDecisionPrompts();
+      const prompt = prompts[Number(adminAiAnswerButton.dataset.adminAiIndex || -1)];
+      if (!prompt) return;
+      try {
+        await navigator.clipboard.writeText(decisionAnswerText(prompt, adminAiAnswerButton.dataset.adminAiAnswer || "yes"));
+        setStatus("Copied the admin decision prompt. Paste it into the AI assistant when live AI is enabled.", "text-primary");
+      } catch {
+        setStatus("Could not copy the admin decision prompt.", "text-on-error-container");
+      }
+      return;
+    }
+
     const offerButton = event.target.closest(".offer-status-button");
     if (offerButton) {
       const offerCode = offerButton.dataset.offerCode || "";
@@ -1264,6 +1513,7 @@
         const offerResult = await data.listJobOffersForAdmin();
         currentJobOffers = offerResult.data || [];
         renderOfferMarket();
+        renderAdminAiDecisionDesk();
       } catch (error) {
         setStatus(error.message || "Could not update offer status.", "text-on-error-container");
       } finally {

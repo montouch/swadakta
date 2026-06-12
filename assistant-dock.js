@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "8";
+  const DOCK_VERSION = "10";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
@@ -45,6 +45,15 @@
     "open account first",
     "sign in to verify",
   ]);
+
+  function aiDockEnabled() {
+    if (window.SwadaktaAiPreference?.enabled) return window.SwadaktaAiPreference.enabled();
+    try {
+      return localStorage.getItem("swadakta_ai_mode") !== "off";
+    } catch {
+      return true;
+    }
+  }
 
   function injectStyles() {
     if (document.querySelector("#swadakta-ai-dock-style")) return;
@@ -953,6 +962,10 @@
   }
 
   function buildDock() {
+    if (!aiDockEnabled()) {
+      removeDock();
+      return;
+    }
     if (document.querySelector(`#${rootId}`)) return;
     if (/\/assistant(?:\.html)?$/i.test(location.pathname)) return;
     injectStyles();
@@ -1006,6 +1019,11 @@
     renderActions(routeKeysForText(location.pathname));
   }
 
+  function removeDock() {
+    state.open = false;
+    document.querySelector(`#${rootId}`)?.remove();
+  }
+
   function bindEvents() {
     document.addEventListener("click", (event) => {
       const root = document.querySelector(`#${rootId}`);
@@ -1047,7 +1065,16 @@
       if (event.key === "Escape" && state.open) setOpen(false);
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
         event.preventDefault();
+        if (!aiDockEnabled()) return;
         setOpen(!state.open);
+      }
+    });
+
+    window.addEventListener("swadakta:ai-mode-change", (event) => {
+      if (event.detail?.enabled === false) {
+        removeDock();
+      } else {
+        buildDock();
       }
     });
   }
@@ -1071,6 +1098,7 @@
     protectedBoundary,
     open: () => setOpen(true),
     close: () => setOpen(false),
+    syncMode: () => (aiDockEnabled() ? buildDock() : removeDock()),
   };
 
   if (document.readyState === "loading") {

@@ -10,6 +10,7 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 
 - Keep the website, workflow, account home, AI helper, admin tools, tracking, proof, and launch checks working.
 - Keep protected actions gated: AI can draft and triage, but cannot verify ID, release/refund money, assign paid work, mark funds paid, or send external messages by itself.
+- Keep AI optional. When AI mode is off, Swadakta must hide AI-only shortcuts and keep the manual queues, provider checks, verification flow, messages, tracking, and payments usable.
 - Keep Stripe, PayPal, Wise fallback, M-Pesa/Daraja, Paystack, and Flutterwave code paths provider-ready without exposing unfinished rails as public defaults.
 - Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, release conditions, and protected-funds boundaries without exposing founder economics.
 - Keep the receiver offer market controlled: job seekers can compete on eligible jobs, but accepted offers still require verified/vetted assignment, protected funds, legal/compliance clearance, and milestone release review.

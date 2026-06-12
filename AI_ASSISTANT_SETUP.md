@@ -46,7 +46,11 @@ It returns:
 
 ## Safety boundary
 
+Detailed operating rules live in `AI_OPERATING_BOUNDARIES.md`.
+
 The assistant may draft, summarize, and recommend next steps. It must not release funds, assign a receiver, contact a client, or mark verification complete without founder/admin approval.
+
+The app must also work when AI mode is off. In manual mode, AI-only links, the floating assistant, and admin prompt packs are hidden or replaced with manual checklists while the queues, messages, payments, tracking, verification, and admin tools keep working.
 
 The browser helper tries the Supabase Edge Function first. If the Edge Function is unavailable or missing its OpenAI secret, it falls back to the same-origin Vercel Function using the signed-in user's Supabase access token.
 

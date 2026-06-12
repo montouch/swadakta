@@ -190,11 +190,20 @@ const requiredDockMarkers = [
   "findVisibleSection",
   "performSafeAction",
   "swadakta-site-polish-style",
+  "aiDockEnabled",
+  "removeDock",
+  "swadakta:ai-mode-change",
   "syncAccountCtas",
   "storedSupabaseSessionEmail",
   "Protected actions stay gated",
 ];
-const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
+const requiredAiPreferenceMarkers = [
+  "SwadaktaAiPreference",
+  "dataset.aiMode",
+  "swadakta_ai_mode",
+  "body[data-ai-mode=\"off\"] [data-ai-only]",
+  "swadakta:ai-mode-change",
+];
 const requiredBriefHtmlMarkers = [
   "brief-freeform",
   "Ask AI to organize",
@@ -340,6 +349,11 @@ const requiredAdminOpsMarkers = [
   "renderOpsAutopilot",
   "opsAutopilotPrompt",
   "Swadakta daily operations autopilot brief",
+  "adminAiEnabled",
+  "renderAdminAiDecisionDesk",
+  "Swadakta admin AI prompt pack",
+  "Swadakta manual admin checklist",
+  "Copy manual checklist",
   "renderMatchRecommendations",
   "Autopilot match suggestions",
   "AI does not assign receivers",
@@ -503,6 +517,14 @@ const requiredSecretScanMarkers = [
   "jwt_like_secret",
   "sensitive_assignment",
   "swadakta-secret-scan",
+];
+const requiredAiBoundaryDocMarkers = [
+  "Swadakta AI Operating Boundaries",
+  "AI on",
+  "AI off",
+  "User AI cannot command admin AI",
+  "These decisions are never autonomous",
+  "Manual mode must always work",
 ];
 
 async function readLocal(relativePath) {
@@ -685,14 +707,20 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=9")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=9`);
+  if (!content.includes("assistant-dock.js?v=10")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=10`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
 for (const marker of requiredAiPreferenceMarkers) {
   if (!localAiPreferences.includes(marker)) {
     fail(failures, `Local ai-preferences.js is missing marker ${marker}`);
+  }
+}
+const localAiBoundaryDoc = await readLocal("AI_OPERATING_BOUNDARIES.md");
+for (const marker of requiredAiBoundaryDocMarkers) {
+  if (!localAiBoundaryDoc.includes(marker)) {
+    fail(failures, `AI operating boundary doc is missing marker ${marker}`);
   }
 }
 const localBriefHtml = await readLocal("brief.html");
@@ -858,8 +886,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=9")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=9`);
+  if (!text.includes("assistant-dock.js?v=10")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=10`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -879,8 +907,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=1")) {
-    fail(failures, `${page} does not reference ai-preferences.js?v=1`);
+  if (["/portal", "/assistant", "/brief"].includes(page) && !text.includes("ai-preferences.js?v=2")) {
+    fail(failures, `${page} does not reference ai-preferences.js?v=2`);
   }
   if (page === "/brief" && !text.includes("stitch-brief.js?v=12")) {
     fail(failures, `${page} does not reference stitch-brief.js?v=12`);
@@ -892,8 +920,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=7")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=7`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=8")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=8`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
@@ -1096,11 +1124,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=7");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=8");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=7 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=8 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=7 returned 200");
+  pass("admin-ops.js?v=8 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {
@@ -1156,11 +1184,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=9");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=10");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=9 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=10 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=9 returned 200");
+  pass("assistant-dock.js?v=10 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
@@ -1171,11 +1199,11 @@ for (const marker of requiredDockMarkers) {
   }
 }
 
-const { response: aiPreferenceResponse, text: aiPreferenceText } = await fetchText("/ai-preferences.js?v=1");
+const { response: aiPreferenceResponse, text: aiPreferenceText } = await fetchText("/ai-preferences.js?v=2");
 if (aiPreferenceResponse.status !== 200) {
-  fail(failures, `ai-preferences.js?v=1 returned ${aiPreferenceResponse.status}`);
+  fail(failures, `ai-preferences.js?v=2 returned ${aiPreferenceResponse.status}`);
 } else {
-  pass("ai-preferences.js?v=1 returned 200");
+  pass("ai-preferences.js?v=2 returned 200");
 }
 for (const marker of requiredAiPreferenceMarkers) {
   if (!aiPreferenceText.includes(marker)) {
