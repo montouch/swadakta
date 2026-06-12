@@ -200,6 +200,16 @@ const privateNoStorePages = [
   "/notifications",
   "/resolution",
 ];
+const criticalNoStoreScripts = [
+  "/app-data.js",
+  "/admin-ops.js",
+  "/admin-readiness.js",
+  "/admin-verification.js",
+  "/assistant-dock.js",
+  "/stitch-brief.js",
+  "/stitch-portal.js",
+  "/stitch-tracking.js",
+];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "get_my_account_profile",
@@ -570,6 +580,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
+  "app-data.js?v=52",
   "stitch-portal.js?v=32",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
@@ -1492,6 +1503,19 @@ if (isLocalBaseUrl()) {
       fail(failures, `${privatePage} is missing X-Robots-Tag: noindex`);
     } else {
       pass(`${privatePage} includes X-Robots-Tag: noindex`);
+    }
+  }
+
+  for (const scriptPath of criticalNoStoreScripts) {
+    const { response } = await fetchText(scriptPath);
+    if (response.status !== 200) {
+      fail(failures, `${scriptPath} returned ${response.status} while checking script cache headers`);
+      continue;
+    }
+    if (!headerIncludes(response, "cache-control", "no-store")) {
+      fail(failures, `${scriptPath} is missing Cache-Control: no-store`);
+    } else {
+      pass(`${scriptPath} includes Cache-Control: no-store`);
     }
   }
 
