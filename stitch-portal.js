@@ -79,6 +79,16 @@
   const receiverPublicProof = document.querySelector("#receiver-public-proof");
   const receiverPublicAbout = document.querySelector("#receiver-public-about");
   const receiverPublicVerification = document.querySelector("#receiver-public-verification");
+  const marketplaceJobList = document.querySelector("#marketplace-job-list");
+  const marketplaceOfferForm = document.querySelector("#marketplace-offer-form");
+  const marketplaceOfferRequest = document.querySelector("#marketplace-offer-request");
+  const marketplaceOfferCurrency = document.querySelector("#marketplace-offer-currency");
+  const marketplaceOfferAmount = document.querySelector("#marketplace-offer-amount");
+  const marketplaceOfferTimeline = document.querySelector("#marketplace-offer-timeline");
+  const marketplaceOfferProofPlan = document.querySelector("#marketplace-offer-proof-plan");
+  const marketplaceOfferMessage = document.querySelector("#marketplace-offer-message");
+  const marketplaceOfferStatus = document.querySelector("#marketplace-offer-status");
+  const myJobOffersList = document.querySelector("#my-job-offers-list");
   const authShell = form.closest("main");
 
   if (!form || !window.SwadaktaData) return;
@@ -622,6 +632,26 @@
     return String(value || "not_started")
       .replaceAll("_", " ")
       .replace(/\b\w/g, (letter) => letter.toUpperCase());
+  }
+
+  function formatMoney(amount, currency = "AUD") {
+    const value = Number(amount || 0);
+    if (!value) return `${currency} 0`;
+    try {
+      return new Intl.NumberFormat(undefined, {
+        style: "currency",
+        currency,
+        maximumFractionDigits: 0,
+      }).format(value);
+    } catch {
+      return `${currency} ${value}`;
+    }
+  }
+
+  function formatShortDate(value) {
+    if (!value) return "Flexible";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString();
   }
 
   function providerLabel(value) {
@@ -1604,6 +1634,144 @@
       .join("");
   }
 
+  function setMarketplaceOfferStatus(message, tone = "") {
+    if (!marketplaceOfferStatus) return;
+    marketplaceOfferStatus.textContent = message;
+    marketplaceOfferStatus.className = `font-label-md text-label-md min-h-6 ${tone || "text-on-surface-variant"}`.trim();
+  }
+
+  function marketplaceRouteLabel(job = {}) {
+    return [job.origin_country, job.destination_country].filter(Boolean).join(" to ") || "Route pending";
+  }
+
+  function marketplaceJobTitle(job = {}) {
+    const packageLabel = formatStatus(job.service_package || job.task_type || "job");
+    const place = job.task_location || job.kenya_location || job.destination_country || "location pending";
+    return `${packageLabel} / ${place}`;
+  }
+
+  function marketplaceJobTone(job = {}) {
+    const risk = String(job.compliance_risk_level || "standard").toLowerCase();
+    if (risk === "medium") return "bg-amber-50 text-amber-700";
+    return "bg-primary-container/10 text-primary";
+  }
+
+  function renderMarketplaceJobs(jobs = []) {
+    if (!marketplaceJobList) return;
+
+    if (marketplaceOfferRequest) {
+      const selected = marketplaceOfferRequest.value;
+      marketplaceOfferRequest.innerHTML = [
+        '<option value="">Choose an open job</option>',
+        ...jobs.map(
+          (job) =>
+            `<option value="${escapeHtml(job.request_code)}" data-currency="${escapeHtml(job.quote_currency || "AUD")}">${escapeHtml(job.request_code)} - ${escapeHtml(marketplaceJobTitle(job))}</option>`,
+        ),
+      ].join("");
+      if (selected && jobs.some((job) => job.request_code === selected)) {
+        marketplaceOfferRequest.value = selected;
+      }
+    }
+
+    if (!jobs.length) {
+      marketplaceJobList.innerHTML = `
+        <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+          <p class="font-label-md text-on-surface">No open marketplace jobs yet</p>
+          <p class="font-body-md text-on-surface-variant text-sm mt-1">Open jobs appear after client briefs pass basic route, payment, and safety checks. Save your receiver profile so Swadakta can match you when work opens.</p>
+        </article>`;
+      return;
+    }
+
+    marketplaceJobList.innerHTML = jobs
+      .map((job) => {
+        const proof = Array.isArray(job.proof_requirements) && job.proof_requirements.length
+          ? job.proof_requirements.slice(0, 4).join(", ")
+          : "Proof plan required";
+        const quote = Number(job.quote_amount || 0)
+          ? formatMoney(job.quote_amount, job.quote_currency || "AUD")
+          : formatStatus(job.budget_range || "quote first");
+        return `
+          <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-2">
+                  <strong class="font-label-md text-on-surface">${escapeHtml(job.request_code || "Open job")}</strong>
+                  <span class="rounded-full px-3 py-1 font-label-sm ${marketplaceJobTone(job)}">${escapeHtml(formatStatus(job.compliance_risk_level || "standard"))}</span>
+                  <span class="rounded-full bg-white px-3 py-1 font-label-sm text-on-surface-variant">${escapeHtml(job.offer_count || 0)} offer${Number(job.offer_count || 0) === 1 ? "" : "s"}</span>
+                </div>
+                <p class="font-body-md text-on-surface text-sm mt-2">${escapeHtml(marketplaceJobTitle(job))}</p>
+                <p class="font-body-md text-on-surface-variant text-sm mt-1">${escapeHtml(marketplaceRouteLabel(job))} / due ${escapeHtml(formatShortDate(job.deadline))}</p>
+                <p class="font-body-md text-on-surface-variant text-sm mt-2">Proof: ${escapeHtml(proof)}</p>
+              </div>
+              <div class="grid gap-2 md:min-w-[12rem]">
+                <span class="rounded-2xl bg-white/72 p-3 text-sm"><strong class="block text-on-surface">Guide price</strong>${escapeHtml(quote)}</span>
+                <button class="marketplace-offer-prefill inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 font-label-md text-sm font-bold text-white" data-marketplace-request="${escapeHtml(job.request_code)}" data-marketplace-currency="${escapeHtml(job.quote_currency || "AUD")}" type="button">Make offer</button>
+              </div>
+            </div>
+          </article>`;
+      })
+      .join("");
+  }
+
+  function renderMyJobOffers(offers = []) {
+    if (!myJobOffersList) return;
+
+    if (!offers.length) {
+      myJobOffersList.innerHTML = `<div class="rounded-2xl bg-white/66 p-4 text-sm text-on-surface-variant">Your offers will appear here after you submit them. Compete on clarity, proof, timing, and trust, not just a low price.</div>`;
+      return;
+    }
+
+    myJobOffersList.innerHTML = offers
+      .map((offer) => {
+        const flags = Array.isArray(offer.safety_flags) ? offer.safety_flags : [];
+        const statusTone =
+          offer.status === "accepted"
+            ? "bg-emerald-50 text-emerald-700"
+            : flags.length
+              ? "bg-amber-50 text-amber-700"
+              : "bg-primary-container/10 text-primary";
+        return `
+          <article class="rounded-2xl border border-outline-variant/30 bg-white/68 p-4">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <strong class="font-label-md text-on-surface">${escapeHtml(offer.offer_code || "Offer")}</strong>
+                <p class="font-body-md text-on-surface-variant text-sm mt-1">${escapeHtml(offer.request_code || "Job")} / ${escapeHtml(formatMoney(offer.amount, offer.currency || "AUD"))} / ${escapeHtml(offer.timeline_days || 1)} day${Number(offer.timeline_days || 1) === 1 ? "" : "s"}</p>
+              </div>
+              <span class="rounded-full px-3 py-1 font-label-sm ${statusTone}">${escapeHtml(formatStatus(offer.status || "submitted"))}</span>
+            </div>
+            <p class="font-body-md text-on-surface-variant text-sm mt-3">${escapeHtml(offer.proof_plan || "Proof plan pending.")}</p>
+            ${
+              flags.length
+                ? `<p class="font-label-sm text-amber-700 mt-3">Blocked before acceptance: ${escapeHtml(flags.map(formatStatus).join(", "))}</p>`
+                : `<p class="font-label-sm text-primary mt-3">Eligible for review. Assignment and payout remain protected.</p>`
+            }
+          </article>`;
+      })
+      .join("");
+  }
+
+  async function refreshMarketplace() {
+    const [jobsResult, offersResult] = await Promise.allSettled([
+      window.SwadaktaData.listMarketplaceJobs(),
+      window.SwadaktaData.listMyJobOffers(),
+    ]);
+
+    const jobs = jobsResult.status === "fulfilled" ? jobsResult.value.data || [] : [];
+    const offers = offersResult.status === "fulfilled" ? offersResult.value.data || [] : [];
+    renderMarketplaceJobs(jobs);
+    renderMyJobOffers(offers);
+
+    if (jobsResult.status === "rejected") {
+      if (marketplaceJobList) {
+        marketplaceJobList.innerHTML = `<article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4 text-sm text-on-surface-variant">${escapeHtml(jobsResult.reason?.message || "Could not load open jobs.")}</article>`;
+      }
+    }
+    if (offersResult.status === "rejected") {
+      renderMyJobOffers([]);
+      setMarketplaceOfferStatus(offersResult.reason?.message || "Could not load your offers yet.", "text-on-surface-variant");
+    }
+  }
+
   function normalizeCountry(value) {
     return String(value || "")
       .trim()
@@ -1699,6 +1867,7 @@
       window.SwadaktaData.listMyAssignedJobs(),
       window.SwadaktaData.listMyIdentityVerificationRequests(),
       window.SwadaktaData.listMyPartnerApplications(),
+      refreshMarketplace(),
     ]);
 
     const requests = requestsResult.status === "fulfilled" ? requestsResult.value.data || [] : [];
@@ -2153,6 +2322,67 @@
     });
   }
 
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".marketplace-offer-prefill");
+    if (!button || !marketplaceOfferForm) return;
+    const requestCode = button.dataset.marketplaceRequest || "";
+    if (marketplaceOfferRequest) marketplaceOfferRequest.value = requestCode;
+    if (marketplaceOfferCurrency && button.dataset.marketplaceCurrency) {
+      marketplaceOfferCurrency.value = button.dataset.marketplaceCurrency;
+    }
+    setMarketplaceOfferStatus(`Offer form ready for ${requestCode}. Add your price, timing, and proof plan.`, "text-primary");
+    marketplaceOfferForm.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => marketplaceOfferAmount?.focus({ preventScroll: true }), 300);
+  });
+
+  marketplaceOfferRequest?.addEventListener("change", () => {
+    const option = marketplaceOfferRequest.selectedOptions[0];
+    const currency = option?.dataset.currency || "";
+    if (currency && marketplaceOfferCurrency) marketplaceOfferCurrency.value = currency;
+  });
+
+  marketplaceOfferForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const requestCode = marketplaceOfferRequest?.value || "";
+    const button = marketplaceOfferForm.querySelector('button[type="submit"]');
+    const original = button?.innerHTML || "";
+
+    if (!signedInEmail) {
+      setMarketplaceOfferStatus("Sign in and save a job seeker profile before making an offer.", "text-error");
+      return;
+    }
+
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = "Submitting offer...";
+    }
+    setMarketplaceOfferStatus("Submitting offer. Swadakta will still check verification, route fit, and payment protection.");
+
+    try {
+      const result = await window.SwadaktaData.submitJobOffer(requestCode, {
+        amount: marketplaceOfferAmount?.value || 0,
+        currency: marketplaceOfferCurrency?.value || "AUD",
+        timeline_days: marketplaceOfferTimeline?.value || 3,
+        proof_plan: marketplaceOfferProofPlan?.value || "",
+        message: marketplaceOfferMessage?.value || "",
+      });
+      setMarketplaceOfferStatus(
+        `Offer ${result.data?.offer_code || ""} submitted. Lowest price does not automatically win; proof quality and trust still matter.`,
+        "text-primary",
+      );
+      if (marketplaceOfferProofPlan) marketplaceOfferProofPlan.value = "";
+      if (marketplaceOfferMessage) marketplaceOfferMessage.value = "";
+      await refreshMarketplace();
+    } catch (error) {
+      setMarketplaceOfferStatus(error.message || "Could not submit this offer.", "text-error");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = original;
+      }
+    }
+  });
+
   if (googleButton) {
     const enabled = Boolean(window.SWADAKTA_CONFIG?.authProviders?.google);
     googleButton.hidden = !enabled;
@@ -2254,5 +2484,12 @@
     }).catch(() => {});
   }
   showCurrentAccount({ autoOpen: true });
+  [1200, 3600].forEach((delay) => {
+    window.setTimeout(() => {
+      if (document.body.classList.contains("is-account-signed-in")) {
+        refreshMarketplace().catch(() => {});
+      }
+    }, delay);
+  });
   [900, 2400].forEach((delay) => window.setTimeout(recoverAccountHomeFromSession, delay));
 })();

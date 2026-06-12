@@ -15,12 +15,14 @@
   const opsAutopilotSummary = document.querySelector("#ops-autopilot-summary");
   const opsAutopilotList = document.querySelector("#ops-autopilot-list");
   const copyOpsAutopilotButton = document.querySelector("#copy-ops-autopilot");
+  const offerMarketList = document.querySelector("#ops-offer-market-list");
   const resolutionList = document.querySelector("#ops-resolution-list");
   const filterButtons = document.querySelectorAll(".ops-filter");
 
   let currentFilter = "exceptions";
   let currentRequests = [];
   let currentPartners = [];
+  let currentJobOffers = [];
   let currentResolutionCases = [];
 
   const closedStatuses = new Set(["completed", "cancelled"]);
@@ -884,6 +886,101 @@
     opsList.innerHTML = visible.map(renderRequest).join("");
   }
 
+  function offerStatusTone(offer) {
+    const status = String(offer.status || "submitted").toLowerCase();
+    const flags = Array.isArray(offer.safety_flags) ? offer.safety_flags : [];
+    if (status === "accepted") return "bg-emerald-500/10 text-emerald-700";
+    if (["declined", "blocked"].includes(status)) return "bg-error-container text-on-error-container";
+    if (status === "shortlisted") return "bg-primary/10 text-primary";
+    if (flags.length) return "bg-amber-400/20 text-amber-800";
+    return "bg-white/70 text-on-surface-variant";
+  }
+
+  function offerTrustLabel(offer) {
+    const verified = offer.verification_status === "verified";
+    const vetted = offer.partner_status === "vetted";
+    if (verified && vetted) return "Verified and vetted";
+    if (verified) return "ID verified; vetting check needed";
+    if (vetted) return "Vetted; ID check needed";
+    return "Verification required before acceptance";
+  }
+
+  function offerFitScore(offer) {
+    const provenance = Math.max(25, Math.min(100, Number(offer.provenance_score || 25)));
+    const trustBonus = offer.verification_status === "verified" ? 15 : 0;
+    const statusBonus = offer.partner_status === "vetted" ? 10 : 0;
+    const proofBonus = String(offer.proof_plan || "").length > 80 ? 10 : 3;
+    const timelineBonus = Number(offer.timeline_days || 0) <= 3 ? 5 : 2;
+    return Math.min(100, Math.round(provenance * 0.65 + trustBonus + statusBonus + proofBonus + timelineBonus));
+  }
+
+  function renderJobOffer(offer) {
+    const flags = Array.isArray(offer.safety_flags) ? offer.safety_flags : [];
+    const score = offerFitScore(offer);
+    const status = String(offer.status || "submitted").toLowerCase();
+    const actionButtons = [
+      ["shortlisted", "Shortlist"],
+      ["declined", "Decline"],
+      ["accepted", "Mark accepted"],
+    ]
+      .map(
+        ([nextStatus, label]) =>
+          `<button class="offer-status-button rounded-full border border-outline-variant/50 bg-white/72 px-3 py-1.5 font-label text-xs font-bold text-primary" data-offer-code="${escapeHtml(offer.offer_code)}" data-offer-status="${nextStatus}" type="button" ${status === nextStatus ? "disabled" : ""}>${escapeHtml(label)}</button>`,
+      )
+      .join("");
+
+    return `
+      <article class="rounded-3xl border border-outline-variant/30 bg-white/62 p-5">
+        <div class="grid gap-5 lg:grid-cols-[1fr_auto] lg:items-start">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <strong class="font-display text-2xl">${escapeHtml(offer.offer_code || "Offer")}</strong>
+              <span class="rounded-full px-3 py-1 font-label text-xs ${offerStatusTone(offer)}">${escapeHtml(formatStatus(status))}</span>
+              <span class="rounded-full bg-primary/10 px-3 py-1 font-label text-xs text-primary">${escapeHtml(score)}% fit</span>
+            </div>
+            <p class="mt-2 text-sm leading-6 text-on-surface-variant">
+              ${escapeHtml(offer.request_code || "Job")} / ${escapeHtml(offer.receiver_name || offer.partner_code || "Receiver")} / ${escapeHtml(offer.receiver_base || "Base pending")}
+            </p>
+            <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(offer.proof_plan || "Proof plan pending.")}</p>
+            ${offer.message ? `<p class="mt-2 text-sm leading-6 text-on-surface">${escapeHtml(offer.message)}</p>` : ""}
+          </div>
+          <div class="grid gap-2 text-sm text-on-surface-variant sm:grid-cols-2 lg:min-w-[24rem]">
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Offer</strong>${escapeHtml(formatMoney(offer.amount, offer.currency || "AUD"))}</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Timeline</strong>${escapeHtml(offer.timeline_days || 1)} day${Number(offer.timeline_days || 1) === 1 ? "" : "s"}</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Provenance</strong>${escapeHtml(offer.provenance_score || 25)}%</span>
+            <span class="rounded-2xl bg-white/70 p-3"><strong class="block text-on-surface">Trust</strong>${escapeHtml(offerTrustLabel(offer))}</span>
+          </div>
+        </div>
+        ${
+          flags.length
+            ? `<p class="mt-4 rounded-2xl bg-amber-400/12 p-3 text-xs leading-5 text-amber-800">Safety stop before assignment: ${escapeHtml(flags.map(formatStatus).join(", "))}.</p>`
+            : `<p class="mt-4 rounded-2xl bg-primary/10 p-3 text-xs leading-5 text-primary">No offer-level safety flags. Still confirm funds, route legality, and verified/vetted assignment before work starts.</p>`
+        }
+        <div class="mt-4 flex flex-wrap gap-2">
+          ${actionButtons}
+          <a class="rounded-full bg-primary px-3 py-1.5 font-label text-xs font-bold text-white" href="assistant.html">Ask AI to compare</a>
+        </div>
+      </article>
+    `;
+  }
+
+  function renderOfferMarket() {
+    if (!offerMarketList) return;
+
+    if (!currentJobOffers.length) {
+      offerMarketList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Receiver offer market is waiting for the first offer. Lowest price does not automatically win; once job seekers make offers from Account Home, they will appear here for protected review.</div>`;
+      return;
+    }
+
+    const sorted = [...currentJobOffers].sort((left, right) => {
+      const leftStatus = left.status === "shortlisted" ? 1 : 0;
+      const rightStatus = right.status === "shortlisted" ? 1 : 0;
+      if (leftStatus !== rightStatus) return rightStatus - leftStatus;
+      return offerFitScore(right) - offerFitScore(left);
+    });
+    offerMarketList.innerHTML = sorted.map(renderJobOffer).join("");
+  }
+
   function resolutionTone(item) {
     const issue = String(item.issue_type || "").toLowerCase();
     const status = String(item.status || "").toLowerCase();
@@ -960,6 +1057,9 @@
     showAuth(false);
     opsMode.textContent = "Loading operations";
     opsList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading live requests...</div>`;
+    if (offerMarketList) {
+      offerMarketList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading receiver offers...</div>`;
+    }
 
     try {
       const sessionResult = await data.getSession();
@@ -981,23 +1081,29 @@
         setStatus("Local static mode cannot call the Vercel readiness API; loading requests through Supabase/RLS instead.");
       }
 
-      const [requestResult, partnerResult, resolutionResult] = await Promise.all([
+      const [requestResult, partnerResult, resolutionResult, offerResult] = await Promise.all([
         data.listRequests(),
         data.listPartnerApplications().catch((error) => ({ data: [], error })),
         data.listResolutionCases().catch((error) => ({ data: [], error })),
+        data.listJobOffersForAdmin().catch((error) => ({ data: [], error })),
       ]);
       currentRequests = requestResult.data || [];
       currentPartners = partnerResult.data || [];
       currentResolutionCases = resolutionResult.data || [];
+      currentJobOffers = offerResult.data || [];
       opsMode.textContent = requestResult.mode === "local" ? "Local demo requests" : "Live production requests";
       setStatus(`Updated ${new Date().toLocaleString()}. Showing protected-decision exceptions first.`);
       renderQueue();
+      renderOfferMarket();
       renderResolutionCases();
       if (partnerResult.error) {
         setStatus(`Updated ${new Date().toLocaleString()}. Partner matching is limited: ${partnerResult.error.message || "could not load partner applications"}.`, "text-on-surface-variant");
       }
       if (resolutionResult.error && resolutionList) {
         resolutionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(resolutionResult.error.message || "Could not load resolution cases.")}</div>`;
+      }
+      if (offerResult.error && offerMarketList) {
+        offerMarketList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(offerResult.error.message || "Could not load receiver offers yet.")}</div>`;
       }
     } catch (error) {
       const message = error.message || "Could not load operations.";
@@ -1134,6 +1240,38 @@
   });
 
   document.addEventListener("click", async (event) => {
+    const offerButton = event.target.closest(".offer-status-button");
+    if (offerButton) {
+      const offerCode = offerButton.dataset.offerCode || "";
+      const status = offerButton.dataset.offerStatus || "";
+      if (!offerCode || !status) return;
+
+      offerButton.disabled = true;
+      try {
+        await data.updateJobOfferStatus(
+          offerCode,
+          status,
+          status === "accepted"
+            ? "Offer marked accepted in ops. Verified/vetted assignment and protected funds are still required before work starts."
+            : `Offer marked ${formatStatus(status)} in founder ops.`,
+        );
+        setStatus(
+          status === "accepted"
+            ? `Offer ${offerCode} marked accepted. Now verify/vet assignment and payment protection before any work starts.`
+            : `Offer ${offerCode} marked ${formatStatus(status)}.`,
+          "text-primary",
+        );
+        const offerResult = await data.listJobOffersForAdmin();
+        currentJobOffers = offerResult.data || [];
+        renderOfferMarket();
+      } catch (error) {
+        setStatus(error.message || "Could not update offer status.", "text-on-error-container");
+      } finally {
+        offerButton.disabled = false;
+      }
+      return;
+    }
+
     const paymentButton = event.target.closest(".payment-route");
     if (paymentButton) {
       await handlePaymentRoute(paymentButton);

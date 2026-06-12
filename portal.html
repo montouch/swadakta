@@ -874,7 +874,7 @@
 <a class="inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold text-sm" href="tracking.html">Track</a>
 </div>
 </div>
-<div class="mt-5 grid gap-3">
+<div class="mt-5 grid gap-3" id="marketplace-job-list" aria-live="polite">
 <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
 <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 <div>
@@ -912,6 +912,60 @@
 </div>
 </article>
 </div>
+<section class="mt-6 rounded-[1.35rem] border border-outline-variant/30 bg-white/62 p-4 md:p-5" aria-label="Competitive job offers">
+<div class="grid gap-4 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)] lg:items-start">
+<div>
+<p class="font-label-sm text-tertiary uppercase tracking-[0.16em]">Controlled offers</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Make an offer without racing to the bottom</h3>
+<p class="font-body-md text-on-surface-variant text-sm mt-2">Receivers can compete on price, timing, proof quality, route fit, and provenance. Lowest price does not automatically win; protected assignment and payout rules still apply.</p>
+<div class="mt-4 grid gap-2 text-sm text-on-surface-variant">
+<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">Before acceptance</strong>ID verification, profile consistency, legal route, and payment protection must pass.</span>
+<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">After acceptance</strong>Milestones and proof control payout. AI can help draft updates but cannot release money.</span>
+</div>
+</div>
+<form class="grid gap-3" id="marketplace-offer-form">
+<div class="grid gap-3 sm:grid-cols-[1fr_0.65fr]">
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Job
+<select class="h-12 rounded-xl sunken-input px-4 font-body-md text-on-surface" id="marketplace-offer-request" required>
+<option value="">Choose an open job</option>
+</select>
+</label>
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Currency
+<select class="h-12 rounded-xl sunken-input px-4 font-body-md text-on-surface" id="marketplace-offer-currency">
+<option value="AUD">AUD</option>
+<option value="USD">USD</option>
+<option value="GBP">GBP</option>
+<option value="EUR">EUR</option>
+<option value="KES">KES</option>
+<option value="CNY">CNY</option>
+</select>
+</label>
+</div>
+<div class="grid gap-3 sm:grid-cols-2">
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Your offer
+<input class="h-12 rounded-xl sunken-input px-4 font-body-md text-on-surface" id="marketplace-offer-amount" min="0" step="1" type="number" placeholder="120" required/>
+</label>
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Timeline days
+<input class="h-12 rounded-xl sunken-input px-4 font-body-md text-on-surface" id="marketplace-offer-timeline" min="1" max="60" step="1" type="number" value="3" required/>
+</label>
+</div>
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Proof plan
+<textarea class="min-h-24 rounded-xl sunken-input px-4 py-3 font-body-md text-on-surface" id="marketplace-offer-proof-plan" placeholder="How you will prove the work: photos, video, receipt, location note, voice note, written summary..." required></textarea>
+</label>
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">Short message
+<textarea class="min-h-20 rounded-xl sunken-input px-4 py-3 font-body-md text-on-surface" id="marketplace-offer-message" placeholder="Why you fit this job, route, or timing."></textarea>
+</label>
+<button class="inline-flex h-12 items-center justify-center rounded-full bg-primary px-6 font-label-md font-bold text-white" type="submit">
+<span class="material-symbols-outlined mr-2 text-[20px]">gavel</span>
+Submit offer
+</button>
+<p class="font-label-md text-label-md text-on-surface-variant min-h-6" id="marketplace-offer-status" role="status"></p>
+</form>
+</div>
+<div class="mt-5 grid gap-3" id="my-job-offers-list" aria-live="polite">
+<div class="rounded-2xl bg-white/66 p-4 text-sm text-on-surface-variant">Your offers will appear here after you submit them.</div>
+</div>
+</section>
 </article>
 <section class="glass-panel rounded-[1.5rem] p-5 md:p-6" id="find-work">
 <div class="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
@@ -1209,8 +1263,8 @@
 </div>
 </footer>
 <script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=45"></script>
+<script src="app-data.js?v=47"></script>
 <script src="ai-preferences.js?v=1"></script>
-<script src="stitch-portal.js?v=29"></script>
+<script src="stitch-portal.js?v=31"></script>
 <script src="assistant-dock.js?v=8"></script>
 </body></html>

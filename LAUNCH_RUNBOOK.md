@@ -12,6 +12,7 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 - Keep protected actions gated: AI can draft and triage, but cannot verify ID, release/refund money, assign paid work, mark funds paid, or send external messages by itself.
 - Keep Stripe, PayPal, Wise fallback, M-Pesa/Daraja, Paystack, and Flutterwave code paths provider-ready without exposing unfinished rails as public defaults.
 - Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, release conditions, and protected-funds boundaries without exposing founder economics.
+- Keep the receiver offer market controlled: job seekers can compete on eligible jobs, but accepted offers still require verified/vetted assignment, protected funds, legal/compliance clearance, and milestone release review.
 - Keep testing scripts and browser audits current before every deploy.
 
 ### What the owner must do before public paid launch
@@ -123,15 +124,18 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 13. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
 14. Client pays through the agreed provider.
 15. Admin sets payment and funds statuses after confirmation.
-16. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification.
-17. Admin assigns only a vetted and ID-verified receiver/operator in the request card, then copies the operator brief.
-18. Receiver-side operator executes the task and submits field updates/proof links from the receiver portal.
-19. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
-20. Admin adds approved proof links, report URL, and final client notes.
-21. Admin sets status to `completed`.
-22. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
-23. Client leaves a post-completion review from tracking or their client account.
-24. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
+16. Eligible vetted or pending job seekers can make controlled offers from Account Home, including amount, currency, delivery timeline, proof plan, and message.
+17. Admin/AI compares offers by price, timing, proof quality, provenance, identity status, vetting status, and route fit. Lowest price does not automatically win.
+18. Admin may shortlist or accept an offer, but accepted means `preferred receiver for review`; it does not release money, bypass ID checks, or automatically start the job.
+19. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification.
+20. Admin assigns only a vetted and ID-verified receiver/operator in the request card, then copies the operator brief.
+21. Receiver-side operator executes the task and submits field updates/proof links from the receiver portal.
+22. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
+23. Admin adds approved proof links, report URL, and final client notes.
+24. Admin sets status to `completed`.
+25. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
+26. Client leaves a post-completion review from tracking or their client account.
+27. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
 
 ## 6. Launch Readiness Checklist
 
@@ -157,6 +161,9 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Physical-item requests require legal/customs checks before buying, shipping, carrying, receiving, or releasing money.
 - Client and receiver portal sessions return sanitized account summaries only; full internal notes and founder margin stay in admin.
 - Receiver partners can apply from the portal and must complete ID verification before being marked `Vetted`.
+- Account Home has a controlled offer board for eligible open jobs. Job seekers can compete by amount, timeline, and proof plan, while Swadakta ranks offers by trust and fit.
+- Receiver offers with missing vetting, ID verification, consent, or proof standards carry safety flags before any acceptance or assignment decision.
+- Admin Operations includes the receiver offer market, where offers can be shortlisted, declined, or marked accepted for protected receiver review.
 - Only vetted and ID-verified receivers can be assigned to client jobs.
 - Assigned vetted and ID-verified receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
 - Assigned vetted and ID-verified receivers can submit field updates and proof links for admin review before anything becomes client-facing.

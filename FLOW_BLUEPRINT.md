@@ -112,7 +112,29 @@ Visible inside the same account:
   - job funded or approved
   - assignment made
 
-### 5. Verification Flow
+### 5. Controlled Offer Board
+
+The job board is a controlled marketplace, not a free-for-all auction.
+
+Job seekers can make offers on open jobs when:
+
+- they are signed in
+- they have saved a job seeker profile
+- the request is on an active or pilot route
+- the request is not restricted, prohibited, high-risk, or sensitive-document heavy
+- the client is not bidding on their own request
+
+Each offer captures:
+
+- offer amount and currency
+- delivery timeline
+- proof plan
+- short note to the client/admin team
+- receiver provenance, ID status, vetting status, and safety flags
+
+Swadakta ranks offers by price, timing, proof quality, provenance, verification, vetting, and route fit. Lowest price does not automatically win. An accepted offer only means `preferred receiver for review`; funds protection, legal/compliance checks, verified/vetted assignment, and milestone release stay protected gates.
+
+### 6. Verification Flow
 
 Every user can request verification from the account card.
 
@@ -133,7 +155,7 @@ Provider logic:
 - Swadakta should not store raw ID documents in the normal app UI.
 - Verification links should be provider-hosted, with only status/reference stored in Swadakta.
 
-### 6. Admin / Founder Console
+### 7. Admin / Founder Console
 
 Admin is not a normal user path.
 
@@ -177,8 +199,9 @@ Create these screens:
 3. Signed-in account dashboard with profile, verification status, and three tabs: Client, Job seeker, Both/Overview.
 4. Client brief flow: route, task location, service type, proof needed, goods/logistics, payment preference, consent, submit.
 5. Job seeker onboarding flow: identity, current country/base, coverage areas, categories, availability, transport/access, references, submit.
-6. Request tracking page: request code, status, payment, milestones, proof, report, review.
-7. Admin/founder console concept: action queues for ID, payment, receiver vetting, proof, compliance, release decisions, and AI drafts.
+6. Controlled offer board where verified job seekers can make offers on eligible jobs. Show that cheapest does not automatically win; trust, proof, timing, and provenance matter.
+7. Request tracking page: request code, status, payment, milestones, proof, report, review.
+8. Admin/founder console concept: action queues for ID, payment, receiver vetting, offer comparison, proof, compliance, release decisions, and AI drafts.
 
 Design rules:
 

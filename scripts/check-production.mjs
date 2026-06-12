@@ -83,6 +83,11 @@ const requiredAppDataMarkers = [
   "uploadAccountMedia",
   "coverage_scopes",
   "missingColumn",
+  "listMarketplaceJobs",
+  "submitJobOffer",
+  "listMyJobOffers",
+  "listJobOffersForAdmin",
+  "updateJobOfferStatus",
 ];
 const requiredPortalMarkers = [
   "setSignedInShell",
@@ -116,6 +121,10 @@ const requiredPortalMarkers = [
   "Photo uploaded privately",
   "scrollAccountHomeAnchor",
   "handleAccountHomeAnchorClick",
+  "renderMarketplaceJobs",
+  "renderMyJobOffers",
+  "refreshMarketplace",
+  "Lowest price does not automatically win",
 ];
 const requiredPortalHtmlMarkers = [
   "quick-action-card",
@@ -130,6 +139,11 @@ const requiredPortalHtmlMarkers = [
   "cursor: pointer",
   "workspace-link",
   "pointer-events: none",
+  'id="marketplace-job-list"',
+  'id="marketplace-offer-form"',
+  "Controlled offers",
+  "Make an offer without racing to the bottom",
+  "Lowest price does not automatically win",
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
@@ -306,6 +320,11 @@ const requiredAdminOpsMarkers = [
   "renderMatchRecommendations",
   "Autopilot match suggestions",
   "AI does not assign receivers",
+  "renderOfferMarket",
+  "offer-status-button",
+  "updateJobOfferStatus",
+  "Receiver offer market",
+  "Lowest price does not automatically win",
   "coverage_scopes",
   "Protected decisions are not delegated to AI",
   "Local static mode cannot call the Vercel readiness API",
@@ -339,7 +358,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "stitch-portal.js?v=29",
+  "stitch-portal.js?v=31",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
   "supabase_leaked_password_protection",
@@ -836,8 +855,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=6")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=6`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=7")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=7`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
@@ -1033,11 +1052,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=6");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=7");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=6 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=7 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=6 returned 200");
+  pass("admin-ops.js?v=7 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {

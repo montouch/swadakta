@@ -3,6 +3,7 @@
   const PARTNER_STORAGE_KEY = "swadakta_partner_applications";
   const FIELD_UPDATE_STORAGE_KEY = "swadakta_field_updates";
   const FUND_MILESTONE_STORAGE_KEY = "swadakta_fund_milestones";
+  const JOB_OFFER_STORAGE_KEY = "swadakta_job_offers";
   const ACCOUNT_PROFILE_STORAGE_KEY = "swadakta_account_profile";
   const IDENTITY_VERIFICATION_STORAGE_KEY = "swadakta_identity_verification_requests";
   const RESOLUTION_CASE_STORAGE_KEY = "swadakta_resolution_cases";
@@ -64,6 +65,11 @@
   function createFundMilestoneCode() {
     const token = Math.random().toString(36).slice(2, 8).toUpperCase();
     return `FM-${token}`;
+  }
+
+  function createJobOfferCode() {
+    const token = Math.random().toString(36).slice(2, 8).toUpperCase();
+    return `JO-${token}`;
   }
 
   function createIdentityVerificationCode() {
@@ -162,6 +168,18 @@
 
   function writeLocalFundMilestones(milestones) {
     localStorage.setItem(FUND_MILESTONE_STORAGE_KEY, JSON.stringify(milestones));
+  }
+
+  function readLocalJobOffers() {
+    try {
+      return JSON.parse(localStorage.getItem(JOB_OFFER_STORAGE_KEY) || "[]");
+    } catch {
+      return [];
+    }
+  }
+
+  function writeLocalJobOffers(offers) {
+    localStorage.setItem(JOB_OFFER_STORAGE_KEY, JSON.stringify(offers));
   }
 
   function readLocalAccountProfile() {
@@ -437,6 +455,36 @@
       created_at: now,
       updated_at: now,
       ...payload,
+    };
+  }
+
+  function normalizeJobOffer(payload = {}) {
+    const now = new Date().toISOString();
+    const amount = Number(payload.amount);
+    const timelineDays = Number(payload.timeline_days);
+    return {
+      id: payload.id || createUuid(),
+      offer_code: payload.offer_code || createJobOfferCode(),
+      service_request_id: payload.service_request_id || "",
+      request_code: String(payload.request_code || "").trim().toUpperCase(),
+      partner_application_id: payload.partner_application_id || "",
+      partner_code: payload.partner_code || "",
+      receiver_user_id: payload.receiver_user_id || null,
+      receiver_email: cleanEmail(payload.receiver_email || payload.email || ""),
+      receiver_name: String(payload.receiver_name || payload.full_name || "").trim().slice(0, 180),
+      receiver_base: String(payload.receiver_base || payload.kenya_base || "").trim().slice(0, 180),
+      amount: Number.isFinite(amount) && amount >= 0 ? Math.round(amount) : 0,
+      currency: String(payload.currency || "AUD").trim().toUpperCase(),
+      timeline_days: Number.isFinite(timelineDays) && timelineDays > 0 ? Math.round(timelineDays) : 3,
+      proof_plan: String(payload.proof_plan || "").trim().slice(0, 1400),
+      message: String(payload.message || "").trim().slice(0, 1400),
+      status: payload.status || "submitted",
+      safety_flags: Array.isArray(payload.safety_flags) ? payload.safety_flags : [],
+      provenance_score: Number(payload.provenance_score || 25),
+      verification_status: payload.verification_status || "not_started",
+      admin_notes: payload.admin_notes || "",
+      created_at: payload.created_at || now,
+      updated_at: payload.updated_at || now,
     };
   }
 
@@ -853,6 +901,343 @@
       .eq("id", id)
       .select("*")
       .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return { data, mode: "supabase" };
+  }
+
+  function marketplaceSampleJobs() {
+    const now = new Date().toISOString();
+    return [
+      {
+        id: "demo-market-1",
+        request_code: "SW-MARKET1",
+        origin_country: "Australia",
+        destination_country: "Kenya",
+        service_direction: "origin_to_destination",
+        task_location: "Nairobi",
+        route_status: "active",
+        logistics_mode: "local_delivery",
+        goods_category: "clothing_household",
+        service_package: "shopping_sourcing",
+        task_type: "shopping",
+        urgency: "standard",
+        deadline: null,
+        budget_range: "100_250",
+        proof_priority: "receipts",
+        proof_requirements: ["receipt", "product photos", "delivery proof"],
+        compliance_risk_level: "standard",
+        funds_status: "payment_link_sent",
+        quote_amount: 180,
+        quote_currency: "AUD",
+        status: "quoted",
+        offer_count: 2,
+        created_at: now,
+      },
+      {
+        id: "demo-market-2",
+        request_code: "SW-MARKET2",
+        origin_country: "United States",
+        destination_country: "Ghana",
+        service_direction: "diaspora_to_africa",
+        task_location: "Accra",
+        route_status: "pilot",
+        logistics_mode: "not_needed",
+        goods_category: "none",
+        service_package: "site_visit",
+        task_type: "site",
+        urgency: "priority",
+        deadline: null,
+        budget_range: "250_500",
+        proof_priority: "detailed_media",
+        proof_requirements: ["video walk-through", "location note", "written summary"],
+        compliance_risk_level: "medium",
+        funds_status: "not_collected",
+        quote_amount: 320,
+        quote_currency: "USD",
+        status: "new",
+        offer_count: 1,
+        created_at: now,
+      },
+      {
+        id: "demo-market-3",
+        request_code: "SW-MARKET3",
+        origin_country: "Nigeria",
+        destination_country: "Nigeria",
+        service_direction: "local_in_country",
+        task_location: "Lagos",
+        route_status: "active",
+        logistics_mode: "digital_only",
+        goods_category: "none",
+        service_package: "business_ops",
+        task_type: "virtual",
+        urgency: "standard",
+        deadline: null,
+        budget_range: "under_100",
+        proof_priority: "debrief",
+        proof_requirements: ["call summary", "screenshots where lawful", "client-ready note"],
+        compliance_risk_level: "standard",
+        funds_status: "not_collected",
+        quote_amount: 95,
+        quote_currency: "USD",
+        status: "new",
+        offer_count: 0,
+        created_at: now,
+      },
+    ];
+  }
+
+  function marketplaceRequestSafe(request = {}) {
+    const status = String(request.status || "new").toLowerCase();
+    const routeStatus = String(request.route_status || "active").toLowerCase();
+    const complianceStatus = String(request.compliance_status || "needs_ai_review").toLowerCase();
+    const riskLevel = String(request.compliance_risk_level || "standard").toLowerCase();
+
+    return (
+      !request.assigned_partner_id &&
+      ["new", "quoted", "paid"].includes(status) &&
+      ["active", "pilot"].includes(routeStatus) &&
+      !["restricted", "prohibited"].includes(complianceStatus) &&
+      ["standard", "medium"].includes(riskLevel) &&
+      request.sensitive_documents_expected !== true
+    );
+  }
+
+  function marketplacePayload(request = {}) {
+    const offers = readLocalJobOffers().filter(
+      (offer) => String(offer.request_code || "").toUpperCase() === String(request.request_code || "").toUpperCase(),
+    );
+    return {
+      id: request.id,
+      request_code: request.request_code,
+      origin_country: request.origin_country,
+      destination_country: request.destination_country,
+      service_direction: request.service_direction,
+      task_location: request.task_location || request.kenya_location,
+      route_status: request.route_status || "active",
+      logistics_mode: request.logistics_mode || "not_needed",
+      goods_category: request.goods_category || "none",
+      service_package: request.service_package || "quote_first",
+      task_type: request.task_type || "quick",
+      urgency: request.urgency || "standard",
+      deadline: request.deadline || null,
+      budget_range: request.budget_range || "unsure",
+      proof_priority: request.proof_priority || "balanced",
+      proof_requirements: Array.isArray(request.proof_requirements) ? request.proof_requirements : [],
+      compliance_risk_level: request.compliance_risk_level || "standard",
+      funds_status: request.funds_status || "not_collected",
+      quote_amount: request.quote_amount || request.estimate_aud || null,
+      quote_currency: request.quote_currency || request.preferred_currency || "AUD",
+      status: request.status || "new",
+      offer_count: offers.length || request.offer_count || 0,
+      created_at: request.created_at,
+    };
+  }
+
+  function localMarketplaceJobs() {
+    const requests = readLocalRequests().filter(marketplaceRequestSafe).map(marketplacePayload);
+    return requests.length ? requests : marketplaceSampleJobs();
+  }
+
+  async function listMarketplaceJobs() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return { data: localMarketplaceJobs(), mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("list_marketplace_jobs");
+
+    if (error && missingFunction(error)) {
+      return { data: [], mode: "supabase", warning: error.message };
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  function latestLocalReceiverApplication() {
+    return [...readLocalPartnerApplications()]
+      .filter((application) => cleanEmail(application.email))
+      .sort((first, second) => new Date(second.updated_at || second.created_at || 0) - new Date(first.updated_at || first.created_at || 0))[0] || null;
+  }
+
+  function validateJobOfferPayload(payload = {}) {
+    if (!String(payload.request_code || "").trim()) {
+      throw new Error("Choose the job you want to make an offer on.");
+    }
+    if (!Number.isFinite(Number(payload.amount)) || Number(payload.amount) < 0) {
+      throw new Error("Enter a valid offer amount.");
+    }
+    if (!Number.isFinite(Number(payload.timeline_days)) || Number(payload.timeline_days) < 1) {
+      throw new Error("Enter how many days the job will take.");
+    }
+    if (!String(payload.proof_plan || "").trim()) {
+      throw new Error("Add a proof plan so Swadakta can judge quality, not just price.");
+    }
+  }
+
+  async function submitJobOffer(requestCode, payload = {}) {
+    const cleanRequestCode = String(requestCode || payload.request_code || "").trim().toUpperCase();
+    const cleanPayload = {
+      ...payload,
+      request_code: cleanRequestCode,
+      amount: Number(payload.amount || 0),
+      currency: String(payload.currency || "AUD").trim().toUpperCase(),
+      timeline_days: Number(payload.timeline_days || 3),
+      proof_plan: String(payload.proof_plan || "").trim(),
+      message: String(payload.message || "").trim(),
+    };
+    validateJobOfferPayload(cleanPayload);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const application = latestLocalReceiverApplication();
+      if (!application) {
+        throw new Error("Save your job seeker profile first, then make an offer.");
+      }
+
+      const job =
+        localMarketplaceJobs().find(
+          (item) => String(item.request_code || "").toUpperCase() === cleanRequestCode,
+        ) || null;
+      if (!job) {
+        throw new Error("This job is no longer open for offers.");
+      }
+
+      const existing = readLocalJobOffers();
+      const normalized = normalizeJobOffer({
+        ...cleanPayload,
+        service_request_id: job.id,
+        partner_application_id: application.id,
+        partner_code: application.partner_code,
+        receiver_email: application.email,
+        receiver_name: application.full_name,
+        receiver_base: application.kenya_base,
+        safety_flags:
+          application.status === "vetted" && application.identity_verification_status === "verified"
+            ? []
+            : ["verification_required_before_acceptance"],
+        provenance_score: application.provenance_score || 25,
+        verification_status: application.identity_verification_status || "not_started",
+      });
+      const nextOffers = [
+        normalized,
+        ...existing.filter(
+          (offer) =>
+            !(
+              String(offer.request_code || "").toUpperCase() === cleanRequestCode &&
+              offer.partner_application_id === application.id
+            ),
+        ),
+      ];
+      writeLocalJobOffers(nextOffers);
+      return { data: normalized, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("submit_job_offer", {
+      input_request_code: cleanRequestCode,
+      input_amount: cleanPayload.amount,
+      input_currency: cleanPayload.currency,
+      input_timeline_days: cleanPayload.timeline_days,
+      input_proof_plan: cleanPayload.proof_plan,
+      input_message: cleanPayload.message,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: Array.isArray(data) ? data[0] || null : data, mode: "supabase" };
+  }
+
+  async function listMyJobOffers() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const applicationIds = new Set(readLocalPartnerApplications().map((application) => application.id).filter(Boolean));
+      return {
+        data: readLocalJobOffers()
+          .filter((offer) => applicationIds.has(offer.partner_application_id))
+          .sort((first, second) => new Date(second.updated_at || second.created_at) - new Date(first.updated_at || first.created_at)),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_my_job_offers");
+
+    if (error && missingFunction(error)) {
+      return { data: [], mode: "supabase", warning: error.message };
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function listJobOffersForAdmin() {
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      return {
+        data: readLocalJobOffers().sort(
+          (first, second) => new Date(second.updated_at || second.created_at) - new Date(first.updated_at || first.created_at),
+        ),
+        mode: "local",
+      };
+    }
+
+    const { data, error } = await supabase.rpc("list_job_offers_for_admin");
+
+    if (error && missingFunction(error)) {
+      return { data: [], mode: "supabase", warning: error.message };
+    }
+
+    if (error) {
+      throw error;
+    }
+
+    return { data: data || [], mode: "supabase" };
+  }
+
+  async function updateJobOfferStatus(offerCode, status, adminNotes = "") {
+    const cleanCode = String(offerCode || "").trim().toUpperCase();
+    const cleanStatus = String(status || "submitted").trim().toLowerCase();
+    const cleanNotes = String(adminNotes || "").trim().slice(0, 1400);
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      let updated = null;
+      const offers = readLocalJobOffers().map((offer) => {
+        if (String(offer.offer_code || "").toUpperCase() !== cleanCode) return offer;
+        updated = normalizeJobOffer({
+          ...offer,
+          status: cleanStatus,
+          admin_notes: cleanNotes,
+          updated_at: new Date().toISOString(),
+        });
+        return updated;
+      });
+      if (!updated) {
+        throw new Error("Offer not found.");
+      }
+      writeLocalJobOffers(offers);
+      return { data: updated, mode: "local" };
+    }
+
+    const { data, error } = await supabase.rpc("update_job_offer_status", {
+      input_offer_code: cleanCode,
+      input_status: cleanStatus,
+      input_admin_notes: cleanNotes,
+    });
 
     if (error) {
       throw error;
@@ -2553,6 +2938,11 @@
     listFundMilestones,
     createFundMilestone,
     updateFundMilestone,
+    listMarketplaceJobs,
+    submitJobOffer,
+    listMyJobOffers,
+    listJobOffersForAdmin,
+    updateJobOfferStatus,
     submitAssignedJobUpdate,
     uploadProofFiles,
     uploadAccountMedia,
