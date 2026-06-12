@@ -412,6 +412,7 @@ const requiredBriefHtmlMarkers = [
   "brief-logistics-mode",
   "brief-compliance-pack",
   "Compliance pack",
+  "job acceptance gate",
   "brief-budget",
   "Budget and quote safety",
   "Payments &amp; Milestone Protection",
@@ -440,6 +441,9 @@ const requiredBriefScriptMarkers = [
   "brief_inline_goods_safety",
   "renderGoodsSafety",
   "Goods compliance pack carried forward",
+  "job_acceptance_status",
+  "Payment gate:",
+  "Receiver gate:",
   "rulesStorageKey",
   "budgetRange",
 ];
@@ -519,9 +523,14 @@ const requiredRulesMarkers = [
   "UPU international mail baseline",
   "postal or courier acceptance",
   "rules_precheck",
+  "rules_acceptance_",
   "rulesStorageKey",
   "officialReferences",
   "buildCompliancePack",
+  "data-rules-acceptance-gate",
+  "Job acceptance gate",
+  "payment_gate",
+  "receiver_gate",
   "data-rules-compliance-pack",
   "rules-use-corridor-link",
   "corridorStorageKey",
@@ -1495,8 +1504,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=15")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=15`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=16")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=16`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1934,11 +1943,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=15");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=16");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=15 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=16 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=15 returned 200");
+  pass("stitch-brief.js?v=16 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

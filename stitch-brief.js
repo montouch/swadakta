@@ -470,6 +470,13 @@
       compliance_risk_level: context.compliance_risk_level || "",
       admin_review_required: Boolean(context.admin_review_required),
       admin_review_reason: context.admin_review_reason || "",
+      job_acceptance_status: context.job_acceptance_status || flagValue(flags, "rules_acceptance_"),
+      job_acceptance_label: context.job_acceptance_label || "",
+      job_acceptance_title: context.job_acceptance_title || "",
+      job_acceptance_copy: context.job_acceptance_copy || "",
+      payment_gate: context.payment_gate || "",
+      receiver_gate: context.receiver_gate || "",
+      hard_stops: Array.isArray(context.hard_stops) ? context.hard_stops : [],
       compliance_flags: flags,
       required_checks: Array.isArray(context.required_checks) ? context.required_checks : [],
       official_reference_links: normalizeReferenceLinks(context.official_reference_links),
@@ -488,8 +495,12 @@
     return [
       `Compliance pack: ${pack.route_label || "Rules pre-check"}`,
       `Status: ${formatStatus(pack.compliance_status || "not_applicable")}; risk: ${formatStatus(pack.compliance_risk_level || "standard")}`,
+      pack.job_acceptance_label || pack.job_acceptance_status
+        ? `Acceptance gate: ${pack.job_acceptance_label || formatStatus(pack.job_acceptance_status)}${pack.payment_gate ? `; payment: ${pack.payment_gate}` : ""}${pack.receiver_gate ? `; receiver: ${pack.receiver_gate}` : ""}`
+        : "",
       pack.next_action ? `Next action: ${pack.next_action}` : "",
       pack.admin_review_reason ? `Review reason: ${pack.admin_review_reason}` : "",
+      Array.isArray(pack.hard_stops) && pack.hard_stops.length ? `Hard stops: ${pack.hard_stops.join(" ")}` : "",
       refs ? `Official references: ${refs}` : "",
     ]
       .filter(Boolean)
@@ -1151,9 +1162,14 @@
 
     const status = formatStatus(pack.compliance_status || "not_applicable");
     const risk = formatStatus(pack.compliance_risk_level || "standard");
-    if (compliancePackTitle) compliancePackTitle.textContent = pack.route_label || pack.title || "Rules pre-check carried forward";
+    if (compliancePackTitle) {
+      compliancePackTitle.textContent =
+        pack.job_acceptance_title || pack.job_acceptance_label || pack.route_label || pack.title || "Rules pre-check carried forward";
+    }
     if (compliancePackCopy) {
-      compliancePackCopy.textContent = `${status}. ${risk} risk. ${pack.next_action || "Keep the required checks with the brief before payment or assignment."}`;
+      compliancePackCopy.textContent = `${status}. ${risk} risk. ${
+        pack.job_acceptance_copy || pack.next_action || "Keep the required checks with the brief before payment or assignment."
+      }${pack.payment_gate ? ` Payment gate: ${pack.payment_gate}` : ""}${pack.receiver_gate ? ` Receiver gate: ${pack.receiver_gate}` : ""}`;
     }
     if (compliancePackRisk) {
       compliancePackRisk.textContent = risk;
@@ -1195,6 +1211,7 @@
       admin_review_required: params.get("review") === "yes",
       admin_review_reason: params.get("review_reason") || "",
       compliance_acknowledged: params.get("ack") === "yes",
+      job_acceptance_status: params.get("acceptance") || "",
       compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
       required_checks: (params.get("checks") || "").split("|").filter(Boolean),
       imported_from: params.get("source") === "rules_precheck" ? "rules_precheck" : "",
@@ -1213,6 +1230,13 @@
               compliance_risk_level: storedRules.compliance_risk_level || "",
               admin_review_required: Boolean(storedRules.admin_review_required),
               admin_review_reason: storedRules.admin_review_reason || "",
+              job_acceptance_status: storedRules.job_acceptance_status || "",
+              job_acceptance_label: storedRules.job_acceptance_label || "",
+              job_acceptance_title: storedRules.job_acceptance_title || "",
+              job_acceptance_copy: storedRules.job_acceptance_copy || "",
+              payment_gate: storedRules.payment_gate || "",
+              receiver_gate: storedRules.receiver_gate || "",
+              hard_stops: Array.isArray(storedRules.hard_stops) ? storedRules.hard_stops : [],
               compliance_flags: Array.isArray(storedRules.compliance_flags) ? storedRules.compliance_flags : [],
               required_checks: Array.isArray(storedRules.required_checks) ? storedRules.required_checks : [],
               official_reference_links: normalizeReferenceLinks(storedRules.official_reference_links),

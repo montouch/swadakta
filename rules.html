@@ -443,6 +443,83 @@
         }[level] || "Review";
       }
 
+      function acceptanceTone(status) {
+        if (status === "quote_eligible") return "bg-emerald-500/10 text-emerald-700";
+        if (status === "evidence_before_quote") return "bg-amber-400/20 text-amber-800";
+        if (status === "founder_review") return "bg-primary/10 text-primary";
+        return "bg-error-container text-on-error-container";
+      }
+
+      function acceptanceGate({ itemType, mode, valueBand, route, crossBorder }) {
+        const highValue = valueBand === "high" || valueBand === "sensitive";
+        const internationalPhysical = crossBorder && mode !== "digital";
+        const carrierMovement = ["post", "courier", "traveller"].includes(mode);
+        const baseChecks = [
+          "Account can be created before ID verification",
+          "Paid posting waits for provider-led ID verification",
+          "No receiver assignment before protected payment evidence",
+          "Milestone release waits for proof review",
+        ];
+
+        if (route.level === "refuse") {
+          return {
+            status: "refuse",
+            label: "Do not accept",
+            title: "Refuse unless a lawful specialist route is proven",
+            copy:
+              "Swadakta should not quote, collect payment, buy, ship, pick up, or assign a receiver for this work until a qualified lawful route is proven outside the normal marketplace flow.",
+            payment_gate: "No payment request.",
+            receiver_gate: "No receiver assignment.",
+            hard_stops: ["No quote", "No payment collection", "No receiver assignment", "No informal carriage or purchase"],
+            checks: [...baseChecks, "Founder/legal review before any exception"],
+          };
+        }
+
+        if (route.level === "blocked" || highValue) {
+          return {
+            status: "founder_review",
+            label: "Founder review",
+            title: "Founder review before quote or payment",
+            copy:
+              "The job may be possible, but only after identity, authority, legal route, proof, provider payment evidence, and release conditions are explicit.",
+            payment_gate: "Quote/payment link only after review.",
+            receiver_gate: "Only vetted and verified receivers after proof plan approval.",
+            hard_stops: [
+              "Do not collect money until the route and scope are approved",
+              "Do not use Wise/bank fallback unless normal rails are unsuitable",
+              "Do not release funds without proof and dispute check",
+            ],
+            checks: [...baseChecks, "Founder/admin approval before quote", "Written milestone and dispute path"],
+          };
+        }
+
+        if (route.level === "review" || internationalPhysical || carrierMovement) {
+          return {
+            status: "evidence_before_quote",
+            label: "Evidence first",
+            title: "Quote only after route evidence",
+            copy:
+              "This can move toward a quote, but the route, carrier/local access, item description, value, and proof requirements must be recorded before payment starts.",
+            payment_gate: "Payment request after route evidence and quote approval.",
+            receiver_gate: "Receiver can apply, but assignment waits for ID, payment evidence, and proof plan.",
+            hard_stops: ["Do not start work from a vague item description", "Do not bypass carrier/customs restrictions"],
+            checks: [...baseChecks, "Carrier or local-access evidence before payment", "Proof checklist attached to the brief"],
+          };
+        }
+
+        return {
+          status: "quote_eligible",
+          label: "Quote eligible",
+          title: "Eligible for normal quote-first flow",
+          copy:
+            "This looks suitable for the normal Swadakta flow: account, brief, quote, provider payment evidence, verified receiver, proof, then milestone closeout.",
+          payment_gate: "Payment request after quote approval.",
+          receiver_gate: "Receiver assignment after ID and protected payment evidence.",
+          hard_stops: ["Do not release money before proof review"],
+          checks: baseChecks,
+        };
+      }
+
       function routeExtras(policy, mode, valueBand, crossBorder) {
         const checks = [...policy.checks];
         let level = policy.level;
@@ -527,6 +604,7 @@
         const reviewRequired = ["blocked", "refuse"].includes(route.level) || status === "prohibited";
         const checks = [...new Set(route.checks)];
         const adminReason = reviewRequired ? `Rules pre-check: ${policy.title}. ${policy.copy}` : "";
+        const acceptance = acceptanceGate({ itemType, mode, valueBand, route, crossBorder });
 
         return {
           source: "rules_precheck",
@@ -542,8 +620,16 @@
           compliance_risk_level: risk,
           admin_review_required: reviewRequired,
           admin_review_reason: adminReason,
+          job_acceptance_status: acceptance.status,
+          job_acceptance_label: acceptance.label,
+          job_acceptance_title: acceptance.title,
+          job_acceptance_copy: acceptance.copy,
+          payment_gate: acceptance.payment_gate,
+          receiver_gate: acceptance.receiver_gate,
+          hard_stops: acceptance.hard_stops,
           compliance_flags: [
             "rules_precheck",
+            `rules_acceptance_${acceptance.status}`,
             `rules_item_${itemType}`,
             `rules_mode_${mode}`,
             `rules_value_${valueBand}`,
@@ -551,7 +637,7 @@
             reviewRequired ? "rules_founder_review" : "",
             status === "prohibited" ? "rules_refuse_or_specialist_only" : "",
           ].filter(Boolean),
-          required_checks: checks,
+          required_checks: [...new Set([...checks, ...acceptance.checks])],
           official_reference_links: referenceLinks(itemType, mode, crossBorder),
           next_action:
             status === "prohibited"
@@ -613,6 +699,7 @@
           compliance: context.compliance_status,
           risk: context.compliance_risk_level,
           review: context.admin_review_required ? "yes" : "no",
+          acceptance: context.rules_compliance_pack.job_acceptance_status || "",
           review_reason: context.admin_review_reason,
           flags: context.compliance_flags.join("|"),
           checks: context.required_checks.join("|"),
@@ -643,6 +730,7 @@
         const routeLabel = crossBorder ? `${origin} to ${destination}` : `${origin} local`;
         const context = buildCorridorContext({ origin, destination, itemType, mode, valueBand, route, policy, crossBorder });
         const handoffHref = corridorHref(context);
+        const acceptance = context.rules_compliance_pack;
         saveCorridorContext(context);
         const referenceLinks = (context.official_reference_links || [])
           .map(
@@ -661,9 +749,32 @@
           <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">
             ${route.checks.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">check_circle</span><span>${escapeHtml(item)}</span></li>`).join("")}
           </ul>
+          <div class="mt-5 rounded-2xl border border-outline-variant/40 bg-white/78 p-4" data-rules-acceptance-gate="true">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p class="font-label text-sm text-primary">Job acceptance gate</p>
+                <h4 class="mt-1 font-display text-2xl font-extrabold">${escapeHtml(acceptance.job_acceptance_title)}</h4>
+              </div>
+              <span class="rounded-full px-3 py-1 font-label text-xs ${acceptanceTone(acceptance.job_acceptance_status)}">${escapeHtml(acceptance.job_acceptance_label)}</span>
+            </div>
+            <p class="mt-2 text-sm text-on-surface-variant">${escapeHtml(acceptance.job_acceptance_copy)}</p>
+            <div class="mt-4 grid gap-3 md:grid-cols-2">
+              <div class="rounded-2xl bg-surface-container-low/80 p-3 text-sm">
+                <strong class="block text-primary">Payment gate</strong>
+                <span class="mt-1 block text-on-surface-variant">${escapeHtml(acceptance.payment_gate)}</span>
+              </div>
+              <div class="rounded-2xl bg-surface-container-low/80 p-3 text-sm">
+                <strong class="block text-primary">Receiver gate</strong>
+                <span class="mt-1 block text-on-surface-variant">${escapeHtml(acceptance.receiver_gate)}</span>
+              </div>
+            </div>
+            <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">
+              ${(acceptance.hard_stops || []).map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-error text-[18px]">block</span><span>${escapeHtml(item)}</span></li>`).join("")}
+            </ul>
+          </div>
           <div class="mt-5 rounded-2xl border border-primary/15 bg-primary/5 p-4" data-rules-compliance-pack="true">
             <p class="font-label text-sm text-primary">Compliance pack saved</p>
-            <p class="mt-1 text-sm text-on-surface-variant">This pre-check now follows the route into Corridor and Brief, including status, risk, required checks, and official reference links.</p>
+            <p class="mt-1 text-sm text-on-surface-variant">This pre-check now follows the route into Corridor and Brief, including status, risk, acceptance gate, payment gate, receiver gate, required checks, and official reference links.</p>
             <p class="mt-2 text-sm font-label text-on-surface">Next action: ${escapeHtml(context.rules_compliance_pack.next_action)}</p>
             <div class="mt-3 flex flex-wrap gap-2">${referenceLinks}</div>
           </div>

@@ -1,7 +1,7 @@
 {
-  "release_id": "2026-06-13-first-paid-pilot-script-v1",
-  "release_name": "First paid pilot rehearsal cockpit",
-  "description": "Adds a copyable first-paid-pilot rehearsal to admin readiness and documents the end-to-end pilot test before public paid launch.",
+  "release_id": "2026-06-13-job-acceptance-gate-v1",
+  "release_name": "Job acceptance gate for rules and brief flow",
+  "description": "Adds quote-eligible, evidence-first, founder-review, and refuse gates to rules pre-checks, then carries payment and receiver gates into the brief.",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"
