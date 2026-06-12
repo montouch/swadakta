@@ -90,6 +90,7 @@ The endpoint:
 - Requires a signed-in Supabase admin session.
 - Verifies the user exists in `admin_users`.
 - Calls Stripe from the Vercel Function, never from browser JavaScript.
+- Sends a deterministic Stripe `Idempotency-Key` built from request code, currency, amount, payment kind, and service package, so a retry or double-click does not create a second Checkout Session for the same quote.
 - Adds `request_code`, payment kind, service package, value band, and funds preference to Stripe metadata.
 - Returns the Checkout URL to the admin card.
 - Sets the form fields to `Payment: Invoice sent`, `Funds: Payment link sent`, and provider reference.
@@ -139,6 +140,11 @@ Stripe's webhook docs require raw-body signature verification:
 - https://docs.stripe.com/webhooks
 - https://docs.stripe.com/webhooks/signature
 
+Stripe recommends idempotency keys for POST retries so one operation is not created twice:
+
+- https://docs.stripe.com/api/idempotent_requests
+- https://docs.stripe.com/error-low-level#idempotency
+
 Supabase server keys must never go into browser JavaScript. Supabase documents service-role/secret keys as server-side only and warns that they bypass Row Level Security:
 
 - https://supabase.com/docs/guides/getting-started/api-keys
@@ -167,6 +173,7 @@ The endpoint:
 - Verifies the user exists in `admin_users`.
 - Exchanges `PAYPAL_CLIENT_ID` and `PAYPAL_CLIENT_SECRET` for a PayPal OAuth access token server-side.
 - Creates a PayPal Orders v2 order with `request_code` as `reference_id`, `custom_id`, and `invoice_id`.
+- Sends `PayPal-Request-Id` with the request code, amount, and currency so retries are idempotent while revised quotes can create a new order.
 - Returns the PayPal approval URL to the admin card.
 - Sets the form fields to `Payment: Invoice sent`, `Funds: Payment link sent`, and provider reference.
 - Does not capture PayPal payment, mark money paid, assign receivers, or release funds.
@@ -208,6 +215,11 @@ Admin workflow:
 7. Confirm the request now shows paid/protected funds before assigning or continuing work.
 
 PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Keep `KES` jobs on M-Pesa, bank transfer, Wise, or manual PayPal invoice until account/currency support is confirmed.
+
+PayPal recommends `PayPal-Request-Id` for idempotent REST POST calls and repeated capture/execute calls after network timeouts:
+
+- https://developer.paypal.com/api/rest/reference/idempotency/
+- https://developer.paypal.com/api/rest/requests/
 
 ## Wise
 

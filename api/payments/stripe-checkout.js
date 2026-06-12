@@ -1,3 +1,5 @@
+const crypto = require("crypto");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -128,6 +130,16 @@ function metadataValue(value) {
   return String(value || "").slice(0, 500);
 }
 
+function stripeIdempotencyKey({ requestCode, currency, unitAmount, paymentKind, servicePackage }) {
+  const digest = crypto
+    .createHash("sha256")
+    .update([requestCode, currency, unitAmount, paymentKind, servicePackage].join("|"))
+    .digest("hex")
+    .slice(0, 24);
+
+  return `swadakta-checkout-${requestCode}-${digest}`.slice(0, 255);
+}
+
 async function createStripeSession(payload) {
   const apiKey = process.env.STRIPE_SECRET_KEY;
   if (!apiKey) {
@@ -145,6 +157,13 @@ async function createStripeSession(payload) {
   const fundsPlan = metadataValue(payload.funds_protection_preference || "quote_first");
   const valueBand = metadataValue(payload.job_value_band || "unsure");
   const paymentKind = metadataValue(payload.payment_kind || "client_quote");
+  const idempotencyKey = stripeIdempotencyKey({
+    requestCode,
+    currency,
+    unitAmount,
+    paymentKind,
+    servicePackage,
+  });
   const baseUrl = PUBLIC_BASE_URL.replace(/\/$/, "");
 
   const params = new URLSearchParams();
@@ -177,6 +196,7 @@ async function createStripeSession(payload) {
     headers: {
       authorization: `Bearer ${apiKey}`,
       "content-type": "application/x-www-form-urlencoded",
+      "idempotency-key": idempotencyKey,
     },
     body: params,
   });
@@ -194,6 +214,7 @@ async function createStripeSession(payload) {
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
     provider_reference: data.id,
+    idempotency_key: idempotencyKey,
   };
 }
 

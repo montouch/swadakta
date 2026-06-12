@@ -633,6 +633,16 @@ const requiredPaymentReconciliationMarkers = [
   'funds_status: "disputed"',
   'payment_status: "deposit_paid"',
 ];
+const requiredPaymentIdempotencyMarkers = [
+  ["api/payments/stripe-checkout.js", "stripeIdempotencyKey"],
+  ["api/payments/stripe-checkout.js", '"idempotency-key": idempotencyKey'],
+  ["api/payments/stripe-checkout.js", "swadakta-checkout"],
+  ["api/payments/paypal-order.js", "paypalRequestId"],
+  ["api/payments/paypal-order.js", '"PayPal-Request-Id": paypalRequestId'],
+  ["api/payments/paypal-order.js", "swadakta-order"],
+  ["PAYMENTS_SETUP.md", "Idempotency-Key"],
+  ["PAYMENTS_SETUP.md", "PayPal-Request-Id"],
+];
 const requiredIdentityEndpointMarkers = [
   "startVerification",
   "assertUser",
@@ -1097,6 +1107,12 @@ for (const marker of requiredFlutterwaveWebhookMarkers) {
 for (const marker of requiredPaymentReconciliationMarkers) {
   if (!localPaymentReconciliation.includes(marker)) {
     fail(failures, `Local payment reconciliation helper is missing marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredPaymentIdempotencyMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing payment idempotency marker ${marker}`);
   }
 }
 const localIdentityEndpoint = await readLocal("api/identity/start-verification.js");

@@ -168,6 +168,10 @@ function approvalUrl(order) {
   return link?.href || "";
 }
 
+function paypalRequestId({ requestCode, amount, currency }) {
+  return `swadakta-order-${requestCode}-${currency}-${String(amount).replace(".", "-")}`.slice(0, 10000);
+}
+
 async function createPayPalOrder(payload) {
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const clientName = requiredText(payload.client_name, "Client name");
@@ -183,7 +187,7 @@ async function createPayPalOrder(payload) {
     headers: {
       Authorization: `Bearer ${accessToken}`,
       "Content-Type": "application/json",
-      "PayPal-Request-Id": `swadakta-${requestCode}`,
+      "PayPal-Request-Id": paypalRequestId({ requestCode, amount, currency }),
       Prefer: "return=representation",
     },
     body: JSON.stringify({
@@ -234,6 +238,7 @@ async function createPayPalOrder(payload) {
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
     provider_reference: data.id,
+    idempotency_key: paypalRequestId({ requestCode, amount, currency }),
   };
 }
 
