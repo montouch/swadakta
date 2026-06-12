@@ -208,7 +208,6 @@ const privateNoStorePages = [
 ];
 const publicFreshHtmlPages = [
   "/",
-  "/index.html",
   "/corridor",
   "/trust",
   "/payments",
