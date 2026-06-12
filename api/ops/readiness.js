@@ -810,6 +810,7 @@ async function siteTrustItems() {
   ].filter(Boolean);
   const securityTxtMissing = [
     security.ok && /Contact:\s*mailto:/i.test(security.text) ? "" : "Contact",
+    security.ok && /Policy:\s*https:\/\/swadakta\.com\/trust/i.test(security.text) ? "" : "Policy",
     security.ok && /Canonical:\s*https:\/\/swadakta\.com\/\.well-known\/security\.txt/i.test(security.text) ? "" : "Canonical",
     security.ok && /Expires:/i.test(security.text) ? "" : "Expires",
   ].filter(Boolean);
@@ -863,9 +864,9 @@ async function siteTrustItems() {
       "Security contact file",
       securityTxtMissing.length ? "warning" : "ready",
       security.ok
-        ? "security.txt is reachable at the well-known URL and exposes vulnerability-reporting contact metadata."
+        ? "security.txt is reachable at the well-known URL and exposes vulnerability-reporting contact and policy metadata."
         : `security.txt check failed: ${security.error || security.status}.`,
-      "Keep Contact, Canonical, and Expires current so researchers know how to report issues safely.",
+      "Keep Contact, Policy, Canonical, and Expires current so researchers know how to report issues safely.",
       securityTxtMissing,
       {
         docs_url: DOCS.securityTxt,

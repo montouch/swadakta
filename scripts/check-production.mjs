@@ -423,6 +423,7 @@ const requiredReadinessApiMarkers = [
   "supabase_leaked_password_protection",
   "supabase_auth_attack_protection",
   "password-strength-and-leaked-password-protection",
+  "Contact, Policy, Canonical, and Expires",
   "buildLaunchGate",
   "launch_gate",
   "paid_launch_blocked",
@@ -487,6 +488,13 @@ const requiredRobotsMarkers = [
   "Disallow: /auth",
   "Disallow: /notifications",
   "Disallow: /resolution",
+];
+const requiredSecurityTxtMarkers = [
+  "Contact: mailto:swadakta111@gmail.com",
+  "Policy: https://swadakta.com/trust",
+  "Preferred-Languages: en",
+  "Canonical: https://swadakta.com/.well-known/security.txt",
+  "Expires:",
 ];
 const requiredFaviconMarkers = ['rel="icon" href="/favicon.svg"', 'rel="manifest" href="/site.webmanifest"'];
 const requiredEnvExampleKeys = [
@@ -761,6 +769,12 @@ const localIdentityVerificationDoc = await readLocal("IDENTITY_VERIFICATION.md")
 for (const marker of requiredIdentityVerificationDocMarkers) {
   if (!localIdentityVerificationDoc.includes(marker)) {
     fail(failures, `Identity verification guide is missing marker ${marker}`);
+  }
+}
+const localSecurityTxt = await readLocal(".well-known/security.txt");
+for (const marker of requiredSecurityTxtMarkers) {
+  if (!localSecurityTxt.includes(marker)) {
+    fail(failures, `Local security.txt is missing marker ${marker}`);
   }
 }
 const localBriefHtml = await readLocal("brief.html");
@@ -1053,6 +1067,20 @@ for (const marker of requiredRobotsMarkers) {
     fail(failures, `Production robots.txt is missing marker ${marker}`);
   } else {
     pass(`Production robots.txt contains ${marker}`);
+  }
+}
+
+const { response: securityTxtResponse, text: securityTxtText } = await fetchText("/.well-known/security.txt");
+if (securityTxtResponse.status !== 200) {
+  fail(failures, `security.txt returned ${securityTxtResponse.status}`);
+} else {
+  pass("security.txt returned 200");
+}
+for (const marker of requiredSecurityTxtMarkers) {
+  if (!securityTxtText.includes(marker)) {
+    fail(failures, `Production security.txt is missing marker ${marker}`);
+  } else {
+    pass(`Production security.txt contains ${marker}`);
   }
 }
 
