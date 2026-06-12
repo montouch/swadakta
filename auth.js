@@ -26,6 +26,8 @@
         "/corridor.html",
         "/messages",
         "/messages.html",
+        "/notifications",
+        "/notifications.html",
         "/verification",
         "/verification.html",
         "/brief",

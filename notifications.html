@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Notifications | Swadakta</title>
+    <meta name="robots" content="noindex,nofollow" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=Inter:wght@400;500;600&family=Geist:wght@500;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: "#4648d4",
+              tertiary: "#23c283",
+              surface: "#faf8ff",
+              "on-surface": "#131b2e",
+              "on-surface-variant": "#464554",
+              "outline-variant": "#c7c4d7",
+              "soft-blue": "#d1e5f8"
+            },
+            fontFamily: {
+              display: ["Manrope"],
+              body: ["Inter"],
+              label: ["Geist"]
+            }
+          }
+        }
+      };
+    </script>
+    <style>
+      body {
+        background:
+          radial-gradient(circle at 12% 8%, rgba(14, 165, 233, 0.16), transparent 30%),
+          radial-gradient(circle at 88% 12%, rgba(35, 194, 131, 0.12), transparent 28%),
+          #faf8ff;
+      }
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.74);
+        backdrop-filter: blur(24px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        box-shadow: 0 26px 70px rgba(48, 52, 150, 0.1);
+      }
+      .soft-button {
+        box-shadow: 0 16px 34px rgba(70, 72, 212, 0.13);
+      }
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 420, "GRAD" 0, "opsz" 24;
+        letter-spacing: 0;
+      }
+      [hidden] {
+        display: none !important;
+      }
+    </style>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="application-name" content="Swadakta" />
+  </head>
+  <body class="min-h-screen font-body text-on-surface">
+    <header class="sticky top-0 z-40 border-b border-white/40 bg-surface/76 px-4 py-4 backdrop-blur-2xl md:px-12">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-4">
+        <a class="inline-flex items-center gap-3 font-display text-2xl font-extrabold text-primary" href="portal.html#home">
+          <span class="grid h-10 w-10 place-items-center rounded-2xl bg-primary text-white">S</span>
+          Swadakta
+        </a>
+        <nav class="hidden items-center gap-2 text-sm font-label text-on-surface-variant md:flex" aria-label="Notification navigation">
+          <a class="inline-flex h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="portal.html#home">Home</a>
+          <a class="inline-flex h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="tracking.html">Jobs</a>
+          <a class="inline-flex h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="messages.html">Messages</a>
+          <a class="inline-flex h-10 items-center rounded-full bg-white/80 px-3 text-primary" href="notifications.html">Notifications</a>
+          <a class="inline-flex h-10 items-center rounded-full px-3 hover:bg-white/70 hover:text-primary" href="assistant.html?context=notifications">AI</a>
+        </nav>
+        <a class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label font-bold text-white soft-button" href="portal.html#home">Account</a>
+      </div>
+    </header>
+
+    <main class="mx-auto grid max-w-7xl gap-5 px-4 py-6 md:px-12 lg:grid-cols-[236px_minmax(0,1fr)]">
+      <aside class="glass-panel rounded-[1.5rem] p-3 lg:sticky lg:top-24 lg:h-[calc(100vh-7rem)]">
+        <div class="px-3 py-4">
+          <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Workspace</p>
+          <strong class="mt-1 block font-display text-2xl">Notifications</strong>
+          <p class="mt-2 text-sm text-on-surface-variant">Payment, verification, proof, message, and system updates.</p>
+        </div>
+        <nav class="grid gap-1 text-sm font-label" aria-label="Workspace tools">
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="portal.html#home"><span class="material-symbols-outlined text-[20px]">space_dashboard</span>Home</a>
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="tracking.html"><span class="material-symbols-outlined text-[20px]">fact_check</span>Jobs</a>
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="messages.html"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
+          <a class="flex items-center gap-3 rounded-2xl bg-primary px-3 py-3 text-white" href="notifications.html"><span class="material-symbols-outlined text-[20px]">notifications</span>Notifications</a>
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="payments.html"><span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>Money</a>
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="verification.html"><span class="material-symbols-outlined text-[20px]">verified_user</span>Verify</a>
+          <a class="flex items-center gap-3 rounded-2xl px-3 py-3 text-on-surface-variant hover:bg-white/70" href="assistant.html?context=notifications"><span class="material-symbols-outlined text-[20px]">auto_awesome</span>AI</a>
+        </nav>
+      </aside>
+
+      <section class="min-w-0 space-y-5">
+        <section class="glass-panel rounded-[1.5rem] p-5 md:p-6">
+          <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Swadakta notifications</p>
+              <h1 class="mt-1 font-display text-3xl font-extrabold md:text-5xl">Stay ahead of the work.</h1>
+              <p class="mt-3 max-w-3xl text-on-surface-variant">
+                See account, verification, proof, payment, dispute, and job room updates in one place. AI can explain what to do, but protected decisions still stay with providers, payment rails, or admin where required.
+              </p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <button class="inline-flex h-11 items-center justify-center rounded-full bg-white/75 px-4 font-label font-bold text-primary ring-1 ring-outline-variant/40" id="notifications-refresh" type="button">
+                <span class="material-symbols-outlined mr-2 text-[20px]">refresh</span>
+                Refresh
+              </button>
+              <a class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label font-bold text-white soft-button" href="assistant.html?context=notifications&links=notifications,tracking,messages">Ask AI</a>
+            </div>
+          </div>
+          <div class="mt-5 grid gap-3 md:grid-cols-3" id="notification-stats">
+            <article class="rounded-2xl border border-outline-variant/35 bg-white/68 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-on-surface-variant">Unread</p>
+              <strong class="mt-2 block font-display text-3xl" id="notification-stat-unread">0</strong>
+            </article>
+            <article class="rounded-2xl border border-outline-variant/35 bg-white/68 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-on-surface-variant">Active</p>
+              <strong class="mt-2 block font-display text-3xl" id="notification-stat-active">0</strong>
+            </article>
+            <article class="rounded-2xl border border-outline-variant/35 bg-white/68 p-4">
+              <p class="font-label text-xs uppercase tracking-[0.16em] text-on-surface-variant">Mode</p>
+              <strong class="mt-2 block truncate font-display text-xl" id="notification-stat-mode">Checking</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="glass-panel rounded-[1.5rem] p-5" id="notification-auth-panel" hidden>
+          <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p class="font-label text-xs uppercase tracking-[0.18em] text-primary">Sign in needed</p>
+              <h2 class="mt-1 font-display text-2xl font-extrabold">Open your account to see notifications.</h2>
+              <p class="mt-2 text-on-surface-variant">Notifications are private to your account and follow the same protected workspace as jobs, messages, and payments.</p>
+            </div>
+            <a class="inline-flex h-12 items-center justify-center rounded-full bg-primary px-6 font-label font-bold text-white" href="portal.html#signin">Sign in</a>
+          </div>
+        </section>
+
+        <section class="glass-panel rounded-[1.5rem] p-4 md:p-5">
+          <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div class="flex gap-2 overflow-x-auto pb-1" aria-label="Notification filters">
+              <button class="notification-filter rounded-full bg-primary px-4 py-2 font-label text-sm font-bold text-white" type="button" data-filter="all">All</button>
+              <button class="notification-filter rounded-full bg-white/75 px-4 py-2 font-label text-sm font-bold text-on-surface-variant ring-1 ring-outline-variant/40" type="button" data-filter="attention">Needs action</button>
+              <button class="notification-filter rounded-full bg-white/75 px-4 py-2 font-label text-sm font-bold text-on-surface-variant ring-1 ring-outline-variant/40" type="button" data-filter="payment">Payments</button>
+              <button class="notification-filter rounded-full bg-white/75 px-4 py-2 font-label text-sm font-bold text-on-surface-variant ring-1 ring-outline-variant/40" type="button" data-filter="verification">Verification</button>
+              <button class="notification-filter rounded-full bg-white/75 px-4 py-2 font-label text-sm font-bold text-on-surface-variant ring-1 ring-outline-variant/40" type="button" data-filter="message">Messages</button>
+            </div>
+            <label class="inline-flex items-center gap-2 rounded-full bg-white/72 px-4 py-2 font-label text-sm text-on-surface-variant ring-1 ring-outline-variant/35">
+              <input class="rounded border-outline-variant text-primary focus:ring-primary" id="notification-include-dismissed" type="checkbox" />
+              Show dismissed
+            </label>
+          </div>
+          <p class="mt-3 min-h-6 text-sm text-on-surface-variant" id="notification-status" role="status">Loading notifications...</p>
+        </section>
+
+        <section class="grid gap-3" id="notification-list" aria-live="polite"></section>
+
+        <section class="glass-panel rounded-[1.5rem] p-6 text-center" id="notification-empty" hidden>
+          <span class="material-symbols-outlined mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-[28px] text-primary">notifications</span>
+          <h2 class="mt-4 font-display text-2xl font-extrabold">Nothing needs you right now.</h2>
+          <p class="mx-auto mt-2 max-w-2xl text-on-surface-variant">When a job, proof update, payment, verification, message, or system alert needs attention, it will appear here.</p>
+          <div class="mt-5 flex flex-wrap justify-center gap-3">
+            <a class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label font-bold text-white" href="portal.html#home">Account home</a>
+            <a class="inline-flex h-11 items-center justify-center rounded-full bg-white/75 px-5 font-label font-bold text-primary ring-1 ring-outline-variant/40" href="tracking.html">Track jobs</a>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <template id="notification-template">
+      <article class="notification-card glass-panel rounded-[1.4rem] p-4 md:p-5">
+        <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div class="flex min-w-0 gap-3">
+            <span class="notification-icon grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined text-[22px]">notifications</span>
+            </span>
+            <div class="min-w-0">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="notification-priority rounded-full bg-white/80 px-3 py-1 font-label text-xs text-primary ring-1 ring-outline-variant/35">Info</span>
+                <span class="notification-category rounded-full bg-white/60 px-3 py-1 font-label text-xs text-on-surface-variant">Account</span>
+                <span class="notification-time text-xs text-on-surface-variant"></span>
+              </div>
+              <h2 class="notification-title mt-3 break-words font-display text-xl font-extrabold"></h2>
+              <p class="notification-body mt-2 break-words text-sm leading-6 text-on-surface-variant"></p>
+              <p class="notification-request mt-2 hidden font-label text-xs uppercase tracking-[0.14em] text-primary"></p>
+            </div>
+          </div>
+          <div class="notification-actions flex shrink-0 flex-wrap gap-2 md:justify-end">
+            <a class="notification-open inline-flex h-10 items-center justify-center rounded-full bg-primary px-4 font-label text-sm font-bold text-white" href="#" hidden>Open</a>
+            <button class="notification-mark inline-flex h-10 items-center justify-center rounded-full bg-white/75 px-4 font-label text-sm font-bold text-primary ring-1 ring-outline-variant/40" type="button" data-action="read">Mark read</button>
+            <button class="notification-dismiss inline-flex h-10 items-center justify-center rounded-full bg-white/75 px-4 font-label text-sm font-bold text-on-surface-variant ring-1 ring-outline-variant/40" type="button" data-action="dismiss">Dismiss</button>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app-config.js?v=4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app-data.js?v=50"></script>
+    <script src="notifications.js?v=1"></script>
+    <script src="assistant-dock.js?v=9"></script>
+  </body>
+</html>

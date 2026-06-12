@@ -14,6 +14,7 @@
     find_work: ["Find work", "portal.html#receiver"],
     tracking: ["Track jobs", "tracking.html"],
     messages: ["Messages", "messages.html"],
+    notifications: ["Notifications", "notifications.html"],
     verification: ["Verify ID", "verification.html"],
     payments: ["Payments", "payments.html"],
     rules: ["Item rules", "rules.html"],

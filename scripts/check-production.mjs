@@ -19,6 +19,7 @@ const htmlFiles = [
   "corridor.html",
   "index.html",
   "messages.html",
+  "notifications.html",
   "payments.html",
   "portal.html",
   "privacy.html",
@@ -38,6 +39,7 @@ const requiredPages = [
   "/corridor",
   "/tracking",
   "/messages",
+  "/notifications",
   "/verification",
   "/trust",
   "/payments",
@@ -72,6 +74,7 @@ const privateNoStorePages = [
   "/verification",
   "/assistant",
   "/messages",
+  "/notifications",
   "/resolution",
 ];
 const requiredAppDataMarkers = [
@@ -245,6 +248,18 @@ const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
   "uploadProofFiles",
   "Live proof submit is only for the assigned verified receiver",
+];
+const requiredNotificationPageMarkers = [
+  "Swadakta notifications",
+  "notification-list",
+  "notification-template",
+  "notifications.js?v=1",
+];
+const requiredNotificationScriptMarkers = [
+  "listMyNotifications",
+  "markNotification",
+  "notification-filter",
+  "includeDismissed",
 ];
 const requiredTrustMarkers = [
   "Trust & Safety Center",
@@ -428,6 +443,7 @@ const requiredRobotsMarkers = [
   "Disallow: /admin-readiness",
   "Disallow: /admin-verification",
   "Disallow: /auth",
+  "Disallow: /notifications",
   "Disallow: /resolution",
 ];
 const requiredFaviconMarkers = ['rel="icon" href="/favicon.svg"', 'rel="manifest" href="/site.webmanifest"'];
@@ -669,8 +685,8 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=8")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=8`);
+  if (!content.includes("assistant-dock.js?v=9")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=9`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -743,6 +759,19 @@ const localMessagesHtml = await readLocal("messages.html");
 for (const marker of requiredMessagesMarkers) {
   if (!localMessages.includes(marker) && !localMessagesHtml.includes(marker)) {
     fail(failures, `Local messages flow is missing marker ${marker}`);
+  }
+}
+
+const localNotifications = await readLocal("notifications.js");
+const localNotificationsHtml = await readLocal("notifications.html");
+for (const marker of requiredNotificationPageMarkers) {
+  if (!localNotificationsHtml.includes(marker)) {
+    fail(failures, `Local notifications page is missing marker ${marker}`);
+  }
+}
+for (const marker of requiredNotificationScriptMarkers) {
+  if (!localNotifications.includes(marker)) {
+    fail(failures, `Local notifications.js is missing marker ${marker}`);
   }
 }
 
@@ -829,8 +858,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=8")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=8`);
+  if (!text.includes("assistant-dock.js?v=9")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=9`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -878,8 +907,8 @@ for (const page of requiredPages) {
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=5")) {
-    fail(failures, `${page} does not reference assistant.js?v=5`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=6")) {
+    fail(failures, `${page} does not reference assistant.js?v=6`);
   }
   if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
     fail(failures, `${page} does not reference resolution.js?v=2`);
@@ -893,6 +922,13 @@ for (const page of requiredPages) {
   }
   if (page === "/messages" && !text.includes("messages.js?v=3")) {
     fail(failures, `${page} does not reference messages.js?v=3`);
+  }
+  if (page === "/notifications") {
+    for (const marker of requiredNotificationPageMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing notification marker ${marker}`);
+      }
+    }
   }
   if (page === "/corridor" && !text.includes("corridor.js?v=7")) {
     fail(failures, `${page} does not reference corridor.js?v=7`);
@@ -1105,11 +1141,11 @@ for (const marker of requiredAdminReadinessMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=5");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=6");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=5 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=6 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=5 returned 200");
+  pass("assistant.js?v=6 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {
@@ -1120,11 +1156,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=8");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=9");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=8 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=9 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=8 returned 200");
+  pass("assistant-dock.js?v=9 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
@@ -1205,6 +1241,21 @@ for (const marker of requiredMessagesMarkers) {
     fail(failures, `Production messages.js is missing marker ${marker}`);
   } else {
     pass(`Production messages.js contains ${marker}`);
+  }
+}
+
+const { response: notificationsResponse, text: notificationsText } = await fetchText("/notifications.js?v=1");
+if (notificationsResponse.status !== 200) {
+  fail(failures, `notifications.js?v=1 returned ${notificationsResponse.status}`);
+} else {
+  pass("notifications.js?v=1 returned 200");
+}
+
+for (const marker of requiredNotificationScriptMarkers) {
+  if (!notificationsText.includes(marker)) {
+    fail(failures, `Production notifications.js is missing marker ${marker}`);
+  } else {
+    pass(`Production notifications.js contains ${marker}`);
   }
 }
 

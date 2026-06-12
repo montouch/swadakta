@@ -22,6 +22,7 @@
     verification: ["Verification", "verification.html"],
     tracking: ["Track request", "tracking.html"],
     messages: ["Messages", "messages.html"],
+    notifications: ["Notifications", "notifications.html"],
     payments: ["Payments", "payments.html"],
     rules: ["Item rules", "rules.html"],
     resolution: ["Resolution", "resolution.html"],
