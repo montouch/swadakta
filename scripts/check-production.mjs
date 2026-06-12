@@ -215,12 +215,14 @@ const publicFreshHtmlPages = [
   "/privacy",
   "/terms",
 ];
-const criticalNoStoreScripts = [
+const criticalNoStoreAssets = [
   "/app-data.js",
   "/admin-ops.js",
   "/admin-readiness.js",
   "/admin-verification.js",
   "/assistant-dock.js",
+  "/admin-theme.css",
+  "/final-ux-theme.css",
   "/stitch-brief.js",
   "/stitch-portal.js",
   "/stitch-tracking.js",
@@ -622,6 +624,13 @@ const requiredAdminThemeCssMarkers = [
   'body[data-admin-theme="dark"]',
   "rgba(12, 14, 27, 0.76)",
   ".bg-white\\/70",
+];
+const requiredFinalUxThemeCssMarkers = [
+  "--sw-primary: #000105",
+  'body:not([data-admin-theme="dark"])',
+  ".primary-glass-button",
+  "overflow-wrap: anywhere",
+  "linear-gradient(135deg, var(--sw-primary) 0%, var(--sw-tertiary) 100%)",
 ];
 const requiredReadinessApiMarkers = [
   "accountBackendItems",
@@ -1126,9 +1135,27 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
     fail(failures, `Local assistant dock still contains legacy purple UI marker ${marker}`);
   }
 }
+const localFinalUxTheme = await readLocal("final-ux-theme.css");
+for (const marker of requiredFinalUxThemeCssMarkers) {
+  if (!localFinalUxTheme.includes(marker)) {
+    fail(failures, `Local final-ux-theme.css is missing marker ${marker}`);
+  }
+}
+for (const marker of forbiddenLegacyPurpleMarkers) {
+  if (localFinalUxTheme.toLowerCase().includes(marker.toLowerCase())) {
+    fail(failures, `Local final-ux-theme.css still contains legacy purple UI marker ${marker}`);
+  }
+}
 for (const [file, content] of localHtml) {
   if (!content.includes("assistant-dock.js?v=15")) {
     fail(failures, `${file} does not reference assistant-dock.js?v=15`);
+  }
+  if (file.startsWith("admin-")) {
+    if (content.includes("final-ux-theme.css")) {
+      fail(failures, `${file} should use admin-theme.css without final-ux-theme.css`);
+    }
+  } else if (file !== "admin.html" && !content.includes("final-ux-theme.css?v=1")) {
+    fail(failures, `${file} does not reference final-ux-theme.css?v=1`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1362,6 +1389,13 @@ for (const page of requiredPages) {
   if (!text.includes("assistant-dock.js?v=15")) {
     fail(failures, `${page} does not reference assistant-dock.js?v=15`);
   }
+  if (page.startsWith("/admin-")) {
+    if (text.includes("final-ux-theme.css")) {
+      fail(failures, `${page} should use admin-theme.css without final-ux-theme.css`);
+    }
+  } else if (!text.includes("final-ux-theme.css?v=1")) {
+    fail(failures, `${page} does not reference final-ux-theme.css?v=1`);
+  }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
       fail(failures, `${page} still contains legacy purple UI marker ${marker}`);
@@ -1564,6 +1598,25 @@ for (const marker of requiredAdminThemeCssMarkers) {
   }
 }
 
+const { response: finalUxThemeResponse, text: finalUxThemeText } = await fetchText("/final-ux-theme.css?v=1");
+if (finalUxThemeResponse.status !== 200) {
+  fail(failures, `final-ux-theme.css?v=1 returned ${finalUxThemeResponse.status}`);
+} else {
+  pass("final-ux-theme.css?v=1 returned 200");
+}
+for (const marker of requiredFinalUxThemeCssMarkers) {
+  if (!finalUxThemeText.includes(marker)) {
+    fail(failures, `final-ux-theme.css?v=1 is missing marker ${marker}`);
+  } else {
+    pass(`final-ux-theme.css contains ${marker}`);
+  }
+}
+for (const marker of forbiddenLegacyPurpleMarkers) {
+  if (finalUxThemeText.toLowerCase().includes(marker.toLowerCase())) {
+    fail(failures, `final-ux-theme.css?v=1 still contains legacy purple UI marker ${marker}`);
+  }
+}
+
 if (isLocalBaseUrl()) {
   pass("Skipping hosted /admin redirect check for local static server");
 } else {
@@ -1607,16 +1660,16 @@ if (isLocalBaseUrl()) {
     }
   }
 
-  for (const scriptPath of criticalNoStoreScripts) {
-    const { response } = await fetchText(scriptPath);
+  for (const assetPath of criticalNoStoreAssets) {
+    const { response } = await fetchText(assetPath);
     if (response.status !== 200) {
-      fail(failures, `${scriptPath} returned ${response.status} while checking script cache headers`);
+      fail(failures, `${assetPath} returned ${response.status} while checking asset cache headers`);
       continue;
     }
     if (!headerIncludes(response, "cache-control", "no-store")) {
-      fail(failures, `${scriptPath} is missing Cache-Control: no-store`);
+      fail(failures, `${assetPath} is missing Cache-Control: no-store`);
     } else {
-      pass(`${scriptPath} includes Cache-Control: no-store`);
+      pass(`${assetPath} includes Cache-Control: no-store`);
     }
   }
 
