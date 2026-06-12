@@ -158,5 +158,8 @@
 /*.css
   Cache-Control: no-store
 
+/release.json
+  Cache-Control: no-store
+
 /assets/*
   Cache-Control: public, max-age=31536000, immutable

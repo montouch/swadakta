@@ -217,6 +217,7 @@ const publicFreshHtmlPages = [
   "/terms",
 ];
 const criticalNoStoreAssets = [
+  "/release.json",
   "/app-data.js",
   "/admin-ops.js",
   "/admin-readiness.js",
@@ -1052,6 +1053,15 @@ function pass(message) {
   console.log(`OK   ${message}`);
 }
 
+function parseJson(text, label, failures) {
+  try {
+    return JSON.parse(text);
+  } catch (error) {
+    fail(failures, `${label} is not valid JSON: ${error.message}`);
+    return null;
+  }
+}
+
 function runSecretScan(failures) {
   try {
     execFileSync(process.execPath, [path.join(root, "scripts", "secret-scan.mjs")], {
@@ -1083,6 +1093,12 @@ for (const marker of requiredSecretScanMarkers) {
   }
 }
 runSecretScan(failures);
+const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
+if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
+  pass(`Local release manifest is ${localRelease.release_id}`);
+} else {
+  fail(failures, "Local release.json is missing release_id or sumsub_webhook_path");
+}
 const localHtml = await Promise.all(htmlFiles.map(async (file) => [file, await readLocal(file)]));
 const localHtmlByFile = new Map(localHtml);
 const versions = findAppDataVersions(localHtml);
@@ -1615,6 +1631,33 @@ if (!manifestText.includes('"name": "Swadakta"') || !manifestText.includes("/fav
   fail(failures, "Production site.webmanifest is missing favicon metadata");
 } else {
   pass("Production site.webmanifest contains favicon metadata");
+}
+
+const { response: releaseResponse, text: releaseText } = await fetchText("/release.json");
+if (releaseResponse.status !== 200) {
+  fail(
+    failures,
+    `/release.json returned ${releaseResponse.status}; production is likely stale or missing the release manifest`,
+  );
+} else {
+  pass("release.json returned 200");
+  const productionRelease = parseJson(releaseText, "Production release.json", failures);
+  if (productionRelease?.release_id !== localRelease?.release_id) {
+    fail(
+      failures,
+      `Production release_id ${productionRelease?.release_id || "missing"} does not match local ${localRelease?.release_id || "missing"}. Redeploy the latest main commit before demo or launch.`,
+    );
+  } else {
+    pass(`Production release_id matches ${productionRelease.release_id}`);
+  }
+  if (productionRelease?.sumsub_webhook_path !== localRelease?.sumsub_webhook_path) {
+    fail(
+      failures,
+      `Production Sumsub webhook path ${productionRelease?.sumsub_webhook_path || "missing"} does not match local ${localRelease?.sumsub_webhook_path || "missing"}`,
+    );
+  } else {
+    pass(`Production Sumsub webhook path matches ${productionRelease.sumsub_webhook_path}`);
+  }
 }
 
 const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=1");

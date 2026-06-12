@@ -1,0 +1,8 @@
+{
+  "release_id": "2026-06-13-provider-payments-id-v3",
+  "release_name": "Provider payments and identity readiness",
+  "description": "Adds provider-ready payment setup tracking, Sumsub identity automation, and deployment freshness checks.",
+  "expected_api_function_budget": 12,
+  "sumsub_webhook_path": "/api/identity/sumsub-webhook",
+  "source_branch": "main"
+}
