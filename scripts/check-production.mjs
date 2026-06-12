@@ -670,6 +670,20 @@ const requiredLoginHtmlMarkers = [
   'id="login-submit"',
   "login.js?v=2",
 ];
+const requiredFinalUxSupportPageMarkers = [
+  ['auth.html', 'data-final-ux-shell="support-auth"'],
+  ['auth.html', "styles.css?v=29"],
+  ['privacy.html', 'data-final-ux-shell="support-policy"'],
+  ['privacy.html', "styles.css?v=29"],
+  ['terms.html', 'data-final-ux-shell="support-policy"'],
+  ['terms.html', "styles.css?v=29"],
+];
+const requiredSupportCssMarkers = [
+  "Website v29: final-UX support pages",
+  ".final-ux-support",
+  ".policy-body .site-header",
+  ".auth-panel::after",
+];
 const requiredEnvExampleKeys = [
   "PUBLIC_BASE_URL",
   "SUPABASE_URL",
@@ -1010,6 +1024,18 @@ const localLoginHtml = await readLocal("login.html");
 for (const marker of requiredLoginHtmlMarkers) {
   if (!localLoginHtml.includes(marker)) {
     fail(failures, `Local login.html is missing final Stitch login marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredFinalUxSupportPageMarkers) {
+  const html = await readLocal(file);
+  if (!html.includes(marker)) {
+    fail(failures, `Local ${file} is missing final UX support marker ${marker}`);
+  }
+}
+const localStyles = await readLocal("styles.css");
+for (const marker of requiredSupportCssMarkers) {
+  if (!localStyles.includes(marker)) {
+    fail(failures, `Local styles.css is missing final UX support marker ${marker}`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");

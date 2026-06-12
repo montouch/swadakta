@@ -514,6 +514,7 @@
 
   function saveContext() {
     const triage = corridorTriage();
+    const importedRulesActive = rulesContextMatchesCurrent();
     const context = {
       origin_country: value("#corridor-origin"),
       destination_country: value("#corridor-destination"),
