@@ -49,6 +49,11 @@
   const accountHomeGatePosting = document.querySelector("#account-home-gate-posting");
   const accountHomeGateWork = document.querySelector("#account-home-gate-work");
   const accountHomeGateSensitive = document.querySelector("#account-home-gate-sensitive");
+  const accountHomeAutopilotProgress = document.querySelector("#account-home-autopilot-progress");
+  const accountHomeAutopilotSummary = document.querySelector("#account-home-autopilot-summary");
+  const accountHomeAutopilotList = document.querySelector("#account-home-autopilot-list");
+  const accountHomeAiSafeList = document.querySelector("#account-home-ai-safe-list");
+  const accountHomeProtectedList = document.querySelector("#account-home-protected-list");
   const accountSetupProgress = document.querySelector("#account-setup-progress");
   const accountSetupProfile = document.querySelector("#account-setup-profile");
   const accountSetupVerification = document.querySelector("#account-setup-verification");
@@ -726,6 +731,217 @@
       href: "rules.html",
       label: "Check rules",
     };
+  }
+
+  function automationStatusTone(status) {
+    return (
+      {
+        ready: {
+          label: "Ready",
+          icon: "task_alt",
+          card: "rounded-2xl bg-emerald-50/80 border border-emerald-200 p-4",
+          pill: "bg-emerald-100 text-emerald-700",
+        },
+        draft: {
+          label: "Draft only",
+          icon: "edit_note",
+          card: "rounded-2xl bg-primary-container/10 border border-primary/20 p-4",
+          pill: "bg-primary-container/10 text-primary",
+        },
+        waiting: {
+          label: "Waiting",
+          icon: "pending",
+          card: "rounded-2xl bg-white/72 border border-outline-variant/30 p-4",
+          pill: "bg-white/70 text-on-surface-variant",
+        },
+        action: {
+          label: "Needs setup",
+          icon: "add_task",
+          card: "rounded-2xl bg-amber-50/80 border border-amber-200 p-4",
+          pill: "bg-amber-50 text-amber-700",
+        },
+        optional: {
+          label: "Optional",
+          icon: "tune",
+          card: "rounded-2xl bg-white/66 border border-outline-variant/30 p-4",
+          pill: "bg-white/70 text-on-surface-variant",
+        },
+        protected: {
+          label: "Protected",
+          icon: "lock",
+          card: "rounded-2xl bg-white/66 border border-outline-variant/30 p-4",
+          pill: "bg-tertiary/10 text-tertiary",
+        },
+        blocked: {
+          label: "Blocked",
+          icon: "block",
+          card: "rounded-2xl bg-error-container/70 border border-error/20 p-4",
+          pill: "bg-error-container text-on-error-container",
+        },
+      }[status] || {
+        label: "Checking",
+        icon: "radio_button_unchecked",
+        card: "rounded-2xl bg-white/66 border border-outline-variant/30 p-4",
+        pill: "bg-white/70 text-on-surface-variant",
+      }
+    );
+  }
+
+  function automationReadinessScore(items = []) {
+    const scoringItems = items.filter((item) => item.key !== "money");
+    if (!scoringItems.length) return 25;
+    const weights = {
+      ready: 1,
+      draft: 0.65,
+      waiting: 0.45,
+      action: 0.25,
+      optional: 0.25,
+      blocked: 0.15,
+      protected: 0.1,
+    };
+    const total = scoringItems.reduce((sum, item) => sum + (weights[item.status] ?? 0.2), 0);
+    return Math.max(25, Math.round((total / scoringItems.length) * 100));
+  }
+
+  function accountHomeAutopilotItems(profile = {}, context = {}) {
+    const role = accountRole(profile);
+    const requests = context.requests || [];
+    const jobs = context.jobs || [];
+    const verifications = context.verifications || [];
+    const applications = context.applications || [];
+    const latestRequest = latestVerificationRequest(verifications);
+    const verified = accountIsVerified(profile, latestRequest);
+    const hasProfile = hasProfileBasics(profile);
+    const canGiveJobs = role === "client" || role === "both";
+    const canReceiveJobs = role === "receiver" || role === "both";
+    const receiverSetup = readReceiverProfileSetup();
+    const hasReceiverCoverage = Boolean(
+      applications.length || receiverSetup.location || receiverSetup.headline || receiverSetup.proof_tools,
+    );
+
+    return [
+      {
+        key: "profile",
+        title: "Profile routing",
+        status: hasProfile ? "ready" : "action",
+        copy: hasProfile
+          ? "AI can use your country, base, mobile backup, and role to guide routes."
+          : "Save legal name, mobile, current country, and base so the system can route work.",
+      },
+      {
+        key: "verification",
+        title: "ID provider gate",
+        status: verified ? "ready" : latestRequest ? "waiting" : "action",
+        copy: verified
+          ? "Provider evidence is recorded. Job-specific gates still apply."
+          : latestRequest?.provider_link
+            ? "Open the provider link to finish ID, document, and selfie/liveness checks."
+            : latestRequest
+              ? "Verification is queued. Paid actions wait for provider evidence."
+              : "Request provider verification before paid posting, paid work, or sensitive jobs.",
+      },
+      {
+        key: "brief",
+        title: "Give jobs",
+        status: canGiveJobs ? (verified ? "ready" : "draft") : "optional",
+        copy: canGiveJobs
+          ? verified
+            ? requests.length
+              ? "AI can triage new briefs and help track existing requests."
+              : "You can create a paid brief after the corridor, proof, and payment checks pass."
+            : "AI can draft and organize briefs now; posting and payment stay gated."
+          : "Client mode is optional. You can add it later from this same account.",
+      },
+      {
+        key: "receiver",
+        title: "Get jobs",
+        status: canReceiveJobs ? (verified && hasReceiverCoverage ? "ready" : hasReceiverCoverage ? "waiting" : "action") : "optional",
+        copy: canReceiveJobs
+          ? verified && hasReceiverCoverage
+            ? jobs.length
+              ? "AI can help prepare updates, proof summaries, and next steps for assigned jobs."
+              : "Your coverage can be considered for eligible lawful jobs."
+            : hasReceiverCoverage
+              ? "Coverage is started. Paid matching waits for verified ID/selfie evidence."
+              : "Add coverage, categories, proof tools, and availability before matching."
+          : "Receiver mode is optional. You can add it later from this same account.",
+      },
+      {
+        key: "money",
+        title: "Money release",
+        status: "protected",
+        copy: "AI can prepare quote, margin, milestone, and proof notes. It cannot release, refund, or mark funds protected.",
+      },
+    ];
+  }
+
+  function renderAccountHomeAutopilot(profile = {}, context = {}) {
+    const items = accountHomeAutopilotItems(profile, context);
+    const score = automationReadinessScore(items);
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const hasProfile = hasProfileBasics(profile);
+
+    if (accountHomeAutopilotProgress) {
+      accountHomeAutopilotProgress.textContent = `${score}% automation ready`;
+      accountHomeAutopilotProgress.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        score >= 80
+          ? "bg-emerald-50 text-emerald-700"
+          : score >= 50
+            ? "bg-primary-container/10 text-primary"
+            : "bg-amber-50 text-amber-700"
+      }`.trim();
+    }
+
+    if (accountHomeAutopilotSummary) {
+      accountHomeAutopilotSummary.textContent = !hasProfile
+        ? "Save profile basics first. Until then, AI can explain the system and draft work, but it has limited routing context."
+        : verified
+          ? "AI can triage briefs, route checks, proof plans, messages, and milestone summaries. Protected decisions still require provider, payment, route, and proof evidence."
+          : "AI can draft and triage routine work now. Provider ID verification is still required before paid posting, paid matching, sensitive work, or money movement.";
+    }
+
+    if (accountHomeAutopilotList) {
+      accountHomeAutopilotList.innerHTML = items
+        .map((item) => {
+          const tone = automationStatusTone(item.status);
+          return `
+            <article class="${tone.card}">
+              <div class="flex items-start justify-between gap-3">
+                <div>
+                  <p class="font-label-md text-on-surface">${escapeHtml(item.title)}</p>
+                  <span class="mt-2 inline-flex min-h-7 px-3 items-center justify-center rounded-full font-label-sm ${tone.pill}">${escapeHtml(tone.label)}</span>
+                </div>
+                <span class="material-symbols-outlined text-primary">${escapeHtml(tone.icon)}</span>
+              </div>
+              <p class="font-body-md text-on-surface-variant text-sm mt-3">${escapeHtml(item.copy)}</p>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    if (accountHomeAiSafeList) {
+      accountHomeAiSafeList.innerHTML = [
+        "Draft briefs, replies, updates, receiver instructions, and friendly client messages.",
+        "Suggest corridor, proof, weather, media, lawful-goods, and payment milestone checks.",
+        "Prepare quote notes, founder margin guardrails, and missing-evidence summaries.",
+        "Flag likely blockers early and send the user to the right tool without forcing AI usage.",
+      ]
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+    }
+
+    if (accountHomeProtectedList) {
+      accountHomeProtectedList.innerHTML = [
+        "AI cannot mark ID verified, release or refund money, override provider evidence, or assign paid work by itself.",
+        "Restricted goods, legal authority, tax, customs, high-value property, and dispute exceptions need provider or founder evidence.",
+        "Receiver public trust only improves after verified identity, real proof, completed jobs, and honest reviews.",
+        "Wise stays a fallback path only when primary automatic payment rails fail.",
+      ]
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+    }
   }
 
   function renderAccountHomeDashboard(profile = {}, context = {}) {
@@ -1411,6 +1627,7 @@
     renderAccountHomeVerification(profile, []);
     renderAccountSetupChecklist(profile);
     renderAccountHomeDashboard(profile);
+    renderAccountHomeAutopilot(profile);
 
     if (accountHomeNextCopy) {
       accountHomeNextCopy.textContent = verified
@@ -1451,6 +1668,7 @@
     renderAccountHomeVerification(profile, verifications);
     renderAccountSetupChecklist(profile, { requests, jobs, verifications, applications });
     renderAccountHomeDashboard(profile, { requests, jobs, verifications, applications });
+    renderAccountHomeAutopilot(profile, { requests, jobs, verifications, applications });
     if (accountHomeNextCopy) {
       const latestRequest = latestVerificationRequest(verifications);
       const verified = accountIsVerified(profile, latestRequest);
