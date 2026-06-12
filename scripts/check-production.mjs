@@ -57,7 +57,7 @@ const requiredStitchScreens = [
   {
     path: "/",
     file: "index.html",
-    sources: ["swadakta_home_final_ux_coverage"],
+    sources: ["swadakta_home_final_ux_refined"],
     integration: "public-links",
   },
   {

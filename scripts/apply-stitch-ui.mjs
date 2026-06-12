@@ -43,6 +43,22 @@ function commonHead({ title, description, canonical, ogImage = "https://swadakta
 <meta name="application-name" content="Swadakta" />`.trim();
 }
 
+function escapeRegExp(value) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function linkButtonByLabel(html, label, href, ariaLabel = label) {
+  const pattern = new RegExp(
+    `<button([^>]*)>(\\s*${escapeRegExp(label)}(?:\\s*<span[\\s\\S]*?<\\/span>)?\\s*)<\\/button>`,
+    "g",
+  );
+  return html.replace(pattern, `<a$1 href="${href}" aria-label="${ariaLabel}">$2</a>`);
+}
+
+function ensureTrailingNewline(html) {
+  return html.endsWith("\n") ? html : `${html}\n`;
+}
+
 function routeStitchHome(html) {
   let output = html;
 
@@ -134,6 +150,9 @@ function routeStitchHome(html) {
     ['href="#">Privacy Policy', 'href="privacy.html">Privacy Policy'],
     ['href="#">Terms of Service', 'href="terms.html">Terms of Service'],
     ['href="#">Job Room', 'href="messages.html">Job Room'],
+    ['href="#">Track request', 'href="tracking.html">Track request'],
+    ['href="#">Help Center', 'href="mailto:swadakta111@gmail.com">Help Center'],
+    ['href="#">Contact Us', 'href="mailto:swadakta111@gmail.com">Contact Us'],
   ]);
   for (const [from, to] of replacements) {
     output = output.split(from).join(to);
@@ -176,10 +195,56 @@ function routeStitchHome(html) {
                         Get Started Now
                     </a>`,
   );
+  output = linkButtonByLabel(output, "Get a job done", "brief.html", "Post a job");
+  output = linkButtonByLabel(output, "Apply for work", "login.html?next=%2Fportal.html%23jobs-board", "Apply for work");
+  output = linkButtonByLabel(
+    output,
+    "Explore Marketplace",
+    "login.html?next=%2Fportal.html%23jobs-board",
+    "Explore marketplace",
+  );
+  output = linkButtonByLabel(output, "Browse Jobs", "login.html?next=%2Fportal.html%23jobs-board", "Browse jobs");
+  output = output.replace("Upgrade Account", "Set up both modes");
+  output = linkButtonByLabel(
+    output,
+    "Set up both modes",
+    "login.html?next=%2Fportal.html%23receiver-profile-setup",
+    "Set up both modes",
+  );
+  output = linkButtonByLabel(output, "Create account", "login.html", "Create account");
+  output = linkButtonByLabel(output, "Get Started Now", "login.html", "Get started");
+  output = output.replace(
+    `<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">public</span>
+</button>`,
+    `<a class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors" href="https://wa.me/61431455174" aria-label="Open WhatsApp">
+<span class="material-symbols-outlined">public</span>
+</a>`,
+  );
+  output = output.replace(
+    `<button class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined">share</span>
+</button>`,
+    `<a class="w-10 h-10 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors" href="mailto:swadakta111@gmail.com" aria-label="Email Swadakta">
+<span class="material-symbols-outlined">share</span>
+</a>`,
+  );
 
   output = output.replace(
     "Funds are held in secure escrow and released only when milestones are digitally verified by both parties.",
     "Funds move through provider-confirmed payment rails, with milestone release only after proof and user approval are recorded.",
+  );
+  output = output.replace(
+    "Secure payout once the task is verified by both parties.",
+    "Milestone payout is prepared after proof and user approval are recorded.",
+  );
+  output = output.replace(
+    "The premium marketplace for global concierge services. Hire verified agents or monetize your international expertise.",
+    "A trusted marketplace for global concierge services. Get help from verified receivers or earn from local expertise.",
+  );
+  output = output.replace(
+    "Funds held under milestone rules and ID-verified partners. We bridge the gap with transparency and safety.",
+    "Payments move through provider-confirmed rails and ID-verified partners. We bridge the gap with transparency and safety.",
   );
   output = output
     .replaceAll("\u00c2\u00a9", "&copy;")
@@ -242,7 +307,7 @@ function routeStitchHome(html) {
   output = injectBeforeBodyClose(output, '<script src="assistant-dock.js?v=12"></script>');
   output = output.replace(
     "<body ",
-    '<body data-stitch-source="swadakta_home_final_ux_coverage" ',
+    '<body data-stitch-source="swadakta_home_final_ux_refined" data-stitch-integration="public-links" ',
   );
   return output;
 }
@@ -406,7 +471,10 @@ function routeStitchLogin(html) {
 <script src="assistant-dock.js?v=12"></script>
 </body>`,
   );
-  output = output.replace("<body ", '<body data-stitch-source="sign_in_swadakta_1" ');
+  output = output.replace(
+    "<body ",
+    '<body data-stitch-source="sign_in_swadakta_1" data-stitch-integration="auth" ',
+  );
   return output;
 }
 
@@ -429,7 +497,7 @@ function routeStitchWelcomeLogin(html) {
 
   output = output.replace(
     "<body ",
-    '<body data-stitch-source="welcome_swadakta_final_ux" ',
+    '<body data-stitch-source="welcome_swadakta_final_ux" data-stitch-integration="auth" ',
   );
   output = output.replace('id="auth-form"', 'id="swadakta-login-form"');
   output = output.replace('for="email"', 'for="login-email"');
@@ -493,10 +561,10 @@ function routeStitchWelcomeLogin(html) {
 }
 
 async function main() {
-  const home = routeStitchHome(await readStitchPage("swadakta_home_final_ux_coverage"));
+  const home = routeStitchHome(await readStitchPage("swadakta_home_final_ux_refined"));
   const login = routeStitchWelcomeLogin(await readStitchPage("welcome_swadakta_final_ux"));
-  await writeFile(path.join(root, "index.html"), home, "utf8");
-  await writeFile(path.join(root, "login.html"), login, "utf8");
+  await writeFile(path.join(root, "index.html"), ensureTrailingNewline(home), "utf8");
+  await writeFile(path.join(root, "login.html"), ensureTrailingNewline(login), "utf8");
   console.log("Applied direct Stitch exports to index.html and login.html");
 }
 

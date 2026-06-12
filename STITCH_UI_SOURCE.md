@@ -10,7 +10,7 @@ When the visual direction changes, update the matching screen in Stitch first, e
 
 | Route | Stitch source |
 | --- | --- |
-| `/` | `swadakta_home_final_ux_coverage` |
+| `/` | `swadakta_home_final_ux_refined` |
 | `/login` | `welcome_swadakta_final_ux` |
 | `/portal` | `dashboard_swadakta_mobile_final_ux`, `account_setup_profile_swadakta_final_ux_coverage`, `find_work_swadakta_final_ux` |
 | `/assistant` | `ai_assistant_swadakta_final_ux_coverage` |
