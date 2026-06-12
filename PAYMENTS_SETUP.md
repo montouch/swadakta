@@ -1,6 +1,6 @@
 # Swadakta Payments Setup
 
-Last updated: June 11, 2026
+Last updated: June 12, 2026
 
 Swadakta should stay quote-first at launch. Each request can vary by travel, access, risk, urgency, corridor, compliance, and proof requirements, so the autopilot should classify the request and the founder console should create or approve a client-specific payment link before money moves.
 
@@ -9,9 +9,10 @@ Swadakta should stay quote-first at launch. Each request can vary by travel, acc
 1. Stripe Payment Links for card payments and deposits.
 2. PayPal invoices for clients who prefer PayPal or need a familiar invoice workflow.
 3. M-Pesa through Safaricom Daraja for KES collections once Swadakta has the right Kenya business setup, PayBill/Till details, API credentials, and callback handling.
-4. Bank transfer or manual payment references only when the client and operator have a clear receipt trail.
-5. Wise Business payment links or account details only as an admin fallback when Stripe, PayPal, M-Pesa, or normal bank transfer is unsuitable or has failed.
-6. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
+4. Paystack or Flutterwave as Africa expansion candidates after merchant approval, settlement-currency checks, webhook verification, and provider-evidence mapping.
+5. Bank transfer or manual payment references only when the client and operator have a clear receipt trail.
+6. Wise Business payment links or account details only as an admin fallback when Stripe, PayPal, M-Pesa, Paystack/Flutterwave, or normal bank transfer is unsuitable or has failed.
+7. A true escrow provider for high-value property, construction, title, or supplier jobs where regulated escrow is required.
 
 ## Funds Protection and Milestones
 
@@ -310,6 +311,43 @@ Future Kenya payment work:
 - Evaluate Pesapal or Flutterwave as a secondary Kenya gateway if Swadakta needs one checkout flow for M-Pesa plus local/international cards before direct Daraja operations are approved.
 - Add B2C payout workflows only after receiver vetting, payout limits, reversal/dispute process, tax/accounting handling, and founder approval controls are ready.
 - Keep M-Pesa as one provider in the milestone ledger, not the only source of truth.
+
+## Paystack and Flutterwave Africa Expansion
+
+Paystack and Flutterwave should be treated as Africa expansion rails, not as public launch defaults. Use them when Swadakta needs a local African checkout route beyond Kenya M-Pesa, or when a country/currency combination is better served by an Africa-native processor than Stripe or PayPal.
+
+Useful provider docs:
+
+- Paystack payments documentation: https://paystack.com/docs/payments/
+- Paystack transactions API: https://paystack.com/docs/api/transaction/
+- Flutterwave Standard checkout: https://developer.flutterwave.com/docs/flutterwave-standard
+- Flutterwave webhooks: https://developer.flutterwave.com/docs/webhooks
+
+Readiness rules before either rail is client-facing:
+
+- Merchant account is approved for the legal entity and country.
+- Settlement currency and settlement account are confirmed for the job type.
+- Webhook secret/signature verification is configured before any automated payment confirmation.
+- Provider transaction IDs are written to `payment_reference` or milestone provider references.
+- Callback evidence can mark funds as provider-confirmed, but it must not assign receivers, release funds, refund, or clear disputes.
+- High-value or regulated jobs still use regulated escrow/payment-provider review or staged provider-held funds.
+
+Environment placeholders:
+
+- `PAYSTACK_SECRET_KEY`
+- `PAYSTACK_WEBHOOK_SECRET`
+- `PAYSTACK_SETTLEMENT_CURRENCIES`
+- `FLUTTERWAVE_SECRET_KEY`
+- `FLUTTERWAVE_WEBHOOK_SECRET`
+- `FLUTTERWAVE_SETTLEMENT_CURRENCIES`
+
+Recommended order:
+
+1. Keep Stripe/PayPal first for diaspora card payments in AUD, USD, GBP, and EUR.
+2. Use M-Pesa/Daraja first for Kenya KES jobs after Safaricom setup.
+3. Pilot Paystack for suitable Nigeria, Ghana, South Africa, or supported Africa-card routes after account approval.
+4. Pilot Flutterwave for broader Africa local-currency coverage after account approval.
+5. Fall back to bank/Wise only when simpler provider rails are unavailable, unsuitable, or have failed.
 
 ## Operating Rules
 

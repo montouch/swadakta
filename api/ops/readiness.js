@@ -148,6 +148,8 @@ const DOCS = {
   stripeWebhooks: "https://docs.stripe.com/webhooks",
   paypalOrders: "https://developer.paypal.com/docs/api/orders/v2/",
   daraja: "https://developer.safaricom.co.ke/",
+  paystackPayments: "https://paystack.com/docs/payments/",
+  flutterwaveStandard: "https://developer.flutterwave.com/docs/flutterwave-standard",
   smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
   smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
@@ -714,6 +716,8 @@ async function readinessReport(user, authHeader) {
   ]);
   const stripeWebhookMissing = missingEnv(["STRIPE_WEBHOOK_SECRET"]);
   const paypalMissing = missingEnv(["PAYPAL_CLIENT_ID", "PAYPAL_CLIENT_SECRET"]);
+  const paystackMissing = missingEnv(["PAYSTACK_SECRET_KEY", "PAYSTACK_WEBHOOK_SECRET"]);
+  const flutterwaveMissing = missingEnv(["FLUTTERWAVE_SECRET_KEY", "FLUTTERWAVE_WEBHOOK_SECRET"]);
   const mpesaMissing = missingEnv([
     "MPESA_CONSUMER_KEY",
     "MPESA_CONSUMER_SECRET",
@@ -851,6 +855,36 @@ async function readinessReport(user, authHeader) {
             copy_value: mpesaWebhookUrl,
             priority: 31,
             owner: "Founder/Safaricom admin",
+          },
+        ),
+        item(
+          "paystack_africa_pilot",
+          "Paystack Africa pilot",
+          paystackMissing.length ? "manual" : "ready",
+          paystackMissing.length
+            ? "Paystack is tracked as an Africa expansion candidate, not a live Swadakta rail yet."
+            : "Paystack secret and webhook placeholders are configured; run sandbox/live test jobs before client use.",
+          "Use Paystack only after merchant approval, settlement currency fit, webhook verification, and provider-evidence mapping are tested.",
+          paystackMissing,
+          {
+            docs_url: DOCS.paystackPayments,
+            priority: 54,
+            owner: "Founder/Paystack admin",
+          },
+        ),
+        item(
+          "flutterwave_africa_pilot",
+          "Flutterwave Africa pilot",
+          flutterwaveMissing.length ? "manual" : "ready",
+          flutterwaveMissing.length
+            ? "Flutterwave is tracked as an Africa expansion candidate, not a live Swadakta rail yet."
+            : "Flutterwave secret and webhook placeholders are configured; run sandbox/live test jobs before client use.",
+          "Use Flutterwave only after merchant approval, settlement currency fit, webhook verification, and provider-evidence mapping are tested.",
+          flutterwaveMissing,
+          {
+            docs_url: DOCS.flutterwaveStandard,
+            priority: 55,
+            owner: "Founder/Flutterwave admin",
           },
         ),
         item(

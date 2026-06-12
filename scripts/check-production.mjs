@@ -193,6 +193,10 @@ const requiredPaymentsMarkers = [
   "quoteFloor",
   "Re-quote before sending",
   "Wise stays hidden as fallback",
+  "Africa payment expansion planner",
+  "paymentExpansionRail",
+  "Paystack",
+  "Flutterwave",
   "Swadakta is not currently a licensed escrow provider",
 ];
 const requiredRulesMarkers = [
@@ -282,6 +286,10 @@ const requiredReadinessApiMarkers = [
   "buildLaunchGate",
   "launch_gate",
   "paid_launch_blocked",
+  "paystack_africa_pilot",
+  "flutterwave_africa_pilot",
+  "PAYSTACK_WEBHOOK_SECRET",
+  "FLUTTERWAVE_WEBHOOK_SECRET",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
@@ -310,6 +318,12 @@ const requiredEnvExampleKeys = [
   "MPESA_SHORTCODE",
   "MPESA_PASSKEY",
   "MPESA_CALLBACK_TOKEN",
+  "PAYSTACK_SECRET_KEY",
+  "PAYSTACK_WEBHOOK_SECRET",
+  "PAYSTACK_SETTLEMENT_CURRENCIES",
+  "FLUTTERWAVE_SECRET_KEY",
+  "FLUTTERWAVE_WEBHOOK_SECRET",
+  "FLUTTERWAVE_SETTLEMENT_CURRENCIES",
   "WISE_PAYMENT_LINK_URL",
   "WISE_PAYMENT_REQUEST_URL",
   "WISE_RECEIVE_DETAILS_URL",

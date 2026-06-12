@@ -367,6 +367,75 @@
         </div>
       </section>
 
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20" id="africa-payment-planner">
+        <div class="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Africa payment expansion planner</p>
+            <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Pick the rail after the country and currency are known.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              Kenya starts with M-Pesa/Daraja for KES. Wider Africa can use Paystack or Flutterwave later, but only after merchant approval, settlement checks, webhook evidence, and Swadakta milestone controls are tested.
+            </p>
+            <div class="mt-6 rounded-3xl bg-white/70 border border-outline-variant/40 p-5">
+              <p class="font-label text-sm text-primary">Expansion rule</p>
+              <p class="mt-2 text-sm text-on-surface-variant">Paystack and Flutterwave are not public self-serve rails yet. They are founder-reviewed expansion candidates until provider callbacks can prove paid funds without releasing receiver payouts.</p>
+            </div>
+          </div>
+          <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="africa-rail-planner-form">
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2 font-label text-sm">
+                Work country
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="africa-rail-country">
+                  <option value="kenya">Kenya</option>
+                  <option value="nigeria">Nigeria</option>
+                  <option value="ghana">Ghana</option>
+                  <option value="south_africa">South Africa</option>
+                  <option value="uganda">Uganda</option>
+                  <option value="tanzania">Tanzania</option>
+                  <option value="rwanda">Rwanda</option>
+                  <option value="other_africa">Other African country</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Quote currency
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="africa-rail-currency">
+                  <option>KES</option>
+                  <option>NGN</option>
+                  <option>GHS</option>
+                  <option>ZAR</option>
+                  <option>UGX</option>
+                  <option>TZS</option>
+                  <option>RWF</option>
+                  <option>AUD</option>
+                  <option>USD</option>
+                  <option>GBP</option>
+                  <option>EUR</option>
+                </select>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+                <input class="mt-1" id="africa-rail-cross-border" type="checkbox" />
+                <span>Cross-border goods, supplier purchase, or shipping is involved.</span>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+                <input class="mt-1" id="africa-rail-high-value" type="checkbox" />
+                <span>High-value, regulated, title, construction, or sensitive-document work.</span>
+              </label>
+            </div>
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold shadow-lg" type="submit">
+              Plan Africa rail
+            </button>
+            <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5" id="africa-rail-result" aria-live="polite">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Recommended rail order</p>
+              <h3 class="mt-2 font-display text-2xl font-extrabold">M-Pesa first for Kenya KES jobs</h3>
+              <p class="mt-2 text-on-surface-variant">Use Daraja STK or Paybill only after business approval, callback setup, and receipt evidence. Milestone release still needs proof review.</p>
+              <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant list-disc pl-5">
+                <li>Provider confirmation is separate from receiver payout release.</li>
+                <li>Bank or Wise remains fallback when simpler rails fail.</li>
+              </ul>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
         <div class="grid gap-8 lg:grid-cols-2">
           <div class="glass-panel rounded-[2rem] p-6 md:p-8">
@@ -423,6 +492,8 @@
     <script>
       const form = document.querySelector("#payment-estimator-form");
       const result = document.querySelector("#estimator-result");
+      const africaRailForm = document.querySelector("#africa-rail-planner-form");
+      const africaRailResult = document.querySelector("#africa-rail-result");
       const baseAmounts = {
         errand: 85,
         proof: 180,
@@ -461,6 +532,36 @@
         if (currency === "KES") return "M-Pesa or bank transfer with provider receipt";
         if (sensitive || logistics) return "card checkout or PayPal, with regulated escrow/provider-held funds for high-value work";
         return "card checkout or PayPal";
+      }
+
+      function paymentExpansionRail(country, currency, highValue, crossBorder) {
+        const africaCardCurrencies = new Set(["NGN", "GHS", "ZAR"]);
+        const flutterwaveCandidateCurrencies = new Set(["KES", "NGN", "GHS", "ZAR", "UGX", "TZS", "RWF"]);
+        const checks = [
+          "Confirm merchant account approval, settlement account, fees, chargeback/reversal rules, and webhook verification.",
+          "Record provider reference before funds count as protected; release receiver payout only after proof review.",
+        ];
+        let title = "Founder-reviewed Africa payment route";
+        let rail = "Stripe or PayPal first if the client pays in AUD/USD/GBP/EUR; bank or Wise fallback if provider checkout is unsuitable.";
+
+        if (country === "kenya" && currency === "KES") {
+          title = "M-Pesa first for Kenya KES jobs";
+          rail = "Use Safaricom Daraja STK/Paybill after business approval, callback setup, and receipt evidence.";
+          checks.push("Keep M-Pesa as provider evidence only; do not release milestones automatically from a callback.");
+        } else if (africaCardCurrencies.has(currency)) {
+          title = "Paystack or Flutterwave pilot candidate";
+          rail = "Use Paystack or Flutterwave only after sandbox/live test payment, webhook evidence mapping, and settlement confirmation.";
+          checks.push("Keep Stripe/PayPal available for diaspora-card clients if the Africa rail is not approved for this merchant/currency.");
+        } else if (flutterwaveCandidateCurrencies.has(currency)) {
+          title = "Flutterwave pilot candidate";
+          rail = "Use Flutterwave as an expansion candidate after merchant, country, currency, and webhook checks.";
+          checks.push("If local settlement is unclear, quote in a supported global currency and use Stripe, PayPal, or bank/Wise fallback.");
+        }
+
+        if (highValue) checks.push("High-value work needs regulated escrow/payment-provider review or staged provider-held funds.");
+        if (crossBorder) checks.push("Cross-border goods also need carrier/customs/tax checks before purchase, shipment, or release.");
+
+        return { title, rail, checks };
       }
 
       function moneyRange(first, second, currency) {
@@ -583,6 +684,24 @@
               ? `<ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">${flags.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">priority_high</span><span>${item}</span></li>`).join("")}</ul>`
               : ""
           }
+        `;
+      });
+
+      africaRailForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const country = document.querySelector("#africa-rail-country").value;
+        const currency = document.querySelector("#africa-rail-currency").value;
+        const crossBorder = document.querySelector("#africa-rail-cross-border").checked;
+        const highValue = document.querySelector("#africa-rail-high-value").checked;
+        const plan = paymentExpansionRail(country, currency, highValue, crossBorder);
+        africaRailResult.innerHTML = `
+          <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${currency} payment route</p>
+          <h3 class="mt-2 font-display text-2xl font-extrabold">${plan.title}</h3>
+          <p class="mt-2 text-on-surface-variant">${plan.rail}</p>
+          <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant list-disc pl-5">
+            ${plan.checks.map((check) => `<li>${check}</li>`).join("")}
+          </ul>
+          <p class="mt-4 text-xs text-on-surface-variant">Planner only: final rail depends on provider account approval, settlement currency, payer country, job risk, and Swadakta readiness checks.</p>
         `;
       });
     </script>

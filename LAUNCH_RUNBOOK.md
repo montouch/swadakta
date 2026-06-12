@@ -55,6 +55,7 @@ Automation later:
 - Configure `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL`, then use the admin `Fallback Wise request` button only when other payment routes are not suitable.
 - Configure Stripe to send successful Checkout events to `https://swadakta.com/api/payments/stripe-webhook`, with `STRIPE_WEBHOOK_SECRET` and a server-only Supabase key stored in Vercel.
 - Store provider transaction IDs on the request record after payment confirmation.
+- Treat Paystack and Flutterwave as Africa expansion candidates only after merchant approval, settlement-currency checks, webhook verification, and provider-evidence mapping. The public Payments page has an Africa payment expansion planner, and admin readiness tracks `PAYSTACK_*` and `FLUTTERWAVE_*` placeholders without making them public default rails.
 
 ## 4. Privacy and Compliance
 
@@ -135,6 +136,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - ID verification is required for high-value, sensitive-document, title/legal-adjacent, authority-sensitive, or unusually risky jobs.
 - Smile ID is the default Africa verification provider; Persona, Sumsub, or Stripe Identity can cover wider global verification after provider setup.
 - M-Pesa/Daraja is now represented in the app as a Kenya payment rail; use sandbox/test mode until the business PayBill/Till/API access and callback URLs are approved for live collection.
+- Paystack/Flutterwave are expansion rails for wider Africa only after merchant, settlement, webhook, and evidence checks are ready; they should not bypass milestone release controls.
 - Admin tracks founder margin per quoted job, including operator payout, field costs, and payment fees.
 - Supabase leaked-password protection is enabled.
 - Admin secure email sign-in works for `swadakta111@gmail.com`.
