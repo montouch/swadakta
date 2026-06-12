@@ -287,6 +287,8 @@ const requiredPortalMarkers = [
 ];
 const requiredPortalHtmlMarkers = [
   'data-stitch-source="dashboard_swadakta_mobile_final_ux account_setup_profile_swadakta_final_ux_coverage find_work_swadakta_final_ux"',
+  'data-final-ux-polish="account_home_final_ux_polish"',
+  "final-ux-account-home-polish",
   "data-final-ux-shell=\"account-tools\"",
   'data-account-home="true"',
   "quick-action-card",
