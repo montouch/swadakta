@@ -1,4 +1,5 @@
 User-agent: *
+# Deployment marker: identity-provider rewrite ready.
 Allow: /
 Disallow: /admin
 Disallow: /admin.html
