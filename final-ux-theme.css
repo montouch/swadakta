@@ -16,6 +16,8 @@
   --sw-shadow: rgba(16, 26, 58, 0.16);
 }
 
+/* final-ux-sitewide-shell-v2 */
+
 body:not([data-admin-theme="dark"]) {
   color: var(--sw-text);
   background:
@@ -196,7 +198,154 @@ body:not([data-admin-theme="dark"]) .material-symbols-outlined {
   letter-spacing: 0 !important;
 }
 
+html,
+body:not([data-admin-theme="dark"]) {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body:not([data-admin-theme="dark"]) [class*="tracking-"],
+body:not([data-admin-theme="dark"]) [style*="letter-spacing"] {
+  letter-spacing: 0 !important;
+}
+
+body:not([data-admin-theme="dark"]) header {
+  max-width: 100%;
+  border-color: rgba(255, 255, 255, 0.54) !important;
+  background: rgba(250, 248, 255, 0.74) !important;
+  backdrop-filter: blur(24px);
+  box-shadow: 0 10px 34px rgba(16, 26, 58, 0.06);
+}
+
+body:not([data-admin-theme="dark"]) header,
+body:not([data-admin-theme="dark"]) header > *,
+body:not([data-admin-theme="dark"]) nav,
+body:not([data-admin-theme="dark"]) main,
+body:not([data-admin-theme="dark"]) footer {
+  min-width: 0;
+}
+
+body:not([data-admin-theme="dark"]) header a,
+body:not([data-admin-theme="dark"]) header button,
+body:not([data-admin-theme="dark"]) nav a,
+body:not([data-admin-theme="dark"]) nav button {
+  min-width: 0;
+  max-width: 100%;
+  min-height: 2.5rem;
+}
+
+body:not([data-admin-theme="dark"]) header nav a {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body:not([data-admin-theme="dark"]) a[class*="inline-flex"],
+body:not([data-admin-theme="dark"]) button[class*="inline-flex"],
+body:not([data-admin-theme="dark"]) a[class*="flex"],
+body:not([data-admin-theme="dark"]) button[class*="flex"],
+body:not([data-admin-theme="dark"]) .corridor-preset,
+body:not([data-admin-theme="dark"]) .notification-filter,
+body:not([data-admin-theme="dark"]) .top-link {
+  align-items: center;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  text-align: center;
+  text-decoration: none;
+  text-wrap: balance;
+  white-space: normal;
+}
+
+body:not([data-admin-theme="dark"]) a[class*="rounded-full"],
+body:not([data-admin-theme="dark"]) button[class*="rounded-full"],
+body:not([data-admin-theme="dark"]) .portal-tool-button,
+body:not([data-admin-theme="dark"]) .workspace-link,
+body:not([data-admin-theme="dark"]) .top-link {
+  border-radius: 999px !important;
+}
+
+body:not([data-admin-theme="dark"]) .glass-panel,
+body:not([data-admin-theme="dark"]) .glass-card,
+body:not([data-admin-theme="dark"]) article[class*="rounded"],
+body:not([data-admin-theme="dark"]) section[class*="rounded"] {
+  overflow: hidden;
+}
+
+body:not([data-admin-theme="dark"]) .glass-panel,
+body:not([data-admin-theme="dark"]) .glass-card,
+body:not([data-admin-theme="dark"]) .quick-action-card,
+body:not([data-admin-theme="dark"]) .setup-tile,
+body:not([data-admin-theme="dark"]) .corridor-preset,
+body:not([data-admin-theme="dark"]) article[class*="bg-white"] {
+  border-color: rgba(255, 255, 255, 0.56) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 18px 46px rgba(30, 36, 94, 0.08);
+}
+
+body:not([data-admin-theme="dark"]) input,
+body:not([data-admin-theme="dark"]) select,
+body:not([data-admin-theme="dark"]) textarea {
+  max-width: 100%;
+  border-radius: 1rem;
+}
+
+body:not([data-admin-theme="dark"]) label,
+body:not([data-admin-theme="dark"]) .grid > *,
+body:not([data-admin-theme="dark"]) .flex > *,
+body:not([data-admin-theme="dark"]) [class*="grid-cols-"] > * {
+  min-width: 0;
+}
+
+body:not([data-admin-theme="dark"]) .swadakta-auth-cta {
+  white-space: nowrap;
+}
+
+body:not([data-admin-theme="dark"]).swadakta-session-signed-in .swadakta-auth-cta {
+  border: 1px solid rgba(199, 196, 215, 0.58) !important;
+  background: rgba(255, 255, 255, 0.76) !important;
+  color: var(--sw-primary-container) !important;
+}
+
 @media (max-width: 640px) {
+  body:not([data-admin-theme="dark"]) [class*="px-margin-desktop"],
+  body:not([data-admin-theme="dark"]) .px-margin-desktop,
+  body:not([data-admin-theme="dark"]) [class*="md:px-margin-desktop"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  body:not([data-admin-theme="dark"]) header {
+    gap: 0.75rem !important;
+    min-height: 4.5rem;
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  body:not([data-admin-theme="dark"]) header nav {
+    display: none !important;
+  }
+
+  body:not([data-admin-theme="dark"]) header a[href*="portal"],
+  body:not([data-admin-theme="dark"]) header a[href*="/portal"],
+  body:not([data-admin-theme="dark"]) header a[href*="login"] {
+    flex: 0 1 auto;
+    max-width: 52vw;
+  }
+
+  body:not([data-admin-theme="dark"]) main {
+    max-width: 100vw;
+  }
+
+  body:not([data-admin-theme="dark"]) a[class*="px-8"],
+  body:not([data-admin-theme="dark"]) button[class*="px-8"],
+  body:not([data-admin-theme="dark"]) a[class*="px-6"],
+  body:not([data-admin-theme="dark"]) button[class*="px-6"] {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
   body:not([data-admin-theme="dark"]) .portal-tool-button,
   body:not([data-admin-theme="dark"]) .workspace-link {
     white-space: normal;

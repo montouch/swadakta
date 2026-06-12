@@ -12,9 +12,10 @@ const PUBLIC_BASE_URL =
   "https://swadakta.com";
 const EXPECTED_APP_DATA_REF = "app-data.js?v=54";
 const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=34";
-const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=1";
+const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=2";
 const FINAL_UX_THEME_MARKERS = [
   "--sw-primary: #000105",
+  "final-ux-sitewide-shell-v2",
   'body:not([data-admin-theme="dark"])',
   ".primary-glass-button",
   "overflow-wrap: anywhere",

@@ -628,6 +628,7 @@ const requiredAdminThemeCssMarkers = [
 ];
 const requiredFinalUxThemeCssMarkers = [
   "--sw-primary: #000105",
+  "final-ux-sitewide-shell-v2",
   'body:not([data-admin-theme="dark"])',
   ".primary-glass-button",
   "overflow-wrap: anywhere",
@@ -645,7 +646,7 @@ const requiredReadinessApiMarkers = [
   "swadakta-proof",
   "app-data.js?v=54",
   "stitch-portal.js?v=34",
-  "final-ux-theme.css?v=1",
+  "final-ux-theme.css?v=2",
   "final_ux_live_freshness",
   "final_ux_theme_url",
   "account-home-workflow-first-final-ux",
@@ -1160,8 +1161,8 @@ for (const [file, content] of localHtml) {
     if (content.includes("final-ux-theme.css")) {
       fail(failures, `${file} should use admin-theme.css without final-ux-theme.css`);
     }
-  } else if (file !== "admin.html" && !content.includes("final-ux-theme.css?v=1")) {
-    fail(failures, `${file} does not reference final-ux-theme.css?v=1`);
+  } else if (file !== "admin.html" && !content.includes("final-ux-theme.css?v=2")) {
+    fail(failures, `${file} does not reference final-ux-theme.css?v=2`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1399,8 +1400,8 @@ for (const page of requiredPages) {
     if (text.includes("final-ux-theme.css")) {
       fail(failures, `${page} should use admin-theme.css without final-ux-theme.css`);
     }
-  } else if (!text.includes("final-ux-theme.css?v=1")) {
-    fail(failures, `${page} does not reference final-ux-theme.css?v=1`);
+  } else if (!text.includes("final-ux-theme.css?v=2")) {
+    fail(failures, `${page} does not reference final-ux-theme.css?v=2`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
@@ -1604,22 +1605,22 @@ for (const marker of requiredAdminThemeCssMarkers) {
   }
 }
 
-const { response: finalUxThemeResponse, text: finalUxThemeText } = await fetchText("/final-ux-theme.css?v=1");
+const { response: finalUxThemeResponse, text: finalUxThemeText } = await fetchText("/final-ux-theme.css?v=2");
 if (finalUxThemeResponse.status !== 200) {
-  fail(failures, `final-ux-theme.css?v=1 returned ${finalUxThemeResponse.status}`);
+  fail(failures, `final-ux-theme.css?v=2 returned ${finalUxThemeResponse.status}`);
 } else {
-  pass("final-ux-theme.css?v=1 returned 200");
+  pass("final-ux-theme.css?v=2 returned 200");
 }
 for (const marker of requiredFinalUxThemeCssMarkers) {
   if (!finalUxThemeText.includes(marker)) {
-    fail(failures, `final-ux-theme.css?v=1 is missing marker ${marker}`);
+    fail(failures, `final-ux-theme.css?v=2 is missing marker ${marker}`);
   } else {
     pass(`final-ux-theme.css contains ${marker}`);
   }
 }
 for (const marker of forbiddenLegacyPurpleMarkers) {
   if (finalUxThemeText.toLowerCase().includes(marker.toLowerCase())) {
-    fail(failures, `final-ux-theme.css?v=1 still contains legacy purple UI marker ${marker}`);
+    fail(failures, `final-ux-theme.css?v=2 still contains legacy purple UI marker ${marker}`);
   }
 }
 
