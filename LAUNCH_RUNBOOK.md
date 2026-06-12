@@ -2,6 +2,35 @@
 
 This is the practical go-live checklist for turning the current MVP into a paid operating service.
 
+## 0. Launch Mode and Owner-Only Actions
+
+Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a bank, remittance business, law firm, or unlicensed escrow provider. The app can collect requests, create accounts, run ID-verification handoff, prepare quotes, track proof, and show provider-held payment status. It should not publicly promise licensed escrow, money transfer, legal advice, tax advice, immigration advice, customs brokerage, or guaranteed delivery until those licences/providers are in place.
+
+### What Codex/product can drive
+
+- Keep the website, workflow, account home, AI helper, admin tools, tracking, proof, and launch checks working.
+- Keep protected actions gated: AI can draft and triage, but cannot verify ID, release/refund money, assign paid work, mark funds paid, or send external messages by itself.
+- Keep Stripe, PayPal, Wise fallback, M-Pesa/Daraja, Paystack, and Flutterwave code paths provider-ready without exposing unfinished rails as public defaults.
+- Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, release conditions, and protected-funds boundaries without exposing founder economics.
+- Keep testing scripts and browser audits current before every deploy.
+
+### What the owner must do before public paid launch
+
+- Choose the legal home of the business. If operating from Australia, start with an ABN and business structure decision; register the business name if trading as Swadakta. Official Australian registration guidance starts at business.gov.au and the Business Registration Service: https://business.gov.au/registrations and https://register.business.gov.au/
+- Get accounting/tax advice on GST, income tax, record keeping, contractor payments, cross-border income, and whether/when GST registration applies. Business.gov.au and the ATO explain GST registration here: https://business.gov.au/registrations/register-for-taxes/register-for-goods-and-services-tax-gst and https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst
+- Get legal advice on whether any part of the operating model becomes a regulated financial service, non-cash payment facility, remittance service, or escrow/trust-money service. If Swadakta starts transferring money for clients rather than using regulated payment providers, AUSTRAC/ASIC advice is required before launch. AUSTRAC says remittance providers must register, and ASIC says financial-services businesses generally need AFS authorisation: https://www.austrac.gov.au/enrol-and-register-remittance and https://www.asic.gov.au/for-finance-professionals/afs-licensees/do-you-need-an-afs-licence/
+- Buy insurance before taking real paid field jobs: public liability, professional indemnity/errors and omissions, cyber/privacy, business equipment, and any courier/goods-in-transit cover that matches the actual tasks. Business.gov.au explains business insurance types here: https://business.gov.au/risk-management/insurance/types-of-business-insurance
+- Have the terms, privacy policy, refund/dispute wording, contractor agreement, receiver code of conduct, and payment wording reviewed. Australian consumer-law guidance says services must meet consumer guarantees and remedies can include repair, replacement, refund, cancellation, or compensation depending on the problem: https://www.accc.gov.au/consumers/problem-with-a-product-or-service-you-bought
+- Decide how receivers are engaged. If using contractors, document scope, independence, tax responsibility, insurance, proof obligations, safety rules, and payment timing. Fair Work explains that contractors are different from employees, and business.gov.au recommends checking employee-vs-contractor obligations: https://www.fairwork.gov.au/find-help-for/independent-contractors and https://business.gov.au/people/contractors/employee-or-contractor
+- Treat privacy as launch-critical because the app handles identity documents, photos, addresses, family contacts, payment references, and proof media. OAIC has a small-business privacy checklist, and Kenya's ODPC is the official data-protection regulator for Kenya: https://www.oaic.gov.au/privacy/privacy-guidance-for-organisations-and-government-agencies/organisations/small-business and https://www.odpc.go.ke/
+- For Kenya operations, decide whether Swadakta needs a Kenyan company/business registration, KRA PIN/tax setup, ODPC data-controller/processor registration, and Safaricom/M-Pesa business approval. Official starting points: BRS https://brs.go.ke/, KRA PIN registration https://www.kra.go.ke/business/companies-partnerships/companies-partnerships-pin-taxes/companies-partnerships-pin-registration, ODPC https://www.odpc.go.ke/, and Safaricom Daraja https://developer.safaricom.co.ke/
+- Open and verify the provider accounts under the chosen legal entity: Stripe, PayPal Business, Wise Business fallback, ID verification provider, Supabase, Vercel, OpenAI, and later M-Pesa/Daraja, Paystack, or Flutterwave.
+- Rotate any secret key that was ever pasted into chat or a browser field, then add the new value only as a Vercel/Supabase server-side secret.
+
+### Practical public-launch rule
+
+Until the owner-only steps above are complete, Swadakta can be shown as a live pilot and can collect non-sensitive test requests. Real paid jobs should stay founder-approved, provider-paid, ID-gated, and low-value, with written scope and no informal escrow.
+
 ## 1. Domain and Vercel
 
 - `swadakta.com` is purchased in Cloudflare under `swadakta111@gmail.com`.

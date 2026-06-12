@@ -6,7 +6,7 @@
     <title>Payments & Pricing | Swadakta</title>
     <meta
       name="description"
-      content="Swadakta payment rails, quote-first pricing, founder margin, milestone controls, M-Pesa, Stripe, PayPal, bank transfer, Wise fallback, and protected payout boundaries."
+      content="Swadakta payment rails, quote-first pricing, service fees, milestone controls, M-Pesa, Stripe, PayPal, bank transfer, Wise fallback, and protected payout boundaries."
     />
     <link rel="canonical" href="https://swadakta.com/payments" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -101,7 +101,7 @@
               Quote first. Protect money. Release by proof.
             </h1>
             <p class="mt-5 max-w-2xl text-lg text-on-surface-variant">
-              Swadakta earns through a clear service margin built into each quote. Clients pay through provider rails where possible, receivers are paid after proof and milestone checks, and risky money decisions stay protected.
+              Swadakta uses a clear service fee built into each quote. Clients pay through provider rails where possible, receivers are paid after proof and milestone checks, and risky money decisions stay protected.
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
             <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Get a quote</a>
@@ -230,7 +230,7 @@
           <div>
             <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Step 2</p>
             <h2 class="mt-2 font-display text-2xl font-bold">Quote</h2>
-            <p class="mt-3 text-on-surface-variant">Swadakta prices time, travel, risk, platform margin, receiver payout, and provider fees.</p>
+            <p class="mt-3 text-on-surface-variant">Swadakta prices time, travel, risk, service fee, receiver payout, and provider fees.</p>
           </div>
           <div>
             <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Step 3</p>
@@ -254,8 +254,8 @@
               This estimator is deliberately conservative. The final quote still depends on the actual corridor, lawful-goods checks, receiver availability, travel, documents, urgency, and proof requirements.
             </p>
             <div class="mt-6 rounded-3xl bg-primary/10 border border-primary/20 p-5">
-              <p class="font-label text-sm text-primary">Founder margin is built into each quote.</p>
-              <p class="mt-2 text-sm text-on-surface-variant">At launch, the clean model is total client quote minus receiver payout, field costs, and provider fees. The founder margin is what funds Swadakta, support, AI tooling, risk work, and growth.</p>
+              <p class="font-label text-sm text-primary">Swadakta's service fee is built into each quote.</p>
+              <p class="mt-2 text-sm text-on-surface-variant">Each quote should cover receiver payout, field costs, provider fees, proof work, risk controls, and Swadakta's service fee. Internal operating reserve checks stay in admin, not on the public quote page.</p>
             </div>
           </div>
           <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="payment-estimator-form">
@@ -318,18 +318,69 @@
                   <strong class="mt-1 block text-lg">AUD 40-60</strong>
                 </div>
                 <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
-                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Swadakta margin range</p>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Service and operating reserve</p>
                   <strong class="mt-1 block text-lg text-primary">AUD 20-40</strong>
                 </div>
                 <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4 md:col-span-2">
-                  <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Minimum margin guardrail</p>
-                  <strong class="mt-1 block text-lg text-primary">Target 25% or re-quote</strong>
-                  <p class="mt-1 text-sm text-on-surface-variant">The quote should leave enough founder margin after receiver payout, field costs, provider fees, and risk reserve.</p>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Quote safety guardrail</p>
+                  <strong class="mt-1 block text-lg text-primary">Re-quote if costs do not fit</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">The quote should leave enough operating room after receiver payout, field costs, provider fees, and risk reserve.</p>
                 </div>
               </div>
               <p class="mt-4 text-xs text-on-surface-variant">Planning only: field costs, provider fees, refunds, taxes, disputes, and regulated escrow can change the final economics.</p>
             </div>
           </form>
+        </div>
+      </section>
+
+      <section class="border-y border-outline-variant/30 bg-white/50" id="money-clarity">
+        <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
+          <div class="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
+            <div>
+              <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Money clarity</p>
+              <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">A quote is not one single bucket of money.</h2>
+              <p class="mt-4 text-on-surface-variant">
+                Swadakta separates ordinary service charges from protected or pass-through money. Clients should understand what is being paid, what is held for proof or milestones, and what cannot be treated as Swadakta income.
+              </p>
+              <div class="mt-6 grid gap-3">
+                <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
+                  <strong class="font-label text-primary">Client quote</strong>
+                  <p class="mt-2 text-sm text-on-surface-variant">The total amount a client is asked to pay for a clearly scoped job. The quote should name the service, proof standard, payment rail, milestone terms, and expiry date.</p>
+                </div>
+                <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
+                  <strong class="font-label text-primary">Service and operating fee</strong>
+                  <p class="mt-2 text-sm text-on-surface-variant">Swadakta's fee is included in the quote. It covers coordination, support, verification workflow, AI tooling, payment administration, proof review, and operating risk.</p>
+                </div>
+                <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
+                  <strong class="font-label text-primary">Pass-through / protected funds</strong>
+                  <p class="mt-2 text-sm text-on-surface-variant">Supplier deposits, construction funds, title/property money, family support funds, and other protected amounts stay separated from ordinary service fees and need written milestone controls.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Client-safe wording</p>
+              <h3 class="mt-2 font-display text-3xl font-extrabold">What a payment note must say</h3>
+              <div class="mt-6 grid gap-3">
+                <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
+                  <strong class="block">1. What is being paid for</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">Scope, location, proof needed, expected timing, and what is excluded.</p>
+                </div>
+                <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
+                  <strong class="block">2. What is protected or pass-through</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">Any supplier, family, construction, title, or high-value funds are named separately from service work.</p>
+                </div>
+                <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
+                  <strong class="block">3. When money can move</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">Provider confirmation comes before paid work; milestone release comes after proof review.</p>
+                </div>
+                <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
+                  <strong class="block">4. What Swadakta is not</strong>
+                  <p class="mt-1 text-sm text-on-surface-variant">Unless written otherwise through a regulated provider, Swadakta is not a bank, law firm, trustee, or licensed escrow agent.</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -339,7 +390,7 @@
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment rails</p>
             <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Use the lowest-friction safe rail first.</h2>
             <p class="mt-4 text-on-surface-variant">
-              Swadakta should not make the founder reconcile every payment manually. The normal order is card or PayPal for global clients, M-Pesa for suitable KES collections, bank transfer where a receipt trail is clean, and Wise only as an exception fallback.
+              Swadakta should not make the operations team reconcile every payment manually. The normal order is card or PayPal for global clients, M-Pesa for suitable KES collections, bank transfer where a receipt trail is clean, and Wise only as an exception fallback.
             </p>
           </div>
           <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -377,7 +428,7 @@
             </p>
             <div class="mt-6 rounded-3xl bg-white/70 border border-outline-variant/40 p-5">
               <p class="font-label text-sm text-primary">Expansion rule</p>
-              <p class="mt-2 text-sm text-on-surface-variant">Paystack and Flutterwave are not public self-serve rails yet. They are founder-reviewed expansion candidates until provider callbacks can prove paid funds without releasing receiver payouts.</p>
+              <p class="mt-2 text-sm text-on-surface-variant">Paystack and Flutterwave are not public self-serve rails yet. They are Swadakta-reviewed expansion candidates until provider callbacks can prove paid funds without releasing receiver payouts.</p>
             </div>
           </div>
           <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="africa-rail-planner-form">
@@ -448,10 +499,10 @@
             </ul>
           </div>
           <div class="glass-panel rounded-[2rem] p-6 md:p-8">
-            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">What founder/admin sees</p>
-            <h2 class="mt-3 font-display text-3xl font-extrabold">Margin and protected decisions.</h2>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Internal quote controls</p>
+            <h2 class="mt-3 font-display text-3xl font-extrabold">Protected decisions stay inside operations.</h2>
             <ul class="mt-6 grid gap-3 text-on-surface-variant">
-              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>Quote revenue, receiver payout, field costs, payment processing fee, and margin risk.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>Quote amount, receiver payout, field costs, payment processing fee, and quote-safety risk.</span></li>
               <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>Provider reference, callback state, reconciliation notes, and fallback payment evidence.</span></li>
               <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>AI can draft and check. It cannot mark paid, release funds, refund, or assign paid work.</span></li>
             </ul>
@@ -541,7 +592,7 @@
           "Confirm merchant account approval, settlement account, fees, chargeback/reversal rules, and webhook verification.",
           "Record provider reference before funds count as protected; release receiver payout only after proof review.",
         ];
-        let title = "Founder-reviewed Africa payment route";
+        let title = "Swadakta-reviewed Africa payment route";
         let rail = "Stripe or PayPal first if the client pays in AUD/USD/GBP/EUR; bank or Wise fallback if provider checkout is unsuitable.";
 
         if (country === "kenya" && currency === "KES") {
@@ -606,9 +657,9 @@
           target: `${Math.round(target * 100)}%`,
           quoteFloor: moneyRange(quoteFloorLow, quoteFloorHigh, currency),
           guardrailPass,
-          guardrailLabel: guardrailPass ? "Margin guardrail clear" : "Re-quote before sending",
+          guardrailLabel: guardrailPass ? "Quote guardrail clear" : "Re-quote before sending",
           guardrailCopy: guardrailPass
-            ? "This range appears to cover receiver payout, field costs, provider fees, risk reserve, and target founder margin."
+            ? "This range appears to cover receiver payout, field costs, provider fees, risk reserve, and the internal operating reserve."
             : "Raise the quote, reduce scope, reduce field costs, or split the job into milestones before sending a payment link.",
           risk: sensitive ? moneyRange(riskReserveLow, riskReserveHigh, currency) : "",
         };
@@ -659,9 +710,9 @@
               <strong class="mt-1 block text-lg">${breakdown.provider}</strong>
             </div>
             <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4">
-              <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Swadakta margin range</p>
-              <strong class="mt-1 block text-lg text-primary">${breakdown.margin}</strong>
-              <p class="mt-1 text-xs text-on-surface-variant">${breakdown.marginPercent} of quote</p>
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-primary">Service and operating reserve</p>
+              <strong class="mt-1 block text-lg text-primary">Included in quote</strong>
+              <p class="mt-1 text-xs text-on-surface-variant">Internal economics stay in Swadakta operations</p>
             </div>
             ${
               breakdown.risk
@@ -672,13 +723,13 @@
                 : ""
             }
             <div class="rounded-2xl ${breakdown.guardrailPass ? "bg-emerald-50/90 border-emerald-200" : "bg-error-container border-error/20"} border p-4 md:col-span-2">
-              <p class="font-label text-xs uppercase tracking-[0.14em] ${breakdown.guardrailPass ? "text-emerald-700" : "text-on-error-container"}">Minimum margin guardrail</p>
+              <p class="font-label text-xs uppercase tracking-[0.14em] ${breakdown.guardrailPass ? "text-emerald-700" : "text-on-error-container"}">Quote safety guardrail</p>
               <strong class="mt-1 block text-lg ${breakdown.guardrailPass ? "text-emerald-700" : "text-on-error-container"}">${breakdown.guardrailLabel}</strong>
-              <p class="mt-1 text-sm text-on-surface-variant">Target founder margin: ${breakdown.target}. Suggested quote floor: ${breakdown.quoteFloor}.</p>
+              <p class="mt-1 text-sm text-on-surface-variant">Swadakta checks the quote floor internally before sending a payment link.</p>
               <p class="mt-1 text-sm text-on-surface-variant">${breakdown.guardrailCopy}</p>
             </div>
           </div>
-          <p class="mt-4 text-xs text-on-surface-variant">Founder planning only: final quote can change with route, field costs, payment fees, refunds, taxes, disputes, or regulated escrow requirements.</p>
+          <p class="mt-4 text-xs text-on-surface-variant">Planning only: final quote can change with route, field costs, payment fees, refunds, taxes, disputes, or regulated payment-provider requirements.</p>
           ${
             flags.length
               ? `<ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">${flags.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">priority_high</span><span>${item}</span></li>`).join("")}</ul>`
@@ -707,6 +758,6 @@
     </script>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=45"></script>
-  <script src="assistant-dock.js?v=4"></script>
+  <script src="assistant-dock.js?v=5"></script>
 </body>
 </html>

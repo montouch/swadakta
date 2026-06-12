@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "4";
+  const DOCK_VERSION = "5";
   const rootId = "swadakta-ai-dock";
   const protectedBoundary =
     "Protected actions stay gated: AI cannot verify ID, release or refund money, assign paid work, mark payment received, or send external messages without provider/system evidence or founder approval.";
@@ -36,6 +36,14 @@
     lastAssistantText: "",
     messages: [],
   };
+  const authCtaLabels = new Set([
+    "sign in",
+    "get started",
+    "create account",
+    "open account",
+    "open account first",
+    "sign in to verify",
+  ]);
 
   function injectStyles() {
     if (document.querySelector("#swadakta-ai-dock-style")) return;
@@ -77,6 +85,105 @@
     document.head.append(style);
   }
 
+  function injectSitePolishStyles() {
+    if (document.querySelector("#swadakta-site-polish-style")) return;
+    const style = document.createElement("style");
+    style.id = "swadakta-site-polish-style";
+    style.textContent = `
+      html, body { max-width: 100%; overflow-x: clip; }
+      body header, body nav, body main, body section, body article, body form, body aside, body footer, body .glass-panel, body .glass-card { min-width: 0; }
+      body .grid > *, body .flex > * { min-width: 0; }
+      body a, body button, body label, body summary { overflow-wrap: anywhere; }
+      body a[class*="inline-flex"], body button[class*="inline-flex"], body a[class*="flex"], body button[class*="flex"], body .button, body .header-action {
+        min-width: 0;
+        max-width: 100%;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.15;
+        text-wrap: balance;
+      }
+      body main a[class*="inline-flex"], body main button[class*="inline-flex"], body main a[class*="flex"], body main button[class*="flex"],
+      body section a[class*="inline-flex"], body section button[class*="inline-flex"], body section a[class*="flex"], body section button[class*="flex"] {
+        flex-shrink: 0;
+      }
+      body main .flex-wrap > a[class*="inline-flex"], body main .flex-wrap > button[class*="inline-flex"],
+      body section .flex-wrap > a[class*="inline-flex"], body section .flex-wrap > button[class*="inline-flex"] {
+        flex: 0 0 fit-content;
+        min-width: fit-content;
+      }
+      body button, body a, body label { -webkit-tap-highlight-color: transparent; }
+      body header a, body header button {
+        flex-shrink: 1;
+        min-width: 0;
+        max-width: 100%;
+      }
+      body header nav {
+        min-width: 0;
+        overflow: hidden;
+      }
+      body header nav a {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      body [class*="grid-cols-2"] > *, body [class*="grid-cols-3"] > *, body [class*="grid-cols-4"] > * {
+        min-width: 0;
+      }
+      body [class*="rounded"] strong, body [class*="rounded"] span, body [class*="rounded"] p {
+        max-width: 100%;
+      }
+      body .swadakta-auth-cta {
+        white-space: nowrap;
+      }
+      body.swadakta-session-signed-in .swadakta-auth-cta {
+        background: rgba(255,255,255,.76);
+        color: #4648d4;
+        border: 1px solid rgba(199,196,215,.58);
+      }
+      @media (max-width: 900px) {
+        body header {
+          padding-left: 16px !important;
+          padding-right: 16px !important;
+          gap: 12px !important;
+        }
+        body header nav {
+          gap: 14px !important;
+        }
+        body header .font-display-lg, body header .font-display, body header .brand {
+          flex: 0 0 auto;
+        }
+      }
+      @media (max-width: 640px) {
+        body [class*="tracking-"] {
+          letter-spacing: 0 !important;
+        }
+        body a[class*="px-8"], body button[class*="px-8"] {
+          padding-left: 1rem !important;
+          padding-right: 1rem !important;
+        }
+        body a[class*="px-6"], body button[class*="px-6"] {
+          padding-left: .9rem !important;
+          padding-right: .9rem !important;
+        }
+        body header nav {
+          display: none !important;
+        }
+        body header a[href*="portal"], body header a[href*="/portal"] {
+          max-width: 48vw;
+        }
+        body main div[class*="flex"][class*="gap-"]:not(.sw-ai-compose-box):not(.sw-ai-title-row):not(.sw-ai-quick),
+        body section div[class*="flex"][class*="gap-"]:not(.sw-ai-compose-box):not(.sw-ai-title-row):not(.sw-ai-quick) {
+          flex-wrap: wrap;
+        }
+        body main a[class*="inline-flex"], body main button[class*="inline-flex"], body section a[class*="inline-flex"], body section button[class*="inline-flex"],
+        body main a[class*="flex"], body main button[class*="flex"], body section a[class*="flex"], body section button[class*="flex"] {
+          min-width: fit-content;
+        }
+      }
+    `;
+    document.head.append(style);
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
       ({
@@ -99,6 +206,147 @@
       .replace(/[^a-z0-9]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function extractEmailFromSessionLike(value) {
+    if (!value) return "";
+    if (typeof value === "string") {
+      try {
+        return extractEmailFromSessionLike(JSON.parse(value));
+      } catch {
+        return /\S+@\S+\.\S+/.test(value) ? value : "";
+      }
+    }
+
+    if (typeof value !== "object") return "";
+    return (
+      value.user?.email ||
+      value.session?.user?.email ||
+      value.currentSession?.user?.email ||
+      value.current_session?.user?.email ||
+      value.data?.session?.user?.email ||
+      value.data?.user?.email ||
+      ""
+    );
+  }
+
+  function storedSupabaseSessionEmail() {
+    try {
+      for (let index = 0; index < localStorage.length; index += 1) {
+        const key = localStorage.key(index) || "";
+        if (!/^sb-.+-auth-token$/.test(key) && !key.includes("supabase.auth.token")) continue;
+        const raw = localStorage.getItem(key);
+        const parsed = JSON.parse(raw || "{}");
+        const expiresAt = Number(parsed.expires_at || parsed.currentSession?.expires_at || parsed.session?.expires_at || 0);
+        if (expiresAt && expiresAt * 1000 < Date.now()) continue;
+        const email = extractEmailFromSessionLike(parsed);
+        if (email) return email;
+      }
+    } catch {
+      return "";
+    }
+    return "";
+  }
+
+  function rememberedAccountEmail() {
+    try {
+      const openUntil = Number(sessionStorage.getItem("swadakta_account_home_open_until") || 0);
+      if (openUntil && openUntil > Date.now()) return sessionStorage.getItem("swadakta_account_home_email") || "";
+    } catch {
+      return "";
+    }
+    return "";
+  }
+
+  async function currentAccountSession() {
+    try {
+      if (window.SwadaktaData?.getSession) {
+        const result = await window.SwadaktaData.getSession();
+        const email = result.session?.user?.email || "";
+        if (email) return { signedIn: true, email };
+      }
+    } catch {
+      // Fall back to browser storage below.
+    }
+
+    const email = storedSupabaseSessionEmail() || rememberedAccountEmail();
+    return { signedIn: Boolean(email), email };
+  }
+
+  function isAccountCta(node) {
+    if (!node || node.closest(`#${rootId}`)) return false;
+    if (node.closest("form") && !node.closest("header")) return false;
+    const href = node.getAttribute?.("href") || "";
+    const label = normalizedText(visibleText(node) || node.getAttribute?.("aria-label") || "");
+    if (!authCtaLabels.has(label)) return false;
+    return node.closest("header") || /portal|auth/i.test(href);
+  }
+
+  function replaceElementLabel(node, label) {
+    if (!node) return;
+    if (node.textContent === label) return;
+    node.textContent = label;
+  }
+
+  function setAttributeIfChanged(node, name, value) {
+    if (!node || node.getAttribute(name) === value) return;
+    node.setAttribute(name, value);
+  }
+
+  function accountHomeHref() {
+    return location.pathname.includes("portal") ? "#home" : "portal.html#home";
+  }
+
+  function syncAccountCtas({ signedIn, email } = {}) {
+    document.body.classList.toggle("swadakta-session-signed-in", Boolean(signedIn));
+    document.body.classList.toggle("swadakta-session-signed-out", !signedIn);
+
+    [...document.querySelectorAll("a[href], button")]
+      .filter(isAccountCta)
+      .forEach((node) => {
+        if (!node.dataset.swadaktaOriginalText) node.dataset.swadaktaOriginalText = visibleText(node) || node.textContent || "";
+        if (!node.dataset.swadaktaOriginalHref && node.getAttribute("href")) {
+          node.dataset.swadaktaOriginalHref = node.getAttribute("href") || "";
+        }
+        node.classList.add("swadakta-auth-cta");
+
+        if (signedIn) {
+          replaceElementLabel(node, node.closest("header") ? "Account home" : "Open account");
+          if (node.tagName === "A") setAttributeIfChanged(node, "href", accountHomeHref());
+          setAttributeIfChanged(node, "aria-label", email ? `Open account home for ${email}` : "Open account home");
+          setAttributeIfChanged(node, "data-swadakta-auth-state", "signed-in");
+        } else {
+          replaceElementLabel(node, node.dataset.swadaktaOriginalText || "Sign in");
+          if (node.tagName === "A" && node.dataset.swadaktaOriginalHref) {
+            setAttributeIfChanged(node, "href", node.dataset.swadaktaOriginalHref);
+          }
+          node.removeAttribute("data-swadakta-auth-state");
+        }
+      });
+  }
+
+  async function refreshAccountCtas() {
+    const session = await currentAccountSession();
+    syncAccountCtas(session);
+    return session;
+  }
+
+  function bindAccountCtaRefresh() {
+    window.addEventListener("storage", (event) => {
+      if (/auth|swadakta_account_home/i.test(event.key || "")) refreshAccountCtas();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) refreshAccountCtas();
+    });
+    if (window.SwadaktaData?.onAuthStateChange) {
+      Promise.resolve(window.SwadaktaData.onAuthStateChange(() => refreshAccountCtas())).catch(() => {});
+    }
+    const observer = new MutationObserver(() => {
+      window.clearTimeout(observer.refreshTimer);
+      observer.refreshTimer = window.setTimeout(refreshAccountCtas, 120);
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    [0, 500, 1800].forEach((delay) => window.setTimeout(refreshAccountCtas, delay));
   }
 
   function actionTokens(value) {
@@ -695,6 +943,7 @@
     const context = collectPageContext();
     const root = document.createElement("section");
     root.id = rootId;
+    root.dataset.version = DOCK_VERSION;
     root.innerHTML = `
       <aside class="sw-ai-panel" role="dialog" aria-modal="false" aria-label="Swadakta AI screen assistant">
         <header class="sw-ai-header">
@@ -788,8 +1037,11 @@
   }
 
   function init() {
+    document.documentElement.dataset.swadaktaDockVersion = DOCK_VERSION;
+    injectSitePolishStyles();
     buildDock();
     bindEvents();
+    bindAccountCtaRefresh();
   }
 
   window.SwadaktaAssistantDock = {

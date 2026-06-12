@@ -309,7 +309,7 @@
       selectedPackage === "business_ops";
     const lowBudgetPhysical = selectedBudget === "under_100" && hasPhysical;
     const checks = [
-      "Quote must cover receiver payout, field costs, provider fees, risk reserve, and founder margin.",
+      "Quote must cover receiver payout, field costs, provider fees, risk reserve, and operating reserve.",
       payment === "bank" || payment === "mpesa"
         ? "Provider receipt, callback, or statement evidence is required before funds count as protected."
         : "Provider checkout/order evidence is required before paid work starts.",
@@ -317,8 +317,8 @@
 
     if (hasPhysical) checks.push("Physical work needs route, item, delivery, access, and proof checks before purchase or dispatch.");
     if (fundsPlan === "deposit_milestones") checks.push("Split payment release into proof milestones before receiver payout.");
-    if (highValue) checks.push("High-value or retainer work should use milestone controls and founder/provider review before release.");
-    if (lowBudgetPhysical) checks.push("Under-100 physical work may need a smaller scope, local-only route, or re-quote to protect margin.");
+    if (highValue) checks.push("High-value or retainer work should use milestone controls and Swadakta/provider review before release.");
+    if (lowBudgetPhysical) checks.push("Under-100 physical work may need a smaller scope, local-only route, or re-quote to protect the operating reserve.");
 
     return {
       tone: highValue || lowBudgetPhysical ? "review" : "standard",
@@ -327,7 +327,7 @@
         : lowBudgetPhysical
           ? "Quote safety: budget may be tight"
           : "Budget and quote safety",
-      copy: `${packageLabel(selectedPackage)}. ${budgetRangeLabel(selectedBudget)}. Swadakta will price the job after checking route, proof, receiver payout, field costs, provider fees, and founder margin.`,
+      copy: `${packageLabel(selectedPackage)}. ${budgetRangeLabel(selectedBudget)}. Swadakta will price the job after checking route, proof, receiver payout, field costs, provider fees, and operating reserve.`,
       checks,
     };
   }

@@ -119,6 +119,9 @@ const requiredDockMarkers = [
   "findVisibleSafeLink",
   "findVisibleSection",
   "performSafeAction",
+  "swadakta-site-polish-style",
+  "syncAccountCtas",
+  "storedSupabaseSessionEmail",
   "Protected actions stay gated",
 ];
 const requiredAiPreferenceMarkers = ["SwadaktaAiPreference", "dataset.aiMode", "swadakta_ai_mode"];
@@ -186,9 +189,10 @@ const requiredTrustMarkers = [
 const requiredPaymentsMarkers = [
   "Payments & Pricing",
   "Estimate a launch quote",
-  "Founder margin is built into each quote",
-  "Swadakta margin range",
-  "Minimum margin guardrail",
+  "Swadakta's service fee is built into each quote",
+  "A quote is not one single bucket of money",
+  "Service and operating reserve",
+  "Quote safety guardrail",
   "marginTarget",
   "quoteFloor",
   "Re-quote before sending",
@@ -478,8 +482,8 @@ for (const marker of requiredDockMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=4")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=4`);
+  if (!content.includes("assistant-dock.js?v=5")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=5`);
   }
 }
 const localAiPreferences = await readLocal("ai-preferences.js");
@@ -620,8 +624,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=4")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=4`);
+  if (!text.includes("assistant-dock.js?v=5")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=5`);
   }
   if (page !== "/" && page !== "/auth" && expectedVersion && !text.includes(`app-data.js?v=${expectedVersion}`)) {
     if (!["/corridor"].includes(page)) {
@@ -868,11 +872,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=4");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=5");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=4 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=5 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=4 returned 200");
+  pass("assistant-dock.js?v=5 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
