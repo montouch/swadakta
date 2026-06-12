@@ -3,7 +3,7 @@ const {
   REQUEST_SELECT_FIELDS,
   normalizeCurrency,
   paymentReconciliationPayload,
-} = require("./payment-reconciliation");
+} = require("../../lib/payment-reconciliation");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||

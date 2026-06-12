@@ -875,7 +875,7 @@ for (const marker of requiredReadinessApiMarkers) {
   }
 }
 const localPaystackWebhook = await readLocal("api/payments/paystack-webhook.js");
-const localPaymentReconciliation = await readLocal("api/payments/payment-reconciliation.js");
+const localPaymentReconciliation = await readLocal("lib/payment-reconciliation.js");
 for (const marker of requiredPaystackWebhookMarkers) {
   if (!`${localPaystackWebhook}\n${localPaymentReconciliation}`.includes(marker)) {
     fail(failures, `Local Paystack webhook is missing marker ${marker}`);
