@@ -292,6 +292,7 @@ const requiredPortalHtmlMarkers = [
   'data-final-ux-polish="account_home_final_ux_polish"',
   "final-ux-account-home-polish",
   "account-home-find-work-before-profile",
+  "account-home-workflow-first-final-ux",
   "data-final-ux-shell=\"account-tools\"",
   'data-account-home="true"',
   "quick-action-card",

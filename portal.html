@@ -195,7 +195,7 @@
         }
         .quick-action-card {
             display: flex;
-            min-height: 11rem;
+            min-height: 9.5rem;
             flex-direction: column;
             border-radius: 1.5rem;
             padding: 1.25rem;
@@ -290,17 +290,20 @@
         #dashboard > section[aria-label="Main actions"] {
             order: 1;
         }
-        #dashboard > section[aria-label="Account at a glance"] {
+        #dashboard > section[aria-label="Jobs and account status"] {
             order: 2;
         }
-        #account-setup-checklist {
+        #receiver-profile-setup {
             order: 3;
         }
-        #account-home-autopilot {
+        #dashboard > section[aria-label="Account at a glance"] {
             order: 4;
         }
-        #dashboard > section[aria-label="Jobs and account status"] {
+        #account-setup-checklist {
             order: 5;
+        }
+        #account-home-autopilot {
+            order: 6;
         }
         #dashboard > section[aria-label="Main actions"] {
             align-items: stretch;
@@ -322,8 +325,9 @@
             align-items: center;
             justify-content: center;
             border-radius: 1.15rem;
-            background: rgba(96, 99, 238, 0.1);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(16, 26, 58, 0.08));
             color: #000105;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px rgba(16, 26, 58, 0.1);
         }
         .quick-action-cta {
             margin-top: auto;
@@ -538,6 +542,7 @@
             gap: 1rem;
         }
         /* account-home-find-work-before-profile */
+        /* account-home-workflow-first-final-ux */
         #dashboard {
             display: flex;
             flex-direction: column;
@@ -547,7 +552,7 @@
             margin-top: 0 !important;
         }
         #dashboard > section[aria-label="Jobs and account status"] {
-            order: 5;
+            order: 2;
         }
         #find-work {
             order: 0;
@@ -558,8 +563,17 @@
             scroll-margin-top: 6.5rem;
         }
         #receiver-profile-setup {
-            order: 6;
+            order: 3;
             scroll-margin-top: 6.5rem;
+        }
+        #dashboard > section[aria-label="Account at a glance"] {
+            order: 4;
+        }
+        #account-setup-checklist {
+            order: 5;
+        }
+        #account-home-autopilot {
+            order: 6;
         }
         #marketplace-job-list > article,
         #my-job-offers-list > article,
@@ -584,6 +598,35 @@
             body #home header nav.portal-top-tools {
                 display: grid !important;
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            #dashboard > section[aria-label="Main actions"] {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.75rem;
+            }
+            .quick-action-card {
+                min-height: 8.25rem;
+                border-radius: 1.15rem;
+                padding: 0.9rem;
+            }
+            .quick-action-icon {
+                height: 2.55rem;
+                width: 2.55rem;
+                border-radius: 0.9rem;
+            }
+            .quick-action-card h2 {
+                margin-top: 0.65rem;
+                font-size: 1rem !important;
+                line-height: 1.3 !important;
+            }
+            .quick-action-card p {
+                display: none;
+            }
+            .quick-action-cta {
+                min-height: 2.25rem;
+                width: 100%;
+                padding: 0 0.7rem;
+                font-size: 0.76rem;
+                white-space: normal;
             }
             .find-job-step {
                 grid-template-columns: 3rem minmax(0, 1fr);
@@ -959,8 +1002,8 @@
 <div class="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.18em]">Account home</p>
-<h1 class="font-display-lg text-headline-lg text-on-surface mt-1">Home</h1>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Post a job, find work, track active requests, message safely, or ask AI to choose the next safe step.</p>
+<h1 class="font-display-lg text-headline-lg text-on-surface mt-1">What do you want to do?</h1>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Choose one path now. You can post a job, find paid work, track proof, message safely, or ask AI to choose the next safe step.</p>
 <p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence." data-ai-status-off="Manual mode is on. Nothing breaks: use jobs, verification, messages, payments, tracking, and issues yourself.">AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence.</p>
 </div>
 <div class="flex flex-wrap gap-3 xl:justify-end">
@@ -971,7 +1014,7 @@
 </div>
 <div class="mt-5 flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
 <nav class="portal-top-tools" aria-label="Primary account actions">
-<a class="portal-tool-button is-primary" href="brief.html" aria-label="Give a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Give a job</a>
+<a class="portal-tool-button is-primary" href="brief.html" aria-label="Post a job"><span class="material-symbols-outlined text-[20px]">add_task</span>Post a job</a>
 <a class="portal-tool-button" href="#find-work" aria-label="Find jobs"><span class="material-symbols-outlined text-[20px]">work_history</span>Find jobs</a>
 <a class="portal-tool-button" href="tracking.html" aria-label="Track jobs"><span class="material-symbols-outlined text-[20px]">fact_check</span>Track</a>
 <a class="portal-tool-button" href="messages.html" aria-label="Messages and proof"><span class="material-symbols-outlined text-[20px]">forum</span>Messages</a>
@@ -1115,7 +1158,7 @@
 <section class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Main actions">
 <a class="quick-action-card glass-panel" href="brief.html" aria-label="Post a job">
 <span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">add_task</span></span>
-<h2 class="font-headline-sm text-headline-sm mt-4">Give a job</h2>
+<h2 class="font-headline-sm text-headline-sm mt-4">Post a job</h2>
 <p class="font-body-md text-on-surface-variant mt-2">Describe the job, choose the route, upload details, set proof, and get a quote.</p>
 <span class="quick-action-cta">Start request <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1127,7 +1170,7 @@
 </a>
 <a class="quick-action-card glass-panel" href="tracking.html" aria-label="Track my jobs">
 <span class="quick-action-icon"><span class="material-symbols-outlined text-[28px]">fact_check</span></span>
-<h2 class="font-headline-sm text-headline-sm mt-4">My jobs</h2>
+<h2 class="font-headline-sm text-headline-sm mt-4">Track jobs</h2>
 <p class="font-body-md text-on-surface-variant mt-2">Track requests, assigned work, proof, milestones, and issues.</p>
 <span class="quick-action-cta">Open tracking <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
