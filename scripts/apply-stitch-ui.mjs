@@ -401,7 +401,7 @@ function routeStitchLogin(html) {
   output = output.replace(
     /<!-- Micro-interaction Script -->[\s\S]*?<\/script>\s*<\/body>/,
     `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=50"></script>
+<script src="app-data.js?v=51"></script>
 <script src="login.js?v=1"></script>
 <script src="assistant-dock.js?v=12"></script>
 </body>`,
@@ -483,7 +483,7 @@ function routeStitchWelcomeLogin(html) {
   output = output.replace(
     /<script>\s*function setMode\(mode\)[\s\S]*?<\/script>\s*<\/body>/,
     `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=50"></script>
+<script src="app-data.js?v=51"></script>
 <script src="login.js?v=2"></script>
 <script src="assistant-dock.js?v=12"></script>
 </body>`,

@@ -58,6 +58,7 @@ const paymentProviderEndpoints = [
   "/api/payments/paystack-webhook",
   "/api/payments/flutterwave-webhook",
 ];
+const mutationOnlyEndpoints = [...paymentProviderEndpoints, "/api/identity/start-verification"];
 const requiredSecurityHeaders = [
   ["strict-transport-security", "max-age="],
   ["content-security-policy", "default-src 'self'"],
@@ -98,6 +99,8 @@ const requiredAppDataMarkers = [
   "listMyJobOffers",
   "listJobOffersForAdmin",
   "updateJobOfferStatus",
+  "startIdentityVerificationSession",
+  "/api/identity/start-verification",
   "withTimeout",
   "createSupabaseClient",
 ];
@@ -124,6 +127,7 @@ const requiredPortalMarkers = [
   "Africa-to-Africa coverage",
   "Cross-border lawful-goods check",
   "saveReceiverProfileSetup",
+  "startIdentityVerificationSession",
   "renderAccountSetupChecklist",
   "renderAccountHomeAutopilot",
   "automationReadinessScore",
@@ -167,6 +171,7 @@ const requiredVerificationMarkers = [
   "providerActionCopy",
   "renderVerificationTimeline",
   "verificationTimeline",
+  "startIdentityVerificationSession",
   "verification-country-options",
   "verification-fallback-list",
   "providerFallbacks",
@@ -438,7 +443,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "stitch-portal.js?v=31",
+  "stitch-portal.js?v=32",
   "authSecurityItems",
   "supabase_auth_redirect_urls",
   "supabase_leaked_password_protection",
@@ -454,6 +459,12 @@ const requiredReadinessApiMarkers = [
   "Admin AI approval prompts",
   "swadakta_ai_mode",
   "AI/manual mode fallback is ready",
+  "identity_start_endpoint",
+  "provider_handoff_links",
+  "/api/identity/start-verification",
+  "SMILE_ID_VERIFICATION_URL",
+  "SUMSUB_VERIFICATION_URL",
+  "YOUVERIFY_VERIFICATION_URL",
   "ownerLaunchItems",
   "owner_legal",
   "SWADAKTA_OWNER_INSURANCE_ACTIVE",
@@ -500,6 +511,16 @@ const requiredPaymentReconciliationMarkers = [
   "does not match quote currency",
   'funds_status: "disputed"',
   'payment_status: "deposit_paid"',
+];
+const requiredIdentityEndpointMarkers = [
+  "startVerification",
+  "assertUser",
+  "SUPABASE_SERVICE_ROLE_KEY",
+  "SMILE_ID_VERIFICATION_URL",
+  "SUMSUB_VERIFICATION_URL",
+  "YOUVERIFY_VERIFICATION_URL",
+  "provider_link",
+  "AI and users cannot mark ID verified",
 ];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
@@ -565,6 +586,14 @@ const requiredEnvExampleKeys = [
   "WISE_RECEIVE_DETAILS_URL",
   "SMILE_ID_API_KEY",
   "SMILE_ID_PARTNER_ID",
+  "SMILE_ID_VERIFICATION_URL",
+  "SMILE_ID_WEB_LINK_URL",
+  "SUMSUB_VERIFICATION_URL",
+  "SUMSUB_WEBSDK_URL",
+  "SUMSUB_APP_TOKEN",
+  "SUMSUB_SECRET_KEY",
+  "YOUVERIFY_VERIFICATION_URL",
+  "YOUVERIFY_API_KEY",
   "SWADAKTA_OWNER_BUSINESS_REGISTERED",
   "SWADAKTA_OWNER_TAX_REVIEWED",
   "SWADAKTA_OWNER_INSURANCE_ACTIVE",
@@ -595,6 +624,8 @@ const requiredAiBoundaryDocMarkers = [
 ];
 const requiredIdentityVerificationDocMarkers = [
   "Current app routing",
+  "/api/identity/start-verification",
+  "SMILE_ID_VERIFICATION_URL",
   "Provider coverage rule",
   "Do not promise that a provider will support a user",
   "Manual review is a fallback only",
@@ -861,6 +892,12 @@ for (const marker of requiredPaymentReconciliationMarkers) {
     fail(failures, `Local payment reconciliation helper is missing marker ${marker}`);
   }
 }
+const localIdentityEndpoint = await readLocal("api/identity/start-verification.js");
+for (const marker of requiredIdentityEndpointMarkers) {
+  if (!localIdentityEndpoint.includes(marker)) {
+    fail(failures, `Local identity start endpoint is missing marker ${marker}`);
+  }
+}
 
 const localTracking = await readLocal("stitch-tracking.js");
 const localTrackingHtml = await readLocal("tracking.html");
@@ -1049,8 +1086,8 @@ for (const page of requiredPages) {
   if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
     fail(failures, `${page} does not reference admin-readiness.js?v=4`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=7")) {
-    fail(failures, `${page} does not reference verification.js?v=7`);
+  if (page === "/verification" && !text.includes("verification.js?v=8")) {
+    fail(failures, `${page} does not reference verification.js?v=8`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
@@ -1235,7 +1272,7 @@ if (isLocalBaseUrl()) {
     }
   }
 
-  for (const paymentEndpoint of paymentProviderEndpoints) {
+  for (const paymentEndpoint of mutationOnlyEndpoints) {
     const { response } = await fetchText(paymentEndpoint);
     if (response.status !== 405) {
       fail(failures, `${paymentEndpoint} should reject GET with 405, got ${response.status}`);

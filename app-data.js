@@ -2381,6 +2381,63 @@
     return { data, mode: "supabase" };
   }
 
+  async function startIdentityVerificationSession(payload = {}) {
+    const provider = ["smile_id", "sumsub", "youverify", "manual"].includes(payload.provider)
+      ? payload.provider
+      : "sumsub";
+    const cleanPayload = {
+      request_id: payload.request_id || payload.id || "",
+      request_code: payload.request_code || "",
+      reason: payload.reason || "account_required",
+      provider,
+    };
+    const supabase = await getSupabase();
+
+    if (!supabase) {
+      const reference = `${provider.toUpperCase()}-${cleanPayload.request_code || createIdentityVerificationCode()}`;
+      return {
+        data: {
+          status: "requested",
+          provider,
+          provider_reference: reference,
+          provider_link: "",
+          database_updated: true,
+          message:
+            "Local demo queued the provider handoff. Live verification links are created by the server once provider accounts are configured.",
+          next:
+            "Use the live Supabase-backed site for provider-led ID verification. Paid posting and paid receiver work stay locked until provider evidence is recorded.",
+        },
+        mode: "local",
+      };
+    }
+
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      throw new Error("Sign in before starting identity verification.");
+    }
+
+    const response = await fetch("/api/identity/start-verification", {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${token}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(cleanPayload),
+    });
+    const result = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(result.error || "Could not start the provider verification handoff.");
+    }
+
+    return { data: result, mode: "supabase" };
+  }
+
   async function listMyIdentityVerificationRequests() {
     const supabase = await getSupabase();
 
@@ -3218,6 +3275,7 @@
     listAccountProfiles,
     updateAccountIdentityVerification,
     requestAccountIdentityVerification,
+    startIdentityVerificationSession,
     listMyIdentityVerificationRequests,
     listIdentityVerificationRequests,
     updateIdentityVerificationRequest,

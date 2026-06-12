@@ -10,8 +10,8 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
-const EXPECTED_APP_DATA_REF = "app-data.js?v=50";
-const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=31";
+const EXPECTED_APP_DATA_REF = "app-data.js?v=51";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=32";
 const PROOF_BUCKET_ID = "swadakta-proof";
 
 function sendJson(res, status, body) {
@@ -155,6 +155,8 @@ const DOCS = {
   flutterwaveWebhooks: "https://developer.flutterwave.com/docs/webhooks",
   smileIdWeb: "https://docs.usesmileid.com/integration-options/web-mobile-web/web-integration",
   smileIdDocument: "https://docs.usesmileid.com/products/for-individuals-kyc/document-verification/document-verification",
+  sumsubWebSdk: "https://docs.sumsub.com/docs/websdk",
+  youverifyDocs: "https://doc.youverify.co/",
   wiseBusiness: "https://wise.com/help/articles/2ns36RddtM1kAb5vbWxGMx/getting-paid-to-your-wise-business-by-card-apple-pay-or-google-pay",
   securityTxt: "https://www.rfc-editor.org/info/rfc9116/",
   vercelHeaders: "https://vercel.com/docs/headers",
@@ -946,6 +948,24 @@ async function readinessReport(user, authHeader) {
   const mpesaWebhookUrl = mpesaCallbackUrl();
   const paystackWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/paystack-webhook`;
   const flutterwaveWebhookUrl = `${publicUrl() || "https://swadakta.com"}/api/payments/flutterwave-webhook`;
+  const identityStartUrl = `${publicUrl() || "https://swadakta.com"}/api/identity/start-verification`;
+  const identityStartEndpoint = await fetchPublic("/api/identity/start-verification", { readText: false });
+  const identityStartEndpointReady = identityStartEndpoint.status === 405;
+  const identityProviderLinkReady = anyEnv([
+    "SMILE_ID_VERIFICATION_URL",
+    "SMILE_ID_WEB_LINK_URL",
+    "SMILE_ID_PORTAL_URL",
+    "SUMSUB_VERIFICATION_URL",
+    "SUMSUB_WEBSDK_URL",
+    "SUMSUB_APPLICANT_LINK_URL",
+    "YOUVERIFY_VERIFICATION_URL",
+    "YOUVERIFY_APPLICANT_LINK_URL",
+  ]);
+  const identityProviderLinkMissing = missingEnv([
+    "SMILE_ID_VERIFICATION_URL",
+    "SUMSUB_VERIFICATION_URL",
+    "YOUVERIFY_VERIFICATION_URL",
+  ]);
 
   const categories = [
     {
@@ -1205,12 +1225,48 @@ async function readinessReport(user, authHeader) {
         ),
         item(
           "manual_id_links",
-          "Manual provider ID links",
+          "Provider link storage",
           "ready",
           "Admin can store provider, status, verification link, reference, verified time, and notes for every account and receiver.",
           "Use this while provider API sessions are not automated.",
           [],
           { docs_url: DOCS.smileIdWeb, priority: 36, owner: "Founder/admin" },
+        ),
+        item(
+          "identity_start_endpoint",
+          "Identity start endpoint",
+          identityStartEndpointReady ? "ready" : "warning",
+          identityStartEndpointReady
+            ? "/api/identity/start-verification is deployed and rejects unsafe GET requests with 405."
+            : `Identity start endpoint check returned ${identityStartEndpoint.status || identityStartEndpoint.error}.`,
+          identityStartEndpointReady
+            ? "The existing Stitch verification forms can call the server-side provider handoff after the request queue is saved."
+            : "Deploy the identity start endpoint before asking users to start provider-led verification from the app.",
+          identityStartEndpointReady ? [] : ["api/identity/start-verification"],
+          {
+            docs_url: DOCS.vercelEnv,
+            copy_value: identityStartUrl,
+            priority: 30,
+            owner: "Founder/Vercel admin",
+          },
+        ),
+        item(
+          "provider_handoff_links",
+          "Provider handoff links",
+          identityProviderLinkReady ? "ready" : "missing",
+          identityProviderLinkReady
+            ? "At least one provider handoff URL is configured for the server-side verification start flow."
+            : "The server endpoint can queue verification, but it cannot issue a provider link until Smile ID, Sumsub, or Youverify handoff URLs are configured.",
+          identityProviderLinkReady
+            ? "Run a low-risk test account and confirm the provider reference returns to Swadakta before unlocking paid actions."
+            : "Add a provider-approved hosted verification URL in Vercel, then keep provider evidence as the only source of verified status.",
+          identityProviderLinkReady ? [] : identityProviderLinkMissing,
+          {
+            docs_url: DOCS.sumsubWebSdk,
+            copy_value: "SMILE_ID_VERIFICATION_URL / SUMSUB_VERIFICATION_URL / YOUVERIFY_VERIFICATION_URL",
+            priority: 31,
+            owner: "Founder/ID provider admin",
+          },
         ),
         item(
           "smile_id_api",
@@ -1255,6 +1311,7 @@ async function readinessReport(user, authHeader) {
       mpesa_callback_url: mpesaWebhookUrl,
       paystack_webhook_url: paystackWebhookUrl,
       flutterwave_webhook_url: flutterwaveWebhookUrl,
+      identity_start_url: identityStartUrl,
     },
     protected_actions: [
       "Money release, refund, paid status, and milestone release stay founder/admin decisions.",

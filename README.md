@@ -33,6 +33,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Vetted receiver assignment from admin to client requests
 - Mandatory receiver ID verification before a corridor counterpart can be vetted or assigned
 - Mandatory client ID-verification consent on every new public request
+- Server-side identity handoff at `/api/identity/start-verification` for provider links/references without exposing provider secrets in browser code
 - Admin receiver-update review trail per request before client report publishing
 - Admin metrics and filters for status, payment state, due dates, and sensitive-document jobs
 - Copy-ready client updates and field operator briefs

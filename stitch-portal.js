@@ -2202,15 +2202,32 @@
         const saved = await window.SwadaktaData.saveAccountProfile(profilePayload());
         syncRoleInputs(saved.data?.account_role || profilePayload().account_role);
         if (action === "request") {
-          await window.SwadaktaData.requestAccountIdentityVerification({
+          const requestResult = await window.SwadaktaData.requestAccountIdentityVerification({
             reason: field("#account-verification-reason")?.value || "account_required",
             provider: safeProvider(field("#account-verification-provider")?.value, "sumsub"),
             user_notes: field("#account-verification-notes")?.value || "",
           });
-          setVerificationStatus(
-            "Verification request saved. Your account stays open while the provider route prepares; paid posting and receiver work unlock only after provider evidence is verified.",
-            "text-primary",
-          );
+          try {
+            const request = requestResult.data || {};
+            const handoff = await window.SwadaktaData.startIdentityVerificationSession({
+              request_id: request.id,
+              request_code: request.request_code,
+              reason: request.reason || field("#account-verification-reason")?.value || "account_required",
+              provider: safeProvider(request.provider || field("#account-verification-provider")?.value, "sumsub"),
+            });
+            setVerificationStatus(
+              handoff.data?.provider_link
+                ? "Verification link is ready. Open the provider check and complete the ID steps; paid actions unlock only after provider evidence is verified."
+                : handoff.data?.message ||
+                    "Verification request saved. Your account stays open while the provider route prepares; paid posting and receiver work unlock only after provider evidence is verified.",
+              "text-primary",
+            );
+          } catch (handoffError) {
+            setVerificationStatus(
+              `Verification request saved. Provider handoff needs setup or a retry: ${handoffError.message || "try again shortly."}`,
+              "text-primary",
+            );
+          }
         } else {
           setVerificationStatus("Profile saved.", "text-primary");
         }

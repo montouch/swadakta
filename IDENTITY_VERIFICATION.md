@@ -49,6 +49,9 @@ Provider coverage rule:
 - Receiver applications default to `identity_verification_status = 'not_started'`.
 - Admin can store account-level provider, status, verification link, reference, verified timestamp, and notes for every saved user account.
 - Admin can store provider, status, verification link, reference, verified timestamp, and notes.
+- `/api/identity/start-verification` is the server-side provider handoff used by the existing Stitch Verification page and Account Home form after a request is saved.
+- If `SMILE_ID_VERIFICATION_URL`, `SUMSUB_VERIFICATION_URL`, or `YOUVERIFY_VERIFICATION_URL` is configured in Vercel, the endpoint attaches a provider link and reference to the user's open verification request.
+- If no provider handoff URL is configured yet, the endpoint keeps the request queued and tells the user that paid posting and paid receiver work remain locked until provider evidence is attached.
 - Portal users see their account KYC status, provider, and verification link when available.
 - Receiver portal also shows the applicant their receiver-specific KYC status, provider, reference, and verification link when available.
 - Database constraint blocks `status = 'vetted'` unless ID consent is true and `identity_verification_status = 'verified'`.
@@ -58,7 +61,7 @@ Provider coverage rule:
 ## Operating Workflow
 
 1. Client or receiver creates/opens a portal account and saves an account profile.
-2. Founder console sends an account-level Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider verification link.
+2. The app saves a verification request, then calls `/api/identity/start-verification` to prepare a Smile ID, Sumsub, Youverify, or approved-provider link when configured.
 3. User completes verification.
 4. Admin records the result as `verified`, with the provider reference and timestamp.
 5. Client requests can proceed to paid or sensitive work only after account/request verification is handled.
@@ -69,11 +72,20 @@ Provider coverage rule:
 
 ## Next API Step
 
-Once provider accounts and API credentials are available, add Supabase Edge Functions that:
+Current Vercel handoff setup:
+
+- `SMILE_ID_VERIFICATION_URL`: hosted Smile ID or provider-approved handoff URL.
+- `SUMSUB_VERIFICATION_URL`: hosted Sumsub/WebSDK or provider-approved handoff URL.
+- `YOUVERIFY_VERIFICATION_URL`: hosted Youverify or provider-approved handoff URL.
+- `SUPABASE_SERVICE_ROLE_KEY`: server-only Vercel secret used by `/api/identity/start-verification` to attach the provider reference/link to the user's saved request.
+
+The handoff endpoint is not a verification result. It must not mark anyone verified. It only prepares the provider route, stores the reference/link, and keeps the paid-action gate locked.
+
+Once provider accounts and API credentials are available, add provider-specific server functions or extend the Vercel handoff so it can:
 
 - Create Smile ID verification jobs/sessions server-side for African users.
 - Create Persona, Sumsub, or Stripe Identity verification sessions server-side for wider global users where selected.
-- Stores the provider job reference on `partner_applications`.
+- Store the provider job reference on account verification requests and `partner_applications`.
 - Handles provider webhook callbacks.
 - Updates `identity_verification_status`, `identity_verified_at`, and notes from provider results.
 

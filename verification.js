@@ -616,12 +616,31 @@
     try {
       await window.SwadaktaData.saveAccountProfile(profilePayload());
       if (action === "request") {
-        await window.SwadaktaData.requestAccountIdentityVerification({
+        const requestResult = await window.SwadaktaData.requestAccountIdentityVerification({
           reason: field("#verify-reason").value || "account_required",
           provider: safeProvider(field("#verify-provider").value, "sumsub"),
           user_notes: field("#verify-notes").value || "",
         });
-        setFormStatus("Verification request saved. This page will show the provider check or provider instructions when ready.", "text-primary");
+        try {
+          const request = requestResult.data || {};
+          const handoff = await window.SwadaktaData.startIdentityVerificationSession({
+            request_id: request.id,
+            request_code: request.request_code,
+            reason: request.reason || field("#verify-reason").value || "account_required",
+            provider: safeProvider(request.provider || field("#verify-provider").value, "sumsub"),
+          });
+          setFormStatus(
+            handoff.data?.provider_link
+              ? "Verification link is ready. Open the provider check from this page and complete the ID steps."
+              : handoff.data?.message || "Verification request saved. Provider setup is queued before paid actions unlock.",
+            "text-primary",
+          );
+        } catch (handoffError) {
+          setFormStatus(
+            `Verification request saved. Provider handoff needs setup or a retry: ${handoffError.message || "try again shortly."}`,
+            "text-primary",
+          );
+        }
       } else {
         setFormStatus("Profile saved.", "text-primary");
       }
