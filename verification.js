@@ -12,6 +12,9 @@
   const routeAction = document.querySelector("#verification-route-action");
   const requirementsList = document.querySelector("#verification-requirements-list");
   const boundaryCopy = document.querySelector("#verification-boundary-copy");
+  const countryOptions = document.querySelector("#verification-country-options");
+  const timelineSummary = document.querySelector("#verification-timeline-summary");
+  const timelineList = document.querySelector("#verification-timeline-list");
   const accountGate = document.querySelector("#verification-account-gate");
   const postingGate = document.querySelector("#verification-posting-gate");
   const workGate = document.querySelector("#verification-work-gate");
@@ -24,90 +27,110 @@
     sumsub: "Sumsub",
     youverify: "Youverify",
   };
+  const AFRICA_COUNTRY_OPTIONS = [
+    "Algeria",
+    "Angola",
+    "Benin",
+    "Botswana",
+    "Burkina Faso",
+    "Burundi",
+    "Cabo Verde",
+    "Cameroon",
+    "Central African Republic",
+    "Chad",
+    "Comoros",
+    "Congo",
+    "Democratic Republic of Congo",
+    "Djibouti",
+    "Egypt",
+    "Equatorial Guinea",
+    "Eritrea",
+    "Eswatini",
+    "Ethiopia",
+    "Gabon",
+    "Gambia",
+    "Ghana",
+    "Guinea",
+    "Guinea-Bissau",
+    "Ivory Coast",
+    "Kenya",
+    "Lesotho",
+    "Liberia",
+    "Libya",
+    "Madagascar",
+    "Malawi",
+    "Mali",
+    "Mauritania",
+    "Mauritius",
+    "Morocco",
+    "Mozambique",
+    "Namibia",
+    "Niger",
+    "Nigeria",
+    "Rwanda",
+    "Sao Tome and Principe",
+    "Senegal",
+    "Seychelles",
+    "Sierra Leone",
+    "Somalia",
+    "South Africa",
+    "South Sudan",
+    "Sudan",
+    "Tanzania",
+    "Togo",
+    "Tunisia",
+    "Uganda",
+    "Zambia",
+    "Zimbabwe",
+  ];
+  const GLOBAL_STANDARD_OPTIONS = [
+    "Australia",
+    "Austria",
+    "Belgium",
+    "Canada",
+    "China",
+    "Denmark",
+    "Finland",
+    "France",
+    "Germany",
+    "Greece",
+    "Ireland",
+    "Italy",
+    "Japan",
+    "Netherlands",
+    "New Zealand",
+    "Norway",
+    "Poland",
+    "Portugal",
+    "Singapore",
+    "South Korea",
+    "Spain",
+    "Sweden",
+    "Switzerland",
+    "United Arab Emirates",
+    "United Kingdom",
+    "United States",
+  ];
   const AFRICA_COUNTRIES = new Set([
-    "algeria",
-    "angola",
-    "benin",
-    "botswana",
-    "burkina faso",
-    "burundi",
-    "cameroon",
+    ...AFRICA_COUNTRY_OPTIONS.map((country) => country.toLowerCase()),
+    "africa",
     "cape verde",
-    "central african republic",
-    "chad",
-    "comoros",
-    "congo",
-    "democratic republic of congo",
-    "djibouti",
-    "egypt",
-    "equatorial guinea",
-    "eritrea",
-    "eswatini",
-    "ethiopia",
-    "gabon",
-    "gambia",
-    "ghana",
-    "guinea",
-    "guinea-bissau",
-    "ivory coast",
-    "kenya",
-    "lesotho",
-    "liberia",
-    "libya",
-    "madagascar",
-    "malawi",
-    "mali",
-    "mauritania",
-    "mauritius",
-    "morocco",
-    "mozambique",
-    "namibia",
-    "niger",
-    "nigeria",
-    "rwanda",
-    "senegal",
-    "seychelles",
-    "sierra leone",
-    "somalia",
-    "south africa",
-    "south sudan",
-    "sudan",
-    "tanzania",
-    "togo",
-    "tunisia",
-    "uganda",
-    "zambia",
-    "zimbabwe",
+    "drc",
+    "dr congo",
+    "republic of congo",
+    "republic of the congo",
+    "cote d ivoire",
+    "cote divoire",
+    "cote d'ivoire",
+    "guinea bissau",
+    "sao tome",
+    "sao tome principe",
   ]);
   const GLOBAL_STANDARD_COUNTRIES = new Set([
-    "australia",
-    "austria",
-    "belgium",
-    "canada",
-    "china",
-    "denmark",
-    "finland",
-    "france",
-    "germany",
-    "greece",
-    "ireland",
-    "italy",
-    "japan",
-    "netherlands",
-    "new zealand",
-    "norway",
-    "poland",
-    "portugal",
-    "singapore",
-    "south korea",
-    "spain",
-    "sweden",
-    "switzerland",
-    "united arab emirates",
-    "united kingdom",
+    ...GLOBAL_STANDARD_OPTIONS.map((country) => country.toLowerCase()),
     "uk",
     "usa",
-    "united states",
+    "us",
     "united states of america",
   ]);
   const YOUVERIFY_COUNTRIES = new Set(["nigeria", "ghana"]);
@@ -165,6 +188,14 @@
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ");
+  }
+
+  function populateCountryOptions() {
+    if (!countryOptions) return;
+    const countries = [...AFRICA_COUNTRY_OPTIONS, ...GLOBAL_STANDARD_OPTIONS].sort((first, second) =>
+      first.localeCompare(second),
+    );
+    countryOptions.innerHTML = countries.map((country) => `<option value="${escapeHtml(country)}"></option>`).join("");
   }
 
   function providerRoute(country, reason) {
@@ -274,6 +305,97 @@
     if (requirementsList) {
       requirementsList.innerHTML = route.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
+  }
+
+  function profileHasBasics(profile = {}) {
+    return Boolean(profile.full_name && profile.whatsapp && (profile.country || profile.kenya_base));
+  }
+
+  function timelineTone(status) {
+    if (status === "done") return "bg-emerald-50 border-emerald-200 text-emerald-700";
+    if (status === "active") return "bg-primary/10 border-primary/20 text-primary";
+    if (status === "blocked") return "bg-error-container border-error/20 text-on-error-container";
+    return "bg-white/70 border-outline-variant/30 text-on-surface-variant";
+  }
+
+  function verificationTimeline(profile = {}, request = null, signedIn = false) {
+    const status = request?.status || profile.identity_verification_status || "not_started";
+    const verified = profile.identity_verification_status === "verified" || request?.status === "verified";
+    const failed = ["failed", "rejected", "expired"].includes(status);
+    const hasBasics = profileHasBasics(profile);
+    const hasRoute = Boolean((request?.provider || profile.identity_verification_provider) && (profile.country || request));
+    const hasProviderLink = Boolean(request?.provider_link);
+    const submitted = ["submitted", "manual_review", "verified"].includes(status);
+
+    return [
+      {
+        label: "Account opens",
+        detail: signedIn ? "You can use the portal, prepare briefs, and save profile details." : "Sign in or create an account first.",
+        status: signedIn ? "done" : "active",
+      },
+      {
+        label: "Profile basics",
+        detail: hasBasics ? "Name, mobile, and route context are saved." : "Save legal name, mobile backup, country, and corridor base.",
+        status: hasBasics ? "done" : signedIn ? "active" : "idle",
+      },
+      {
+        label: "Provider route",
+        detail: hasRoute ? "Swadakta has a provider route selected for your country and reason." : "The app recommends Smile ID, Sumsub, or Youverify from your country.",
+        status: hasRoute ? "done" : hasBasics ? "active" : "idle",
+      },
+      {
+        label: "Provider check",
+        detail: hasProviderLink
+          ? "Open the provider link and finish ID, document, selfie, and liveness steps."
+          : request
+            ? "Request saved. Swadakta prepares or attaches the provider check."
+            : "Request verification when you are ready to unlock paid actions.",
+        status: hasProviderLink ? "active" : request ? "active" : hasRoute ? "active" : "idle",
+      },
+      {
+        label: "Provider result",
+        detail: verified
+          ? "Provider evidence is recorded."
+          : failed
+            ? "Provider check needs retry, correction, or exception handling."
+            : submitted
+              ? "Provider result is being reviewed before access unlocks."
+              : "Paid actions wait for provider evidence.",
+        status: verified ? "done" : failed ? "blocked" : submitted ? "active" : "idle",
+      },
+      {
+        label: "Paid actions unlock",
+        detail: verified
+          ? "Eligible paid posting and receiver work can proceed subject to job-level rules, payment, and proof."
+          : "Posting paid jobs, receiving paid jobs, and sensitive work stay locked until verified.",
+        status: verified ? "done" : "idle",
+      },
+    ];
+  }
+
+  function renderVerificationTimeline(profile = {}, requests = [], signedIn = false) {
+    const request = latestRequest(requests);
+    const steps = verificationTimeline(profile, request, signedIn);
+    const active = steps.find((step) => step.status === "active") || steps.find((step) => step.status === "blocked");
+    const doneCount = steps.filter((step) => step.status === "done").length;
+
+    if (timelineSummary) {
+      timelineSummary.textContent = signedIn
+        ? `${doneCount}/${steps.length} verification stages are complete. Next: ${active?.label || "keep provider evidence current"}.`
+        : "Sign in to see where your verification is in the flow.";
+    }
+
+    if (!timelineList) return;
+    timelineList.innerHTML = steps
+      .map(
+        (step, index) => `
+          <li class="rounded-2xl border p-3 ${timelineTone(step.status)}">
+            <span class="font-label text-xs uppercase tracking-[0.14em]">${index + 1}. ${escapeHtml(formatStatus(step.status))}</span>
+            <strong class="mt-1 block font-label">${escapeHtml(step.label)}</strong>
+            <p class="mt-1 text-xs">${escapeHtml(step.detail)}</p>
+          </li>`,
+      )
+      .join("");
   }
 
   function initialReason() {
@@ -387,6 +509,7 @@
 
     renderGates(profile, request, true);
     updateProviderRoute({ request });
+    renderVerificationTimeline(profile, requests, true);
   }
 
   async function refresh() {
@@ -401,6 +524,7 @@
         signInLink.href = `/portal#home`;
         renderRequests([]);
         renderGates({}, null, false);
+        renderVerificationTimeline({}, [], false);
         return;
       }
 
@@ -466,7 +590,9 @@
     updateProviderRoute({ setProvider: false });
   });
 
+  populateCountryOptions();
   setEnabled(false);
   populate({});
+  renderVerificationTimeline({}, [], false);
   refresh();
 })();

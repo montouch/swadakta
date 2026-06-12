@@ -182,8 +182,9 @@
           </label>
           <label class="space-y-2">
             <span class="font-label text-sm text-on-surface-variant ml-1">Current country</span>
-            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-country" type="text" autocomplete="country-name" placeholder="Australia" />
+            <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-country" type="text" autocomplete="country-name" placeholder="Australia" list="verification-country-options" />
           </label>
+          <datalist id="verification-country-options"></datalist>
           <label class="space-y-2">
             <span class="font-label text-sm text-on-surface-variant ml-1">Corridor base / operating city</span>
             <input class="w-full h-12 px-4 rounded-xl sunken-input" id="verify-base" type="text" placeholder="Adelaide, London, Lagos, Guangzhou..." />
@@ -270,13 +271,8 @@
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">What happens after request?</strong>
-              <ol class="mt-2 grid gap-2 text-sm text-on-surface-variant list-decimal pl-5">
-                <li>Swadakta saves the profile and selected provider route.</li>
-                <li>The provider check is prepared or attached to this page.</li>
-                <li>You complete ID and selfie/liveness steps with the provider.</li>
-                <li>The provider result updates your account status.</li>
-                <li>Paid posting and receiver work unlock once verified.</li>
-              </ol>
+              <p class="mt-1 text-sm text-on-surface-variant" id="verification-timeline-summary">Sign in to see where your verification is in the flow.</p>
+              <ol class="mt-3 grid gap-2 text-sm text-on-surface-variant" id="verification-timeline-list"></ol>
             </article>
           </div>
         </div>
@@ -285,7 +281,7 @@
 
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=45"></script>
-    <script src="verification.js?v=4"></script>
+    <script src="verification.js?v=5"></script>
   <script src="assistant-dock.js?v=4"></script>
 </body>
 </html>

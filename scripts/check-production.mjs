@@ -85,6 +85,10 @@ const requiredPortalMarkers = [
 ];
 const requiredVerificationMarkers = [
   "providerActionCopy",
+  "renderVerificationTimeline",
+  "verificationTimeline",
+  "verification-country-options",
+  "Paid actions unlock",
   "Automation boundary",
   "release money, assign paid work",
 ];
@@ -608,8 +612,8 @@ for (const page of requiredPages) {
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
     fail(failures, `${page} does not reference admin-verification.js?v=2`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=4")) {
-    fail(failures, `${page} does not reference verification.js?v=4`);
+  if (page === "/verification" && !text.includes("verification.js?v=5")) {
+    fail(failures, `${page} does not reference verification.js?v=5`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
