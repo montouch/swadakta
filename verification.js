@@ -11,6 +11,7 @@
   const routeName = document.querySelector("#verification-route-name");
   const routeAction = document.querySelector("#verification-route-action");
   const requirementsList = document.querySelector("#verification-requirements-list");
+  const fallbackList = document.querySelector("#verification-fallback-list");
   const boundaryCopy = document.querySelector("#verification-boundary-copy");
   const countryOptions = document.querySelector("#verification-country-options");
   const timelineSummary = document.querySelector("#verification-timeline-summary");
@@ -198,9 +199,42 @@
     countryOptions.innerHTML = countries.map((country) => `<option value="${escapeHtml(country)}"></option>`).join("");
   }
 
+  function highRiskReason(reason) {
+    return ["high_value_job", "sensitive_job"].includes(reason);
+  }
+
+  function providerFallbacks(primaryProvider, country, reason) {
+    const normalized = normalizeCountry(country);
+    const sensitive = highRiskReason(reason);
+    const primaryName = PROVIDER_LABELS[primaryProvider] || formatStatus(primaryProvider);
+    const fallbacks = [
+      `${primaryName}: create the provider check first and wait for provider evidence before paid access unlocks.`,
+    ];
+
+    if (primaryProvider === "youverify") {
+      fallbacks.push("Smile ID: use as the Africa-first backup if the Youverify route cannot support the document or country.");
+      fallbacks.push("Sumsub: use as the wider global backup if Africa-specific checks are not enough.");
+    } else if (primaryProvider === "smile_id") {
+      fallbacks.push("Sumsub: use as the broader global backup if the Smile ID route cannot support the document, country, or user location.");
+      if (["nigeria", "ghana"].includes(normalized)) {
+        fallbacks.push("Youverify: optional country-specific backup for Nigeria or Ghana when that workflow is better.");
+      }
+    } else {
+      fallbacks.push("Smile ID: use as Africa-first backup when the user presents African ID or the job needs Africa-specific verification.");
+      fallbacks.push("Provider coverage check: confirm the selected document/country inside the provider dashboard before unlocking paid receiver work.");
+    }
+
+    if (sensitive) {
+      fallbacks.push("Founder/admin gate: high-value or sensitive work needs provider result plus admin review before money, assignment, or release.");
+    }
+
+    fallbacks.push("Exception review: only use manual review when provider outage, unsupported documents, mismatch, suspected fraud, local-law issue, or safety risk blocks the provider path.");
+    return fallbacks;
+  }
+
   function providerRoute(country, reason) {
     const normalized = normalizeCountry(country);
-    const sensitive = ["high_value_job", "sensitive_job"].includes(reason);
+    const sensitive = highRiskReason(reason);
     const requirements = ["Government photo ID", "Selfie or liveness check", "Mobile backup for urgent issues"];
 
     if (sensitive) {
@@ -214,6 +248,7 @@
         name: "Country needed",
         copy: "Enter your current country so Swadakta can choose the best route. Sumsub is the broad default until a country-specific route is clear.",
         requirements,
+        fallbackPlan: providerFallbacks("sumsub", country, reason),
       };
     }
 
@@ -223,6 +258,7 @@
         name: "Youverify selected Africa route",
         copy: "Recommended: Youverify for selected West African identity checks. If the provider cannot complete the check, Swadakta escalates it as an exception.",
         requirements,
+        fallbackPlan: providerFallbacks("youverify", country, reason),
       };
     }
 
@@ -232,6 +268,7 @@
         name: "Smile ID Africa-first route",
         copy: "Recommended: Smile ID for Africa-first identity coverage across eligible African corridor work.",
         requirements,
+        fallbackPlan: providerFallbacks("smile_id", country, reason),
       };
     }
 
@@ -241,6 +278,7 @@
         name: "Sumsub global route",
         copy: "Recommended: Sumsub for wider international coverage across Australia, USA, Europe, China, and other global corridors.",
         requirements,
+        fallbackPlan: providerFallbacks("sumsub", country, reason),
       };
     }
 
@@ -250,6 +288,7 @@
       name: "Sumsub fallback route",
       copy: "Recommended: Sumsub as the global fallback route. Manual review is only used if provider coverage, local law, or document mismatch blocks automation.",
       requirements,
+      fallbackPlan: providerFallbacks("sumsub", country, reason),
     };
   }
 
@@ -304,6 +343,9 @@
     }
     if (requirementsList) {
       requirementsList.innerHTML = route.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+    if (fallbackList) {
+      fallbackList.innerHTML = (route.fallbackPlan || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
   }
 

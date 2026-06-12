@@ -266,6 +266,12 @@
               <p class="mt-1 text-sm text-on-surface-variant">Smile ID for Africa-first checks, Sumsub for broad global WebSDK coverage, and Youverify for selected African checks. If a provider cannot support the document or country, the case is escalated as an exception instead of making the user wait by default.</p>
             </article>
             <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
+              <strong class="font-label text-on-surface">Fallback ladder</strong>
+              <ol class="mt-2 grid gap-2 text-sm text-on-surface-variant" id="verification-fallback-list">
+                <li>Enter your country to see the primary provider, backup route, and exception path.</li>
+              </ol>
+            </article>
+            <article class="rounded-2xl bg-white/64 border border-outline-variant/30 p-4">
               <strong class="font-label text-on-surface">Automation boundary</strong>
               <p class="mt-1 text-sm text-on-surface-variant" id="verification-boundary-copy">AI can explain the next step and draft messages, but it cannot mark an ID verified, release money, assign paid work, or override provider evidence.</p>
             </article>
@@ -282,7 +288,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=4"></script>
     <script src="app-data.js?v=50"></script>
-    <script src="verification.js?v=6"></script>
+    <script src="verification.js?v=7"></script>
   <script src="assistant-dock.js?v=10"></script>
 </body>
 </html>

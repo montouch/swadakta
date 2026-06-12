@@ -6,11 +6,20 @@ Swadakta should treat every user as a verified counterpart before paid or sensit
 
 Default Africa provider: Smile ID.
 
+Current app routing:
+
+- Nigeria or Ghana: Youverify first, then Smile ID, then Sumsub, then manual exception if provider coverage fails.
+- Other African countries: Smile ID first, then Sumsub, then country-specific provider if useful, then manual exception.
+- Australia, USA, Europe, China, and broader global corridors: Sumsub first, then Smile ID if African ID/corridor evidence is involved, then manual exception.
+- Persona and Stripe Identity remain evaluated future rails until the database/provider constraint is expanded and the owner has approved provider accounts.
+
 Why:
 
 - Smile ID has Kenya-specific KYC coverage for National ID, passports, Alien IDs, KRA PIN checks, document verification, and AML-style workflows.
 - It is built for African identity verification and low-bandwidth capture conditions.
 - It supports the exact trust problem Swadakta needs to solve: proving users are real before client funds, receiver assignments, sensitive documents, or local errands are handled.
+- Sumsub is the broader current global fallback because the app already accepts `sumsub` as a provider and Sumsub publishes a supported-documents/countries catalog.
+- Youverify is useful for selected African and multi-country KYC/document-capture routes, but Swadakta still treats it as provider-confirmed rather than automatic approval.
 
 Useful provider references:
 
@@ -25,6 +34,12 @@ Global alternatives to evaluate as Swadakta expands:
 - Sumsub supported documents and KYC workflows: https://sumsub.com/supported-documents/
 - Stripe Identity where Stripe supports the business location and use case: https://docs.stripe.com/identity
 - Youverify for Africa-specific backup checks: https://youverify.co/
+
+Provider coverage rule:
+
+- Do not promise that a provider will support a user until the exact document, country, and verification level are confirmed in the provider dashboard or API.
+- Do not mark Swadakta verified from user screenshots alone. Store provider result evidence, reference, and timestamp.
+- Manual review is a fallback only for provider outage, unsupported country/document, document mismatch, suspected fraud, local-law uncertainty, safety risk, or sensitive/high-value work.
 
 ## Current Implementation
 

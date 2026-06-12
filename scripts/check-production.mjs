@@ -158,6 +158,9 @@ const requiredVerificationMarkers = [
   "renderVerificationTimeline",
   "verificationTimeline",
   "verification-country-options",
+  "verification-fallback-list",
+  "providerFallbacks",
+  "Fallback ladder",
   "Paid actions unlock",
   "Automation boundary",
   "release money, assign paid work",
@@ -368,6 +371,8 @@ const requiredAdminOpsMarkers = [
 ];
 const requiredAdminVerificationMarkers = [
   "providerHandoffPack",
+  "providerFallbackPlan",
+  "Fallback ladder",
   "copy-provider-pack",
   "copy-user-message",
   "Provider handoff pack",
@@ -531,6 +536,12 @@ const requiredAiBoundaryDocMarkers = [
   "User AI cannot command admin AI",
   "These decisions are never autonomous",
   "Manual mode must always work",
+];
+const requiredIdentityVerificationDocMarkers = [
+  "Current app routing",
+  "Provider coverage rule",
+  "Do not promise that a provider will support a user",
+  "Manual review is a fallback only",
 ];
 
 async function readLocal(relativePath) {
@@ -727,6 +738,12 @@ const localAiBoundaryDoc = await readLocal("AI_OPERATING_BOUNDARIES.md");
 for (const marker of requiredAiBoundaryDocMarkers) {
   if (!localAiBoundaryDoc.includes(marker)) {
     fail(failures, `AI operating boundary doc is missing marker ${marker}`);
+  }
+}
+const localIdentityVerificationDoc = await readLocal("IDENTITY_VERIFICATION.md");
+for (const marker of requiredIdentityVerificationDocMarkers) {
+  if (!localIdentityVerificationDoc.includes(marker)) {
+    fail(failures, `Identity verification guide is missing marker ${marker}`);
   }
 }
 const localBriefHtml = await readLocal("brief.html");
@@ -929,14 +946,14 @@ for (const page of requiredPages) {
   if (page === "/admin-ops" && !text.includes("admin-ops.js?v=8")) {
     fail(failures, `${page} does not reference admin-ops.js?v=8`);
   }
-  if (page === "/admin-verification" && !text.includes("admin-verification.js?v=2")) {
-    fail(failures, `${page} does not reference admin-verification.js?v=2`);
+  if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
+    fail(failures, `${page} does not reference admin-verification.js?v=3`);
   }
   if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=4")) {
     fail(failures, `${page} does not reference admin-readiness.js?v=4`);
   }
-  if (page === "/verification" && !text.includes("verification.js?v=6")) {
-    fail(failures, `${page} does not reference verification.js?v=6`);
+  if (page === "/verification" && !text.includes("verification.js?v=7")) {
+    fail(failures, `${page} does not reference verification.js?v=7`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=9")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=9`);
@@ -1145,11 +1162,11 @@ for (const marker of requiredAdminOpsMarkers) {
   }
 }
 
-const { response: adminVerificationResponse, text: adminVerificationText } = await fetchText("/admin-verification.js?v=2");
+const { response: adminVerificationResponse, text: adminVerificationText } = await fetchText("/admin-verification.js?v=3");
 if (adminVerificationResponse.status !== 200) {
-  fail(failures, `admin-verification.js?v=2 returned ${adminVerificationResponse.status}`);
+  fail(failures, `admin-verification.js?v=3 returned ${adminVerificationResponse.status}`);
 } else {
-  pass("admin-verification.js?v=2 returned 200");
+  pass("admin-verification.js?v=3 returned 200");
 }
 
 for (const marker of requiredAdminVerificationMarkers) {

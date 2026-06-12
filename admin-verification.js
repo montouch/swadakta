@@ -145,6 +145,38 @@
     return "manual";
   }
 
+  function providerFallbackPlan(request) {
+    const provider = request.provider || suggestedProvider(request);
+    const country = String(request.country || "").trim().toLowerCase();
+    const highRisk = ["high_value_job", "sensitive_job"].includes(String(request.reason || ""));
+    const providerName = providerLabels[provider] || provider;
+    const steps = [
+      `${providerName}: create or attach this provider route first and wait for provider result evidence.`,
+    ];
+
+    if (provider === "youverify") {
+      steps.push("Smile ID: Africa-first backup if Youverify cannot support this document, country, or workflow.");
+      steps.push("Sumsub: global backup if Africa-specific routes cannot complete the check.");
+    } else if (provider === "smile_id") {
+      steps.push("Sumsub: broader global backup if Smile ID cannot support the document, country, or current user location.");
+      if (["nigeria", "ghana"].includes(country)) {
+        steps.push("Youverify: optional country-specific backup for Nigeria or Ghana when that route is better.");
+      }
+    } else if (provider === "sumsub") {
+      steps.push("Smile ID: Africa-first backup when the user presents African ID or the job needs Africa-specific checks.");
+      steps.push("Confirm selected document and country coverage in the provider dashboard before unlocking paid receiver work.");
+    } else {
+      steps.push("Choose a provider route before using manual fallback unless law, outage, documents, or fraud risk blocks it.");
+    }
+
+    if (highRisk) {
+      steps.push("Founder/admin gate: high-value or sensitive work needs provider result plus admin review before money, assignment, or release.");
+    }
+
+    steps.push("Manual exception only: provider outage, unsupported document/country, mismatch, suspected fraud, legal uncertainty, safety risk, or sensitive high-value work.");
+    return steps;
+  }
+
   function aiBrief(request) {
     const provider = request.provider || suggestedProvider(request);
     const suggested = suggestedProvider(request);
@@ -244,6 +276,9 @@
       `Country: ${request.country || ""}`,
       `Base / operating city: ${request.kenya_base || ""}`,
       `Notes: ${request.user_notes || request.admin_notes || ""}`,
+      "",
+      "Fallback ladder:",
+      ...providerFallbackPlan(request).map((step, index) => `${index + 1}. ${step}`),
       "",
       "Do not mark Swadakta verified until the provider result/reference is stored.",
     ].join("\n");
