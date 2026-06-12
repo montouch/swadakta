@@ -11,6 +11,7 @@
   const presetButtons = document.querySelectorAll(".corridor-preset");
   const africaQuickStart = document.querySelector("#corridor-africa-country");
   const STORAGE_KEY = "swadakta_corridor_context";
+  const RULES_STORAGE_KEY = "swadakta_rules_context";
   const riskyGoods = new Set(["food_plant_animal", "medicine_health", "cosmetics", "electronics", "valuable_items", "restricted_or_unsure"]);
   const highRiskGoods = new Set(["food_plant_animal", "medicine_health", "valuable_items", "restricted_or_unsure"]);
   const physicalModes = new Set(["local_delivery", "postal_courier", "pickup_hold", "supplier_direct", "airport_handoff"]);
@@ -515,6 +516,7 @@
   function saveContext() {
     const triage = corridorTriage();
     const importedRulesActive = rulesContextMatchesCurrent();
+    const rulesCompliancePack = importedRulesActive ? rulesPackFromContext(importedRulesContext) : {};
     const context = {
       origin_country: value("#corridor-origin"),
       destination_country: value("#corridor-destination"),
@@ -532,12 +534,17 @@
       admin_review_reason: triage.adminReviewReason,
       compliance_flags: triage.flags,
       required_checks: triage.checks,
+      official_reference_links: rulesCompliancePack.official_reference_links || [],
+      rules_compliance_pack: rulesCompliancePack,
       notes: value("#corridor-notes"),
       imported_from: importedRulesActive ? importedRulesContext.imported_from : "",
       imported_at: importedRulesActive ? importedRulesContext.imported_at : "",
       created_at: new Date().toISOString(),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(context));
+    if (rulesCompliancePack.source) {
+      localStorage.setItem(RULES_STORAGE_KEY, JSON.stringify(rulesCompliancePack));
+    }
     return context;
   }
 
@@ -573,10 +580,73 @@
             admin_review_reason: context.admin_review_reason || "",
             compliance_flags: Array.isArray(context.compliance_flags) ? context.compliance_flags : [],
             required_checks: Array.isArray(context.required_checks) ? context.required_checks : [],
+            official_reference_links: normalizeReferenceLinks(context.official_reference_links),
+            rules_compliance_pack: rulesPackFromContext(context),
             imported_from: context.imported_from,
             imported_at: context.imported_at || "",
           }
         : {};
+  }
+
+  function normalizeReferenceLinks(value = []) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((reference) => ({
+        label: String(reference?.label || "").trim().slice(0, 80),
+        url: String(reference?.url || "").trim().slice(0, 260),
+      }))
+      .filter((reference) => reference.label && /^https?:\/\//i.test(reference.url))
+      .slice(0, 6);
+  }
+
+  function flagValue(flags = [], prefix = "") {
+    const match = flags.find((flag) => String(flag || "").startsWith(prefix));
+    return match ? match.slice(prefix.length) : "";
+  }
+
+  function packNextAction(context = {}) {
+    if (context.compliance_status === "prohibited") {
+      return "Do not quote or assign until a lawful specialist route is proven.";
+    }
+    if (context.admin_review_required || context.compliance_status === "needs_admin_review") {
+      return "Hold for founder/provider review before quote, payment, purchase, pickup, or assignment.";
+    }
+    if (context.compliance_risk_level === "medium") {
+      return "Proceed only after route, carrier, packaging, proof, and payment checks are recorded.";
+    }
+    return "Proceed with normal route, proof, value, and receipt checks.";
+  }
+
+  function rulesPackFromContext(context = {}) {
+    if (context.rules_compliance_pack?.source === "rules_precheck") {
+      return {
+        ...context.rules_compliance_pack,
+        official_reference_links: normalizeReferenceLinks(context.rules_compliance_pack.official_reference_links),
+      };
+    }
+
+    const flags = Array.isArray(context.compliance_flags) ? context.compliance_flags : [];
+    if (context.imported_from !== "rules_precheck" && !flags.includes("rules_precheck")) return {};
+
+    return {
+      source: "rules_precheck",
+      created_at: context.imported_at || context.created_at || new Date().toISOString(),
+      route_label: [context.origin_country || "Origin", context.destination_country || "destination"].join(" to "),
+      origin_country: context.origin_country || "",
+      destination_country: context.destination_country || "",
+      item_type: flagValue(flags, "rules_item_"),
+      movement_mode: flagValue(flags, "rules_mode_"),
+      value_band: flagValue(flags, "rules_value_"),
+      cross_border: flags.includes("rules_cross_border"),
+      compliance_status: context.compliance_status || "",
+      compliance_risk_level: context.compliance_risk_level || "",
+      admin_review_required: Boolean(context.admin_review_required),
+      admin_review_reason: context.admin_review_reason || "",
+      compliance_flags: flags,
+      required_checks: Array.isArray(context.required_checks) ? context.required_checks : [],
+      official_reference_links: normalizeReferenceLinks(context.official_reference_links),
+      next_action: packNextAction(context),
+    };
   }
 
   function rulesContextMatchesCurrent() {
@@ -605,7 +675,25 @@
 
   function readStoredContext() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      const context = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
+      if (Object.keys(context).length) return context;
+      const rulesPack = JSON.parse(localStorage.getItem(RULES_STORAGE_KEY) || "{}");
+      if (rulesPack?.source !== "rules_precheck") return {};
+      return {
+        origin_country: rulesPack.origin_country || "",
+        destination_country: rulesPack.destination_country || "",
+        task_location: rulesPack.destination_country || rulesPack.origin_country || "",
+        compliance_status: rulesPack.compliance_status || "",
+        compliance_risk_level: rulesPack.compliance_risk_level || "",
+        admin_review_required: Boolean(rulesPack.admin_review_required),
+        admin_review_reason: rulesPack.admin_review_reason || "",
+        compliance_flags: Array.isArray(rulesPack.compliance_flags) ? rulesPack.compliance_flags : [],
+        required_checks: Array.isArray(rulesPack.required_checks) ? rulesPack.required_checks : [],
+        official_reference_links: normalizeReferenceLinks(rulesPack.official_reference_links),
+        rules_compliance_pack: rulesPack,
+        imported_from: "rules_precheck",
+        imported_at: rulesPack.created_at || "",
+      };
     } catch {
       localStorage.removeItem(STORAGE_KEY);
       return {};
@@ -716,6 +804,7 @@
       ack: context.compliance_acknowledged ? "yes" : "no",
       flags: context.compliance_flags.join("|"),
       checks: context.required_checks.join("|"),
+      source: context.imported_from || "",
     });
     window.location.href = `brief.html?${params.toString()}`;
   });

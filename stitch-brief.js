@@ -12,6 +12,12 @@
   const corridorLogistics = document.querySelector("#brief-corridor-logistics");
   const corridorRisk = document.querySelector("#brief-corridor-risk");
   const corridorChecks = document.querySelector("#brief-corridor-checks");
+  const compliancePackPanel = document.querySelector("#brief-compliance-pack");
+  const compliancePackTitle = document.querySelector("#brief-compliance-pack-title");
+  const compliancePackCopy = document.querySelector("#brief-compliance-pack-copy");
+  const compliancePackRisk = document.querySelector("#brief-compliance-pack-risk");
+  const compliancePackChecks = document.querySelector("#brief-compliance-pack-checks");
+  const compliancePackLinks = document.querySelector("#brief-compliance-pack-links");
   const routeModeSelect = document.querySelector("#brief-service-direction");
   const routeTitle = document.querySelector("#brief-route-title");
   const routeCopy = document.querySelector("#brief-route-copy");
@@ -37,6 +43,7 @@
   const quoteSafetyCopy = document.querySelector("#brief-quote-safety-copy");
   const quoteSafetyChecks = document.querySelector("#brief-quote-safety-checks");
   const corridorStorageKey = "swadakta_corridor_context";
+  const rulesStorageKey = "swadakta_rules_context";
 
   if (!form || !window.SwadaktaData) return;
 
@@ -293,6 +300,86 @@
     }[servicePackage(raw)] || "Quote first";
   }
 
+  function normalizeReferenceLinks(value = []) {
+    if (!Array.isArray(value)) return [];
+    return value
+      .map((reference) => ({
+        label: String(reference?.label || "").trim().slice(0, 80),
+        url: String(reference?.url || "").trim().slice(0, 260),
+      }))
+      .filter((reference) => reference.label && /^https?:\/\//i.test(reference.url))
+      .slice(0, 6);
+  }
+
+  function flagValue(flags = [], prefix = "") {
+    const match = flags.find((flag) => String(flag || "").startsWith(prefix));
+    return match ? match.slice(prefix.length) : "";
+  }
+
+  function compliancePackNextAction(context = {}) {
+    if (context.compliance_status === "prohibited") {
+      return "Do not quote or assign until a lawful specialist route is proven.";
+    }
+    if (context.admin_review_required || context.compliance_status === "needs_admin_review") {
+      return "Hold for founder/provider review before quote, payment, purchase, pickup, or assignment.";
+    }
+    if (context.compliance_risk_level === "medium") {
+      return "Proceed only after route, carrier, packaging, proof, and payment checks are recorded.";
+    }
+    return "Proceed with normal route, proof, value, and receipt checks.";
+  }
+
+  function rulesPackFromContext(context = corridorContext) {
+    if (context.rules_compliance_pack?.source === "rules_precheck") {
+      return {
+        ...context.rules_compliance_pack,
+        official_reference_links: normalizeReferenceLinks(context.rules_compliance_pack.official_reference_links),
+      };
+    }
+
+    const flags = Array.isArray(context.compliance_flags) ? context.compliance_flags : [];
+    if (context.imported_from !== "rules_precheck" && !flags.includes("rules_precheck")) return {};
+
+    return {
+      source: "rules_precheck",
+      created_at: context.imported_at || context.created_at || new Date().toISOString(),
+      route_label: [context.origin_country || "Origin", context.destination_country || "destination"].join(" to "),
+      origin_country: context.origin_country || "",
+      destination_country: context.destination_country || "",
+      item_type: flagValue(flags, "rules_item_"),
+      movement_mode: flagValue(flags, "rules_mode_"),
+      value_band: flagValue(flags, "rules_value_"),
+      cross_border: flags.includes("rules_cross_border"),
+      compliance_status: context.compliance_status || "",
+      compliance_risk_level: context.compliance_risk_level || "",
+      admin_review_required: Boolean(context.admin_review_required),
+      admin_review_reason: context.admin_review_reason || "",
+      compliance_flags: flags,
+      required_checks: Array.isArray(context.required_checks) ? context.required_checks : [],
+      official_reference_links: normalizeReferenceLinks(context.official_reference_links),
+      next_action: compliancePackNextAction(context),
+    };
+  }
+
+  function compliancePackSummary() {
+    const pack = rulesPackFromContext();
+    if (pack.source !== "rules_precheck") return "";
+
+    const refs = normalizeReferenceLinks(pack.official_reference_links)
+      .map((reference) => `${reference.label}: ${reference.url}`)
+      .join(" | ");
+
+    return [
+      `Compliance pack: ${pack.route_label || "Rules pre-check"}`,
+      `Status: ${formatStatus(pack.compliance_status || "not_applicable")}; risk: ${formatStatus(pack.compliance_risk_level || "standard")}`,
+      pack.next_action ? `Next action: ${pack.next_action}` : "",
+      pack.admin_review_reason ? `Review reason: ${pack.admin_review_reason}` : "",
+      refs ? `Official references: ${refs}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
   function quoteSafetyPlan() {
     const selectedPackage = servicePackage(value("#brief-service-package"), value("#brief-service-type"));
     const selectedBudget = budgetRange(value("#brief-budget"));
@@ -319,9 +406,14 @@
     if (fundsPlan === "deposit_milestones") checks.push("Split payment release into proof milestones before receiver payout.");
     if (highValue) checks.push("High-value or retainer work should use milestone controls and Swadakta/provider review before release.");
     if (lowBudgetPhysical) checks.push("Under-100 physical work may need a smaller scope, local-only route, or re-quote to protect the operating reserve.");
+    const compliancePack = rulesPackFromContext();
+    if (compliancePack.source === "rules_precheck") {
+      checks.push(`Rules compliance pack carried forward: ${formatStatus(compliancePack.compliance_status || "not_applicable")} / ${formatStatus(compliancePack.compliance_risk_level || "standard")}.`);
+      if (compliancePack.next_action) checks.push(compliancePack.next_action);
+    }
 
     return {
-      tone: highValue || lowBudgetPhysical ? "review" : "standard",
+      tone: highValue || lowBudgetPhysical || compliancePack.admin_review_required ? "review" : "standard",
       title: highValue
         ? "Quote safety: milestone review needed"
         : lowBudgetPhysical
@@ -794,6 +886,44 @@
     if (corridorChecks) {
       corridorChecks.innerHTML = checks.map((check) => `<li>${escapeHtml(check)}</li>`).join("");
     }
+    renderCompliancePack();
+  }
+
+  function renderCompliancePack() {
+    if (!compliancePackPanel) return;
+    const pack = rulesPackFromContext();
+    const hasPack = pack.source === "rules_precheck";
+    compliancePackPanel.hidden = !hasPack;
+    if (!hasPack) return;
+
+    const status = formatStatus(pack.compliance_status || "not_applicable");
+    const risk = formatStatus(pack.compliance_risk_level || "standard");
+    if (compliancePackTitle) compliancePackTitle.textContent = pack.route_label || "Rules pre-check carried forward";
+    if (compliancePackCopy) {
+      compliancePackCopy.textContent = `${status}. ${risk} risk. ${pack.next_action || "Keep the required checks with the brief before payment or assignment."}`;
+    }
+    if (compliancePackRisk) {
+      compliancePackRisk.textContent = risk;
+      compliancePackRisk.className = `inline-flex min-h-9 items-center rounded-full px-3 font-label-sm ${
+        pack.compliance_risk_level === "high"
+          ? "bg-error-container text-on-error-container"
+          : pack.compliance_risk_level === "medium"
+            ? "bg-amber-400/20 text-amber-800"
+            : "bg-white/80 text-primary"
+      }`;
+    }
+    if (compliancePackChecks) {
+      const checks = [...new Set([...(pack.required_checks || []), ...(corridorContext.required_checks || [])])].slice(0, 8);
+      compliancePackChecks.innerHTML = checks.map((check) => `<li>${escapeHtml(check)}</li>`).join("");
+    }
+    if (compliancePackLinks) {
+      compliancePackLinks.innerHTML = normalizeReferenceLinks(pack.official_reference_links)
+        .map(
+          (reference) =>
+            `<a class="inline-flex min-h-9 items-center rounded-full border border-outline-variant/45 bg-white/76 px-3 text-xs font-bold text-primary" href="${escapeHtml(reference.url)}" target="_blank" rel="noopener">${escapeHtml(reference.label)}</a>`,
+        )
+        .join("");
+    }
   }
 
   function applyCorridorContext() {
@@ -814,13 +944,40 @@
       compliance_acknowledged: params.get("ack") === "yes",
       compliance_flags: (params.get("flags") || "").split("|").filter(Boolean),
       required_checks: (params.get("checks") || "").split("|").filter(Boolean),
+      imported_from: params.get("source") === "rules_precheck" ? "rules_precheck" : "",
     }, params.has("ack"));
 
     try {
+      const storedCorridor = JSON.parse(localStorage.getItem(corridorStorageKey) || "{}");
+      const storedRules = JSON.parse(localStorage.getItem(rulesStorageKey) || "{}");
       corridorContext = {
-        ...JSON.parse(localStorage.getItem(corridorStorageKey) || "{}"),
+        ...(storedRules?.source === "rules_precheck"
+          ? {
+              origin_country: storedRules.origin_country || "",
+              destination_country: storedRules.destination_country || "",
+              task_location: storedRules.destination_country || storedRules.origin_country || "",
+              compliance_status: storedRules.compliance_status || "",
+              compliance_risk_level: storedRules.compliance_risk_level || "",
+              admin_review_required: Boolean(storedRules.admin_review_required),
+              admin_review_reason: storedRules.admin_review_reason || "",
+              compliance_flags: Array.isArray(storedRules.compliance_flags) ? storedRules.compliance_flags : [],
+              required_checks: Array.isArray(storedRules.required_checks) ? storedRules.required_checks : [],
+              official_reference_links: normalizeReferenceLinks(storedRules.official_reference_links),
+              rules_compliance_pack: storedRules,
+              imported_from: "rules_precheck",
+              imported_at: storedRules.created_at || "",
+            }
+          : {}),
+        ...storedCorridor,
         ...paramContext,
       };
+      if (corridorContext.rules_compliance_pack?.source === "rules_precheck") {
+        corridorContext.official_reference_links = normalizeReferenceLinks(
+          corridorContext.official_reference_links?.length
+            ? corridorContext.official_reference_links
+            : corridorContext.rules_compliance_pack.official_reference_links,
+        );
+      }
       setValue("#brief-origin-country", corridorContext.origin_country);
       setValue("#brief-destination-country", corridorContext.destination_country);
       setValue("#brief-location", corridorContext.task_location);
@@ -925,8 +1082,15 @@
     syncBriefRoutePlan();
     const routeFields = resolveRouteFields();
     const location = routeFields.location;
-    const requiredChecks = corridorRequiredChecks(items);
-    const complianceFlags = Array.isArray(corridorContext.compliance_flags) ? corridorContext.compliance_flags : [];
+    const compliancePack = rulesPackFromContext();
+    const requiredChecks = uniqueList([
+      ...corridorRequiredChecks(items),
+      ...(Array.isArray(compliancePack.required_checks) ? compliancePack.required_checks : []),
+    ]);
+    const complianceFlags = uniqueList([
+      ...(Array.isArray(corridorContext.compliance_flags) ? corridorContext.compliance_flags : []),
+      ...(Array.isArray(compliancePack.compliance_flags) ? compliancePack.compliance_flags : []),
+    ]);
     const logisticsMode = corridorContext.logistics_mode || (items ? "postal_courier" : "not_needed");
     const goodsCategory = corridorContext.goods_category || (items ? "general_goods" : "none");
 
@@ -954,7 +1118,7 @@
         logistics_mode: logisticsMode,
         goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [freeformBrief, selectedService, routePlanSummary(), quoteSafetySummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
+        notes: [freeformBrief, selectedService, routePlanSummary(), quoteSafetySummary(), compliancePackSummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
@@ -962,10 +1126,10 @@
         automation_status:
           corridorContext.automation_status ||
           (corridorContext.route_status === "pilot" ? "admin_review" : corridorContext.route_status === "unsupported" ? "founder_approval" : "ai_triage"),
-        admin_review_required: Boolean(corridorContext.admin_review_required),
-        admin_review_reason: corridorContext.admin_review_reason || "",
-        compliance_status: corridorContext.compliance_status || (complianceFlags.length ? "needs_ai_review" : "not_applicable"),
-        compliance_risk_level: corridorContext.compliance_risk_level || "standard",
+        admin_review_required: Boolean(corridorContext.admin_review_required || compliancePack.admin_review_required),
+        admin_review_reason: corridorContext.admin_review_reason || compliancePack.admin_review_reason || "",
+        compliance_status: corridorContext.compliance_status || compliancePack.compliance_status || (complianceFlags.length ? "needs_ai_review" : "not_applicable"),
+        compliance_risk_level: corridorContext.compliance_risk_level || compliancePack.compliance_risk_level || "standard",
         compliance_acknowledged: Boolean(document.querySelector("#compliance")?.checked || corridorContext.compliance_acknowledged),
         identity_verification_required: true,
         identity_verification_consent: true,

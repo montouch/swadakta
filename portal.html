@@ -195,7 +195,7 @@
         }
         .quick-action-card {
             display: flex;
-            min-height: 12.5rem;
+            min-height: 11rem;
             flex-direction: column;
             border-radius: 1.5rem;
             padding: 1.25rem;
@@ -275,6 +275,45 @@
             transform: translateY(-2px);
             background: rgba(255, 255, 255, 0.9);
             box-shadow: 0 24px 46px rgba(16, 26, 58, 0.1);
+        }
+        #dashboard {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        #dashboard > :not([hidden]) ~ :not([hidden]) {
+            margin-top: 0 !important;
+        }
+        #dashboard > header {
+            order: 0;
+        }
+        #dashboard > section[aria-label="Main actions"] {
+            order: 1;
+        }
+        #dashboard > section[aria-label="Account at a glance"] {
+            order: 2;
+        }
+        #account-setup-checklist {
+            order: 3;
+        }
+        #account-home-autopilot {
+            order: 4;
+        }
+        #dashboard > section[aria-label="Jobs and account status"] {
+            order: 5;
+        }
+        #dashboard > section[aria-label="Main actions"] {
+            align-items: stretch;
+        }
+        #dashboard > section[aria-label="Main actions"] .quick-action-card h2,
+        #dashboard > section[aria-label="Account at a glance"] h2,
+        #account-setup-checklist h2,
+        #account-home-autopilot h2,
+        #find-work h2 {
+            letter-spacing: 0 !important;
+        }
+        #dashboard > section[aria-label="Main actions"] .quick-action-card p {
+            max-width: 34ch;
         }
         .quick-action-icon {
             display: inline-flex;
@@ -404,6 +443,56 @@
             background: rgba(255, 255, 255, 0.68);
             padding: 0.9rem;
         }
+        .portal-details {
+            border-radius: 1.35rem;
+            border: 1px solid rgba(199, 196, 215, 0.34);
+            background: rgba(255, 255, 255, 0.58);
+            padding: 0.5rem;
+        }
+        .portal-details > summary {
+            display: flex;
+            min-height: 4.25rem;
+            cursor: pointer;
+            list-style: none;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            border-radius: 1rem;
+            padding: 0.95rem 1rem;
+            color: #101a3a;
+            font-weight: 800;
+        }
+        .portal-details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .portal-details > summary::after {
+            content: "expand_more";
+            display: inline-flex;
+            height: 2.25rem;
+            width: 2.25rem;
+            flex: 0 0 auto;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.78);
+            color: #101a3a;
+            font-family: "Material Symbols Outlined";
+            font-size: 1.25rem;
+            font-weight: 400;
+            line-height: 1;
+            transition: transform 0.18s ease;
+        }
+        .portal-details[open] > summary::after {
+            transform: rotate(180deg);
+        }
+        .portal-details-summary-copy {
+            display: block;
+            margin-top: 0.2rem;
+            color: #464554;
+            font-size: 0.88rem;
+            font-weight: 500;
+            line-height: 1.45;
+        }
         #find-work fieldset label {
             min-height: 3.25rem;
             cursor: pointer;
@@ -526,10 +615,16 @@
         }
         @media (min-width: 1280px) {
             .find-job-path {
-                grid-template-columns: minmax(0, 1fr);
+                grid-template-columns: repeat(3, minmax(0, 1fr));
             }
             .find-job-step {
-                min-height: 6.75rem;
+                min-height: 9rem;
+                grid-template-columns: 2.75rem minmax(0, 1fr);
+                align-items: start;
+            }
+            .find-job-step-action {
+                grid-column: 1 / -1;
+                width: 100%;
             }
         }
     </style>
@@ -1125,7 +1220,14 @@ Submit offer
 </div>
 </aside>
 </div>
-<div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+<details class="portal-details mt-6" id="receiver-application-details">
+<summary>
+<span>
+Detailed work application
+<span class="portal-details-summary-copy">Open this when you are ready to save coverage, categories, proof consent, and paid-work details.</span>
+</span>
+</summary>
+<div class="mt-4 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
 <form class="grid grid-cols-1 md:grid-cols-2 gap-4" id="receiver-application-form">
 <div class="space-y-2">
 <label class="font-label-md text-label-md text-on-surface-variant ml-1" for="receiver-full-name">Full name</label>
@@ -1212,6 +1314,7 @@ Submit offer
 <div class="mt-5 grid gap-3" id="receiver-application-list" aria-live="polite"></div>
 </div>
 </div>
+</details>
 </section>
  </div>
 <aside class="space-y-4">

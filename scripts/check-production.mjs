@@ -398,6 +398,8 @@ const requiredBriefHtmlMarkers = [
   "brief-route-guidance",
   "brief-route-shortcuts",
   "In-country Africa job",
+  "brief-compliance-pack",
+  "Compliance pack",
   "brief-budget",
   "Budget and quote safety",
   "Payments &amp; Milestone Protection",
@@ -418,6 +420,10 @@ const requiredBriefScriptMarkers = [
   "routePlanSummary",
   "renderQuoteSafety",
   "quoteSafetySummary",
+  "rulesPackFromContext",
+  "compliancePackSummary",
+  "renderCompliancePack",
+  "rulesStorageKey",
   "budgetRange",
 ];
 const requiredTrackingMarkers = [
@@ -492,6 +498,10 @@ const requiredRulesMarkers = [
   "UPU international mail baseline",
   "postal or courier acceptance",
   "rules_precheck",
+  "rulesStorageKey",
+  "officialReferences",
+  "buildCompliancePack",
+  "data-rules-compliance-pack",
   "rules-use-corridor-link",
   "corridorStorageKey",
 ];
@@ -520,6 +530,10 @@ const requiredCorridorScriptMarkers = [
   "rules_precheck",
   "rememberImportedRulesContext",
   "rulesContextMatchesCurrent",
+  "rulesPackFromContext",
+  "RULES_STORAGE_KEY",
+  "rules_compliance_pack",
+  "official_reference_links",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -1376,8 +1390,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=13")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=13`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=14")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=14`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1431,8 +1445,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=8")) {
-    fail(failures, `${page} does not reference corridor.js?v=8`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=9")) {
+    fail(failures, `${page} does not reference corridor.js?v=9`);
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {
@@ -1769,11 +1783,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=13");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=14");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=13 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=14 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=13 returned 200");
+  pass("stitch-brief.js?v=14 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

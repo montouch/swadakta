@@ -285,6 +285,18 @@
 <ul class="mt-2 grid gap-2 text-sm text-on-surface-variant list-disc pl-5" id="brief-corridor-checks"></ul>
 <a class="mt-4 inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/75 border border-outline-variant/50 text-primary font-bold" href="rules.html">Check item rules</a>
 </div>
+<div class="rounded-2xl bg-primary/5 border border-primary/15 p-4" id="brief-compliance-pack" hidden>
+<div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Compliance pack</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-compliance-pack-title">Rules pre-check carried forward</h3>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-compliance-pack-copy">Rules status, risk, required checks, and reference links will stay with this brief.</p>
+</div>
+<span class="inline-flex min-h-9 items-center rounded-full bg-white/80 px-3 text-primary font-label-sm" id="brief-compliance-pack-risk">Standard</span>
+</div>
+<ul class="mt-3 grid gap-2 text-sm text-on-surface-variant list-disc pl-5" id="brief-compliance-pack-checks"></ul>
+<div class="mt-3 flex flex-wrap gap-2" id="brief-compliance-pack-links"></div>
+</div>
 </div>
 </section>
 <form class="brief-simple-form space-y-2" id="client-brief-form">
@@ -595,6 +607,6 @@
 <script src="app-config.js?v=4"></script>
 <script src="app-data.js?v=54"></script>
 <script src="ai-preferences.js?v=3"></script>
-<script src="stitch-brief.js?v=13"></script>
+<script src="stitch-brief.js?v=14"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body></html>
