@@ -2,6 +2,8 @@
 
 This is the practical go-live checklist for turning the current MVP into a paid operating service.
 
+For the owner-only real-world setup sequence, use [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md) alongside the live admin readiness page at `https://swadakta.com/admin-readiness`.
+
 ## 0. Launch Mode and Owner-Only Actions
 
 Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a bank, remittance business, law firm, or unlicensed escrow provider. The app can collect requests, create accounts, run ID-verification handoff, prepare quotes, track proof, and show provider-held payment status. It should not publicly promise licensed escrow, money transfer, legal advice, tax advice, immigration advice, customs brokerage, or guaranteed delivery until those licences/providers are in place.

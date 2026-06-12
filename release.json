@@ -1,7 +1,7 @@
 {
-  "release_id": "2026-06-13-provider-payments-id-v3",
-  "release_name": "Provider payments and identity readiness",
-  "description": "Adds provider-ready payment setup tracking, Sumsub identity automation, and deployment freshness checks.",
+  "release_id": "2026-06-13-founder-action-pack-v1",
+  "release_name": "Founder action pack and launch setup cockpit",
+  "description": "Adds a founder real-world launch pack to admin readiness and documents owner setup for legal, insurance, providers, identity, and first paid pilots.",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

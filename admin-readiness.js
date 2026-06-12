@@ -12,8 +12,10 @@
   const refreshButton = document.querySelector("#refresh-readiness");
   const copyChecklistButton = document.querySelector("#copy-checklist");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
+  const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
   const readinessMode = document.querySelector("#readiness-mode");
   const readinessStatus = document.querySelector("#readiness-status");
+  const founderActionList = document.querySelector("#founder-action-list");
   const nextActionsList = document.querySelector("#next-actions-list");
   const nextActionsCount = document.querySelector("#next-actions-count");
   const categories = document.querySelector("#readiness-categories");
@@ -266,6 +268,43 @@
     ].join("\n\n---\n\n");
   }
 
+  function founderStepText(step = {}, index = 0) {
+    const safeValues = Array.isArray(step.safe_values) ? step.safe_values : [];
+    return [
+      `${index + 1}. [${statusLabel(step.status)}] ${step.label || "Founder action"}`,
+      `Owner: ${step.owner || "Founder"}`,
+      `Why: ${step.summary || "Review this setup item."}`,
+      `Action: ${step.action || "Complete this setup item before paid launch."}`,
+      step.done_when ? `Done when: ${step.done_when}` : "",
+      step.flag ? `Readiness flag: ${step.flag}` : "",
+      step.docs_url ? `Primary link: ${step.docs_url}` : "",
+      ...(safeValues.length ? safeValues.map((value) => `Safe reference: ${value}`) : []),
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  function buildFounderActionPack(report = latestReport) {
+    const pack = report?.founder_action_pack || {};
+    const phases = Array.isArray(pack.phases) ? pack.phases : [];
+    return [
+      pack.title || "Swadakta founder real-world launch pack",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      `Operating rule: ${pack.operating_rule || "Do not take paid jobs until legal, insurance, payments, identity, and provider evidence are ready."}`,
+      `Pilot rule: ${pack.pilot_rule || "Start with low-risk, written-scope, provider-paid, ID-gated jobs."}`,
+      "",
+      ...phases.flatMap((phase) => [
+        phase.label || "Founder phase",
+        ...((phase.steps || []).map((step, index) => founderStepText(step, index))),
+        "",
+      ]),
+      "Boundary:",
+      "Secret values belong only in Vercel/Supabase/provider dashboards. Do not paste live secrets into chat, email, screenshots, docs, or client-visible pages.",
+      "AI can draft and triage, but provider/founder gates decide money, ID approval, receiver assignment, refunds, and external legal/payment commitments.",
+    ].join("\n");
+  }
+
   function updateStats(counts = {}) {
     document.querySelector("#stat-ready").textContent = counts.ready || 0;
     document.querySelector("#stat-warning").textContent = counts.warning || 0;
@@ -366,6 +405,65 @@
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider packs returned by the readiness API.</div>`;
   }
 
+  function renderFounderActionPack(report) {
+    if (!founderActionList) return;
+    const pack = report?.founder_action_pack || {};
+    const phases = Array.isArray(pack.phases) ? pack.phases : [];
+
+    founderActionList.innerHTML = phases.length
+      ? phases
+          .map(
+            (phase) => `
+              <section class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(phase.id || "founder")}</p>
+                    <h3 class="mt-1 font-display text-2xl font-extrabold">${escapeHtml(phase.label || "Founder phase")}</h3>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-white/70 px-4 py-2 font-label text-xs text-secondary">${escapeHtml(String((phase.steps || []).length))} actions</span>
+                </div>
+                <div class="mt-4 grid gap-3">
+                  ${(phase.steps || [])
+                    .map((step) => {
+                      const safeValues = Array.isArray(step.safe_values) ? step.safe_values : [];
+                      return `
+                        <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+                          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="min-w-0">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <strong class="font-display text-xl">${escapeHtml(step.label || "Founder action")}</strong>
+                                <span class="rounded-full px-3 py-1 font-label text-xs ${statusTone(step.status)}">${escapeHtml(statusLabel(step.status))}</span>
+                              </div>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(step.summary || "")}</p>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(step.action || "")}</p>
+                              ${step.done_when ? `<p class="mt-2 text-xs leading-5 text-secondary">${escapeHtml(step.done_when)}</p>` : ""}
+                              ${step.flag ? `<p class="mt-2 font-label text-xs uppercase tracking-[0.14em] text-secondary">Flag: ${escapeHtml(step.flag)}</p>` : ""}
+                            </div>
+                            <div class="flex shrink-0 flex-wrap gap-2">
+                              ${
+                                step.docs_url
+                                  ? `<a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(step.docs_url)}" target="_blank" rel="noopener">Open</a>`
+                                  : ""
+                              }
+                              ${
+                                safeValues.length
+                                  ? `<button class="copy-value inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-on-surface-variant" data-copy-value="${escapeHtml(safeValues.join("\n"))}" type="button">Copy refs</button>`
+                                  : ""
+                              }
+                            </div>
+                          </div>
+                        </article>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No founder action pack returned by the readiness API.</div>`;
+  }
+
   function renderReport(report, mode) {
     latestReport = report;
     const counts = report.counts || {};
@@ -377,6 +475,7 @@
     );
     updateStats(counts);
     renderLaunchGate(report);
+    renderFounderActionPack(report);
     nextActionsCount.textContent = `${nextActions.length} priorit${nextActions.length === 1 ? "y" : "ies"}`;
     nextActionsList.innerHTML = nextActions.length
       ? nextActions.map(renderAction).join("")
@@ -402,6 +501,9 @@
     categories.innerHTML = "";
     if (providerPackList) {
       providerPackList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (founderActionList) {
+      founderActionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
     renderLaunchGate({});
     protectedActions.innerHTML = "";
@@ -490,6 +592,12 @@
   copyProviderPackButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildProviderPack(), "Provider setup pack copied.");
+    });
+  });
+
+  copyFounderPackButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildFounderActionPack(), "Founder launch pack copied.");
     });
   });
 

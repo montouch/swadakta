@@ -182,6 +182,8 @@ const DOCS = {
   supabaseStorageAccess: "https://supabase.com/docs/guides/storage/security/access-control",
   businessRegistration: "https://business.gov.au/registrations",
   businessRegistrationService: "https://register.business.gov.au/",
+  abrAbn: "https://www.abr.gov.au/business-super-funds-charities/applying-abn",
+  asicBusinessName: "https://www.asic.gov.au/for-business-and-companies/business-names/register-a-business-name/",
   atoGst: "https://www.ato.gov.au/businesses-and-organisations/gst-excise-and-indirect-taxes/gst/registering-for-gst",
   austracRemittance: "https://www.austrac.gov.au/enrol-and-register-remittance",
   asicAfs: "https://www.asic.gov.au/for-finance-professionals/afs-licensees/do-you-need-an-afs-licence/",
@@ -192,6 +194,13 @@ const DOCS = {
   brsKenya: "https://brs.go.ke/",
   kraPin: "https://www.kra.go.ke/business/companies-partnerships/companies-partnerships-pin-taxes/companies-partnerships-pin-registration",
   odpcKenya: "https://www.odpc.go.ke/",
+  stripeRegister: "https://dashboard.stripe.com/register",
+  stripeConnect: "https://docs.stripe.com/connect",
+  stripePaymentLinks: "https://docs.stripe.com/payment-links",
+  paypalDeveloper: "https://developer.paypal.com/home/",
+  paypalBusinessKe: "https://www.paypal.com/ke/business",
+  sumsubHome: "https://sumsub.com/",
+  wiseBusinessHome: "https://wise.com/business/",
 };
 
 function confirmedEnv(name) {
@@ -372,6 +381,246 @@ function buildLaunchGate(categories) {
         ? "AI/manual mode fallback is ready; Swadakta can hide AI-only tools and keep manual operations running."
         : "AI/manual mode fallback needs attention before relying on AI-optional operations.",
       "AI can draft and triage, but protected decisions remain provider/founder gated.",
+    ],
+  };
+}
+
+function founderStep(id, label, status, summary, action, options = {}) {
+  return {
+    id,
+    label,
+    status,
+    summary,
+    action,
+    owner: options.owner || "Founder",
+    docs_url: options.docs_url || "",
+    safe_values: options.safe_values || [],
+    done_when: options.done_when || "",
+    flag: options.flag || "",
+  };
+}
+
+function buildFounderActionPack() {
+  const base = publicUrl() || "https://swadakta.com";
+  const stripeWebhookUrl = `${base}/api/payments/stripe-webhook`;
+  const mpesaWebhookUrl = mpesaCallbackUrl();
+  const sumsubWebhookUrl = `${base}/api/identity/sumsub-webhook`;
+  const providerAccountsReady = confirmedEnv("SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED");
+  const businessReady = confirmedEnv("SWADAKTA_OWNER_BUSINESS_REGISTERED");
+  const taxReady = confirmedEnv("SWADAKTA_OWNER_TAX_REVIEWED");
+  const insuranceReady = confirmedEnv("SWADAKTA_OWNER_INSURANCE_ACTIVE");
+  const legalReady = confirmedEnv("SWADAKTA_OWNER_LEGAL_REVIEWED");
+  const financialBoundaryReady = confirmedEnv("SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED");
+  const privacyReady = confirmedEnv("SWADAKTA_OWNER_PRIVACY_REVIEWED");
+  const contractorReady = confirmedEnv("SWADAKTA_OWNER_CONTRACTOR_TERMS_READY");
+  const kenyaReady = confirmedEnv("SWADAKTA_OWNER_KENYA_SETUP_REVIEWED");
+  const secretRotationReady = confirmedEnv("SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED");
+
+  return {
+    title: "Founder real-world launch pack",
+    operating_rule:
+      "Show the live site and collect non-sensitive pilot interest now. Take paid jobs only after the legal, insurance, provider, payment-evidence, and ID-verification gates are complete.",
+    pilot_rule:
+      "The first paid jobs should be low-value, provider-paid, ID-gated, written-scope jobs with proof requirements and milestone release conditions recorded before work starts.",
+    phases: [
+      {
+        id: "legal_home",
+        label: "1. Make Swadakta a real business",
+        steps: [
+          founderStep(
+            "choose_legal_home",
+            "Choose the legal home and trading setup",
+            businessReady ? "ready" : "missing",
+            "Decide whether the first operating entity is Australian, Kenyan, or both, then register the structure and trading name accordingly.",
+            "If operating from Australia first, start with ABN/business structure guidance and ASIC business-name setup. If Kenya will contract receivers or collect M-Pesa directly, also review BRS/KRA setup.",
+            {
+              docs_url: DOCS.businessRegistration,
+              safe_values: [DOCS.abrAbn, DOCS.asicBusinessName, DOCS.brsKenya, DOCS.kraPin],
+              done_when: "Entity/trading setup is chosen, records are saved, and SWADAKTA_OWNER_BUSINESS_REGISTERED=true is set in Vercel.",
+              flag: "SWADAKTA_OWNER_BUSINESS_REGISTERED",
+            },
+          ),
+          founderStep(
+            "tax_accounting",
+            "Get tax and accounting advice",
+            taxReady ? "ready" : "missing",
+            "Cross-border income, GST, refunds, contractor payments, platform fees, and record keeping need an accountant's setup before paid scaling.",
+            "Ask the accountant to confirm GST position, bookkeeping categories, invoice wording, contractor payment records, and owner margin tracking.",
+            {
+              docs_url: DOCS.atoGst,
+              owner: "Founder/accountant",
+              done_when: "Accounting workflow is written down and SWADAKTA_OWNER_TAX_REVIEWED=true is set.",
+              flag: "SWADAKTA_OWNER_TAX_REVIEWED",
+            },
+          ),
+          founderStep(
+            "insurance",
+            "Buy suitable insurance",
+            insuranceReady ? "ready" : "missing",
+            "Real errands, property visits, courier-style jobs, document handling, and advice-adjacent work carry liability.",
+            "Confirm public liability, professional indemnity/errors and omissions, cyber/privacy, equipment, and any courier/goods-in-transit cover that matches the jobs you will actually accept.",
+            {
+              docs_url: DOCS.businessInsurance,
+              owner: "Founder/insurance broker",
+              done_when: "Policies are active, exclusions are understood, and SWADAKTA_OWNER_INSURANCE_ACTIVE=true is set.",
+              flag: "SWADAKTA_OWNER_INSURANCE_ACTIVE",
+            },
+          ),
+        ],
+      },
+      {
+        id: "legal_safety",
+        label: "2. Put boundaries around risk",
+        steps: [
+          founderStep(
+            "legal_documents",
+            "Review terms, privacy, refunds, and disputes",
+            legalReady ? "ready" : "missing",
+            "The public site can describe the model, but paid clients need clear terms, refund rules, proof standards, and dispute handling.",
+            "Have a lawyer review the site terms, privacy policy, refund wording, prohibited goods rules, receiver agreement, and client service boundaries.",
+            {
+              docs_url: DOCS.acccConsumerGuarantees,
+              owner: "Founder/legal reviewer",
+              done_when: "Reviewed documents are live and SWADAKTA_OWNER_LEGAL_REVIEWED=true is set.",
+              flag: "SWADAKTA_OWNER_LEGAL_REVIEWED",
+            },
+          ),
+          founderStep(
+            "financial_services_boundary",
+            "Check escrow/remittance/financial-service boundaries",
+            financialBoundaryReady ? "ready" : "missing",
+            "Swadakta should avoid acting like an unlicensed bank, remittance provider, or informal escrow service.",
+            "Use provider-held funds, payment links, and documented milestone gates. Get AUSTRAC/ASIC/legal advice before holding or moving client funds outside regulated provider rails.",
+            {
+              docs_url: DOCS.austracRemittance,
+              safe_values: [DOCS.asicAfs],
+              owner: "Founder/legal reviewer",
+              done_when: "The operating model is confirmed and SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED=true is set.",
+              flag: "SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED",
+            },
+          ),
+          founderStep(
+            "privacy_data",
+            "Treat privacy and ID media as launch-critical",
+            privacyReady ? "ready" : "missing",
+            "The app handles IDs, addresses, family contacts, payment references, receipts, photos, and proof media across borders.",
+            "Confirm what personal data is collected, where it is stored, retention/deletion periods, who can access it, and whether Kenya ODPC registration or obligations apply.",
+            {
+              docs_url: DOCS.oaicSmallBusiness,
+              safe_values: [DOCS.odpcKenya],
+              owner: "Founder/privacy reviewer",
+              done_when: "Privacy controls are reviewed and SWADAKTA_OWNER_PRIVACY_REVIEWED=true is set.",
+              flag: "SWADAKTA_OWNER_PRIVACY_REVIEWED",
+            },
+          ),
+          founderStep(
+            "receiver_terms",
+            "Prepare receiver/contractor terms",
+            contractorReady ? "ready" : "missing",
+            "Receivers need clear rules before they see paid jobs, client details, proof requests, or payout expectations.",
+            "Prepare contractor/receiver terms covering independence, ID verification, prohibited work, proof standards, safety, no direct side deals, disputes, and payout timing.",
+            {
+              docs_url: DOCS.fairWorkContractors,
+              owner: "Founder/legal reviewer",
+              done_when: "Receiver terms/code are approved and SWADAKTA_OWNER_CONTRACTOR_TERMS_READY=true is set.",
+              flag: "SWADAKTA_OWNER_CONTRACTOR_TERMS_READY",
+            },
+          ),
+        ],
+      },
+      {
+        id: "providers",
+        label: "3. Activate payment and ID providers",
+        steps: [
+          founderStep(
+            "payment_accounts",
+            "Open provider accounts under the legal entity",
+            providerAccountsReady ? "ready" : "missing",
+            "Stripe, PayPal, Sumsub, Wise fallback, Vercel, Supabase, OpenAI, and later M-Pesa/Paystack/Flutterwave should all match the chosen legal entity.",
+            "Start with Stripe and PayPal for card/client payments, Sumsub for global ID verification, and Wise only as a hidden fallback. Add M-Pesa after Kenya setup is confirmed.",
+            {
+              docs_url: DOCS.stripeRegister,
+              safe_values: [DOCS.paypalDeveloper, DOCS.sumsubHome, DOCS.wiseBusinessHome, DOCS.daraja],
+              owner: "Founder/provider admins",
+              done_when: "Provider accounts are approved and SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED=true is set.",
+              flag: "SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED",
+            },
+          ),
+          founderStep(
+            "stripe_webhook",
+            "Configure Stripe payment evidence",
+            hasEnv("STRIPE_SECRET_KEY") && hasEnv("STRIPE_WEBHOOK_SECRET") ? "ready" : "missing",
+            "Stripe can create checkout/payment links, but Swadakta should only treat funds as paid after provider evidence.",
+            "Add Stripe server keys in Vercel, configure the webhook, then run a low-value test.",
+            {
+              docs_url: DOCS.stripeWebhooks,
+              safe_values: [stripeWebhookUrl, DOCS.stripePaymentLinks, DOCS.stripeConnect],
+              owner: "Founder/Stripe admin",
+              done_when: "A test payment confirms through Stripe webhook without exposing secret values.",
+            },
+          ),
+          founderStep(
+            "sumsub_verification",
+            "Configure Sumsub ID evidence",
+            hasEnv("SUMSUB_APP_TOKEN") && hasEnv("SUMSUB_SECRET_KEY") && hasEnv("SUMSUB_LEVEL_NAME") && hasEnv("SUMSUB_WEBHOOK_SECRET")
+              ? "ready"
+              : "missing",
+            "ID verification should come from the provider, not from screenshots, users, or AI.",
+            "Create a Sumsub level, add token/secret/level/webhook secret in Vercel, paste the webhook URL into Sumsub, then run one test account.",
+            {
+              docs_url: DOCS.sumsubWebsdkLink,
+              safe_values: [sumsubWebhookUrl, DOCS.sumsubWebhooks],
+              owner: "Founder/Sumsub admin",
+              done_when: "A test user can start verification and the signed webhook updates Swadakta status.",
+            },
+          ),
+          founderStep(
+            "mpesa_kenya",
+            "Prepare M-Pesa only after Kenya setup",
+            kenyaReady && hasEnv("MPESA_CONSUMER_KEY") && hasEnv("MPESA_CONSUMER_SECRET") ? "manual" : "missing",
+            "M-Pesa is valuable for Kenya payments, but live Daraja access depends on Kenya-side business/payment setup.",
+            "Use sandbox first. Do not enable live M-Pesa until Safaricom approval, callback protection, settlement, tax, and evidence mapping are tested.",
+            {
+              docs_url: DOCS.daraja,
+              safe_values: [mpesaWebhookUrl],
+              owner: "Founder/Kenya payment admin",
+              done_when: "Daraja live approval and webhook evidence tests are complete.",
+              flag: "SWADAKTA_OWNER_KENYA_SETUP_REVIEWED",
+            },
+          ),
+          founderStep(
+            "secret_rotation",
+            "Rotate any exposed keys before launch",
+            secretRotationReady ? "ready" : "missing",
+            "Any API key pasted into chat, screenshots, browser fields, or support conversations should be treated as exposed.",
+            "Create fresh keys, store them only in Vercel/Supabase secrets, and remove old keys from providers.",
+            {
+              docs_url: DOCS.vercelEnv,
+              owner: "Founder/security admin",
+              done_when: "Fresh keys are stored only as server-side secrets and SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED=true is set.",
+              flag: "SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED",
+            },
+          ),
+        ],
+      },
+      {
+        id: "pilot",
+        label: "4. Run the first paid pilot safely",
+        steps: [
+          founderStep(
+            "first_jobs",
+            "Start with low-risk jobs only",
+            "manual",
+            "The first live revenue should prove workflow, proof, payments, and receiver reliability without exposing the business to high-value or unclear legal risk.",
+            "Accept only clear, legal, low-value tasks with written scope, confirmed ID where needed, provider-paid funds, proof plan, and milestone release notes.",
+            {
+              docs_url: `${base}/admin-readiness`,
+              owner: "Founder/admin",
+              done_when: "At least one end-to-end pilot completes with payment evidence, proof, review, and no unresolved dispute.",
+            },
+          ),
+        ],
+      },
     ],
   };
 }
@@ -1386,6 +1635,7 @@ async function readinessReport(user, authHeader) {
     },
     counts,
     launch_gate: launchGate,
+    founder_action_pack: buildFounderActionPack(),
     categories,
     next_actions: buildNextActions(categories),
     safe_copy_values: {
