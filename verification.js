@@ -24,6 +24,11 @@
   const readinessCopy = document.querySelector("#verification-readiness-copy");
   const readinessList = document.querySelector("#verification-readiness-list");
   const failurePreventionList = document.querySelector("#verification-failure-prevention-list");
+  const locationChangeTitle = document.querySelector("#verification-location-change-title");
+  const locationChangeCopy = document.querySelector("#verification-location-change-copy");
+  const savedRouteEl = document.querySelector("#verification-saved-route");
+  const currentRouteEl = document.querySelector("#verification-current-route");
+  const locationChangeList = document.querySelector("#verification-location-change-list");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -142,6 +147,8 @@
   const YOUVERIFY_COUNTRIES = new Set(["nigeria", "ghana"]);
   const USER_SELECTABLE_PROVIDERS = new Set(["smile_id", "sumsub", "youverify"]);
   let providerTouched = USER_SELECTABLE_PROVIDERS.has(params.get("provider") || "");
+  let currentProfile = {};
+  let currentRequests = [];
 
   function field(selector) {
     return document.querySelector(selector);
@@ -235,6 +242,24 @@
       .trim()
       .toLowerCase()
       .replace(/\s+/g, " ");
+  }
+
+  function normalizeRoutePart(value) {
+    return normalizeCountry(value).replace(/[^\p{L}\p{N}\s,.-]/gu, "");
+  }
+
+  function compactRoute(country, base) {
+    return [country, base].map((part) => String(part || "").trim()).filter(Boolean).join(" / ");
+  }
+
+  function routeChangedAfterVerification(profile = {}) {
+    const savedCountry = normalizeRoutePart(profile.country || "");
+    const savedBase = normalizeRoutePart(profile.kenya_base || "");
+    const currentCountry = normalizeRoutePart(field("#verify-country")?.value || "");
+    const currentBase = normalizeRoutePart(field("#verify-base")?.value || "");
+    const countryChanged = Boolean(savedCountry && currentCountry && savedCountry !== currentCountry);
+    const baseChanged = Boolean(savedBase && currentBase && savedBase !== currentBase);
+    return countryChanged || baseChanged;
   }
 
   function populateCountryOptions() {
@@ -418,6 +443,81 @@
     }
   }
 
+  function renderLocationChangeGuard(profile = {}, requests = []) {
+    const request = latestRequest(requests);
+    const verified = profile.identity_verification_status === "verified" || request?.status === "verified";
+    const savedRoute = compactRoute(profile.country, profile.kenya_base);
+    const formRoute = compactRoute(field("#verify-country")?.value, field("#verify-base")?.value);
+    const hasCurrentRoute = Boolean(field("#verify-country")?.value || field("#verify-base")?.value);
+    const changed = routeChangedAfterVerification(profile);
+    const sensitive = highRiskReason(field("#verify-reason")?.value);
+
+    if (savedRouteEl) savedRouteEl.textContent = savedRoute || "No saved route yet";
+    if (currentRouteEl) currentRouteEl.textContent = formRoute || "Enter country and base";
+
+    if (!profile.email && !profile.full_name && !savedRoute) {
+      if (locationChangeTitle) locationChangeTitle.textContent = "Sign in to compare route evidence";
+      if (locationChangeCopy) {
+        locationChangeCopy.textContent =
+          "Swadakta compares saved profile evidence with the country and base you enter here so location changes do not silently unlock paid work.";
+      }
+      if (locationChangeList) {
+        locationChangeList.innerHTML = [
+          "Account access can open before ID verification.",
+          "Paid posting and paid work still need provider ID evidence and a current route.",
+        ].map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      }
+      return;
+    }
+
+    if (verified && changed) {
+      if (locationChangeTitle) locationChangeTitle.textContent = "Base or country changed after verification";
+      if (locationChangeCopy) {
+        locationChangeCopy.textContent =
+          "Account access stays open, but paid actions pause until Swadakta confirms the new country/base with a fresh provider route, work-permission check, or documented exception.";
+      }
+      if (locationChangeList) {
+        locationChangeList.innerHTML = [
+          "Fresh provider route or Swadakta safety check before paid posting, paid matching, sensitive jobs, or receiver assignment.",
+          "Receiver public profile should show the current base only after the change is saved and checked.",
+          "If the move changes local law, customs, payout, or ID-provider coverage, founder/admin review is required before work starts.",
+        ].map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      }
+      return;
+    }
+
+    if (verified && hasCurrentRoute) {
+      if (locationChangeTitle) locationChangeTitle.textContent = "Location evidence is consistent";
+      if (locationChangeCopy) {
+        locationChangeCopy.textContent =
+          "Your saved route and current form route match enough for normal provider evidence handling. Job-level route, payment, and proof checks still apply.";
+      }
+      if (locationChangeList) {
+        locationChangeList.innerHTML = [
+          "Keep your mobile/WhatsApp reachable after travel.",
+          "Save a new profile update before bidding or posting if your base changes.",
+          sensitive
+            ? "High-value or sensitive work still needs extra founder/admin review."
+            : "Low-risk paid actions can continue only after job-specific checks pass.",
+        ].map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+      }
+      return;
+    }
+
+    if (locationChangeTitle) locationChangeTitle.textContent = "Add current country and base";
+    if (locationChangeCopy) {
+      locationChangeCopy.textContent =
+        "Swadakta needs current location context before choosing the provider route, payout path, lawful corridor, and receiver coverage.";
+    }
+    if (locationChangeList) {
+      locationChangeList.innerHTML = [
+        "Use where you are currently based, not only your nationality.",
+        "Use the document country in the provider check when the provider asks for issuing country.",
+        "If you travel or relocate, update this page before posting paid work or accepting receiver jobs.",
+      ].map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+  }
+
   function renderGates(profile = {}, request = null, signedIn = true) {
     const status = request?.status || profile?.identity_verification_status || "not_started";
     const verified = status === "verified" || profile?.identity_verification_status === "verified";
@@ -460,6 +560,7 @@
       fallbackList.innerHTML = (route.fallbackPlan || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
     renderVerificationReadinessPlan(route, selectedProvider);
+    renderLocationChangeGuard(currentProfile, currentRequests);
   }
 
   function profileHasBasics(profile = {}) {
@@ -665,6 +766,7 @@
     renderGates(profile, request, true);
     updateProviderRoute({ request });
     renderVerificationTimeline(profile, requests, true);
+    renderLocationChangeGuard(profile, requests);
   }
 
   async function refresh() {
@@ -684,6 +786,7 @@
         renderRequests([]);
         renderGates({}, null, false);
         renderVerificationTimeline({}, [], false);
+        renderLocationChangeGuard({}, []);
         return;
       }
 
@@ -694,9 +797,11 @@
       signInLink.setAttribute("data-swadakta-auth-state", "signed-in");
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
+      currentProfile = profile;
       populate(profile);
       const requestsResult = await window.SwadaktaData.listMyIdentityVerificationRequests();
       const requests = requestsResult.data || [];
+      currentRequests = requests;
       renderSummary(profile, requests);
       renderRequests(requests);
       setFormStatus(
@@ -770,6 +875,7 @@
   });
 
   field("#verify-country").addEventListener("input", () => updateProviderRoute({ setProvider: true }));
+  field("#verify-base").addEventListener("input", () => renderLocationChangeGuard(currentProfile, currentRequests));
   field("#verify-reason").addEventListener("change", () => updateProviderRoute({ setProvider: true }));
   field("#verify-role").addEventListener("change", () => updateProviderRoute({ setProvider: false }));
   field("#verify-provider").addEventListener("change", () => {
@@ -783,5 +889,6 @@
   setPill("Checking account", "bg-primary/10 text-primary");
   summaryCopy.textContent = "Checking your signed-in Swadakta account before opening verification.";
   renderVerificationTimeline({}, [], false);
+  renderLocationChangeGuard({}, []);
   refresh();
 })();

@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, and resolution evidence-path clarity.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, and verification country/base-change safeguards.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -25,11 +25,13 @@
     "account_data_control_panel",
     "public_scope_language_polish",
     "auth_email_deliverability_readiness",
-    "resolution_evidence_path_clarity"
+    "resolution_evidence_path_clarity",
+    "verification_location_change_guard"
   ],
-  "queued_commit_count": 21,
+  "queued_commit_count": 22,
   "queued_commits": [
-    "HEAD Add resolution evidence preview",
+    "HEAD Add verification location change guard",
+    "81bf883 Add resolution evidence preview",
     "02ce60d Add auth email readiness gate",
     "411d6e0 Polish public scope language",
     "b1701f4 Add account data control panel",

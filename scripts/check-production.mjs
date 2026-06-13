@@ -407,8 +407,13 @@ const requiredVerificationMarkers = [
   "verification-fallback-list",
   "verification-readiness-planner",
   "verification-readiness-list",
+  "verification-location-change-card",
+  "verification-location-change-list",
   "verificationReadinessPlan",
   "renderVerificationReadinessPlan",
+  "renderLocationChangeGuard",
+  "Base or country changed after verification",
+  "Fresh provider route or Swadakta safety check",
   "Before you open the provider check",
   "Common failure prevention",
   "providerFallbacks",
@@ -1893,8 +1898,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/verification" && !text.includes("verification.js?v=13")) {
-    fail(failures, `${page} does not reference verification.js?v=13`);
+  if (page === "/verification" && !text.includes("verification.js?v=14")) {
+    fail(failures, `${page} does not reference verification.js?v=14`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=10`);
