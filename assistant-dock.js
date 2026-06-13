@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "18";
+  const DOCK_VERSION = "19";
   const rootId = "swadakta-ai-dock";
   const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
@@ -90,10 +90,13 @@
       .sw-ai-send:disabled { opacity: .58; cursor: not-allowed; }
       .sw-ai-note { display: none; }
       #${manualModeId} { position: fixed; inset: auto 18px 18px auto; z-index: 9998; display: flex; align-items: center; gap: 8px; min-height: 48px; max-width: min(340px, calc(100vw - 24px)); padding: 7px 8px 7px 14px; border: 1px solid rgba(199,196,215,.58); border-radius: 999px; background: rgba(255,255,255,.86); backdrop-filter: blur(22px); box-shadow: 0 18px 44px rgba(48,52,150,.16); color: #131b2e; font-family: Inter, Manrope, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      body[data-admin-theme="dark"] #${rootId},
+      body[data-admin-theme="dark"] #${manualModeId} { bottom: 116px; }
       .sw-manual-copy { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 800; }
       .sw-manual-action { flex: 0 0 auto; min-height: 34px; padding: 0 12px; border: 0; border-radius: 999px; background: #101a3a; color: #fff; cursor: pointer; font-size: 12px; font-weight: 900; }
       @media (max-width: 640px) {
         #${rootId} { left: auto; right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)); width: auto; }
+        body:has(.swadakta-mobile-bottom-nav) #${rootId} { display: none; }
         .sw-ai-fab { justify-content: center; width: 50px; min-height: 50px; padding: 0; border-radius: 18px; }
         .sw-ai-fab > span:last-child { display: none; }
         .sw-ai-fab-dot { width: 30px; height: 30px; font-size: 12px; }

@@ -462,7 +462,7 @@ const requiredAssistantHtmlMarkers = [
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
-  'const DOCK_VERSION = "18"',
+  'const DOCK_VERSION = "19"',
   "collectPageContext",
   "inferSafeIntent",
   "protectedIntentPattern",
@@ -487,6 +487,8 @@ const requiredDockMarkers = [
   "storedSupabaseSessionEmail",
   "grid-template-columns: repeat(5, minmax(0, 1fr))",
   ".sw-ai-open .sw-ai-fab { display: none; }",
+  "body:has(.swadakta-mobile-bottom-nav) #${rootId} { display: none; }",
+  'body[data-admin-theme="dark"] #${rootId}',
   ".sw-ai-messages",
   "Protected actions stay gated",
 ];
@@ -853,12 +855,13 @@ const requiredAdminReadinessHtmlMarkers = [
 const requiredAdminThemeMarkers = [
   '<html class="dark" lang="en">',
   'data-admin-theme="dark"',
-  "admin-theme.css?v=2",
+  "admin-theme.css?v=3",
 ];
 const requiredAdminThemeCssMarkers = [
   'body[data-admin-theme="dark"]',
   "rgba(12, 14, 27, 0.76)",
   ".bg-white\\/70",
+  "overflow-wrap: normal !important",
 ];
 const requiredFinalUxThemeCssMarkers = [
   "--sw-primary: #000105",
@@ -1666,8 +1669,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=18")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=18`);
+  if (!content.includes("assistant-dock.js?v=19")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=19`);
   }
   if (file.startsWith("admin-")) {
     if (content.includes("final-ux-theme.css")) {
@@ -1954,8 +1957,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=18")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=18`);
+  if (!text.includes("assistant-dock.js?v=19")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=19`);
   }
   if (page.startsWith("/admin-")) {
     if (text.includes("final-ux-theme.css")) {
@@ -2201,15 +2204,15 @@ if (releaseResponse.status !== 200) {
   }
 }
 
-const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=2");
+const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=3");
 if (adminThemeResponse.status !== 200) {
-  fail(failures, `admin-theme.css?v=2 returned ${adminThemeResponse.status}`);
+  fail(failures, `admin-theme.css?v=3 returned ${adminThemeResponse.status}`);
 } else {
-  pass("admin-theme.css?v=2 returned 200");
+  pass("admin-theme.css?v=3 returned 200");
 }
 for (const marker of requiredAdminThemeCssMarkers) {
   if (!adminThemeText.includes(marker)) {
-    fail(failures, `admin-theme.css?v=2 is missing marker ${marker}`);
+    fail(failures, `admin-theme.css?v=3 is missing marker ${marker}`);
   } else {
     pass(`admin-theme.css contains ${marker}`);
   }
@@ -2450,11 +2453,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=18");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=19");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=18 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=19 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=18 returned 200");
+  pass("assistant-dock.js?v=19 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
