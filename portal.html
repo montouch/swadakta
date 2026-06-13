@@ -305,6 +305,9 @@
         #account-home-autopilot {
             order: 6;
         }
+        #account-data-control-panel {
+            order: 7;
+        }
         #dashboard > section[aria-label="Main actions"] {
             align-items: stretch;
         }
@@ -312,6 +315,7 @@
         #dashboard > section[aria-label="Account at a glance"] h2,
         #account-setup-checklist h2,
         #account-home-autopilot h2,
+        #account-data-control-panel h2,
         #find-work h2 {
             letter-spacing: 0 !important;
         }
@@ -1358,6 +1362,41 @@
 </article>
 </div>
 </section>
+<section class="glass-panel rounded-[1.5rem] p-5" id="account-data-control-panel" aria-live="polite">
+<div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Data and privacy controls</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Know what Swadakta keeps</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl" id="account-data-control-summary">You can ask for access, correction, deletion, or restriction. Some records may need to stay for provider evidence, accounting, disputes, safety, legal, or fraud-prevention reasons.</p>
+</div>
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-data-control-pill">Account data request ready</span>
+</div>
+<div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4" id="account-data-control-list">
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<p class="font-label-md text-on-surface">Profile</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, role, current country, base, and preferences.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<p class="font-label-md text-on-surface">Verification</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Status, provider route, and reference links. Raw ID checks stay with the provider where possible.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<p class="font-label-md text-on-surface">Jobs and proof</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Briefs, proof media links, messages, reviews, disputes, and route evidence.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<p class="font-label-md text-on-surface">Payments</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Milestone references, payout route, service fee, refunds, and accounting notes.</p>
+</article>
+</div>
+<div class="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+<button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="copy-account-data-request" type="button"><span class="material-symbols-outlined mr-2 text-[20px]">content_copy</span>Copy data request</button>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="privacy.html">Open privacy policy</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="trust.html">Open trust center</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=privacy&links=privacy,trust,portal">Ask AI to explain</a>
+</div>
+<p class="mt-3 min-h-6 font-label-md text-on-surface-variant" id="account-data-request-status" role="status"></p>
+</section>
 <section class="glass-panel rounded-[1.5rem] p-5" id="receiver-profile-setup">
 <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
 <div>
@@ -1864,6 +1903,6 @@ Detailed work application
 <script src="app-config.js?v=5"></script>
 <script src="app-data.js?v=61"></script>
 <script src="ai-preferences.js?v=3"></script>
-<script src="stitch-portal.js?v=34"></script>
+<script src="stitch-portal.js?v=35"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body></html>

@@ -54,6 +54,11 @@
   const accountHomeAutopilotList = document.querySelector("#account-home-autopilot-list");
   const accountHomeAiSafeList = document.querySelector("#account-home-ai-safe-list");
   const accountHomeProtectedList = document.querySelector("#account-home-protected-list");
+  const accountDataControlSummary = document.querySelector("#account-data-control-summary");
+  const accountDataControlPill = document.querySelector("#account-data-control-pill");
+  const accountDataControlList = document.querySelector("#account-data-control-list");
+  const copyAccountDataRequestButton = document.querySelector("#copy-account-data-request");
+  const accountDataRequestStatus = document.querySelector("#account-data-request-status");
   const accountSetupProgress = document.querySelector("#account-setup-progress");
   const accountSetupProfile = document.querySelector("#account-setup-profile");
   const accountSetupVerification = document.querySelector("#account-setup-verification");
@@ -98,6 +103,8 @@
   let accountRenderVersion = 0;
   let accountHomeForceToken = 0;
   let signOutRequested = false;
+  let currentAccountProfile = {};
+  let lastAccountHomeContext = {};
   const ACCOUNT_HOME_PATH = "/portal.html#home";
   const ACCOUNT_HOME_OPEN_KEY = "swadakta_account_home_open_until";
   const ACCOUNT_HOME_EMAIL_KEY = "swadakta_account_home_email";
@@ -733,6 +740,19 @@
     return country || base || "";
   }
 
+  function latestRenderedAccountContext(profile = {}, context = {}) {
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    return {
+      email: signedInEmail || profile.email || "not signed in",
+      role: accountRoleLabel(accountRole(profile)),
+      route: profileRouteText(profile) || "not set",
+      verificationStatus: formatStatus(verificationDisplayStatus(profile, latestRequest)),
+      verificationProvider: providerLabel(latestRequest?.provider || profile.identity_verification_provider || "sumsub"),
+      jobRecords: (context.requests || []).length + (context.jobs || []).length,
+      proofRecords: (context.applications || []).length,
+    };
+  }
+
   function accountHomeNextStep(profile = {}, context = {}) {
     const role = accountRole(profile);
     const requests = context.requests || [];
@@ -1087,6 +1107,98 @@
         accountHomeNextStepAction.removeAttribute("target");
         accountHomeNextStepAction.removeAttribute("rel");
       }
+    }
+  }
+
+  function accountDataControlItems(profile = {}, context = {}) {
+    const details = latestRenderedAccountContext(profile, context);
+    return [
+      {
+        title: "Profile",
+        copy: `Email ${details.email}; role ${details.role}; route ${details.route}. Ask to access or correct these details from account setup.`,
+        icon: "badge",
+      },
+      {
+        title: "Verification",
+        copy: `${details.verificationStatus} via ${details.verificationProvider}. Swadakta should keep provider references instead of raw ID copies where possible.`,
+        icon: "verified_user",
+      },
+      {
+        title: "Jobs, proof, and messages",
+        copy: `${details.jobRecords} visible job record${details.jobRecords === 1 ? "" : "s"} and ${details.proofRecords} work-profile record${details.proofRecords === 1 ? "" : "s"} loaded for this session.`,
+        icon: "folder_managed",
+      },
+      {
+        title: "Retention limits",
+        copy: "Deletion can be restricted by provider evidence, accounting, disputes, safety, legal, or fraud-prevention duties.",
+        icon: "policy",
+      },
+    ];
+  }
+
+  function accountDataRequestTemplate(profile = {}, context = {}) {
+    const details = latestRenderedAccountContext(profile, context);
+    return [
+      "Swadakta account data request",
+      `Account: ${details.email}`,
+      `Role: ${details.role}`,
+      `Base route: ${details.route}`,
+      `Verification: ${details.verificationStatus} via ${details.verificationProvider}`,
+      "",
+      "Request type: Access / correction / deletion / restriction",
+      "",
+      "Please review my account, profile, job, proof, message, verification-reference, and payment-reference data. Tell me what can be corrected, exported, deleted, restricted, or must be retained for provider evidence, accounting, disputes, safety, legal, or fraud-prevention reasons.",
+    ].join("\n");
+  }
+
+  function setAccountDataRequestStatus(message, tone = "text-on-surface-variant") {
+    if (!accountDataRequestStatus) return;
+    accountDataRequestStatus.textContent = message;
+    accountDataRequestStatus.className = `mt-3 min-h-6 font-label-md ${tone}`.trim();
+  }
+
+  async function copyAccountDataRequest() {
+    const template = accountDataRequestTemplate(currentAccountProfile || {}, lastAccountHomeContext || {});
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("Clipboard unavailable");
+      await navigator.clipboard.writeText(template);
+      setAccountDataRequestStatus("Data request copied. Send it to Swadakta support when you want access, correction, deletion, or restriction.", "text-primary");
+    } catch {
+      setAccountDataRequestStatus(template, "text-on-surface-variant whitespace-pre-line");
+    }
+  }
+
+  function renderAccountDataControl(profile = {}, context = {}) {
+    const items = accountDataControlItems(profile, context);
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const status = verificationDisplayStatus(profile, latestRequest);
+
+    if (accountDataControlSummary) {
+      accountDataControlSummary.textContent =
+        "You can ask for access, correction, deletion, or restriction. Some records may need to stay for provider evidence, accounting, disputes, safety, legal, or fraud-prevention reasons.";
+    }
+    if (accountDataControlPill) {
+      accountDataControlPill.textContent = status === "verified" ? "Verified data route" : "Data request ready";
+      accountDataControlPill.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        status === "verified" ? "bg-emerald-50 text-emerald-700" : "bg-white/70 border border-outline-variant/40 text-primary"
+      }`.trim();
+    }
+    if (accountDataControlList) {
+      accountDataControlList.innerHTML = items
+        .map(
+          (item) => `
+            <article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+              <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-primary">${escapeHtml(item.icon)}</span>
+                <div class="min-w-0">
+                  <p class="font-label-md text-on-surface">${escapeHtml(item.title)}</p>
+                  <p class="font-body-md text-on-surface-variant text-sm mt-1">${escapeHtml(item.copy)}</p>
+                </div>
+              </div>
+            </article>
+          `,
+        )
+        .join("");
     }
   }
 
@@ -1842,6 +1954,8 @@
 
   function renderAccountHome(profile = {}, { email = "" } = {}) {
     if (!accountHome) return;
+    currentAccountProfile = profile || {};
+    lastAccountHomeContext = {};
     const displayEmail = email || profile.email || signedInEmail || "your account";
     const verified = profile.identity_verification_status === "verified";
 
@@ -1850,6 +1964,7 @@
     renderAccountSetupChecklist(profile);
     renderAccountHomeDashboard(profile);
     renderAccountHomeAutopilot(profile);
+    renderAccountDataControl(profile);
 
     if (accountHomeNextCopy) {
       accountHomeNextCopy.textContent = verified
@@ -1874,6 +1989,8 @@
     const jobs = jobsResult.status === "fulfilled" ? jobsResult.value.data || [] : [];
     const verifications = verificationResult.status === "fulfilled" ? verificationResult.value.data || [] : [];
     const applications = applicationsResult.status === "fulfilled" ? applicationsResult.value.data || [] : [];
+    currentAccountProfile = profile || {};
+    lastAccountHomeContext = { requests, jobs, verifications, applications };
 
     if (accountHomeRequestCount) accountHomeRequestCount.textContent = String(requests.length);
     if (accountHomeRequestCopy) {
@@ -1892,6 +2009,7 @@
     renderAccountSetupChecklist(profile, { requests, jobs, verifications, applications });
     renderAccountHomeDashboard(profile, { requests, jobs, verifications, applications });
     renderAccountHomeAutopilot(profile, { requests, jobs, verifications, applications });
+    renderAccountDataControl(profile, { requests, jobs, verifications, applications });
     if (accountHomeNextCopy) {
       const latestRequest = latestVerificationRequest(verifications);
       const verified = accountIsVerified(profile, latestRequest);
@@ -2459,6 +2577,10 @@
 
   if (accountHomeSignOutButton) {
     accountHomeSignOutButton.addEventListener("click", () => signOutCurrentAccount(accountHomeSignOutButton));
+  }
+
+  if (copyAccountDataRequestButton) {
+    copyAccountDataRequestButton.addEventListener("click", copyAccountDataRequest);
   }
 
   document.addEventListener("click", handleAccountHomeAnchorClick);
