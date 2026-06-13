@@ -470,8 +470,8 @@ function routeStitchLogin(html) {
 
   output = output.replace(
     /<!-- Micro-interaction Script -->[\s\S]*?<\/script>\s*<\/body>/,
-    `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=56"></script>
+    `<script src="app-config.js?v=5"></script>
+<script src="app-data.js?v=57"></script>
 <script src="login.js?v=3"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body>`,
@@ -555,8 +555,8 @@ function routeStitchWelcomeLogin(html) {
   output = output.replaceAll('href="#">Privacy Policy', 'href="privacy.html">Privacy Policy');
   output = output.replace(
     /<script>\s*function setMode\(mode\)[\s\S]*?<\/script>\s*<\/body>/,
-    `<script src="app-config.js?v=4"></script>
-<script src="app-data.js?v=56"></script>
+    `<script src="app-config.js?v=5"></script>
+<script src="app-data.js?v=57"></script>
 <script src="login.js?v=2"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body>`,

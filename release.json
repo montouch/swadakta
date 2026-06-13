@@ -1,7 +1,7 @@
 {
-  "release_id": "2026-06-13-funds-boundary-acknowledgement-v1",
-  "release_name": "Funds boundary acknowledgement before paid briefs",
-  "description": "Requires clients to acknowledge Swadakta is not a licensed escrow provider unless a regulated provider is agreed, and enforces the acknowledgement before request creation.",
+  "release_id": "2026-06-13-founder-reviewed-pilot-mode-v1",
+  "release_name": "Founder-reviewed pilot mode for paid briefs",
+  "description": "Adds explicit launch-mode config and forces submitted paid briefs into founder review while Swadakta is in pilot mode.",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

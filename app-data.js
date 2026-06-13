@@ -743,6 +743,46 @@
     return fallback;
   }
 
+  function launchModeConfig() {
+    const mode = config().launchMode || {};
+    return {
+      publicStatus: String(mode.publicStatus || "pilot").trim().toLowerCase(),
+      paidJobs: String(mode.paidJobs || "pilot_with_founder_review").trim().toLowerCase(),
+      label: mode.label || "Founder-reviewed pilot",
+    };
+  }
+
+  function paidLaunchOpen() {
+    return ["open", "live", "production"].includes(launchModeConfig().paidJobs);
+  }
+
+  function applyLaunchModeGate(request) {
+    if (paidLaunchOpen()) return request;
+
+    const mode = launchModeConfig();
+    const requiredChecks = uniqueStrings(request.required_checks || []);
+    const complianceFlags = uniqueStrings(requestComplianceFlags(request));
+    const existingReason = String(request.admin_review_reason || "").trim();
+    const launchReason = `${mode.label} requires founder review before quote, payment, receiver assignment, buying, shipping, pickup, or payout.`;
+
+    return {
+      ...request,
+      route_status: ["unsupported", "blocked"].includes(request.route_status) ? request.route_status : "pilot",
+      compliance_flags: uniqueStrings([...complianceFlags, `launch_mode_${mode.publicStatus || "pilot"}`, "launch_mode_founder_review"]),
+      required_checks: uniqueStrings([
+        ...requiredChecks,
+        "Founder approval before quote, payment, or receiver assignment",
+        "Provider payment and ID readiness before paid work starts",
+      ]),
+      compliance_status: reviewComplianceStatus(request.compliance_status),
+      compliance_risk_level: elevatedRisk(request.compliance_risk_level, "medium"),
+      automation_status: request.automation_status === "blocked" ? "blocked" : "founder_approval",
+      admin_review_required: true,
+      admin_review_reason: existingReason ? `${existingReason} ${launchReason}` : launchReason,
+      funds_status: request.funds_status === "not_collected" ? request.funds_status : "not_collected",
+    };
+  }
+
   function applyRequestAcceptanceGate(request) {
     const status = requestAcceptanceStatus(request);
     if (!status) return request;
@@ -855,7 +895,7 @@
   }
 
   async function createRequest(payload) {
-    const normalized = applyRequestAcceptanceGate(normalizeRequest(payload));
+    const normalized = applyLaunchModeGate(applyRequestAcceptanceGate(normalizeRequest(payload)));
     assertRequestAcknowledgements(normalized);
     const supabase = await getSupabase();
 

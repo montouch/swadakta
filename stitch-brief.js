@@ -4,6 +4,9 @@
   const submitButton = document.querySelector("#brief-submit");
   const gateTitle = document.querySelector("#brief-gate-title");
   const gateCopy = document.querySelector("#brief-gate-copy");
+  const launchModePanel = document.querySelector("#brief-launch-mode");
+  const launchModeTitle = document.querySelector("#brief-launch-mode-title");
+  const launchModeCopy = document.querySelector("#brief-launch-mode-copy");
   const aiOrganizeButton = document.querySelector("#brief-ai-organize");
   const corridorSummary = document.querySelector("#brief-corridor-summary");
   const corridorRoute = document.querySelector("#brief-corridor-route");
@@ -59,6 +62,33 @@
   let placeIntelligence = null;
   let placeTimer = 0;
   let placeRequestId = 0;
+  function launchModeConfig() {
+    const mode = window.SWADAKTA_CONFIG?.launchMode || {};
+    return {
+      publicStatus: String(mode.publicStatus || "pilot").trim().toLowerCase(),
+      paidJobs: String(mode.paidJobs || "pilot_with_founder_review").trim().toLowerCase(),
+      label: mode.label || "Founder-reviewed pilot",
+      summary:
+        mode.summary ||
+        "Swadakta can collect briefs and run controlled pilots, but public paid work stays founder-reviewed until legal, insurance, payment, ID, and provider evidence gates are complete.",
+    };
+  }
+
+  function isPaidLaunchOpen() {
+    return ["open", "live", "production"].includes(launchModeConfig().paidJobs);
+  }
+
+  function renderLaunchMode() {
+    if (!launchModePanel) return;
+    const mode = launchModeConfig();
+    launchModePanel.hidden = false;
+    if (launchModeTitle) launchModeTitle.textContent = mode.label;
+    if (launchModeCopy) {
+      launchModeCopy.textContent = isPaidLaunchOpen()
+        ? mode.summary
+        : `${mode.summary} Submitted briefs are routed to founder review before quote, payment, receiver assignment, buying, shipping, pickup, or payout.`;
+    }
+  }
   const AFRICA_COUNTRY_OPTIONS = [
     "Algeria",
     "Angola",
@@ -1373,6 +1403,15 @@
           return;
         }
 
+        if (!isPaidLaunchOpen()) {
+          setGate(
+            "Verified account; founder-reviewed pilot",
+            "You can submit this brief, but Swadakta will route it to founder review before quote, payment, receiver assignment, buying, shipping, pickup, or payout.",
+            true,
+          );
+          return;
+        }
+
         setGate("Verified account ready", "You can submit this paid brief. Swadakta AI will triage compliance, proof, payment, and receiver routing after submission.", true);
         return;
       }
@@ -1409,6 +1448,7 @@
     const proof = value("#brief-proof");
     const items = value("#brief-items");
     const fundsBoundaryAccepted = Boolean(document.querySelector("#funds-boundary")?.checked);
+    const paidLaunchOpen = isPaidLaunchOpen();
     syncBriefRoutePlan();
     applyInlineGoodsSafety();
     const routeFields = resolveRouteFields();
@@ -1470,6 +1510,20 @@
         privacy_accepted_at: now,
       };
 
+      if (!paidLaunchOpen) {
+        payload.route_status = payload.route_status === "unsupported" ? "unsupported" : "pilot";
+        payload.automation_status = "founder_approval";
+        payload.admin_review_required = true;
+        payload.admin_review_reason =
+          payload.admin_review_reason || "Launch mode requires founder review before quote, payment, assignment, buying, shipping, pickup, or payout.";
+        payload.compliance_flags = uniqueList([...payload.compliance_flags, "launch_mode_pilot", "launch_mode_founder_review"]);
+        payload.required_checks = uniqueList([
+          ...payload.required_checks,
+          "Founder approval before quote, payment, or receiver assignment",
+          "Provider payment and ID readiness before paid work starts",
+        ]);
+      }
+
       if (!payload.origin_country || !payload.destination_country || !payload.task_location) {
         throw new Error("Choose a route type, origin, destination, and task location before submitting.");
       }
@@ -1505,6 +1559,7 @@
   });
 
   populateBriefCountryLists();
+  renderLaunchMode();
   applyCorridorContext();
   loadPlaceIntelligence();
   refreshPostingGate();
