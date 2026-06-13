@@ -1573,6 +1573,7 @@ runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local paym
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
 runLocalScript(failures, "scripts/check-paypal-capture-guard.mjs", "Local PayPal capture guard check passed");
 runLocalScript(failures, "scripts/check-mpesa-callback-guard.mjs", "Local M-Pesa callback guard check passed");
+runLocalScript(failures, "scripts/check-africa-payment-webhook-guards.mjs", "Local Africa payment webhook guard check passed");
 const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
 if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
   pass(`Local release manifest is ${localRelease.release_id}`);
