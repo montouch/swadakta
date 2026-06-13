@@ -525,6 +525,90 @@
         </div>
       </section>
 
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20" id="quote-disclosure">
+        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Client quote disclosure builder</p>
+            <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Build the payment note before sending a link.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              The client should see a plain-language payment note before checkout: total quote, what the quote includes, whether any processing fee is separate, what money is protected, and what proof unlocks each release.
+            </p>
+            <div class="mt-6 grid gap-3">
+              <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
+                <strong class="font-label text-primary">Provider fee or surcharge boundary</strong>
+                <p class="mt-2 text-sm text-on-surface-variant">If a payment-provider fee is charged separately, it must be visible before payment and tied to the actual processing cost. Otherwise, keep it built into the quote.</p>
+              </div>
+              <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
+                <strong class="font-label text-primary">Service fee included</strong>
+                <p class="mt-2 text-sm text-on-surface-variant">The public note says Swadakta's service and operating fee is included. It does not reveal confidential margin or receiver payout formulas.</p>
+              </div>
+            </div>
+          </div>
+
+          <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="quote-disclosure-form">
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2 font-label text-sm md:col-span-2">
+                What is the client paying for?
+                <textarea class="glass-input min-h-24 rounded-2xl px-4 py-3 font-body" id="quote-disclosure-scope" maxlength="360" placeholder="Example: Nairobi site visit with timestamped photos, receipt check, and client-ready report."></textarea>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Quote amount
+                <input class="glass-input h-12 rounded-2xl px-4 font-body" id="quote-disclosure-amount" min="0" placeholder="320" step="0.01" type="number" />
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Currency
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="quote-disclosure-currency">
+                  <option>AUD</option>
+                  <option>USD</option>
+                  <option>GBP</option>
+                  <option>EUR</option>
+                  <option>KES</option>
+                  <option>NGN</option>
+                  <option>GHS</option>
+                  <option>ZAR</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Payment rail
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="quote-disclosure-rail">
+                  <option value="card">Stripe / card checkout</option>
+                  <option value="paypal">PayPal order</option>
+                  <option value="mpesa">M-Pesa Daraja / Paybill</option>
+                  <option value="bank">Bank transfer with receipt match</option>
+                  <option value="wise">Wise fallback after simpler rails fail</option>
+                  <option value="escrow">Regulated escrow or provider-held funds</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Release structure
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="quote-disclosure-milestones">
+                  <option value="single">Single release after completion proof</option>
+                  <option value="two">Two milestone releases</option>
+                  <option value="three">Three milestone releases</option>
+                  <option value="regulated">Regulated provider release schedule</option>
+                </select>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+                <input class="mt-1" id="quote-disclosure-protected" type="checkbox" />
+                <span>This includes protected or pass-through money such as supplier deposits, family support, title/property, construction, or high-value funds.</span>
+              </label>
+              <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+                <input class="mt-1" id="quote-disclosure-separate-fee" type="checkbox" />
+                <span>A payment-provider processing fee is shown separately before checkout.</span>
+              </label>
+            </div>
+            <div class="flex flex-col gap-3 sm:flex-row">
+              <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold shadow-lg" type="submit">Build payment note</button>
+              <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-white/80 border border-outline-variant/50 text-primary font-bold" id="quote-disclosure-copy" type="button">Copy note</button>
+            </div>
+            <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5" id="quote-disclosure-result" aria-live="polite">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Client-safe payment note</p>
+              <p class="mt-2 text-on-surface-variant">Build a note after entering the quote details. Keep it attached to the request code, quote expiry, payment link, and milestone proof plan.</p>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="border-y border-outline-variant/30 bg-white/50" id="money-clarity">
         <div class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop py-14 md:py-20">
           <div class="grid gap-8 lg:grid-cols-[0.92fr_1.08fr] lg:items-start">
@@ -739,6 +823,10 @@
       const routePaymentFitResult = document.querySelector("#route-payment-fit-result");
       const africaRailForm = document.querySelector("#africa-rail-planner-form");
       const africaRailResult = document.querySelector("#africa-rail-result");
+      const quoteDisclosureForm = document.querySelector("#quote-disclosure-form");
+      const quoteDisclosureResult = document.querySelector("#quote-disclosure-result");
+      const quoteDisclosureCopy = document.querySelector("#quote-disclosure-copy");
+      let latestQuoteDisclosureNote = "";
       const baseAmounts = {
         errand: 85,
         proof: 180,
@@ -768,15 +856,81 @@
         KES: "KES",
       };
 
+      function escapeHtml(value) {
+        return String(value || "").replace(/[&<>"']/g, (character) =>
+          ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          })[character],
+        );
+      }
+
       function money(amount, currency) {
         const rounded = currency === "KES" ? Math.round(amount / 100) * 100 : Math.round(amount);
         return `${symbols[currency] || currency} ${rounded.toLocaleString()}`;
+      }
+
+      function exactMoney(amount, currency) {
+        const numeric = Number(amount || 0);
+        if (!Number.isFinite(numeric) || numeric <= 0) return `${symbols[currency] || currency} 0`;
+        if (currency === "KES") return `${symbols[currency] || currency} ${Math.round(numeric).toLocaleString()}`;
+        return `${symbols[currency] || currency} ${numeric.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
 
       function railFor(currency, sensitive, logistics) {
         if (currency === "KES") return "M-Pesa or bank transfer with provider receipt";
         if (sensitive || logistics) return "card checkout or PayPal, with regulated escrow/provider-held funds for high-value work";
         return "card checkout or PayPal";
+      }
+
+      function railDisclosureLabel(rail) {
+        return {
+          card: "Stripe/card checkout",
+          paypal: "PayPal order",
+          mpesa: "M-Pesa Daraja or Paybill",
+          bank: "bank transfer after receipt matching",
+          wise: "Wise fallback after simpler rails fail",
+          escrow: "regulated escrow or provider-held funds",
+        }[rail] || "provider payment rail";
+      }
+
+      function milestoneDisclosure(value) {
+        return {
+          single: "Receiver payout is released only after completion proof, client-safe report, payment evidence, and dispute checks pass.",
+          two: "Receiver payout is split into two milestone releases after agreed proof is reviewed for each stage.",
+          three: "Receiver payout is split into three milestone releases after agreed proof is reviewed for each stage.",
+          regulated: "Release follows the regulated provider or escrow schedule, written milestone terms, proof review, and dispute path.",
+        }[value] || "Release follows the written milestone and proof plan.";
+      }
+
+      function buildQuoteDisclosure({ scope, amount, currency, rail, milestones, protectedFunds, separateFee }) {
+        const cleanScope = String(scope || "").trim() || "the agreed Swadakta job scope";
+        const total = exactMoney(amount, currency);
+        const railLabel = railDisclosureLabel(rail);
+        const separateFeeCopy = separateFee
+          ? "Any separate payment-provider processing fee must be shown before payment and limited to the actual provider/payment cost."
+          : "Any payment-provider fee is treated as included in this quote unless Swadakta shows it separately before checkout.";
+        const protectedCopy = protectedFunds
+          ? "This quote includes protected or pass-through money, so those funds stay separated from ordinary service work and require written milestone controls before release."
+          : "This quote is for ordinary service work. If supplier, family, property, construction, title, or other protected funds are added later, Swadakta must issue a new written payment note.";
+        const escrowCopy =
+          rail === "escrow" || protectedFunds
+            ? "For high-value, title, construction, supplier-deposit, or legally sensitive work, Swadakta should use a regulated provider or written specialist approval before treating money as protected."
+            : "Swadakta is not a bank, law firm, trustee, or licensed escrow provider unless a regulated provider agreement says otherwise.";
+
+        return [
+          `Payment note for client: ${cleanScope}`,
+          `Quote total: ${total}. Swadakta's service and operating fee is included in this quote; internal margin and receiver payout formulas are not shown on the public payment note.`,
+          `Payment path: ${railLabel}. Work starts only after provider confirmation, receipt matching, or approved payment evidence is recorded against the request code.`,
+          separateFeeCopy,
+          protectedCopy,
+          milestoneDisclosure(milestones),
+          escrowCopy,
+          "Refunds, disputes, restricted goods, ID, receiver assignment, and money release stay paused until provider/system evidence and Swadakta proof review are complete.",
+        ].join("\n\n");
       }
 
       function globalRoutePaymentFit(clientRegion, workRegion, workType, currency, crossBorderGoods) {
@@ -1014,6 +1168,44 @@
               : ""
           }
         `;
+      });
+
+      quoteDisclosureForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const note = buildQuoteDisclosure({
+          scope: document.querySelector("#quote-disclosure-scope").value,
+          amount: document.querySelector("#quote-disclosure-amount").value,
+          currency: document.querySelector("#quote-disclosure-currency").value,
+          rail: document.querySelector("#quote-disclosure-rail").value,
+          milestones: document.querySelector("#quote-disclosure-milestones").value,
+          protectedFunds: document.querySelector("#quote-disclosure-protected").checked,
+          separateFee: document.querySelector("#quote-disclosure-separate-fee").checked,
+        });
+        latestQuoteDisclosureNote = note;
+        quoteDisclosureResult.innerHTML = `
+          <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Client-safe payment note</p>
+          <pre class="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4 text-sm leading-6 text-on-surface-variant">${escapeHtml(note)}</pre>
+          <p class="mt-3 text-xs text-on-surface-variant">Attach this to the request code, quote expiry, provider payment link, and proof plan. Do not use it to approve ID, release funds, refund money, or assign a receiver.</p>
+        `;
+      });
+
+      quoteDisclosureCopy?.addEventListener("click", async () => {
+        if (!latestQuoteDisclosureNote) {
+          quoteDisclosureResult.innerHTML = `
+            <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Client-safe payment note</p>
+            <p class="mt-2 text-on-surface-variant">Build the payment note first, then copy it.</p>
+          `;
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(latestQuoteDisclosureNote);
+          quoteDisclosureCopy.textContent = "Copied";
+        } catch {
+          quoteDisclosureCopy.textContent = "Copy failed";
+        }
+        window.setTimeout(() => {
+          quoteDisclosureCopy.textContent = "Copy note";
+        }, 1800);
       });
 
       routePaymentFitForm?.addEventListener("submit", (event) => {

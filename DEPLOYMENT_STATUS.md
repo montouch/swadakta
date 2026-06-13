@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `27`
+- Local commits queued behind the Vercel rate limit: `28`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -60,6 +60,7 @@ Queued local release contents:
 24. Job-room communication safety pack builds proof-safe call agendas, proof requests, and written recaps while keeping money, ID, refunds, assignment, and restricted-goods decisions out of chat.
 25. Receiver code-of-conduct gate requires job seekers to accept no off-platform side deals, no cash holding, no unlawful goods, no identity misrepresentation, and safety/compliance escalation before matching or acceptance.
 26. AI dock mobile sheet fix turns the floating Swadakta AI chat into a near full-height mobile sheet, keeps quick actions in one scroll row, hides the long safety note on phones, and gives the conversation pane the main screen area.
+27. Client quote disclosure builder creates copyable, client-safe payment notes with quote total, service-fee inclusion, provider fee/surcharge boundary, protected-funds status, milestone release rule, and escrow/legal boundary language.
 
 Before the next push:
 
