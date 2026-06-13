@@ -951,7 +951,14 @@ const requiredIdentityEndpointMarkers = [
   "generate-websdk-external-link",
   "YOUVERIFY_VERIFICATION_URL",
   "provider_link",
+  "accountProfileStatusFromIdentityRequestStatus",
   "AI and users cannot mark ID verified",
+];
+const requiredIdentityStatusMappingMarkers = [
+  ["api/identity/start-verification.js", 'if (clean === "cancelled") return "not_started";'],
+  ["api/identity/start-verification.js", "accountProfileStatusFromIdentityRequestStatus(effectiveDecision.status)"],
+  ["scripts/check-identity-status-mapping.mjs", "Identity status mapping checks passed."],
+  ["scripts/check-identity-status-mapping.mjs", 'accountProfileStatusFromIdentityRequestStatus("cancelled")'],
 ];
 const requiredSumsubWebhookMarkers = [
   "verifySumsubSignature",
@@ -1306,6 +1313,20 @@ function runSecretScan(failures) {
   }
 }
 
+function runLocalScript(failures, scriptPath, successLabel) {
+  try {
+    execFileSync(process.execPath, [path.join(root, scriptPath)], {
+      cwd: root,
+      encoding: "utf8",
+      stdio: "pipe",
+    });
+    pass(successLabel);
+  } catch (error) {
+    const output = `${error.stdout || ""}${error.stderr || ""}`.trim();
+    fail(failures, `${successLabel} failed${output ? `: ${output}` : ""}`);
+  }
+}
+
 const failures = [];
 const localApiFunctionFiles = await collectApiFunctionFiles();
 if (localApiFunctionFiles.length > vercelApiFunctionBudget) {
@@ -1323,6 +1344,7 @@ for (const marker of requiredSecretScanMarkers) {
   }
 }
 runSecretScan(failures);
+runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
 if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
   pass(`Local release manifest is ${localRelease.release_id}`);
@@ -1537,6 +1559,12 @@ const localIdentityEndpoint = await readLocal("api/identity/start-verification.j
 for (const marker of requiredIdentityEndpointMarkers) {
   if (!localIdentityEndpoint.includes(marker)) {
     fail(failures, `Local identity start endpoint is missing marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredIdentityStatusMappingMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing identity status mapping marker ${marker}`);
   }
 }
 const localSumsubWebhook = localIdentityEndpoint;

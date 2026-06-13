@@ -457,6 +457,18 @@ function monotonicSumsubDecision(request = {}, decision = {}) {
   };
 }
 
+function accountProfileStatusFromIdentityRequestStatus(status) {
+  const clean = String(status || "").trim().toLowerCase();
+  if (clean === "verified") return "verified";
+  if (clean === "failed") return "failed";
+  if (clean === "expired") return "expired";
+  if (clean === "manual_review") return "manual_review";
+  if (clean === "link_sent") return "link_sent";
+  if (clean === "submitted" || clean === "requested") return "submitted";
+  if (clean === "cancelled") return "not_started";
+  return "manual_review";
+}
+
 async function findIdentityRequestByReference(reference) {
   if (!reference) return null;
 
@@ -520,13 +532,13 @@ async function patchSumsubIdentityResult({ request, event, decision, reference }
 
   const profilePayload = {
     identity_verification_provider: "sumsub",
-    identity_verification_status: effectiveDecision.status,
+    identity_verification_status: accountProfileStatusFromIdentityRequestStatus(effectiveDecision.status),
     identity_verification_reference: providerReference,
     identity_verification_notes: adminNotes,
   };
-  if (effectiveDecision.status === "verified" && !effectiveDecision.preserved_terminal_status) {
+  if (profilePayload.identity_verification_status === "verified" && !effectiveDecision.preserved_terminal_status) {
     profilePayload.identity_verified_at = new Date().toISOString();
-  } else if (["failed", "expired", "cancelled"].includes(effectiveDecision.status)) {
+  } else if (["failed", "expired", "not_started"].includes(profilePayload.identity_verification_status)) {
     profilePayload.identity_verified_at = null;
   }
 
@@ -693,4 +705,10 @@ module.exports.config = {
   api: {
     bodyParser: false,
   },
+};
+
+module.exports._internal = {
+  accountProfileStatusFromIdentityRequestStatus,
+  monotonicSumsubDecision,
+  sumsubReviewDecision,
 };
