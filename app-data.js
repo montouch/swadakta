@@ -698,6 +698,114 @@
     return String(profile?.identity_verification_status || "not_started").trim().toLowerCase();
   }
 
+  function requestComplianceFlags(request = {}) {
+    return Array.isArray(request.compliance_flags)
+      ? request.compliance_flags.map((flag) => String(flag || "").trim()).filter(Boolean)
+      : [];
+  }
+
+  function requestAcceptanceStatus(request = {}) {
+    const flags = requestComplianceFlags(request);
+    const acceptanceFlags = {
+      rules_acceptance_quote_eligible: "quote_eligible",
+      rules_acceptance_evidence_before_quote: "evidence_before_quote",
+      rules_acceptance_founder_review: "founder_review",
+      rules_acceptance_refuse: "refuse",
+    };
+    const flag = flags.find((value) => acceptanceFlags[value]);
+    if (flag) return acceptanceFlags[flag];
+
+    const direct = String(request.job_acceptance_status || "").trim().toLowerCase();
+    if (["quote_eligible", "evidence_before_quote", "founder_review", "refuse"].includes(direct)) return direct;
+
+    const notes = String(request.notes || "").toLowerCase();
+    if (notes.includes("acceptance gate: do not accept") || notes.includes("refuse unless")) return "refuse";
+    if (notes.includes("acceptance gate: founder review") || notes.includes("founder review before quote")) return "founder_review";
+    if (notes.includes("acceptance gate: evidence first") || notes.includes("quote only after route evidence")) return "evidence_before_quote";
+    if (notes.includes("acceptance gate: quote eligible")) return "quote_eligible";
+    return "";
+  }
+
+  function uniqueStrings(values = []) {
+    return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+  }
+
+  function reviewComplianceStatus(current) {
+    const status = String(current || "").trim().toLowerCase();
+    if (["prohibited", "restricted"].includes(status)) return status;
+    return "needs_admin_review";
+  }
+
+  function elevatedRisk(current, fallback = "medium") {
+    const risk = String(current || "").trim().toLowerCase();
+    if (risk === "high") return "high";
+    if (risk === "medium" || risk === "standard") return fallback;
+    return fallback;
+  }
+
+  function applyRequestAcceptanceGate(request) {
+    const status = requestAcceptanceStatus(request);
+    if (!status) return request;
+
+    const acceptanceFlag = `rules_acceptance_${status}`;
+    const complianceFlags = uniqueStrings([...requestComplianceFlags(request), acceptanceFlag]);
+    const requiredChecks = uniqueStrings(request.required_checks || []);
+
+    if (status === "refuse") {
+      throw new Error(
+        "This job cannot be submitted through the normal Swadakta flow. A lawful specialist route must be proven before quoting, payment, buying, shipping, pickup, or receiver assignment.",
+      );
+    }
+
+    if (status === "founder_review") {
+      return {
+        ...request,
+        route_status: request.route_status === "unsupported" ? "unsupported" : "pilot",
+        compliance_flags: uniqueStrings([...complianceFlags, "acceptance_founder_review"]),
+        required_checks: uniqueStrings([
+          ...requiredChecks,
+          "Founder approval before quote or payment",
+          "Provider evidence before receiver assignment",
+          "No Wise/bank fallback unless easier rails are unsuitable",
+        ]),
+        compliance_status: reviewComplianceStatus(request.compliance_status),
+        compliance_risk_level: elevatedRisk(request.compliance_risk_level, "high"),
+        automation_status: "founder_approval",
+        admin_review_required: true,
+        admin_review_reason:
+          request.admin_review_reason || "Rules acceptance gate requires founder review before quote, payment, or assignment.",
+        funds_status: request.funds_status === "not_collected" ? request.funds_status : "not_collected",
+      };
+    }
+
+    if (status === "evidence_before_quote") {
+      return {
+        ...request,
+        route_status: request.route_status === "unsupported" ? "unsupported" : "pilot",
+        compliance_flags: uniqueStrings([...complianceFlags, "acceptance_evidence_before_quote"]),
+        required_checks: uniqueStrings([
+          ...requiredChecks,
+          "Route evidence before quote",
+          "Provider proof plan before payment",
+          "Verified receiver only after payment evidence",
+        ]),
+        compliance_status: reviewComplianceStatus(request.compliance_status),
+        compliance_risk_level: elevatedRisk(request.compliance_risk_level, "medium"),
+        automation_status: "provider_evidence",
+        admin_review_required: true,
+        admin_review_reason:
+          request.admin_review_reason || "Rules acceptance gate requires route/provider evidence before quote, payment, or assignment.",
+        funds_status: request.funds_status === "not_collected" ? request.funds_status : "not_collected",
+      };
+    }
+
+    return {
+      ...request,
+      compliance_flags: complianceFlags,
+      required_checks: uniqueStrings([...requiredChecks, "Do not release money before proof review"]),
+    };
+  }
+
   async function assertPaidPostingAllowed(payload) {
     const supabase = await getSupabase();
 
@@ -730,7 +838,7 @@
   }
 
   async function createRequest(payload) {
-    const normalized = normalizeRequest(payload);
+    const normalized = applyRequestAcceptanceGate(normalizeRequest(payload));
     const supabase = await getSupabase();
 
     if (!supabase) {
@@ -1071,12 +1179,15 @@
     const routeStatus = String(request.route_status || "active").toLowerCase();
     const complianceStatus = String(request.compliance_status || "needs_ai_review").toLowerCase();
     const riskLevel = String(request.compliance_risk_level || "standard").toLowerCase();
+    const acceptanceStatus = requestAcceptanceStatus(request);
 
     return (
       !request.assigned_partner_id &&
+      request.admin_review_required !== true &&
       ["new", "quoted", "paid"].includes(status) &&
       ["active", "pilot"].includes(routeStatus) &&
       !["restricted", "prohibited"].includes(complianceStatus) &&
+      !["refuse", "founder_review", "evidence_before_quote"].includes(acceptanceStatus) &&
       ["standard", "medium"].includes(riskLevel) &&
       request.sensitive_documents_expected !== true
     );

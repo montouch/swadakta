@@ -231,6 +231,12 @@ const criticalNoStoreAssets = [
 ];
 const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
+  "applyRequestAcceptanceGate",
+  "requestAcceptanceStatus",
+  "rules_acceptance_refuse",
+  "acceptance_evidence_before_quote",
+  "provider_evidence",
+  "This job cannot be submitted through the normal Swadakta flow",
   "get_my_account_profile",
   "createMpesaStkPush",
   "createResolutionCase",
@@ -442,6 +448,9 @@ const requiredBriefScriptMarkers = [
   "renderGoodsSafety",
   "Goods compliance pack carried forward",
   "job_acceptance_status",
+  "This job cannot be posted normally",
+  "Verified account; evidence first",
+  "Verified account; founder review required",
   "Payment gate:",
   "Receiver gate:",
   "rulesStorageKey",
@@ -681,7 +690,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=54",
+  "app-data.js?v=55",
   "stitch-portal.js?v=34",
   "final-ux-theme.css?v=2",
   "final_ux_live_freshness",
@@ -1531,8 +1540,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=16")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=16`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=20")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=20`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1977,11 +1986,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=16");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=20");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=16 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=20 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=16 returned 200");
+  pass("stitch-brief.js?v=20 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

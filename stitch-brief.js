@@ -436,6 +436,16 @@
     if (context.rules_compliance_pack?.source === "rules_precheck") {
       return {
         ...context.rules_compliance_pack,
+        compliance_status: context.compliance_status || context.rules_compliance_pack.compliance_status || "",
+        compliance_risk_level: context.compliance_risk_level || context.rules_compliance_pack.compliance_risk_level || "",
+        admin_review_required: Boolean(context.admin_review_required || context.rules_compliance_pack.admin_review_required),
+        admin_review_reason: context.admin_review_reason || context.rules_compliance_pack.admin_review_reason || "",
+        job_acceptance_status: context.job_acceptance_status || context.rules_compliance_pack.job_acceptance_status || "",
+        job_acceptance_label: context.job_acceptance_label || context.rules_compliance_pack.job_acceptance_label || "",
+        job_acceptance_title: context.job_acceptance_title || context.rules_compliance_pack.job_acceptance_title || "",
+        job_acceptance_copy: context.job_acceptance_copy || context.rules_compliance_pack.job_acceptance_copy || "",
+        payment_gate: context.payment_gate || context.rules_compliance_pack.payment_gate || "",
+        receiver_gate: context.receiver_gate || context.rules_compliance_pack.receiver_gate || "",
         official_reference_links: normalizeReferenceLinks(context.rules_compliance_pack.official_reference_links),
       };
     }
@@ -454,7 +464,7 @@
         official_reference_links: normalizeReferenceLinks(pack.official_reference_links),
       };
     }
-    if (context.imported_from !== "rules_precheck" && !flags.includes("rules_precheck")) return {};
+    if (context.imported_from !== "rules_precheck" && !flags.includes("rules_precheck") && !context.job_acceptance_status) return {};
 
     return {
       source: "rules_precheck",
@@ -1311,6 +1321,25 @@
     setGate("Checking account access", "You can draft the brief, but posting paid work requires a signed-in verified account.", false);
 
     try {
+      const acceptancePack = rulesPackFromContext();
+      const directAcceptanceStatus = String(
+        new URLSearchParams(window.location.search).get("acceptance") ||
+          corridorContext.job_acceptance_status ||
+          acceptancePack.job_acceptance_status ||
+          "",
+      )
+        .trim()
+        .toLowerCase();
+
+      if (directAcceptanceStatus === "refuse") {
+        setGate(
+          "This job cannot be posted normally",
+          "The rules pre-check says this route needs a lawful specialist route before Swadakta can quote, collect payment, buy, ship, pick up, or assign a receiver.",
+          false,
+        );
+        return;
+      }
+
       const sessionResult = await window.SwadaktaData.getSession();
       const email = sessionResult.session?.user?.email || "";
       if (!email) {
@@ -1326,6 +1355,24 @@
       setValue("#brief-client-base", profile.country || profile.kenya_base);
 
       if (profile.identity_verification_status === "verified") {
+        if (directAcceptanceStatus === "founder_review") {
+          setGate(
+            "Verified account; founder review required",
+            "You can submit the brief into founder review, but Swadakta will not quote, collect payment, or assign a receiver until route, identity, lawful-use, and proof evidence are approved.",
+            true,
+          );
+          return;
+        }
+
+        if (directAcceptanceStatus === "evidence_before_quote") {
+          setGate(
+            "Verified account; evidence first",
+            "You can submit the brief for evidence collection, but Swadakta will not request payment or assign a receiver until the route, item, provider, and proof plan are clear.",
+            true,
+          );
+          return;
+        }
+
         setGate("Verified account ready", "You can submit this paid brief. Swadakta AI will triage compliance, proof, payment, and receiver routing after submission.", true);
         return;
       }
