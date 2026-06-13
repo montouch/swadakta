@@ -426,6 +426,8 @@
       notes: payload.notes,
       id_verification_consent: payload.id_verification_consent,
       proof_standard_consent: payload.proof_standard_consent,
+      code_of_conduct_consent: payload.code_of_conduct_consent,
+      code_of_conduct_accepted_at: payload.code_of_conduct_accepted_at,
     };
   }
 
@@ -447,6 +449,8 @@
       internal_notes: "",
       id_verification_consent: false,
       proof_standard_consent: false,
+      code_of_conduct_consent: false,
+      code_of_conduct_accepted_at: null,
       identity_verification_provider: "smile_id",
       identity_verification_status: "not_started",
       identity_verification_link: "",
@@ -1081,17 +1085,24 @@
       return { data: normalized, mode: "local" };
     }
 
-    let { error } = await supabase.from("partner_applications").insert(toPartnerDatabasePayload(normalized));
+    const compatibilityColumns = ["coverage_scopes", "code_of_conduct_consent", "code_of_conduct_accepted_at"];
+    const databasePayload = toPartnerDatabasePayload(normalized);
+    let lastError = null;
 
-    if (error && missingColumn(error, "coverage_scopes")) {
-      const legacyPayload = toPartnerDatabasePayload(normalized);
-      delete legacyPayload.coverage_scopes;
-      const legacyResult = await supabase.from("partner_applications").insert(legacyPayload);
-      error = legacyResult.error;
+    for (let attempt = 0; attempt <= compatibilityColumns.length; attempt += 1) {
+      const { error } = await supabase.from("partner_applications").insert(databasePayload);
+      if (!error) {
+        return { data: normalized, mode: "supabase" };
+      }
+
+      lastError = error;
+      const missing = compatibilityColumns.find((column) => missingColumn(error, column) && column in databasePayload);
+      if (!missing) break;
+      delete databasePayload[missing];
     }
 
-    if (error) {
-      throw error;
+    if (lastError) {
+      throw lastError;
     }
 
     return { data: normalized, mode: "supabase" };
@@ -1388,9 +1399,10 @@
       application.status !== "vetted" ||
       application.identity_verification_status !== "verified" ||
       application.id_verification_consent !== true ||
-      application.proof_standard_consent !== true
+      application.proof_standard_consent !== true ||
+      application.code_of_conduct_consent !== true
     ) {
-      blockers.push("Shortlist only: receiver must be vetted, ID verified, and proof standards accepted before acceptance.");
+      blockers.push("Shortlist only: receiver must be vetted, ID verified, proof standards accepted, and receiver code of conduct accepted before acceptance.");
     }
     if (Array.isArray(offer.safety_flags) && offer.safety_flags.length) {
       blockers.push("Clear offer safety flags before accepting this offer.");

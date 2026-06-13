@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "15";
+  const DOCK_VERSION = "16";
   const rootId = "swadakta-ai-dock";
   const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
@@ -95,8 +95,67 @@
         .sw-ai-fab { justify-content: center; width: 50px; min-height: 50px; padding: 0; border-radius: 18px; }
         .sw-ai-fab > span:last-child { display: none; }
         .sw-ai-fab-dot { width: 30px; height: 30px; font-size: 12px; }
-        .sw-ai-panel { position: fixed; left: 12px; right: 12px; bottom: max(132px, calc(env(safe-area-inset-bottom) + 132px)); width: auto; max-width: calc(100vw - 24px); max-height: min(720px, calc(100dvh - 172px)); border-radius: 22px; }
+        .sw-ai-open .sw-ai-fab { display: none; }
+        .sw-ai-panel {
+          position: fixed;
+          top: max(8px, env(safe-area-inset-top));
+          right: 8px;
+          bottom: max(8px, calc(env(safe-area-inset-bottom) + 8px));
+          left: 8px;
+          width: auto;
+          max-width: calc(100vw - 16px);
+          max-height: none;
+          border-radius: 22px;
+        }
+        .sw-ai-header { flex: 0 0 auto; padding: 10px 12px; }
+        .sw-ai-title-row { align-items: center; }
+        .sw-ai-eyebrow { margin-bottom: 2px; font-size: 10px; letter-spacing: .1em; }
+        .sw-ai-title { font-size: 18px; line-height: 1.08; }
+        .sw-ai-page {
+          display: -webkit-box;
+          margin-top: 4px;
+          overflow: hidden;
+          -webkit-box-orient: vertical;
+          -webkit-line-clamp: 2;
+          font-size: 11px;
+          line-height: 1.3;
+        }
+        .sw-ai-icon-button { width: 32px; height: 32px; }
+        .sw-ai-quick {
+          flex: 0 0 auto;
+          padding: 8px 12px;
+          scrollbar-width: none;
+        }
+        .sw-ai-quick::-webkit-scrollbar,
+        .sw-ai-actions::-webkit-scrollbar {
+          display: none;
+        }
+        .sw-ai-chip { min-height: 32px; padding: 0 11px; font-size: 12px; }
+        .sw-ai-messages {
+          min-height: 0;
+          flex: 1 1 auto;
+          gap: 8px;
+          padding: 12px;
+        }
+        .sw-ai-actions {
+          flex: 0 0 auto;
+          flex-wrap: nowrap;
+          max-height: 44px;
+          overflow-x: auto;
+          padding: 0 12px 8px;
+          scrollbar-width: none;
+        }
+        .sw-ai-action { flex: 0 0 auto; min-height: 32px; }
+        .sw-ai-composer { flex: 0 0 auto; padding: 8px 10px 10px; }
+        .sw-ai-compose-box { border-radius: 16px; padding: 6px; }
+        .sw-ai-input { min-height: 34px; max-height: 84px; font-size: 13px; }
+        .sw-ai-send { width: 36px; height: 36px; }
+        .sw-ai-note { display: none; }
         #${manualModeId} { right: 12px; bottom: max(72px, calc(env(safe-area-inset-bottom) + 72px)); max-width: calc(100vw - 24px); }
+      }
+      @media (max-width: 640px) and (max-height: 700px) {
+        .sw-ai-page { display: none; }
+        .sw-ai-quick { padding-block: 6px; }
       }
     `;
     document.head.append(style);

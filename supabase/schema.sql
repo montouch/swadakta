@@ -128,6 +128,8 @@ create table if not exists public.partner_applications (
   internal_notes text,
   id_verification_consent boolean not null default false,
   proof_standard_consent boolean not null default false,
+  code_of_conduct_consent boolean not null default false,
+  code_of_conduct_accepted_at timestamptz,
   identity_verification_provider text not null default 'smile_id',
   identity_verification_status text not null default 'not_started',
   identity_verification_link text,
@@ -262,6 +264,8 @@ alter table public.partner_applications add column if not exists provenance_scor
 alter table public.partner_applications add column if not exists provenance_notes text;
 alter table public.partner_applications add column if not exists provenance_reviewed_at timestamptz;
 alter table public.partner_applications add column if not exists coverage_scopes text[] not null default array[]::text[];
+alter table public.partner_applications add column if not exists code_of_conduct_consent boolean not null default false;
+alter table public.partner_applications add column if not exists code_of_conduct_accepted_at timestamptz;
 
 update public.service_requests
 set client_base = australia_location
@@ -691,7 +695,12 @@ begin
     alter table public.partner_applications
       add constraint partner_applications_vetted_requires_verified_identity_check check (
         status <> 'vetted'
-        or (id_verification_consent is true and identity_verification_status = 'verified')
+        or (
+          id_verification_consent is true
+          and proof_standard_consent is true
+          and code_of_conduct_consent is true
+          and identity_verification_status = 'verified'
+        )
       );
   end if;
 
@@ -1448,6 +1457,7 @@ with check (
   and transport_access in ('public_transport', 'motorbike', 'car', 'ride_hailing', 'mixed')
   and id_verification_consent = true
   and proof_standard_consent = true
+  and code_of_conduct_consent = true
   and status = 'new'
 );
 
@@ -1673,7 +1683,9 @@ grant insert (
   transport_access,
   notes,
   id_verification_consent,
-  proof_standard_consent
+  proof_standard_consent,
+  code_of_conduct_consent,
+  code_of_conduct_accepted_at
 ) on public.partner_applications to anon, authenticated;
 
 grant select on public.partner_applications to authenticated;
@@ -2243,6 +2255,8 @@ returns table (
   identity_verification_link text,
   identity_verification_reference text,
   identity_verified_at timestamptz,
+  code_of_conduct_consent boolean,
+  code_of_conduct_accepted_at timestamptz,
   provenance_score integer,
   provenance_notes text,
   provenance_reviewed_at timestamptz,
@@ -2270,6 +2284,8 @@ as $$
     pa.identity_verification_link,
     pa.identity_verification_reference,
     pa.identity_verified_at,
+    pa.code_of_conduct_consent,
+    pa.code_of_conduct_accepted_at,
     pa.provenance_score,
     pa.provenance_notes,
     pa.provenance_reviewed_at,
@@ -2303,6 +2319,8 @@ returns table (
   identity_verification_link text,
   identity_verification_reference text,
   identity_verified_at timestamptz,
+  code_of_conduct_consent boolean,
+  code_of_conduct_accepted_at timestamptz,
   provenance_score integer,
   provenance_notes text,
   provenance_reviewed_at timestamptz,

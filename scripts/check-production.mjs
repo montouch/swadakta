@@ -281,6 +281,8 @@ const requiredAppDataMarkers = [
   "exchangeAuthCodeForSession",
   "uploadAccountMedia",
   "coverage_scopes",
+  "code_of_conduct_consent",
+  "code_of_conduct_accepted_at",
   "missingColumn",
   "listMarketplaceJobs",
   "submitJobOffer",
@@ -324,6 +326,7 @@ const requiredPortalMarkers = [
   "Verified gate ready",
   "Coverage on file",
   "receiverApplicationPayload",
+  "Receiver conduct accepted",
   "renderReceiverApplications",
   "receiverApplicationCoverageScopes",
   "Africa-to-Africa coverage",
@@ -351,6 +354,7 @@ const requiredPortalMarkers = [
   "renderMyJobOffers",
   "refreshMarketplace",
   "Lowest price does not automatically win",
+  "receiver code of conduct",
 ];
 const requiredPortalHtmlMarkers = [
   'data-stitch-source="dashboard_swadakta_signed_in dashboard_swadakta_mobile_signed_in account_setup_profile_swadakta_final_ux_coverage find_work_swadakta_final_ux"',
@@ -387,6 +391,7 @@ const requiredPortalHtmlMarkers = [
   'href="verification.html?reason=receiver_work"',
   'href="#jobs-board"',
   'id="jobs-board"',
+  'id="receiver-code-consent"',
   "cursor: pointer",
   "workspace-link",
   "pointer-events: none",
@@ -452,7 +457,7 @@ const requiredAssistantHtmlMarkers = [
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
-  'const DOCK_VERSION = "15"',
+  'const DOCK_VERSION = "16"',
   "collectPageContext",
   "inferSafeIntent",
   "protectedIntentPattern",
@@ -476,6 +481,8 @@ const requiredDockMarkers = [
   "syncAccountCtas",
   "storedSupabaseSessionEmail",
   "grid-template-columns: repeat(5, minmax(0, 1fr))",
+  ".sw-ai-open .sw-ai-fab { display: none; }",
+  ".sw-ai-messages",
   "Protected actions stay gated",
 ];
 const requiredAiPreferenceMarkers = [
@@ -1232,6 +1239,19 @@ const requiredAiServerMarkers = [
   ["scripts/check-ai-protected-preflight.mjs", "identity_approval"],
   ["scripts/check-ai-protected-preflight.mjs", "draft-only external-message prompt"],
 ];
+const requiredReceiverConductGateMarkers = [
+  ["portal.html", 'id="receiver-code-consent"'],
+  ["stitch-portal.js", "Receiver conduct accepted"],
+  ["stitch-portal.js", "code_of_conduct_accepted_at"],
+  ["app-data.js", "code_of_conduct_consent"],
+  ["app-data.js", "receiver code of conduct accepted"],
+  ["supabase/schema.sql", "code_of_conduct_consent boolean not null default false"],
+  ["supabase/schema.sql", "code_of_conduct_accepted_at timestamptz"],
+  ["supabase/schema.sql", "code_of_conduct_consent = true"],
+  ["supabase/schema.sql", "partner_applications_vetted_requires_verified_identity_check"],
+  ["supabase/migrations/20260613223000_add_receiver_code_of_conduct_gate.sql", "code_of_conduct_consent = true"],
+  ["supabase/migrations/20260613223000_add_receiver_code_of_conduct_gate.sql", "receiver code of conduct accepted before acceptance"],
+];
 const requiredIdentityVerificationDocMarkers = [
   "Current app routing",
   "/api/identity/start-verification",
@@ -1560,8 +1580,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=15")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=15`);
+  if (!content.includes("assistant-dock.js?v=16")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=16`);
   }
   if (file.startsWith("admin-")) {
     if (content.includes("final-ux-theme.css")) {
@@ -1825,8 +1845,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=15")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=15`);
+  if (!text.includes("assistant-dock.js?v=16")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=16`);
   }
   if (page.startsWith("/admin-")) {
     if (text.includes("final-ux-theme.css")) {
@@ -2321,11 +2341,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=15");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=16");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=15 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=16 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=15 returned 200");
+  pass("assistant-dock.js?v=16 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {

@@ -1880,6 +1880,11 @@
     const serviceRegions = field("#receiver-regions")?.value.trim() || "";
     const rawNotes = stripGeneratedReceiverApplicationNotes(field("#receiver-notes")?.value.trim() || "");
     const coverageNote = receiverCoverageNote({ scopes: coverageScopes, base, serviceRegions });
+    const codeConsent = Boolean(field("#receiver-code-consent")?.checked);
+    const codeAcceptedAt = codeConsent ? new Date().toISOString() : null;
+    const conductNote = codeConsent
+      ? `Receiver conduct accepted: no off-platform side deals, no cash holding, no unlawful goods, no identity misrepresentation, and immediate safety/compliance escalation. Accepted at ${codeAcceptedAt}.`
+      : "";
     return {
       full_name: field("#receiver-full-name")?.value.trim() || "",
       email: signedInEmail,
@@ -1890,9 +1895,11 @@
       coverage_scopes: coverageScopes,
       availability: field("#receiver-availability")?.value || "flexible",
       transport_access: field("#receiver-transport")?.value || "mixed",
-      notes: [rawNotes, coverageNote].filter(Boolean).join("\n\n"),
+      notes: [rawNotes, coverageNote, conductNote].filter(Boolean).join("\n\n"),
       id_verification_consent: Boolean(field("#receiver-id-consent")?.checked),
       proof_standard_consent: Boolean(field("#receiver-proof-consent")?.checked),
+      code_of_conduct_consent: codeConsent,
+      code_of_conduct_accepted_at: codeAcceptedAt,
     };
   }
 
@@ -1936,12 +1943,13 @@
             <div class="mt-3 flex flex-wrap gap-2 text-sm text-on-surface-variant">
               ${renderReceiverCoverageChips(coverageLabels)}
             </div>
-            <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+            <div class="mt-4 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
               <span><strong class="${scoreTone}">${escapeHtml(score)}%</strong><br/><small class="text-on-surface-variant">Provenance</small></span>
               <span><strong class="text-on-surface">${escapeHtml(formatStatus(application.identity_verification_status || "not_started"))}</strong><br/><small class="text-on-surface-variant">ID status</small></span>
+              <span><strong class="${application.code_of_conduct_consent ? "text-emerald-700" : "text-amber-700"}">${escapeHtml(application.code_of_conduct_consent ? "Accepted" : "Needed")}</strong><br/><small class="text-on-surface-variant">Conduct</small></span>
               <span><strong class="text-on-surface">${escapeHtml(assignedCount)}</strong><br/><small class="text-on-surface-variant">Assigned</small></span>
             </div>
-            <p class="font-body-md text-on-surface-variant text-sm mt-4">Next: complete provider verification, keep proof consent current, and let Swadakta match only lawful routes your coverage supports.</p>
+            <p class="font-body-md text-on-surface-variant text-sm mt-4">Next: complete provider verification, keep proof and conduct consent current, and let Swadakta match only lawful routes your coverage supports.</p>
           </article>`;
       })
       .join("");
@@ -2613,8 +2621,8 @@
         setReceiverApplicationStatus("Choose at least one coverage scope so the system can match the right route.", "text-error");
         return;
       }
-      if (!payload.id_verification_consent || !payload.proof_standard_consent) {
-        setReceiverApplicationStatus("Accept ID verification and proof standards before applying.", "text-error");
+      if (!payload.id_verification_consent || !payload.proof_standard_consent || !payload.code_of_conduct_consent) {
+        setReceiverApplicationStatus("Accept ID verification, proof standards, and the receiver code of conduct before applying.", "text-error");
         return;
       }
 
