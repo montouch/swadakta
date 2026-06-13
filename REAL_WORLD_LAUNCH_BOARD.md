@@ -150,6 +150,7 @@ The pilot passes only if:
 - Client pays through a provider or a documented fallback.
 - Payment evidence can be reconciled to request code, amount, and currency.
 - Receiver is verified/vetted before offer acceptance can select them.
+- One verified account can support both client and job-seeker use. Provider ID evidence can sync to a matching receiver application, but Swadakta still separately vets the receiver before they can take paid work.
 - Active work cannot start unless the request has assigned receiver, protected amount, paid/deposit-paid status, provider-held/confirmed funds state, safe route, and cleared compliance/admin review.
 - Receiver submits proof.
 - Milestones can be updated without automatically releasing money.

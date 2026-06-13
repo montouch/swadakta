@@ -170,6 +170,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
 - `/portal` exposes client access, receiver-partner applications, and admin access.
 - Client and receiver account access uses normal email/password account login; the same account can request work, take jobs, or do both.
+- Account-level provider ID evidence syncs to receiver applications using the same email, but it does not auto-vet the receiver; vetting still requires Swadakta review of coverage, proof standards, provenance, and safety.
 - Portal accounts show role-aware next-step checklists for profile, identity verification, request/application, payment, vetting, proof, and review readiness.
 - Signed-in clients and receivers can save an account profile so Swadakta has their role, contact, base, and currency context.
 - Every saved account profile has an account-level ID verification status, link, reference, and admin notes.

@@ -54,6 +54,7 @@ Provider coverage rule:
 - If `SUMSUB_APP_TOKEN`, `SUMSUB_SECRET_KEY`, and `SUMSUB_LEVEL_NAME` are configured in Vercel, the endpoint creates a native Sumsub WebSDK external link server-side and stores the Sumsub/Swadakta reference.
 - If no provider handoff URL is configured yet, the endpoint keeps the request queued and tells the user that paid posting and paid receiver work remain locked until provider evidence is attached.
 - `POST /api/identity/sumsub-webhook` verifies Sumsub's signed webhook digest, matches the provider external user reference to the Swadakta verification request, and updates account verification from provider evidence.
+- Account-level provider ID evidence now syncs to matching receiver applications by email. This lets one verified Swadakta account support both client and job-seeker use, while receiver vetting still remains a separate Swadakta review.
 - Portal users see their account KYC status, provider, and verification link when available.
 - Receiver portal also shows the applicant their receiver-specific KYC status, provider, reference, and verification link when available.
 - Database constraint blocks `status = 'vetted'` unless ID consent is true and `identity_verification_status = 'verified'`.
@@ -66,11 +67,12 @@ Provider coverage rule:
 2. The app saves a verification request, then calls `/api/identity/start-verification` to prepare a Smile ID, Sumsub, Youverify, or approved-provider link when configured.
 3. User completes verification.
 4. If Sumsub signed webhook evidence is configured, Swadakta records the result automatically. Otherwise admin records the provider result as `verified`, with the provider reference and timestamp.
-5. Client requests can proceed to paid or sensitive work only after account/request verification is handled.
-6. Receivers also apply through `/portal` for field work.
-7. Founder console sends receiver-specific verification where needed and records the provider result.
-8. Only then can admin mark the receiver as `Vetted`.
-9. Only vetted and verified receivers can be assigned to client jobs.
+5. When the account becomes provider-verified, Swadakta syncs that provider evidence to any receiver application using the same email. This does not make the receiver `Vetted`; it only proves the ID gate.
+6. Client requests can proceed to paid or sensitive work only after account/request verification is handled.
+7. Receivers also apply through `/portal` for field work.
+8. Founder console reviews receiver suitability, proof standards, coverage, provenance, and safety before vetting.
+9. Only then can admin mark the receiver as `Vetted`.
+10. Only vetted and verified receivers can be assigned to client jobs.
 
 ## Next API Step
 

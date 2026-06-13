@@ -682,6 +682,60 @@
     };
   }
 
+  function syncLocalPartnerIdentityFromProfile(profile = {}) {
+    const email = cleanEmail(profile.email);
+    const status = String(profile.identity_verification_status || "not_started").trim().toLowerCase();
+    const provider = String(profile.identity_verification_provider || "sumsub").trim().toLowerCase();
+    const reference = String(profile.identity_verification_reference || "").trim();
+
+    if (!email || !["smile_id", "sumsub", "youverify", "manual"].includes(provider)) {
+      return;
+    }
+
+    const now = new Date().toISOString();
+    let changed = false;
+    const applications = readLocalPartnerApplications().map((application) => {
+      if (cleanEmail(application.email) !== email) return application;
+
+      const currentStatus = String(application.identity_verification_status || "not_started").trim().toLowerCase();
+      const sameReference =
+        reference && String(application.identity_verification_reference || "").trim() === reference;
+      const shouldSync =
+        status === "verified" ||
+        (["link_sent", "submitted", "manual_review"].includes(status) && currentStatus !== "verified") ||
+        (["failed", "expired"].includes(status) && (currentStatus !== "verified" || sameReference));
+
+      if (!shouldSync) return application;
+
+      changed = true;
+      return normalizePartnerApplication({
+        ...application,
+        identity_verification_provider: provider,
+        identity_verification_status: status,
+        identity_verification_link: profile.identity_verification_link || "",
+        identity_verification_reference: reference,
+        identity_verified_at:
+          status === "verified"
+            ? profile.identity_verified_at || application.identity_verified_at || now
+            : ["failed", "expired"].includes(status)
+              ? null
+              : application.identity_verified_at || null,
+        identity_verification_notes: [
+          profile.identity_verification_notes,
+          "Account-level provider ID evidence synced to this receiver profile. Receiver vetting remains a separate Swadakta review.",
+        ]
+          .filter(Boolean)
+          .join("\n")
+          .slice(0, 1200),
+        updated_at: now,
+      });
+    });
+
+    if (changed) {
+      writeLocalPartnerApplications(applications);
+    }
+  }
+
   function toAccountProfileDatabasePayload(profile) {
     return {
       user_id: profile.user_id,
@@ -2612,6 +2666,7 @@
       }
       const profile = normalizeAccountProfile({ ...current, ...payload });
       writeLocalAccountProfile(profile);
+      syncLocalPartnerIdentityFromProfile(profile);
       return { data: profile, mode: "local" };
     }
 
@@ -2682,6 +2737,7 @@
         : [normalized, ...requests];
 
       writeLocalAccountProfile(profile);
+      syncLocalPartnerIdentityFromProfile(profile);
       writeLocalIdentityVerificationRequests(nextRequests);
       return { data: normalized, mode: "local" };
     }
@@ -2837,8 +2893,7 @@
 
       const current = readLocalAccountProfile();
       if (current && current.user_id === updated.user_id) {
-        writeLocalAccountProfile(
-          normalizeAccountProfile({
+        const profile = normalizeAccountProfile({
             ...current,
             identity_verification_provider: payload.provider,
             identity_verification_status:
@@ -2854,8 +2909,9 @@
                 ? current.identity_verified_at || new Date().toISOString()
                 : null,
             identity_verification_notes: payload.admin_notes,
-          }),
-        );
+        });
+        writeLocalAccountProfile(profile);
+        syncLocalPartnerIdentityFromProfile(profile);
       }
 
       writeLocalIdentityVerificationRequests(requests);
