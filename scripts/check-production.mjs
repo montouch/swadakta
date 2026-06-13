@@ -53,6 +53,14 @@ const requiredPages = [
   "/admin-verification",
   "/admin-readiness",
 ];
+const publicNoAdminLinkPages = new Set(["/", "/corridor", "/trust", "/payments", "/rules"]);
+const forbiddenPublicAdminLinkMarkers = [
+  'href="admin',
+  'href="/admin',
+  "admin-ops.html",
+  "admin-readiness.html",
+  "admin-verification.html",
+];
 const requiredStitchScreens = [
   {
     path: "/",
@@ -543,6 +551,7 @@ const requiredPaymentsMarkers = [
   "Payment rails readiness matrix",
   "Client-visible rail gate",
   "Show a rail only after its evidence chain works",
+  "Read trust rules",
   "Regulated escrow/provider-held funds",
   "Africa payment expansion planner",
   "paymentExpansionRail",
@@ -1596,6 +1605,13 @@ for (const page of requiredPages) {
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
       fail(failures, `${page} still contains legacy purple UI marker ${marker}`);
+    }
+  }
+  if (publicNoAdminLinkPages.has(page)) {
+    for (const marker of forbiddenPublicAdminLinkMarkers) {
+      if (text.toLowerCase().includes(marker.toLowerCase())) {
+        fail(failures, `${page} exposes admin-only link marker ${marker} on a public page`);
+      }
     }
   }
   if (page === "/login") {

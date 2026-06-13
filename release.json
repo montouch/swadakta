@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-founder-chrome-launch-session-v1",
-  "release_name": "Founder Chrome launch session",
-  "description": "Admin readiness now includes a real-world founder work-session ladder with official setup tabs, evidence requirements, and owner flags for payments, ID verification, legal boundaries, and the first paid pilot.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-founder-chrome-launch-session-1",
+  "release_id": "2026-06-13-public-admin-link-guard-v1",
+  "release_name": "Public admin link guard",
+  "description": "Public payment guidance now keeps normal users on public trust/payment routes, and production health checks fail if public pages expose admin-only links.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-public-admin-link-guard-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"
