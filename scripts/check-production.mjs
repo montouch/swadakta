@@ -1286,6 +1286,14 @@ const requiredAiBoundaryDocMarkers = [
   "These decisions are never autonomous",
   "Manual mode must always work",
 ];
+const requiredActualizationMarkers = [
+  "Supabase Auth leaked-password protection is enabled",
+  "production security advisors currently return zero security lints",
+  "known leaked password is rejected",
+];
+const forbiddenActualizationMarkers = [
+  "Supabase security advisors show one remaining launch hardening item",
+];
 const requiredAiServerMarkers = [
   ["api/ai/assistant.js", "PROTECTED_ACTION_POLICIES"],
   ["api/ai/assistant.js", "protectedActionReview"],
@@ -1708,6 +1716,17 @@ const localAiBoundaryDoc = await readLocal("AI_OPERATING_BOUNDARIES.md");
 for (const marker of requiredAiBoundaryDocMarkers) {
   if (!localAiBoundaryDoc.includes(marker)) {
     fail(failures, `AI operating boundary doc is missing marker ${marker}`);
+  }
+}
+const localActualizationDoc = await readLocal("ACTUALIZATION.md");
+for (const marker of requiredActualizationMarkers) {
+  if (!localActualizationDoc.includes(marker)) {
+    fail(failures, `Actualization plan is missing marker ${marker}`);
+  }
+}
+for (const marker of forbiddenActualizationMarkers) {
+  if (localActualizationDoc.includes(marker)) {
+    fail(failures, `Actualization plan still contains stale Supabase Auth warning: ${marker}`);
   }
 }
 for (const [file, marker] of requiredAiServerMarkers) {

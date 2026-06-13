@@ -14,7 +14,8 @@ Completed:
 
 - Supabase project created.
 - `supabase/schema.sql` applied as migrations.
-- Supabase security advisors show one remaining launch hardening item: enable leaked-password protection in Auth.
+- Supabase Auth leaked-password protection is enabled, and the production security advisors currently return zero security lints.
+- Remaining Auth hardening before paid launch: keep the Vercel owner flag aligned with the Supabase dashboard setting, then run one controlled sign-up/password-change test that proves a known leaked password is rejected.
 - Public client intake insert was verified with the publishable key.
 - Quote, payment-link, client tracking, and proof-link fields were added to Supabase.
 - Required client permission, scope, terms, and privacy consent fields were added to Supabase and enforced by RLS.
