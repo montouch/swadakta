@@ -8,6 +8,14 @@
   const routeTitle = document.querySelector("#corridor-route-title");
   const routeCopy = document.querySelector("#corridor-route-copy");
   const routePill = document.querySelector("#corridor-route-pill");
+  const placeTitle = document.querySelector("#corridor-place-title");
+  const placeCopy = document.querySelector("#corridor-place-copy");
+  const placeWeather = document.querySelector("#corridor-place-weather");
+  const placeRisk = document.querySelector("#corridor-place-risk");
+  const placeChecks = document.querySelector("#corridor-place-checks");
+  const placeAlertLink = document.querySelector("#corridor-place-alert-link");
+  const placeUpdated = document.querySelector("#corridor-place-updated");
+  const placeRefresh = document.querySelector("#corridor-place-refresh");
   const presetButtons = document.querySelectorAll(".corridor-preset");
   const africaQuickStart = document.querySelector("#corridor-africa-country");
   const STORAGE_KEY = "swadakta_corridor_context";
@@ -15,7 +23,42 @@
   const riskyGoods = new Set(["food_plant_animal", "medicine_health", "cosmetics", "electronics", "valuable_items", "restricted_or_unsure"]);
   const highRiskGoods = new Set(["food_plant_animal", "medicine_health", "valuable_items", "restricted_or_unsure"]);
   const physicalModes = new Set(["local_delivery", "postal_courier", "pickup_hold", "supplier_direct", "airport_handoff"]);
+  const alertSources = [
+    {
+      label: "Australia Bureau of Meteorology warnings",
+      url: "https://www.bom.gov.au/weather-and-climate/warnings-and-alerts",
+      matches: ["australia", "adelaide", "sydney", "melbourne", "brisbane", "perth"],
+    },
+    {
+      label: "US National Weather Service alerts",
+      url: "https://www.weather.gov/alerts",
+      matches: ["united states", "usa", "us", "america"],
+    },
+    {
+      label: "UK Met Office weather warnings",
+      url: "https://weather.metoffice.gov.uk/warnings-and-advice/uk-warnings",
+      matches: ["united kingdom", "uk", "england", "scotland", "wales", "northern ireland", "london"],
+    },
+    {
+      label: "Kenya Meteorological Department warnings",
+      url: "https://meteo.go.ke/weather-warnings/",
+      matches: ["kenya", "nairobi", "mombasa", "kisumu", "nakuru"],
+    },
+    {
+      label: "Meteoalarm European warnings",
+      url: "https://www.meteoalarm.org/",
+      matches: ["europe", "germany", "france", "italy", "spain", "netherlands", "belgium", "sweden", "norway", "denmark", "finland", "poland", "portugal", "switzerland", "austria"],
+    },
+    {
+      label: "China Meteorological Administration weather",
+      url: "https://en.weather.com.cn/",
+      matches: ["china", "mainland china", "hong kong", "guangzhou", "shenzhen", "beijing", "shanghai"],
+    },
+  ];
   let importedRulesContext = {};
+  let placeIntelligence = null;
+  let placeRequestId = 0;
+  let placeTimer = 0;
   const africaCountryOptions = [
     "Algeria",
     "Angola",
@@ -254,6 +297,286 @@
     if (europeCountries.has(normalized)) return "Europe";
     if (["china", "mainland china", "hong kong", "guangzhou", "shenzhen"].includes(normalized)) return "China";
     return "";
+  }
+
+  function weatherCodeLabel(code) {
+    const numericCode = Number(code);
+    if (numericCode === 0) return "Clear";
+    if ([1, 2, 3].includes(numericCode)) return "Cloudy";
+    if ([45, 48].includes(numericCode)) return "Fog";
+    if ([51, 53, 55, 56, 57].includes(numericCode)) return "Drizzle";
+    if ([61, 63, 65, 66, 67, 80, 81, 82].includes(numericCode)) return "Rain";
+    if ([71, 73, 75, 77, 85, 86].includes(numericCode)) return "Snow";
+    if ([95, 96, 99].includes(numericCode)) return "Storm risk";
+    return "Weather";
+  }
+
+  function locationLooksRemote(location) {
+    return /^(remote|online|digital|virtual)$/i.test(String(location || "").trim());
+  }
+
+  function locationLooksSpecific(location, destination) {
+    const cleanLocation = normalizeCountry(location);
+    const cleanDestination = normalizeCountry(destination);
+    if (!cleanLocation || !cleanDestination) return Boolean(cleanLocation);
+    return cleanLocation.includes(cleanDestination) || String(location || "").includes(",");
+  }
+
+  function placeSearchQuery() {
+    const location = value("#corridor-location");
+    const destination = value("#corridor-destination");
+    const logisticsMode = value("#corridor-logistics");
+    const direction = value("#corridor-direction");
+    if (!location || locationLooksRemote(location) || logisticsMode === "digital_only" || direction === "digital_global") return "";
+    if (locationLooksSpecific(location, destination)) return location;
+    return [location, destination].filter(Boolean).join(", ");
+  }
+
+  function weatherPlanningNotes({ temperature, wind, precipitationChance, weatherCode } = {}) {
+    const notes = [];
+    if (Number(precipitationChance) >= 60 || [61, 63, 65, 80, 81, 82, 95, 96, 99].includes(Number(weatherCode))) {
+      notes.push("Rain or storms may slow travel, outdoor proof, loading, delivery, or site access.");
+    }
+    if (Number(wind) >= 35) notes.push("High wind: avoid exposed proof tasks unless the receiver confirms safe timing.");
+    if (Number(temperature) >= 32) notes.push("Heat planning: allow water, shade, phone battery, and realistic travel windows.");
+    if (Number(temperature) <= 5) notes.push("Cold weather: confirm travel, opening hours, access, and receiver safety.");
+    if (!notes.length) notes.push("Normal field conditions from the current forecast. Still confirm local access, opening hours, and receiver safety.");
+    return notes;
+  }
+
+  function placeOperationalChecks({ temperature, wind, precipitationChance, weatherCode } = {}) {
+    const checks = ["Confirm access, opening hours, route, phone signal, and receiver safety before assignment."];
+    if (Number(precipitationChance) >= 60 || [61, 63, 65, 80, 81, 82, 95, 96, 99].includes(Number(weatherCode))) {
+      checks.push("Ask for waterproof proof, backup timing, and safer transport if the job is outdoors.");
+    }
+    if (Number(wind) >= 35) checks.push("Avoid exposed roof, loading, drone, or road-risk proof unless the receiver confirms it is safe.");
+    if (Number(temperature) >= 32) checks.push("Plan heat-safe timing, water, shade, and realistic travel windows.");
+    if (Number(temperature) <= 5) checks.push("Confirm cold-weather travel, site access, and phone battery before dispatch.");
+    return checks;
+  }
+
+  function officialAlertSource({ country = "", name = "" } = {}) {
+    const haystack = normalizeCountry(`${name} ${country} ${value("#corridor-location")} ${value("#corridor-destination")}`);
+    const haystackTokens = new Set(haystack.split(" ").filter(Boolean));
+    const matched = alertSources.find((source) =>
+      source.matches.some((match) => {
+        const cleanMatch = normalizeCountry(match);
+        return cleanMatch.length <= 3 ? haystackTokens.has(cleanMatch) : haystack.includes(cleanMatch);
+      }),
+    );
+    if (matched) return matched;
+
+    const region = supportedRegion(country || value("#corridor-destination"));
+    if (region === "Europe") {
+      return {
+        label: "Meteoalarm European warnings",
+        url: "https://www.meteoalarm.org/",
+      };
+    }
+    if (region === "Africa") {
+      return {
+        label: "WMO Severe Weather Information Centre",
+        url: "https://severeweather.wmo.int/",
+      };
+    }
+    return {
+      label: "Search official local alerts",
+      url: `https://www.google.com/search?q=${encodeURIComponent(`${value("#corridor-location") || country} official weather alerts`)}`,
+    };
+  }
+
+  function renderPlaceIntelligence(data = null, state = "ready") {
+    const query = placeSearchQuery();
+
+    if (!query) {
+      placeIntelligence = null;
+      if (placeTitle) placeTitle.textContent = "Enter a physical work location";
+      if (placeCopy) placeCopy.textContent = "Weather and alert guidance is useful for site visits, shopping, pickup, delivery, and outdoor proof. Digital-only work can skip this.";
+      if (placeWeather) placeWeather.textContent = "Not needed yet";
+      if (placeRisk) placeRisk.textContent = "No field note yet";
+      if (placeChecks) placeChecks.textContent = "Access, hours, route, and safety";
+      if (placeAlertLink) {
+        placeAlertLink.href = "rules.html";
+        placeAlertLink.textContent = "Check item rules";
+        placeAlertLink.removeAttribute("target");
+        placeAlertLink.removeAttribute("rel");
+      }
+      if (placeUpdated) placeUpdated.textContent = "Enter a city or town to load place intelligence.";
+      return;
+    }
+
+    if (state === "loading") {
+      if (placeTitle) placeTitle.textContent = `Checking ${query}`;
+      if (placeWeather) placeWeather.textContent = "Loading forecast...";
+      if (placeRisk) placeRisk.textContent = "Checking field conditions";
+      if (placeChecks) placeChecks.textContent = "Preparing local checks...";
+      if (placeUpdated) placeUpdated.textContent = "Using Open-Meteo geocoding and forecast data.";
+      return;
+    }
+
+    if (!data) {
+      const alertSource = officialAlertSource({ country: value("#corridor-destination"), name: value("#corridor-location") });
+      if (placeTitle) placeTitle.textContent = `Place brief for ${query}`;
+      if (placeCopy) placeCopy.textContent = "Forecast could not be loaded yet. Keep the job flexible and confirm local conditions before assigning receiver work.";
+      if (placeWeather) placeWeather.textContent = "Forecast unavailable";
+      if (placeRisk) placeRisk.textContent = "Manual local check needed";
+      if (placeChecks) placeChecks.textContent = "Ask receiver to confirm access, hours, route, phone signal, and safety.";
+      if (placeAlertLink) {
+        placeAlertLink.href = alertSource.url;
+        placeAlertLink.textContent = alertSource.label;
+        placeAlertLink.target = "_blank";
+        placeAlertLink.rel = "noopener";
+      }
+      if (placeUpdated) placeUpdated.textContent = "Weather lookup can be retried before opening the paid brief.";
+      return;
+    }
+
+    const temp = Number(data.temperature);
+    const wind = Number(data.wind);
+    const rain = Number(data.precipitationChance);
+    const weather = weatherCodeLabel(data.weatherCode);
+    const notes = weatherPlanningNotes({
+      temperature: temp,
+      wind,
+      precipitationChance: rain,
+      weatherCode: data.weatherCode,
+    });
+    const checks = placeOperationalChecks({
+      temperature: temp,
+      wind,
+      precipitationChance: rain,
+      weatherCode: data.weatherCode,
+    });
+    const alertSource = officialAlertSource(data);
+
+    if (placeTitle) placeTitle.textContent = `${data.name}, ${data.country}`;
+    if (placeCopy) placeCopy.textContent = "Use this as a rough field brief before quoting or assignment. The receiver still confirms access, safety, and official local alerts.";
+    if (placeWeather) placeWeather.textContent = `${Math.round(temp)}C, ${weather}, ${Math.round(wind)} km/h wind`;
+    if (placeRisk) placeRisk.textContent = `${rain || 0}% rain risk. ${notes[0]}`;
+    if (placeChecks) placeChecks.textContent = checks[0];
+    if (placeAlertLink) {
+      placeAlertLink.href = alertSource.url;
+      placeAlertLink.textContent = alertSource.label;
+      placeAlertLink.target = "_blank";
+      placeAlertLink.rel = "noopener";
+    }
+    if (placeUpdated) {
+      placeUpdated.textContent = `Updated ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}. Forecast is a planning aid, not a legal or safety clearance.`;
+    }
+  }
+
+  function placeReferenceLinks() {
+    if (!placeSearchQuery()) return [];
+    const links = [
+      {
+        label: "Open-Meteo forecast data",
+        url: "https://open-meteo.com/en/docs",
+      },
+    ];
+    const alertSource = officialAlertSource(placeIntelligence || { country: value("#corridor-destination"), name: value("#corridor-location") });
+    if (alertSource?.url) links.push(alertSource);
+    return normalizeReferenceLinks(links);
+  }
+
+  function placeRequiredChecks() {
+    if (!placeSearchQuery()) return [];
+    if (!placeIntelligence) {
+      return ["Manual local weather, safety, access, route, and official-alert check before quoting or assignment"];
+    }
+    return placeOperationalChecks({
+      temperature: placeIntelligence.temperature,
+      wind: placeIntelligence.wind,
+      precipitationChance: placeIntelligence.precipitationChance,
+      weatherCode: placeIntelligence.weatherCode,
+    });
+  }
+
+  function placeIntelligenceSummary() {
+    if (!placeSearchQuery()) return "";
+    if (!placeIntelligence) {
+      return `Place intelligence pending for ${placeSearchQuery()}. Confirm official alerts, access, opening hours, route, phone signal, and receiver safety before quoting or assignment.`;
+    }
+    const notes = weatherPlanningNotes({
+      temperature: placeIntelligence.temperature,
+      wind: placeIntelligence.wind,
+      precipitationChance: placeIntelligence.precipitationChance,
+      weatherCode: placeIntelligence.weatherCode,
+    });
+    const checks = placeOperationalChecks({
+      temperature: placeIntelligence.temperature,
+      wind: placeIntelligence.wind,
+      precipitationChance: placeIntelligence.precipitationChance,
+      weatherCode: placeIntelligence.weatherCode,
+    });
+    return [
+      `Place intelligence: ${placeIntelligence.name}, ${placeIntelligence.country}`,
+      `Weather now: ${Math.round(Number(placeIntelligence.temperature))}C, ${weatherCodeLabel(placeIntelligence.weatherCode)}, ${Math.round(Number(placeIntelligence.wind))} km/h wind, ${Number(placeIntelligence.precipitationChance) || 0}% daily rain probability.`,
+      `Planning note: ${notes.join(" ")}`,
+      `Local checks: ${checks.join(" ")}`,
+      "Receiver must still check official local alerts, access, opening hours, and safety before field work.",
+    ].join("\n");
+  }
+
+  async function loadPlaceIntelligence() {
+    const query = placeSearchQuery();
+    const requestId = ++placeRequestId;
+    if (!query) {
+      renderPlaceIntelligence(null);
+      return;
+    }
+
+    renderPlaceIntelligence(null, "loading");
+
+    try {
+      const geocodeUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(query)}&count=1&language=en&format=json`;
+      const geocodeResponse = await fetch(geocodeUrl);
+      if (!geocodeResponse.ok) throw new Error("Location lookup failed.");
+      const geocode = await geocodeResponse.json();
+      const match = geocode.results?.[0];
+      if (!match || requestId !== placeRequestId) {
+        renderPlaceIntelligence(null);
+        return;
+      }
+
+      const forecastUrl = new URL("https://api.open-meteo.com/v1/forecast");
+      forecastUrl.searchParams.set("latitude", match.latitude);
+      forecastUrl.searchParams.set("longitude", match.longitude);
+      forecastUrl.searchParams.set("current", "temperature_2m,precipitation,weather_code,wind_speed_10m");
+      forecastUrl.searchParams.set("daily", "weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max");
+      forecastUrl.searchParams.set("timezone", "auto");
+      forecastUrl.searchParams.set("forecast_days", "1");
+      forecastUrl.searchParams.set("temperature_unit", "celsius");
+      forecastUrl.searchParams.set("wind_speed_unit", "kmh");
+      forecastUrl.searchParams.set("precipitation_unit", "mm");
+      const forecastResponse = await fetch(forecastUrl.toString());
+      if (!forecastResponse.ok) throw new Error("Forecast lookup failed.");
+      const forecast = await forecastResponse.json();
+      if (requestId !== placeRequestId) return;
+
+      placeIntelligence = {
+        name: match.name || value("#corridor-location"),
+        country: match.country || value("#corridor-destination") || "",
+        latitude: match.latitude,
+        longitude: match.longitude,
+        timezone: match.timezone || forecast.timezone || "",
+        temperature: forecast.current?.temperature_2m ?? forecast.daily?.temperature_2m_max?.[0] ?? 0,
+        wind: forecast.current?.wind_speed_10m ?? 0,
+        weatherCode: forecast.current?.weather_code ?? forecast.daily?.weather_code?.[0] ?? 0,
+        precipitation: forecast.current?.precipitation ?? 0,
+        precipitationChance: forecast.daily?.precipitation_probability_max?.[0] ?? 0,
+      };
+      renderPlaceIntelligence(placeIntelligence);
+    } catch (error) {
+      if (requestId === placeRequestId) {
+        placeIntelligence = null;
+        renderPlaceIntelligence(null);
+      }
+    }
+  }
+
+  function schedulePlaceIntelligence() {
+    window.clearTimeout(placeTimer);
+    placeTimer = window.setTimeout(loadPlaceIntelligence, 650);
   }
 
   function routeReadiness(origin, destination, direction) {
@@ -517,6 +840,12 @@
     const triage = corridorTriage();
     const importedRulesActive = rulesContextMatchesCurrent();
     const rulesCompliancePack = importedRulesActive ? rulesPackFromContext(importedRulesContext) : {};
+    const placeChecks = placeRequiredChecks();
+    const requiredChecks = [...new Set([...triage.checks, ...placeChecks])];
+    const officialReferenceLinks = normalizeReferenceLinks([
+      ...(rulesCompliancePack.official_reference_links || []),
+      ...placeReferenceLinks(),
+    ]);
     const context = {
       origin_country: value("#corridor-origin"),
       destination_country: value("#corridor-destination"),
@@ -533,9 +862,23 @@
       admin_review_required: triage.adminReviewRequired,
       admin_review_reason: triage.adminReviewReason,
       compliance_flags: triage.flags,
-      required_checks: triage.checks,
-      official_reference_links: rulesCompliancePack.official_reference_links || [],
+      required_checks: requiredChecks,
+      official_reference_links: officialReferenceLinks,
       rules_compliance_pack: rulesCompliancePack,
+      place_intelligence: placeIntelligence
+        ? {
+            name: placeIntelligence.name,
+            country: placeIntelligence.country,
+            latitude: placeIntelligence.latitude,
+            longitude: placeIntelligence.longitude,
+            timezone: placeIntelligence.timezone,
+            temperature: placeIntelligence.temperature,
+            wind: placeIntelligence.wind,
+            weatherCode: placeIntelligence.weatherCode,
+            precipitationChance: placeIntelligence.precipitationChance,
+          }
+        : null,
+      place_intelligence_summary: placeIntelligenceSummary(),
       notes: value("#corridor-notes"),
       imported_from: importedRulesActive ? importedRulesContext.imported_from : "",
       imported_at: importedRulesActive ? importedRulesContext.imported_at : "",
@@ -703,6 +1046,7 @@
   function restoreContext() {
     applyContext(readStoredContext());
     setNextCopy();
+    loadPlaceIntelligence();
   }
 
   function applyCorridorQueryParams() {
@@ -756,6 +1100,7 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedContext));
     applyContext(mergedContext);
     setNextCopy();
+    loadPlaceIntelligence();
   }
 
   function applyInitialQueryDefaults() {
@@ -769,8 +1114,19 @@
     }
   }
 
-  form.addEventListener("input", setNextCopy);
-  form.addEventListener("change", setNextCopy);
+  function handleFormChange(event) {
+    setNextCopy();
+    if (
+      !event ||
+      ["corridor-location", "corridor-destination", "corridor-logistics", "corridor-direction"].includes(event.target?.id)
+    ) {
+      schedulePlaceIntelligence();
+    }
+  }
+
+  form.addEventListener("input", handleFormChange);
+  form.addEventListener("change", handleFormChange);
+  placeRefresh?.addEventListener("click", loadPlaceIntelligence);
   presetButtons.forEach((button) => {
     button.addEventListener("click", () => {
       field("#corridor-origin").value = button.dataset.origin || "";
@@ -781,9 +1137,13 @@
       field("#corridor-goods").value = button.dataset.goods || "none";
       if (complianceAck) complianceAck.checked = false;
       setNextCopy();
+      loadPlaceIntelligence();
     });
   });
-  africaQuickStart?.addEventListener("change", () => applyAfricaCountry(africaQuickStart.value));
+  africaQuickStart?.addEventListener("change", () => {
+    applyAfricaCountry(africaQuickStart.value);
+    loadPlaceIntelligence();
+  });
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;

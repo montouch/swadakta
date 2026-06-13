@@ -84,7 +84,7 @@ const forbiddenSitemapMarkers = [
   "/resolution",
 ];
 const expectedSitemapLastmod = "2026-06-13";
-const expectedBriefScriptRef = "stitch-brief.js?v=24";
+const expectedBriefScriptRef = "stitch-brief.js?v=25";
 const requiredStitchScreens = [
   {
     path: "/",
@@ -501,6 +501,8 @@ const requiredBriefScriptMarkers = [
   "briefVerificationHref",
   'loginUrl.searchParams.set("next", briefNextPath())',
   'verificationUrl.searchParams.set("next", briefNextPath())',
+  "officialAlertSource",
+  "corridorContext.place_intelligence_summary",
   "renderLaunchMode",
   "isPaidLaunchOpen",
   "launch_mode_founder_review",
@@ -628,6 +630,9 @@ const requiredRulesMarkers = [
 const requiredCorridorMarkers = [
   "Launch lanes",
   "Route intelligence",
+  "Place intelligence",
+  "corridor-place-intelligence",
+  "corridor-place-alert-link",
   "corridor-preset",
   "Africa to Africa",
   "In-country Africa",
@@ -654,6 +659,10 @@ const requiredCorridorScriptMarkers = [
   "RULES_STORAGE_KEY",
   "rules_compliance_pack",
   "official_reference_links",
+  "loadPlaceIntelligence",
+  "placeIntelligenceSummary",
+  "Open-Meteo forecast data",
+  "WMO Severe Weather Information Centre",
 ];
 const requiredAdminOpsMarkers = [
   "requestFlags",
@@ -1833,8 +1842,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=9")) {
-    fail(failures, `${page} does not reference corridor.js?v=9`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=10")) {
+    fail(failures, `${page} does not reference corridor.js?v=10`);
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {

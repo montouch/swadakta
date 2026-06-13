@@ -56,6 +56,38 @@
   const quoteSafetyChecks = document.querySelector("#brief-quote-safety-checks");
   const corridorStorageKey = "swadakta_corridor_context";
   const rulesStorageKey = "swadakta_rules_context";
+  const officialAlertSources = [
+    {
+      label: "Australia Bureau of Meteorology warnings",
+      url: "https://www.bom.gov.au/weather-and-climate/warnings-and-alerts",
+      matches: ["australia", "adelaide", "sydney", "melbourne", "brisbane", "perth"],
+    },
+    {
+      label: "US National Weather Service alerts",
+      url: "https://www.weather.gov/alerts",
+      matches: ["united states", "usa", "us", "america"],
+    },
+    {
+      label: "UK Met Office weather warnings",
+      url: "https://weather.metoffice.gov.uk/warnings-and-advice/uk-warnings",
+      matches: ["united kingdom", "uk", "england", "scotland", "wales", "northern ireland", "london"],
+    },
+    {
+      label: "Kenya Meteorological Department warnings",
+      url: "https://meteo.go.ke/weather-warnings/",
+      matches: ["kenya", "nairobi", "mombasa", "kisumu", "nakuru"],
+    },
+    {
+      label: "Meteoalarm European warnings",
+      url: "https://www.meteoalarm.org/",
+      matches: ["europe", "germany", "france", "italy", "spain", "netherlands", "belgium", "sweden", "norway", "denmark", "finland", "poland", "portugal", "switzerland", "austria"],
+    },
+    {
+      label: "China Meteorological Administration weather",
+      url: "https://en.weather.com.cn/",
+      matches: ["china", "mainland china", "hong kong", "guangzhou", "shenzhen", "beijing", "shanghai"],
+    },
+  ];
 
   if (!form || !window.SwadaktaData) return;
 
@@ -770,6 +802,31 @@
       .trim();
   }
 
+  function officialAlertSource({ country = "", name = "" } = {}) {
+    const haystack = normalizedPlaceText(`${name} ${country} ${value("#brief-location")} ${value("#brief-destination-country")}`);
+    const haystackTokens = new Set(haystack.split(" ").filter(Boolean));
+    const matched = officialAlertSources.find((source) =>
+      source.matches.some((match) => {
+        const cleanMatch = normalizedPlaceText(match);
+        return cleanMatch.length <= 3 ? haystackTokens.has(cleanMatch) : haystack.includes(cleanMatch);
+      }),
+    );
+    if (matched) return matched;
+
+    const destination = normalizedPlaceText(country || value("#brief-destination-country"));
+    const africaMatch = AFRICA_COUNTRY_OPTIONS.some((countryName) => normalizedPlaceText(countryName) === destination);
+    if (africaMatch) {
+      return {
+        label: "WMO Severe Weather Information Centre",
+        url: "https://severeweather.wmo.int/",
+      };
+    }
+    return {
+      label: "Search official local alerts",
+      url: `https://www.google.com/search?q=${encodeURIComponent(`${value("#brief-location") || country} official weather alerts`)}`,
+    };
+  }
+
   function locationLooksSpecific(location, destination) {
     const cleanLocation = normalizedPlaceText(location);
     const cleanDestination = normalizedPlaceText(destination);
@@ -841,14 +898,15 @@
     }
 
     if (!data) {
+      const alertSource = officialAlertSource({ country: value("#brief-destination-country"), name: value("#brief-location") });
       if (placeTitle) placeTitle.textContent = `Place brief for ${query}`;
       if (placeCopy) placeCopy.textContent = "Forecast could not be loaded yet. Keep the job flexible and confirm local conditions before assigning receiver work.";
       if (placeWeather) placeWeather.textContent = "Forecast unavailable";
       if (placeRisk) placeRisk.textContent = "Manual local check needed";
       if (placeChecks) placeChecks.textContent = "Ask receiver to confirm access, hours, route, phone signal, and safety.";
       if (placeAlertLink) {
-        placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${query} official weather alerts`)}`;
-        placeAlertLink.textContent = "Search official alerts";
+        placeAlertLink.href = alertSource.url;
+        placeAlertLink.textContent = alertSource.label;
         placeAlertLink.target = "_blank";
         placeAlertLink.rel = "noopener";
       }
@@ -872,6 +930,7 @@
       precipitationChance: rain,
       weatherCode: data.weatherCode,
     });
+    const alertSource = officialAlertSource(data);
 
     if (placeTitle) placeTitle.textContent = `${data.name}, ${data.country}`;
     if (placeCopy) placeCopy.textContent = "Use this as a rough field brief before assigning work. The receiver still confirms access, safety, and official local alerts.";
@@ -879,8 +938,8 @@
     if (placeRisk) placeRisk.textContent = `${rain || 0}% rain risk. ${notes[0]}`;
     if (placeChecks) placeChecks.textContent = checks[0];
     if (placeAlertLink) {
-      placeAlertLink.href = `https://www.google.com/search?q=${encodeURIComponent(`${data.name} ${data.country} official alerts weather travel`)}`;
-      placeAlertLink.textContent = "Search official alerts";
+      placeAlertLink.href = alertSource.url;
+      placeAlertLink.textContent = alertSource.label;
       placeAlertLink.target = "_blank";
       placeAlertLink.rel = "noopener";
     }
@@ -1536,6 +1595,7 @@
           compliancePackSummary(),
           proof,
           placeIntelligenceSummary(),
+          corridorContext.place_intelligence_summary,
           corridorContext.notes,
         ]
           .filter(Boolean)

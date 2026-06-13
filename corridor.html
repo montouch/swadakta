@@ -203,6 +203,35 @@
             <span class="font-label text-sm text-on-surface-variant ml-1">City, town, or online context</span>
             <input class="sunken-input w-full h-12 px-4 rounded-xl" id="corridor-location" name="task_location" placeholder="London, Lagos, Guangzhou, Adelaide, remote..." required />
           </label>
+          <section class="route-card overflow-hidden rounded-2xl bg-white/62 border border-outline-variant/30 p-4" id="corridor-place-intelligence" aria-live="polite">
+            <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+              <div class="min-w-0">
+                <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Place intelligence</p>
+                <h2 class="mt-1 font-display text-xl font-extrabold" id="corridor-place-title">Enter a work location</h2>
+                <p class="mt-2 text-sm text-on-surface-variant" id="corridor-place-copy">Swadakta can add weather, field timing, access, and official-alert checks before the paid brief opens.</p>
+              </div>
+              <button class="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-outline-variant/40 bg-white/78 px-4 font-label text-sm font-bold text-primary" id="corridor-place-refresh" type="button">Refresh</button>
+            </div>
+            <div class="mt-4 grid gap-3 md:grid-cols-4">
+              <article class="rounded-2xl border border-outline-variant/30 bg-white/72 p-4">
+                <p class="font-label text-sm text-on-surface-variant">Weather now</p>
+                <strong class="mt-1 block font-label text-sm text-on-surface" id="corridor-place-weather">Waiting for location</strong>
+              </article>
+              <article class="rounded-2xl border border-outline-variant/30 bg-white/72 p-4">
+                <p class="font-label text-sm text-on-surface-variant">Field note</p>
+                <strong class="mt-1 block font-label text-sm text-on-surface" id="corridor-place-risk">No field note yet</strong>
+              </article>
+              <article class="rounded-2xl border border-outline-variant/30 bg-white/72 p-4">
+                <p class="font-label text-sm text-on-surface-variant">Official alerts</p>
+                <a class="mt-1 block break-words font-label text-sm text-primary underline underline-offset-4" id="corridor-place-alert-link" href="rules.html">Check item rules</a>
+              </article>
+              <article class="rounded-2xl border border-outline-variant/30 bg-white/72 p-4">
+                <p class="font-label text-sm text-on-surface-variant">Local check</p>
+                <strong class="mt-1 block font-label text-sm text-on-surface" id="corridor-place-checks">Access, hours, route, and safety</strong>
+              </article>
+            </div>
+            <p class="mt-3 text-sm text-on-surface-variant" id="corridor-place-updated">Weather data loads for physical field locations and stays a planning aid, not a safety or legal clearance.</p>
+          </section>
           <section class="route-card overflow-hidden rounded-2xl bg-white/62 border border-outline-variant/30 p-4" id="corridor-route-intelligence">
             <div class="grid min-w-0 gap-3">
               <div class="min-w-0">
@@ -300,7 +329,7 @@
       </section>
     </main>
 
-    <script src="corridor.js?v=9"></script>
+    <script src="corridor.js?v=10"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>
