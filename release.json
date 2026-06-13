@@ -2,7 +2,7 @@
   "release_id": "2026-06-13-stored-payment-request-v1",
   "release_name": "Stored payment request authority",
   "description": "Payment routes reload the saved Swadakta request before provider creation so stored quote, compliance, goods, and review state control the launch gate.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-stored-payment-request",
+  "deployment_trigger": "2026-06-13T00:00:00Z-stored-payment-request-2",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"
