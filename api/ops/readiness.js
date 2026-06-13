@@ -1824,10 +1824,10 @@ function authSecurityItems() {
       "supabase_auth_email_delivery",
       "Auth email deliverability",
       emailDeliveryReviewed ? "ready" : "manual",
-      "Password resets, email confirmations, and optional magic links need a production sender that does not send users back to localhost.",
+      "Password resets, email confirmations, and optional magic links need a production sender; Supabase's default Auth SMTP is not a public-launch sender and can be restricted or rate-limited.",
       emailDeliveryReviewed
         ? "Auth email sender, domain authentication, templates, and a production sign-up/reset test are recorded."
-        : "Configure custom SMTP or a reviewed sender in Supabase Auth, authenticate the sending domain with SPF/DKIM/DMARC, update templates to use swadakta.com redirects, then send one test confirmation and one password reset.",
+        : "Configure custom SMTP or a reviewed sender in Supabase Auth, authenticate the sending domain with SPF/DKIM/DMARC, keep auth links on swadakta.com, disable link tracking if it rewrites links, then send one test confirmation and one password reset.",
       emailDeliveryReviewed ? [] : ["SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED"],
       {
         docs_url: DOCS.supabaseAuthSmtp,

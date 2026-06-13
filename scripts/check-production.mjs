@@ -889,6 +889,7 @@ const requiredReadinessApiMarkers = [
   "supabase_auth_redirect_urls",
   "supabase_auth_email_delivery",
   "SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED",
+  "default Auth SMTP is not a public-launch sender",
   "supabaseAuthSmtp",
   "supabaseAuthEmailTemplates",
   "supabase_leaked_password_protection",

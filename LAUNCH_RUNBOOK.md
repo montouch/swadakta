@@ -169,6 +169,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - `swadakta.com` connected to Vercel.
 - `www.swadakta.com` redirects to the apex domain.
 - Supabase Auth Site URL is `https://swadakta.com`, and Redirect URLs include `https://swadakta.com/**`.
+- Before public signups, configure custom SMTP or a reviewed production auth sender. Supabase's default Auth SMTP is not a public-launch sender; save SPF/DKIM/DMARC evidence and test one confirmation plus one password reset.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - `scripts/secret-scan.mjs` passes locally, and `scripts/check-production.mjs` includes the secret scan before production checks.
 - `scripts/check-production-auth-flow.mjs` passes with a real test account via `SWADAKTA_E2E_EMAIL` and `SWADAKTA_E2E_PASSWORD`; this confirms password sign-in opens Account Home and signed-in verification access does not bounce back to login.
