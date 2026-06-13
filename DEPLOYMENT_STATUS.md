@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `16`
+- Local commits queued behind the Vercel rate limit: `17`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -48,6 +48,7 @@ Queued local release contents:
 12. Verification readiness planner that prepares users for provider ID checks, receiver vetting, high-value/sensitive review, and common failure prevention before they open Smile ID, Sumsub, or Youverify.
 13. AI protected-action preflight on the Vercel and Supabase assistant routes so direct requests to move money, verify ID, assign receivers, send external messages, change admin access, change provenance, give regulated advice, or reveal secrets return a deterministic founder-approval gate before any model call.
 14. Reusable AI preflight check script that proves direct money/ID actions are guarded while safe ID guidance and draft-only external-message prompts still reach the model path.
+15. Official-source founder setup notes clarifying ABN/business-name sequence, AUSTRAC/remittance caution, privacy review, official dashboard evidence, and Daraja/M-Pesa sandbox-first setup.
 
 Before the next push:
 

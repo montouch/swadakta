@@ -11,6 +11,7 @@ This register defines the proof required before any owner-only readiness flag or
 - Provider dashboards and signed provider webhooks are the authority for money and ID evidence. AI, users, screenshots, and unsourced notes cannot approve ID, mark funds paid, release funds, or clear disputes.
 - A Vercel flag is only a mirror of the evidence. If evidence is missing, unclear, expired, or belongs to the wrong legal entity, set the flag back to `false`.
 - High-value property, construction, title, vehicle, supplier-deposit, legal, medical, immigration, restricted-goods, or sensitive-funds jobs stay blocked until a lawyer or regulated provider confirms the operating path.
+- Official government/provider dashboards are the evidence source for registration, privacy, AUSTRAC, ID, payment, and M-Pesa setup. Third-party emails, unofficial letters, screenshots without dashboard context, and AI summaries are not enough to set owner flags true.
 
 ## Owner Launch Flags
 

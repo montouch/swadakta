@@ -57,11 +57,19 @@ Wise stays fallback-only in every corridor. Do not expose it as a normal self-se
 
 ## Real-Life Setup Checklist
 
+### Official-source notes checked June 13, 2026
+
+- Australia business setup should use official government paths first. Business.gov.au says business-name registration should come after choosing the structure, getting an ABN, and checking name availability; ABN registration is free through the Australian Government Business Registration Service/ABR if the founder is running a business or enterprise.
+- AUSTRAC is a boundary check, not a normal setup step to guess through. If Swadakta provides a designated service with an Australian link, AUSTRAC says enrolment can be required, and remittance or virtual asset service providers must both enrol and register. The launch rule remains: get legal/compliance advice before holding, transferring, remitting, pooling, or releasing client money outside provider rails.
+- OAIC small-business guidance says many small businesses are not covered by the Privacy Act, but some are. Because Swadakta handles IDs, addresses, proof media, payment references, family contacts, and cross-border operations, treat privacy review as launch-critical even if a size exemption might apply.
+- Safaricom Daraja is the official M-Pesa API developer portal. Use sandbox/testing first, then go live only after Kenya business/payment setup, callback protection, settlement, tax, and evidence mapping are confirmed.
+
 ### 1. Register and Structure
 
 - Apply for or confirm the right business structure and ABN if operating from Australia.
 - Register the Swadakta business name if trading under that name.
 - Decide whether a Kenyan business, KRA setup, ODPC registration, or local contracts are required before Kenyan operations scale.
+- Avoid third-party registration letters or services unless intentionally chosen. Use the official government/provider dashboards as the authority for ABN, business name, tax, privacy, AUSTRAC, provider, and M-Pesa setup.
 
 Official starting points:
 
