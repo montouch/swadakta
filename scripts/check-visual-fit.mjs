@@ -3,25 +3,40 @@ import { createRequire } from "node:module";
 import fs from "node:fs";
 import path from "node:path";
 
-const baseUrl = (process.env.SWADAKTA_VISUAL_BASE_URL || "http://127.0.0.1:4173").replace(/\/+$/, "");
+const cliBaseUrl = process.argv.find((arg, index) => index > 1 && /^https?:\/\//i.test(arg));
+const baseUrl = (process.env.SWADAKTA_VISUAL_BASE_URL || cliBaseUrl || "http://127.0.0.1:4173").replace(/\/+$/, "");
 const bundledNodeModules =
   process.env.SWADAKTA_NODE_MODULES ||
   "C:/Users/brown/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules";
 const pages = [
   "/",
-  "/payments.html",
+  "/auth.html",
+  "/login.html",
   "/portal.html#home",
+  "/portal.html#give-work",
+  "/portal.html#find-work",
+  "/portal.html#profile",
+  "/portal.html#money",
   "/brief.html",
+  "/corridor.html",
   "/tracking.html",
   "/messages.html",
+  "/notifications.html",
   "/assistant.html",
   "/verification.html",
+  "/trust.html",
+  "/payments.html",
   "/resolution.html",
+  "/rules.html",
+  "/privacy.html",
+  "/terms.html",
   "/admin-ops.html",
+  "/admin-verification.html",
   "/admin-readiness.html",
 ];
 const viewports = [
   { name: "desktop", width: 1440, height: 1000 },
+  { name: "tablet", width: 820, height: 1180 },
   { name: "mobile", width: 390, height: 844 },
 ];
 
@@ -61,8 +76,15 @@ try {
       const target = `${baseUrl}${route}`;
       try {
         const response = await page.goto(target, { waitUntil: "networkidle", timeout: 25000 });
-        if (!response || response.status() >= 400) {
-          failures.push(`${label(route, viewport)} returned ${response?.status() || "no response"}`);
+        if (!response) {
+          const targetUrl = new URL(target);
+          const currentUrl = new URL(page.url());
+          if (currentUrl.origin !== targetUrl.origin || currentUrl.pathname !== targetUrl.pathname) {
+            failures.push(`${label(route, viewport)} returned no response`);
+            continue;
+          }
+        } else if (response.status() >= 400) {
+          failures.push(`${label(route, viewport)} returned ${response.status()}`);
           continue;
         }
 
