@@ -200,20 +200,20 @@
     "Remote",
   ];
   const directionLabels = {
-    origin_to_destination: "From client country to work country",
-    destination_to_origin: "From work country back to client country",
+    origin_to_destination: "International corridor",
+    destination_to_origin: "Return international corridor",
     two_way: "Both ways",
-    local_in_country: "Local work inside one country",
+    local_in_country: "Local / in-country",
     africa_to_africa: "Africa-to-Africa brief route",
     diaspora_to_africa: "Diaspora-to-Africa brief route",
     africa_to_diaspora: "Africa-to-diaspora brief route",
-    digital_global: "Digital / virtual only",
+    digital_global: "Virtual / remote",
   };
   const routeModeGuidance = {
     origin_to_destination: {
-      title: "Client-to-work-country route",
-      pill: "Outbound",
-      copy: "Use this when money, instructions, shopping, or goods start with the client and the work happens in another country.",
+      title: "International corridor",
+      pill: "Cross-border",
+      copy: "Use this when instructions, goods, buying, checking, shipping, or handoff moves between countries.",
       checks: ["Confirm destination law, courier or pickup method, proof requirements, and payment milestone before assignment."],
     },
     destination_to_origin: {
@@ -223,7 +223,7 @@
       checks: ["Check export rules, import rules, courier acceptance, receipts, and item condition before money is released."],
     },
     local_in_country: {
-      title: "Local or in-country task",
+      title: "Local / in-country task",
       pill: "Local",
       copy: "Use this for jobs that happen within one country: errands, site visits, delivery, family support, documents, or local business work.",
       checks: ["Match a nearby verified field partner, confirm access, opening hours, local safety, and proof media."],
@@ -253,10 +253,10 @@
       checks: ["Confirm import rules, export rules, courier availability, product restrictions, receipts, and milestone release."],
     },
     digital_global: {
-      title: "Digital or remote work",
-      pill: "Remote",
-      copy: "Use this when no physical location, local travel, goods, or handoff is needed.",
-      checks: ["Confirm deliverables, access permissions, privacy, file proof, and acceptance criteria before payment release."],
+      title: "Virtual / remote work",
+      pill: "Skills",
+      copy: "Use this for developers, assistants, design, research, bookkeeping, customer support, documents, and other online work.",
+      checks: ["Grade skill evidence, portfolio or repo samples, test task, access boundaries, file proof, and acceptance criteria."],
     },
   };
   const logisticsLabels = {
@@ -703,7 +703,10 @@
     }
   }
 
-  function routeShortcutClass(active = false) {
+  function routeShortcutClass(button, active = false) {
+    if (button?.classList?.contains("brief-workflow-card")) {
+      return active ? "brief-workflow-card brief-workflow-card-active" : "brief-workflow-card";
+    }
     return active
       ? "h-11 rounded-full bg-primary px-4 font-label-md text-white shadow-[0px_16px_32px_rgba(16,26,58,0.18)]"
       : "h-11 rounded-full bg-white/80 border border-outline-variant/40 px-4 font-label-md text-primary";
@@ -712,7 +715,7 @@
   function renderRouteShortcuts() {
     const mode = selectedRouteMode();
     routeShortcutButtons.forEach((button) => {
-      button.className = routeShortcutClass(button.dataset.briefRoutePreset === mode);
+      button.className = routeShortcutClass(button, button.dataset.briefRoutePreset === mode);
     });
     if (routeShortcutStatus) {
       routeShortcutStatus.textContent = labelFromMap(directionLabels, mode, "No quick lane selected");

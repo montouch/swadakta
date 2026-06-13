@@ -72,6 +72,10 @@ assertIncludes(portal, "grid-template-columns: repeat(3, minmax(0, 1fr))", "port
 assertIncludes(brief, "<div class=\"brief-flow-step\"><strong><span>1</span> Need</strong></div>", "brief flow");
 assertIncludes(brief, "<div class=\"brief-flow-step\"><strong><span>2</span> Route</strong></div>", "brief flow");
 assertIncludes(brief, "<div class=\"brief-flow-step\"><strong><span>3</span> Proof + quote</strong></div>", "brief flow");
+assertIncludes(brief, "brief-workflow-card", "brief workflow lanes");
+assertIncludes(brief, "Local / in-country", "brief workflow lanes");
+assertIncludes(brief, "International corridor", "brief workflow lanes");
+assertIncludes(brief, "Virtual / remote", "brief workflow lanes");
 const briefStepCount = (brief.match(/class="brief-flow-step"/g) || []).length;
 if (briefStepCount !== 3) fail(`brief flow should stay at 3 visible steps; found ${briefStepCount}`);
 

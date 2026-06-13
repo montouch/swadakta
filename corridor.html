@@ -96,6 +96,44 @@
         background: rgba(255, 255, 255, 0.68);
         color: #000105;
       }
+      .corridor-lane-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.875rem;
+      }
+      .corridor-lane-card {
+        min-height: 11rem;
+        border-radius: 1.5rem;
+        border: 1px solid rgba(199, 196, 215, 0.42);
+        background:
+          linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(234, 237, 255, 0.66)),
+          radial-gradient(circle at 78% 10%, rgba(77, 223, 157, 0.2), transparent 34%);
+        box-shadow: 0 18px 42px rgba(16, 26, 58, 0.08);
+        padding: 1rem;
+        text-align: left;
+        transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+      }
+      .corridor-lane-card:hover {
+        border-color: rgba(0, 1, 5, 0.42);
+        box-shadow: 0 24px 56px rgba(16, 26, 58, 0.14);
+        transform: translateY(-2px);
+      }
+      .corridor-lane-icon {
+        display: inline-flex;
+        width: 2.75rem;
+        height: 2.75rem;
+        align-items: center;
+        justify-content: center;
+        border-radius: 1rem;
+        background: rgba(255, 255, 255, 0.74);
+        color: #000105;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 12px 24px rgba(16, 26, 58, 0.08);
+      }
+      @media (max-width: 767px) {
+        .corridor-lane-grid {
+          grid-template-columns: 1fr;
+        }
+      }
     </style>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/favicon.svg" />
@@ -106,6 +144,7 @@
     <header class="sticky top-0 z-40 h-20 px-margin-mobile md:px-margin-desktop flex items-center justify-between bg-surface/72 backdrop-blur-3xl border-b border-white/30">
       <a class="inline-flex min-h-10 items-center font-display text-2xl font-extrabold text-primary" href="/">Swadakta</a>
       <nav class="hidden md:flex items-center gap-2 text-sm font-label text-on-surface-variant">
+        <a class="top-link" href="about.html">About</a>
         <a class="top-link" href="portal.html#home">Account</a>
         <a class="top-link text-primary bg-white/60" href="corridor.html">Corridors</a>
         <a class="top-link" href="rules.html">Item rules</a>
@@ -150,6 +189,30 @@
         </div>
 
         <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-6" id="corridor-form">
+          <section class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4">
+            <div>
+              <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Workflow type</p>
+              <h2 class="mt-1 font-display text-2xl font-extrabold">Pick the right lane first</h2>
+              <p class="mt-2 text-sm text-on-surface-variant">Local jobs, international corridors, and virtual work need different proof, checks, and payment timing.</p>
+            </div>
+            <div class="corridor-lane-grid mt-4">
+              <button class="corridor-preset corridor-lane-card" type="button" data-origin="Kenya" data-destination="Kenya" data-location="Kenya city, town, address, or area" data-direction="local_in_country" data-logistics="local_delivery" data-goods="none">
+                <span class="corridor-lane-icon material-symbols-outlined">location_on</span>
+                <strong class="mt-4 block font-display text-lg">Local / in-country</strong>
+                <span class="mt-2 block text-sm text-on-surface-variant">Errands, family help, documents, site checks, delivery, sourcing, events.</span>
+              </button>
+              <button class="corridor-preset corridor-lane-card" type="button" data-origin="Australia" data-destination="Kenya" data-location="Destination city, supplier, pickup point, or delivery area" data-direction="origin_to_destination" data-logistics="postal_courier" data-goods="general_goods">
+                <span class="corridor-lane-icon material-symbols-outlined">flight_takeoff</span>
+                <strong class="mt-4 block font-display text-lg">International corridor</strong>
+                <span class="mt-2 block text-sm text-on-surface-variant">Buy, collect, verify, ship, receive, or hand off between countries.</span>
+              </button>
+              <button class="corridor-preset corridor-lane-card" type="button" data-origin="Remote" data-destination="Remote" data-location="Remote" data-direction="digital_global" data-logistics="digital_only" data-goods="none">
+                <span class="corridor-lane-icon material-symbols-outlined">language</span>
+                <strong class="mt-4 block font-display text-lg">Virtual / remote</strong>
+                <span class="mt-2 block text-sm text-on-surface-variant">Developers, assistants, research, design, bookkeeping, support, documents.</span>
+              </button>
+            </div>
+          </section>
           <section class="rounded-2xl bg-white/62 border border-outline-variant/30 p-4">
             <div class="flex flex-col gap-3">
               <div>
@@ -329,7 +392,7 @@
       </section>
     </main>
 
-    <script src="corridor.js?v=10"></script>
+    <script src="corridor.js?v=11"></script>
   <script src="assistant-dock.js?v=19"></script>
 </body>
 </html>

@@ -14,6 +14,7 @@ const htmlFiles = [
   "admin-ops.html",
   "admin-readiness.html",
   "admin-verification.html",
+  "about.html",
   "assistant.html",
   "auth.html",
   "brief.html",
@@ -35,6 +36,7 @@ const htmlFiles = [
 
 const requiredPages = [
   "/",
+  "/about",
   "/portal",
   "/auth",
   "/login",
@@ -53,7 +55,7 @@ const requiredPages = [
   "/admin-verification",
   "/admin-readiness",
 ];
-const publicNoAdminLinkPages = new Set(["/", "/corridor", "/trust", "/payments", "/rules"]);
+const publicNoAdminLinkPages = new Set(["/", "/about", "/corridor", "/trust", "/payments", "/rules"]);
 const forbiddenPublicAdminLinkMarkers = [
   'href="admin',
   'href="/admin',
@@ -63,6 +65,7 @@ const forbiddenPublicAdminLinkMarkers = [
 ];
 const requiredSitemapUrls = [
   "https://swadakta.com/",
+  "https://swadakta.com/about",
   "https://swadakta.com/corridor",
   "https://swadakta.com/trust",
   "https://swadakta.com/payments",
@@ -84,13 +87,19 @@ const forbiddenSitemapMarkers = [
   "/resolution",
 ];
 const expectedSitemapLastmod = "2026-06-13";
-const expectedBriefScriptRef = "stitch-brief.js?v=26";
+const expectedBriefScriptRef = "stitch-brief.js?v=27";
 const requiredStitchScreens = [
   {
     path: "/",
     file: "index.html",
     sources: ["swadakta_home_final_ux_refined"],
     integration: "public-links",
+  },
+  {
+    path: "/about",
+    file: "about.html",
+    sources: ["about_possibilities_swadakta_final_ux_prompted"],
+    integration: "functional-copy",
   },
   {
     path: "/auth",
@@ -242,6 +251,7 @@ const privateNoStorePages = [
 ];
 const publicFreshHtmlPages = [
   "/",
+  "/about",
   "/corridor",
   "/trust",
   "/payments",
@@ -518,7 +528,10 @@ const requiredBriefHtmlMarkers = [
   "brief-service-direction",
   "brief-route-guidance",
   "brief-route-shortcuts",
-  "In-country Africa job",
+  "Choose the workflow",
+  "Local / in-country",
+  "International corridor",
+  "Virtual / remote",
   "brief-goods-safety",
   "Goods safety quick check",
   "brief-goods-category",
@@ -682,6 +695,17 @@ const requiredPaymentsMarkers = [
   "Flutterwave",
   "Swadakta does not hold client money",
 ];
+const requiredAboutMarkers = [
+  "Ask for lawful action anywhere",
+  "Local / in-country",
+  "International corridor",
+  "Virtual / remote",
+  "What can be asked?",
+  "Virtual work grading",
+  "Backend developer",
+  "Swadakta does not hold client funds",
+  "Swadakta does not hold client money",
+];
 const requiredRulesMarkers = [
   "Item & Corridor Rules",
   "Restricted goods cannot be cleared by AI",
@@ -703,6 +727,11 @@ const requiredRulesMarkers = [
 ];
 const requiredCorridorMarkers = [
   "Launch lanes",
+  "Workflow type",
+  "Pick the right lane first",
+  "Local / in-country",
+  "International corridor",
+  "Virtual / remote",
   "Route intelligence",
   "Place intelligence",
   "corridor-place-intelligence",
@@ -722,8 +751,10 @@ const requiredCorridorScriptMarkers = [
   "applyCorridorQueryParams",
   "brief_route_planner",
   "Active Africa-to-Africa lane",
-  "Active Africa in-country lane",
+  "Active Africa local / in-country lane",
   "Active Africa-wide corridor",
+  "Virtual / remote work lane",
+  "Virtual / remote skills lane",
   "Pilot corridor - founder quote approval required",
   "review_reason",
   "rules_precheck",
@@ -1897,6 +1928,13 @@ for (const marker of requiredPaymentsMarkers) {
   }
 }
 
+const localAboutHtml = await readLocal("about.html");
+for (const marker of requiredAboutMarkers) {
+  if (!localAboutHtml.includes(marker)) {
+    fail(failures, `Local about page is missing marker ${marker}`);
+  }
+}
+
 const localRulesHtml = await readLocal("rules.html");
 for (const marker of requiredRulesMarkers) {
   if (!localRulesHtml.includes(marker)) {
@@ -2091,8 +2129,15 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/corridor" && !text.includes("corridor.js?v=10")) {
-    fail(failures, `${page} does not reference corridor.js?v=10`);
+  if (page === "/corridor" && !text.includes("corridor.js?v=11")) {
+    fail(failures, `${page} does not reference corridor.js?v=11`);
+  }
+  if (page === "/about") {
+    for (const marker of requiredAboutMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing marker ${marker}`);
+      }
+    }
   }
   if (page === "/corridor") {
     for (const marker of requiredCorridorMarkers) {

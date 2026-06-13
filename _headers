@@ -116,6 +116,12 @@
 /index.html
   Cache-Control: no-store
 
+/about
+  Cache-Control: no-store
+
+/about.html
+  Cache-Control: no-store
+
 /corridor
   Cache-Control: no-store
 

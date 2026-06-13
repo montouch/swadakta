@@ -589,14 +589,14 @@
         route_status: "pilot",
         automation_status: "admin_review",
         riskLevel: "medium",
-        title: "Digital pilot lane",
-        copy: "Digital work can move globally, but privacy, access, documents, and account-control boundaries still need review.",
+        title: "Virtual / remote work lane",
+        copy: "Virtual work can move globally, but skill evidence, privacy, access, files, and acceptance criteria still need review.",
         pill: "Pilot",
         pillTone: "bg-primary-container/10 text-primary",
-        flags: ["Digital global lane"],
-        checks: ["Confirm privacy, account-access, document, and data-retention boundaries before work starts"],
+        flags: ["Virtual / remote skills lane"],
+        checks: ["Confirm skill evidence, portfolio or repo samples, test task, privacy, access boundaries, file proof, and acceptance criteria"],
         admin_review_required: true,
-        admin_review_reason: "Digital global lane needs privacy and account-access review before quoting or assignment.",
+        admin_review_reason: "Virtual or remote work needs skill grading, privacy, and access-boundary review before quoting or assignment.",
       };
     }
 
@@ -637,14 +637,14 @@
         route_status: "active",
         automation_status: "ai_triage",
         riskLevel: "standard",
-        title: originRegion === "Africa" ? "Active Africa in-country lane" : "Local launch lane",
+        title: originRegion === "Africa" ? "Active Africa local / in-country lane" : "Local / in-country lane",
         copy:
           originRegion === "Africa"
             ? "In-country work inside any African country can be triaged by Swadakta, with local receiver coverage, ID, payment, proof, and safety checks still enforced."
             : "Local work inside a supported launch country can be triaged by AI, with ID, payment, proof, and receiver checks still enforced.",
         pill: "Active",
         pillTone: "bg-emerald-100 text-emerald-700",
-        flags: [originRegion === "Africa" ? "Active Africa in-country corridor" : "Active local launch corridor"],
+        flags: [originRegion === "Africa" ? "Active Africa local / in-country lane" : "Active local / in-country lane"],
         checks: ["Confirm local receiver coverage, address/permission, proof plan, payment route, and local safety before assignment"],
         admin_review_required: false,
         admin_review_reason: "",
@@ -675,7 +675,7 @@
         route_status: "active",
         automation_status: "ai_triage",
         riskLevel: "standard",
-        title: "Active launch lane",
+        title: "Active international corridor",
         copy: "Africa and Australia lanes are the primary launch corridor. AI can triage routine work while protected decisions stay gated.",
         pill: "Active",
         pillTone: "bg-emerald-100 text-emerald-700",
