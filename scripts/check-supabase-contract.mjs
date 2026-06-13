@@ -73,12 +73,8 @@ const requiredPolicies = [
   "Users and admins can read identity verification requests",
   "Users can create own identity verification requests",
   "Admins can update identity verification requests",
-  "Admins can read resolution cases",
-  "Users can read own resolution cases",
   "Authenticated can read visible resolution cases",
   "Admins can update resolution cases",
-  "Admins can read job offers",
-  "Receivers can read own job offers",
   "Authenticated can read visible job offers",
   "Admins can update job offers",
   "Users can read own account notifications",
@@ -86,6 +82,18 @@ const requiredPolicies = [
 
 for (const policy of requiredPolicies) {
   assertIncludes(sql, `create policy "${policy}"`, `policy ${policy}`);
+}
+
+for (const marker of [
+  'drop policy if exists "Admins can read job offers"',
+  'drop policy if exists "Receivers can read own job offers"',
+  'drop policy if exists "Clients can read offers on own requests"',
+  'create policy "Authenticated can read visible job offers"',
+  'drop policy if exists "Admins can read resolution cases"',
+  'drop policy if exists "Users can read own resolution cases"',
+  'create policy "Authenticated can read visible resolution cases"',
+]) {
+  assertIncludes(migrations, marker, "consolidated visible-row policy migration");
 }
 
 for (const marker of [
