@@ -278,6 +278,7 @@ const requiredAppDataMarkers = [
   "get_my_account_profile",
   "createMpesaStkPush",
   "createResolutionCase",
+  "contact local emergency services first",
   "exchangeAuthCodeForSession",
   "uploadAccountMedia",
   "coverage_scopes",
@@ -457,7 +458,7 @@ const requiredAssistantHtmlMarkers = [
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
-  'const DOCK_VERSION = "16"',
+  'const DOCK_VERSION = "17"',
   "collectPageContext",
   "inferSafeIntent",
   "protectedIntentPattern",
@@ -592,6 +593,9 @@ const requiredResolutionPageMarkers = [
   "Stripe / PayPal / M-Pesa / Wise provider evidence",
   "Refund and dispute evidence ladder",
   "Release pause is automatic",
+  "Safety pause",
+  "Start safety pause",
+  "contact local emergency services first",
   "resolution-decision-preview",
 ];
 const requiredResolutionScriptMarkers = [
@@ -602,6 +606,9 @@ const requiredResolutionScriptMarkers = [
   "source",
   "renderDecisionPreview",
   "Founder/provider review required",
+  "safetyPauseChecklist",
+  "Safety pause checklist",
+  "contact local emergency services first",
 ];
 const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
@@ -865,7 +872,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=61",
+  "app-data.js?v=62",
   "stitch-portal.js?v=36",
   "final-ux-theme.css?v=3",
   "final_ux_live_freshness",
@@ -1586,8 +1593,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=16")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=16`);
+  if (!content.includes("assistant-dock.js?v=17")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=17`);
   }
   if (file.startsWith("admin-")) {
     if (content.includes("final-ux-theme.css")) {
@@ -1851,8 +1858,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=16")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=16`);
+  if (!text.includes("assistant-dock.js?v=17")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=17`);
   }
   if (page.startsWith("/admin-")) {
     if (text.includes("final-ux-theme.css")) {
@@ -1954,8 +1961,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/resolution" && !text.includes("resolution.js?v=3")) {
-    fail(failures, `${page} does not reference resolution.js?v=3`);
+  if (page === "/resolution" && !text.includes("resolution.js?v=4")) {
+    fail(failures, `${page} does not reference resolution.js?v=4`);
   }
   if (page === "/resolution") {
     for (const marker of requiredResolutionPageMarkers) {
@@ -2347,11 +2354,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=16");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=17");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=16 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=17 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=16 returned 200");
+  pass("assistant-dock.js?v=17 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {
@@ -2410,11 +2417,11 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
-const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=3");
+const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=4");
 if (resolutionResponse.status !== 200) {
-  fail(failures, `resolution.js?v=3 returned ${resolutionResponse.status}`);
+  fail(failures, `resolution.js?v=4 returned ${resolutionResponse.status}`);
 } else {
-  pass("resolution.js?v=3 returned 200");
+  pass("resolution.js?v=4 returned 200");
 }
 
 for (const marker of requiredResolutionScriptMarkers) {

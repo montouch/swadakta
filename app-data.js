@@ -1984,7 +1984,7 @@
 
     const opening =
       cleanSeverity === "safety"
-        ? "Safety issue: pause risky activity, preserve proof, and request founder review."
+        ? "Safety issue: contact local emergency services first if anyone may be in immediate danger; then pause risky activity, preserve proof, and request founder/provider review."
         : cleanSeverity === "legal"
           ? "Legal/compliance issue: pause quoting, buying, shipping, or release until human review."
           : cleanSeverity === "payment"

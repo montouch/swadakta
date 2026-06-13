@@ -16,6 +16,7 @@
   const listEl = document.querySelector("#resolution-list");
   const refreshButton = document.querySelector("#resolution-refresh");
   const submitButton = document.querySelector("#resolution-submit");
+  const safetyPauseButton = document.querySelector("#resolution-safety-pause");
   const trackingLink = document.querySelector("#resolution-tracking-link");
   const messageLink = document.querySelector("#resolution-message-link");
   const assistantLink = document.querySelector("#resolution-assistant-link");
@@ -112,6 +113,22 @@
     );
   }
 
+  function isSafetyResolutionPath() {
+    const issue = issueInput?.value || "";
+    const outcome = outcomeInput?.value || "";
+    const severity = severityInput?.value || "";
+    return severity === "safety" || issue === "receiver_safety" || outcome === "pause_job";
+  }
+
+  function safetyPauseChecklist() {
+    return [
+      "Emergency first: contact local emergency services or police if anyone may be in immediate danger.",
+      "Stop risky activity: do not meet, travel, purchase, ship, continue handoff, or release money while risk is unclear.",
+      "Preserve evidence: screenshots, call logs, receipts, location notes, photos, video, provider references, and message history.",
+      "Swadakta action: pause receiver release, keep the job record intact, and route to founder/provider review before any protected decision.",
+    ];
+  }
+
   function renderDecisionPreview() {
     if (!decisionPreviewEl) return;
     const issue = formatLabel(issueInput?.value || "other");
@@ -130,8 +147,11 @@
     }
 
     const pathTitle = protectedPath ? "Founder/provider review required" : "AI triage can start";
-    const pathCopy = protectedPath
-      ? "Release pause is automatic. AI can organize the facts, but money, receiver, ID, safety, legal, and restricted-item decisions wait for founder/admin or provider evidence."
+    const safetyPath = isSafetyResolutionPath();
+    const pathCopy = safetyPath
+      ? "Safety pause: contact local emergency services first if there is immediate danger. Swadakta can preserve the job record, pause risky work, and escalate, but it is not an emergency service."
+      : protectedPath
+        ? "Release pause is automatic. AI can organize the facts, but money, receiver, ID, safety, legal, and restricted-item decisions wait for founder/admin or provider evidence."
       : "AI can summarize the facts, draft a reply, and suggest the next routine update. Protected actions still stay locked if the issue changes.";
     const evidenceCopy = missingEvidence.length
       ? `Add ${missingEvidence.join(" and ")} before expecting a money or milestone decision.`
@@ -146,6 +166,16 @@
         <p class="rounded-2xl border border-outline-variant/40 bg-white/76 p-3"><span class="font-label text-primary">Requested outcome:</span> ${escapeHtml(outcome)}</p>
       </div>
       <p class="mt-3 rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-sm text-on-surface-variant">${escapeHtml(evidenceCopy)}</p>
+      ${
+        safetyPath
+          ? `<div class="mt-3 rounded-2xl border border-error/20 bg-white/76 p-3 text-sm text-on-surface-variant">
+              <span class="font-label text-error">Safety pause checklist</span>
+              <ul class="mt-2 grid gap-2 list-disc pl-5">
+                ${safetyPauseChecklist().map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+              </ul>
+            </div>`
+          : ""
+      }
     `;
   }
 
@@ -259,6 +289,20 @@
   }
 
   refreshButton?.addEventListener("click", loadCases);
+
+  safetyPauseButton?.addEventListener("click", () => {
+    if (issueInput) issueInput.value = "receiver_safety";
+    if (outcomeInput) outcomeInput.value = "pause_job";
+    if (severityInput) severityInput.value = "safety";
+    if (paymentActionInput) paymentActionInput.value = "pause_release";
+    if (summaryInput && !summaryInput.value.trim()) {
+      summaryInput.value =
+        "Safety pause requested. Facts known so far: who may be at risk, where the person is, what happened, what proof exists, and whether local emergency services or police have been contacted.";
+    }
+    updateContextLinks();
+    renderDecisionPreview();
+    form.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
 
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
