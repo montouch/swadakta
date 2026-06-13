@@ -172,6 +172,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - `scripts/secret-scan.mjs` passes locally, and `scripts/check-production.mjs` includes the secret scan before production checks.
 - `scripts/check-production-auth-flow.mjs` passes with a real test account via `SWADAKTA_E2E_EMAIL` and `SWADAKTA_E2E_PASSWORD`; this confirms password sign-in opens Account Home and signed-in verification access does not bounce back to login.
+- `scripts/check-production-admin-flow.mjs` passes with an admin test account via `SWADAKTA_E2E_ADMIN_EMAIL` and `SWADAKTA_E2E_ADMIN_PASSWORD`; this confirms `/admin-ops` password sign-in, hidden admin auth panel, and authenticated readiness API access.
 - Social sign-in buttons stay hidden until `app-config.js` enables the provider and Supabase has real OAuth credentials configured.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
