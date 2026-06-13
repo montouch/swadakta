@@ -1,4 +1,5 @@
 const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+const { paymentRoutePayloadFromStoredRequest } = require("../../lib/payment-request-context");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -293,12 +294,16 @@ async function findRequestByCode(authHeader, requestCode) {
 }
 
 async function createMpesaStk(authHeader, payload) {
-  const launchGate = assertPaymentLaunchAllowed("mpesa", payload);
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
-  const amount = normalizeAmount(payload.quote_amount);
-  const currency = normalizeCurrency(payload.quote_currency);
-  const phoneNumber = normalizeKenyanPhone(payload.mpesa_phone || payload.phone_number || payload.whatsapp);
-  const existingRequest = await findRequestByCode(authHeader, requestCode);
+  const { payload: storedPayload, storedRequest } = await paymentRoutePayloadFromStoredRequest(authHeader, payload, {
+    supabaseUrl: SUPABASE_URL,
+    supabasePublishableKey: SUPABASE_PUBLISHABLE_KEY,
+  });
+  const launchGate = assertPaymentLaunchAllowed("mpesa", storedPayload);
+  const amount = normalizeAmount(storedPayload.quote_amount);
+  const currency = normalizeCurrency(storedPayload.quote_currency);
+  const phoneNumber = normalizeKenyanPhone(storedPayload.mpesa_phone || storedPayload.phone_number || storedPayload.whatsapp);
+  const existingRequest = storedRequest || (await findRequestByCode(authHeader, requestCode));
   const existingPrompt = forceNewStk(payload.force_new_stk)
     ? null
     : activeMpesaPromptFromRequest(existingRequest, amount, currency);

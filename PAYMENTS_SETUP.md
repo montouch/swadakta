@@ -74,6 +74,12 @@ The server blocks payment route creation when the request carries any of these u
 
 This protects against accidental payment collection for restricted goods, unclear customs routes, sensitive documents, high-risk work, unsupported routes, or requests that require founder/provider evidence before quote. To proceed, correct the request so the job is genuinely quote-eligible, record the needed evidence, and keep the payment route inside provider-held funds. Do not clear these flags just to make checkout work.
 
+## Stored Request Authority
+
+Before a payment route is created, Stripe, PayPal, M-Pesa, and Wise endpoints now reload the saved Swadakta `service_requests` row by `request_code` using the signed-in admin session. The stored row is the authority for quote amount, quote currency, compliance flags, review status, route status, goods category, sensitive-document state, and payment evidence context.
+
+This means a stale browser page or edited client payload cannot soften a risky request into a normal checkout. If the saved request is missing, the saved quote amount/currency is not ready, or the posted amount/currency does not match the saved row, the payment route is refused. Save the quote and clear the real evidence gates first.
+
 ## Funds Protection and Milestones
 
 Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:

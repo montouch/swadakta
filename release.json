@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-payment-job-gate-v1",
-  "release_name": "Per-job payment acceptance gate",
-  "description": "Blocks real payment route creation when a job is refused, restricted, evidence-first, founder-review, high-risk, unsupported, or sensitive until the request is corrected.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-payment-job-gate",
+  "release_id": "2026-06-13-stored-payment-request-v1",
+  "release_name": "Stored payment request authority",
+  "description": "Payment routes reload the saved Swadakta request before provider creation so stored quote, compliance, goods, and review state control the launch gate.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-stored-payment-request",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

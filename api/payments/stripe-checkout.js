@@ -1,5 +1,6 @@
 const crypto = require("crypto");
 const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+const { paymentRoutePayloadFromStoredRequest } = require("../../lib/payment-request-context");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -237,7 +238,11 @@ module.exports = async function handler(req, res) {
   try {
     await assertAdmin(req.headers.authorization);
     const payload = await readJsonBody(req);
-    const session = await createStripeSession(payload);
+    const { payload: storedPayload } = await paymentRoutePayloadFromStoredRequest(req.headers.authorization, payload, {
+      supabaseUrl: SUPABASE_URL,
+      supabasePublishableKey: SUPABASE_PUBLISHABLE_KEY,
+    });
+    const session = await createStripeSession(storedPayload);
     sendJson(res, 200, session);
   } catch (error) {
     sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not create checkout session."));

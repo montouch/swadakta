@@ -1,4 +1,5 @@
 const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+const { paymentRoutePayloadFromStoredRequest } = require("../../lib/payment-request-context");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -262,7 +263,11 @@ module.exports = async function handler(req, res) {
   try {
     await assertAdmin(req.headers.authorization);
     const payload = await readJsonBody(req);
-    const order = await createPayPalOrder(payload);
+    const { payload: storedPayload } = await paymentRoutePayloadFromStoredRequest(req.headers.authorization, payload, {
+      supabaseUrl: SUPABASE_URL,
+      supabasePublishableKey: SUPABASE_PUBLISHABLE_KEY,
+    });
+    const order = await createPayPalOrder(storedPayload);
     sendJson(res, 200, order);
   } catch (error) {
     sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not create PayPal order."));
