@@ -20,7 +20,11 @@ const FINAL_UX_THEME_MARKERS = [
   ".primary-glass-button",
   "overflow-wrap: anywhere",
 ];
-const FINAL_UX_PORTAL_MARKERS = ["account-home-workflow-first-final-ux", "What do you want to do?"];
+const FINAL_UX_PORTAL_MARKERS = [
+  "account-home-workflow-first-final-ux",
+  "Home command center",
+  "Account is open first",
+];
 const LEGACY_PURPLE_UI_MARKERS = ["#4648d4", "#8127cf", "rgba(70,72,212", "rgba(70, 72, 212"];
 const PROOF_BUCKET_ID = "swadakta-proof";
 const PUBLIC_SITEMAP_URLS = [
