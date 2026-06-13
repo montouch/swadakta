@@ -442,6 +442,7 @@ const requiredAssistantHtmlMarkers = [
   "Manual mode shortcuts",
   "data-ai-disabled-when-off",
   "data-ai-mode-status",
+  "assistant-mobile-chat-viewport-fix",
   'href="brief.html"',
 ];
 const requiredDockMarkers = [
