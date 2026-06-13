@@ -27,6 +27,7 @@ Last updated: June 14, 2026
 - Do not take paid customer jobs yet.
 - Do not claim Swadakta holds escrow or client money. Provider rails, banks, regulated escrow providers, suppliers, or named recipients handle custody.
 - Do not expose Wise as a normal public option. It remains an admin fallback only.
+- Do not turn on M-Pesa/Daraja until `MPESA_CALLBACK_TOKEN` is set in Vercel and the tokenized callback URL is registered with Safaricom.
 - Do not mark ID verified, money paid, receiver vetted, or receiver assigned from AI output, screenshots, or chat messages alone.
 
 ## Top Founder Actions
