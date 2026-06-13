@@ -281,6 +281,9 @@ const requiredAppDataMarkers = [
   "contact local emergency services first",
   "exchangeAuthCodeForSession",
   "uploadAccountMedia",
+  "validateEvidenceFile",
+  "EVIDENCE_MIME_TYPES",
+  "BLOCKED_STORAGE_EXTENSIONS",
   "coverage_scopes",
   "code_of_conduct_consent",
   "code_of_conduct_accepted_at",
@@ -617,6 +620,8 @@ const requiredMessagesMarkers = [
   "Live proof submit is only for the assigned verified receiver",
   "Video call request added with proof-safe agenda note",
   "Proof-safe communication pack",
+  "validateUploadableFiles",
+  "Supported: photos, PDFs, short video, and audio proof up to 6MB.",
   "buildCommunicationSafetyPack",
   "communication_safety_pack",
 ];
@@ -873,7 +878,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=63",
+  "app-data.js?v=64",
   "stitch-portal.js?v=36",
   "final-ux-theme.css?v=3",
   "final_ux_live_freshness",
@@ -1516,6 +1521,7 @@ runSecretScan(failures);
 runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
+runLocalScript(failures, "scripts/check-proof-media-guard.mjs", "Local proof media guard check passed");
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
 runLocalScript(failures, "scripts/check-paypal-capture-guard.mjs", "Local PayPal capture guard check passed");
@@ -1994,8 +2000,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/messages" && !text.includes("messages.js?v=5")) {
-    fail(failures, `${page} does not reference messages.js?v=5`);
+  if (page === "/messages" && !text.includes("messages.js?v=6")) {
+    fail(failures, `${page} does not reference messages.js?v=6`);
   }
   if (page === "/notifications") {
     for (const marker of requiredNotificationPageMarkers) {
@@ -2455,11 +2461,11 @@ for (const marker of requiredResolutionScriptMarkers) {
   }
 }
 
-const { response: messagesResponse, text: messagesText } = await fetchText("/messages.js?v=5");
+const { response: messagesResponse, text: messagesText } = await fetchText("/messages.js?v=6");
 if (messagesResponse.status !== 200) {
-  fail(failures, `messages.js?v=5 returned ${messagesResponse.status}`);
+  fail(failures, `messages.js?v=6 returned ${messagesResponse.status}`);
 } else {
-  pass("messages.js?v=5 returned 200");
+  pass("messages.js?v=6 returned 200");
 }
 
 for (const marker of requiredMessagesMarkers) {

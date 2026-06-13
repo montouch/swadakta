@@ -39,7 +39,7 @@ The schema creates:
   - a service request cannot be assigned to a receiver unless that receiver is vetted and ID-verified
   - receiver assigned-job functions only return work for vetted and ID-verified receivers
 - Proof upload gates:
-  - signed-in receivers can upload photos, short videos, and PDF receipts to `swadakta-proof`
+  - signed-in receivers can upload photos, short videos, PDF receipts, and short audio/voice-note proof to `swadakta-proof`
   - the bucket is private, capped at 6MB per file for standard uploads, and stores files under the user's auth ID folder
   - admins can read proof files through RLS; public clients only see client-safe proof links/reports exposed by admin
 - private helper functions under `app_private`

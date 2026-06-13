@@ -10,6 +10,72 @@
   const NOTIFICATION_STORAGE_KEY = "swadakta_account_notifications";
   const PROOF_BUCKET = "swadakta-proof";
   const MAX_STANDARD_UPLOAD_BYTES = 6 * 1024 * 1024;
+  const EVIDENCE_MIME_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+    "video/mp4",
+    "video/quicktime",
+    "application/pdf",
+    "audio/webm",
+    "audio/mpeg",
+    "audio/mp4",
+    "audio/wav",
+    "audio/x-wav",
+    "audio/aac",
+    "audio/ogg",
+  ]);
+  const EVIDENCE_EXTENSION_TYPES = new Map([
+    ["jpg", "image/jpeg"],
+    ["jpeg", "image/jpeg"],
+    ["png", "image/png"],
+    ["webp", "image/webp"],
+    ["heic", "image/heic"],
+    ["heif", "image/heif"],
+    ["mp4", "video/mp4"],
+    ["mov", "video/quicktime"],
+    ["pdf", "application/pdf"],
+    ["webm", "audio/webm"],
+    ["mp3", "audio/mpeg"],
+    ["m4a", "audio/mp4"],
+    ["wav", "audio/wav"],
+    ["aac", "audio/aac"],
+    ["ogg", "audio/ogg"],
+  ]);
+  const BLOCKED_STORAGE_EXTENSIONS = new Set([
+    "app",
+    "apk",
+    "bat",
+    "cmd",
+    "com",
+    "cpl",
+    "dll",
+    "dmg",
+    "exe",
+    "hta",
+    "htm",
+    "html",
+    "iso",
+    "jar",
+    "js",
+    "jse",
+    "lnk",
+    "mjs",
+    "msi",
+    "ps1",
+    "scr",
+    "sh",
+    "svg",
+    "vb",
+    "vbe",
+    "vbs",
+    "wsf",
+    "zip",
+  ]);
+  const EVIDENCE_FILE_TYPE_COPY =
+    "Use JPG, PNG, WebP, HEIC/HEIF, MP4/MOV, PDF, or a short audio note (WebM, MP3, M4A, WAV, AAC, OGG).";
   let supabaseClientPromise = null;
 
   function config() {
@@ -99,8 +165,25 @@
     return clean || fallback;
   }
 
-  function proofFileKind(file) {
-    const type = String(file?.type || "").toLowerCase();
+  function fileExtension(file) {
+    const name = String(file?.name || "");
+    const match = /\.([a-z0-9]+)$/i.exec(name);
+    return match ? match[1].toLowerCase() : "";
+  }
+
+  function normalizedEvidenceContentType(file) {
+    const explicitType = String(file?.type || "").split(";")[0].trim().toLowerCase();
+
+    if (EVIDENCE_MIME_TYPES.has(explicitType)) {
+      return explicitType;
+    }
+
+    const inferredType = EVIDENCE_EXTENSION_TYPES.get(fileExtension(file)) || "";
+    return EVIDENCE_MIME_TYPES.has(inferredType) ? inferredType : explicitType;
+  }
+
+  function proofFileKind(file, contentType = "") {
+    const type = String(contentType || file?.type || "").toLowerCase();
 
     if (type.startsWith("image/")) {
       return "photo";
@@ -111,8 +194,56 @@
     if (type === "application/pdf") {
       return "pdf";
     }
+    if (type.startsWith("audio/")) {
+      return "audio";
+    }
 
     return "file";
+  }
+
+  function validateEvidenceFile(file, options = {}) {
+    const label = options.label || "Proof file";
+    const allowAudio = options.allowAudio !== false;
+    const allowPdf = options.allowPdf !== false;
+    const name = String(file?.name || label).trim() || label;
+
+    if (!file || typeof file.size !== "number") {
+      throw new Error(`${label} is not readable. Choose the file again and retry.`);
+    }
+
+    if (file.size <= 0) {
+      throw new Error(`${name} is empty. Choose a real proof file before uploading.`);
+    }
+
+    if (file.size > MAX_STANDARD_UPLOAD_BYTES) {
+      throw new Error(`${name} is larger than 6MB. Compress it or use a Drive/Dropbox link for now.`);
+    }
+
+    const extension = fileExtension(file);
+    if (BLOCKED_STORAGE_EXTENSIONS.has(extension)) {
+      throw new Error(`${name} cannot be uploaded to Swadakta proof storage. ${EVIDENCE_FILE_TYPE_COPY}`);
+    }
+
+    const contentType = normalizedEvidenceContentType(file);
+    if (!EVIDENCE_MIME_TYPES.has(contentType)) {
+      throw new Error(`${name} is not a supported proof file. ${EVIDENCE_FILE_TYPE_COPY}`);
+    }
+
+    const kind = proofFileKind(file, contentType);
+    if (!allowAudio && kind === "audio") {
+      throw new Error(`${name} is an audio file. ${label} must be a photo, short video, or PDF.`);
+    }
+    if (!allowPdf && kind === "pdf") {
+      throw new Error(`${name} is a PDF. ${label} must be a photo or short video.`);
+    }
+
+    return {
+      contentType,
+      extension,
+      kind,
+      name,
+      size: file.size,
+    };
   }
 
   function createUuid() {
@@ -2425,21 +2556,24 @@
       throw new Error("Sign in before uploading proof files.");
     }
 
-    const oversized = uploadFiles.find((file) => file.size > MAX_STANDARD_UPLOAD_BYTES);
-    if (oversized) {
-      throw new Error(`${oversized.name} is larger than 6MB. Compress it or use a Drive/Dropbox link for now.`);
-    }
+    const checkedFiles = uploadFiles.map((file) => ({
+      file,
+      evidence: validateEvidenceFile(file, {
+        label: "Proof file",
+        allowAudio: true,
+      }),
+    }));
 
     const normalizedCode = safeStorageSegment(requestCode || "request", "request");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
     const uploads = [];
 
-    for (const file of uploadFiles) {
-      const name = safeStorageSegment(file.name, "proof-file");
+    for (const { file, evidence } of checkedFiles) {
+      const name = safeStorageSegment(evidence.name, "proof-file");
       const path = `${user.id}/${normalizedCode}/${timestamp}-${crypto.randomUUID()}-${name}`;
       const { data, error } = await supabase.storage.from(PROOF_BUCKET).upload(path, file, {
         cacheControl: "3600",
-        contentType: file.type || "application/octet-stream",
+        contentType: evidence.contentType,
         upsert: false,
       });
 
@@ -2453,11 +2587,12 @@
       }
 
       uploads.push({
-        name: file.name,
-        kind: proofFileKind(file),
+        name: evidence.name,
+        kind: evidence.kind,
         path: data.path,
         signed_url: signed.data?.signedUrl || "",
-        size: file.size,
+        size: evidence.size,
+        content_type: evidence.contentType,
       });
     }
 
@@ -2484,22 +2619,18 @@
       throw new Error("Sign in before uploading account media.");
     }
 
-    if (file.size > MAX_STANDARD_UPLOAD_BYTES) {
-      throw new Error(`${file.name} is larger than 6MB. Compress it before uploading as profile media.`);
-    }
-
-    const kind = proofFileKind(file);
-    if (kind === "file") {
-      throw new Error("Profile media must be an image, video, or PDF.");
-    }
+    const evidence = validateEvidenceFile(file, {
+      label: "Profile media",
+      allowAudio: false,
+    });
 
     const safePurpose = safeStorageSegment(purpose || "profile-media", "profile-media");
     const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
-    const name = safeStorageSegment(file.name, "profile-media");
+    const name = safeStorageSegment(evidence.name, "profile-media");
     const path = `${user.id}/account-profile/${safePurpose}/${timestamp}-${crypto.randomUUID()}-${name}`;
     const { data, error } = await supabase.storage.from(PROOF_BUCKET).upload(path, file, {
       cacheControl: "3600",
-      contentType: file.type || "application/octet-stream",
+      contentType: evidence.contentType,
       upsert: false,
     });
 
@@ -2514,12 +2645,12 @@
 
     return {
       data: {
-        name: file.name,
-        kind,
+        name: evidence.name,
+        kind: evidence.kind,
         path: data.path,
         signed_url: signed.data?.signedUrl || "",
-        size: file.size,
-        content_type: file.type || "application/octet-stream",
+        size: evidence.size,
+        content_type: evidence.contentType,
         uploaded_at: new Date().toISOString(),
       },
       mode: "supabase",
@@ -3690,6 +3821,7 @@
     listJobOffersForAdmin,
     updateJobOfferStatus,
     submitAssignedJobUpdate,
+    validateEvidenceFile,
     uploadProofFiles,
     uploadAccountMedia,
     updatePartnerApplication,

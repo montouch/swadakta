@@ -72,6 +72,28 @@
     return `${file.name} (${size})`;
   }
 
+  function validateUploadableFiles(files = []) {
+    const selected = Array.from(files || []).filter(Boolean);
+    if (!selected.length) return selected;
+
+    if (window.SwadaktaData?.validateEvidenceFile) {
+      selected.forEach((file) => {
+        window.SwadaktaData.validateEvidenceFile(file, {
+          label: "Proof file",
+          allowAudio: true,
+        });
+      });
+      return selected;
+    }
+
+    const oversized = selected.find((file) => file.size > 6 * 1024 * 1024);
+    if (oversized) {
+      throw new Error(`${oversized.name} is larger than 6MB. Compress it or use a Drive/Dropbox link for now.`);
+    }
+
+    return selected;
+  }
+
   function statusLabel(value) {
     return (
       {
@@ -241,11 +263,12 @@
     const files = [...(mediaInput?.files || [])];
     const voiceFile = voiceProofFile();
     if (voiceFile) files.push(voiceFile);
-    return files;
+    return validateUploadableFiles(files);
   }
 
   function currentDraftPayload() {
-    const files = [...(mediaInput?.files || [])].map((file) => ({
+    const selectedFiles = validateUploadableFiles(mediaInput?.files || []);
+    const files = selectedFiles.map((file) => ({
       name: file.name,
       size: file.size,
       type: file.type,
@@ -378,8 +401,19 @@
 
   if (mediaInput) {
     mediaInput.addEventListener("change", () => {
-      renderMediaList(mediaInput.files || []);
-      setStatus(mediaInput.files?.length ? "Media attached to draft." : "");
+      try {
+        validateUploadableFiles(mediaInput.files || []);
+        renderMediaList(mediaInput.files || []);
+        setStatus(
+          mediaInput.files?.length
+            ? "Media attached to draft. Supported: photos, PDFs, short video, and audio proof up to 6MB."
+            : "",
+        );
+      } catch (error) {
+        mediaInput.value = "";
+        renderMediaList([]);
+        setStatus(error.message || "Choose a supported proof file.", "text-primary");
+      }
     });
   }
 

@@ -1260,9 +1260,17 @@ values (
     'image/png',
     'image/webp',
     'image/heic',
+    'image/heif',
     'video/mp4',
     'video/quicktime',
-    'application/pdf'
+    'application/pdf',
+    'audio/webm',
+    'audio/mpeg',
+    'audio/mp4',
+    'audio/wav',
+    'audio/x-wav',
+    'audio/aac',
+    'audio/ogg'
   ]
 )
 on conflict (id) do update
