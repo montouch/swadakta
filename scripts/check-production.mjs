@@ -892,6 +892,7 @@ const requiredReadinessApiMarkers = [
   "supabaseAuthSmtp",
   "supabaseAuthEmailTemplates",
   "supabase_leaked_password_protection",
+  "SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED",
   "supabase_auth_attack_protection",
   "password-strength-and-leaked-password-protection",
   "Contact, Policy, Canonical, and Expires",

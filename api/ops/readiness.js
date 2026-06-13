@@ -1793,6 +1793,7 @@ function authSecurityItems() {
   const projectRef = supabaseProjectRef();
   const projectBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : "";
   const emailDeliveryReviewed = confirmedEnv("SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED");
+  const leakedPasswordProtectionEnabled = confirmedEnv("SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED");
 
   return [
     item(
@@ -1828,10 +1829,12 @@ function authSecurityItems() {
     item(
       "supabase_leaked_password_protection",
       "Leaked-password protection",
-      "manual",
+      leakedPasswordProtectionEnabled ? "ready" : "manual",
       "Supabase Auth should reject known-compromised passwords before Swadakta opens paid work and identity upload flows to the public.",
-      "Enable leaked-password protection in Supabase Auth password security settings, then re-run Supabase advisors.",
-      ["Auth leaked-password protection advisor"],
+      leakedPasswordProtectionEnabled
+        ? "Supabase leaked-password protection is enabled and the owner confirmation flag is recorded."
+        : "Enable leaked-password protection in Supabase Auth password security settings, re-run Supabase advisors, then set SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED=true.",
+      leakedPasswordProtectionEnabled ? [] : ["SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED"],
       {
         docs_url: DOCS.supabasePasswordSecurity,
         copy_value: projectBase ? `${projectBase}/auth/security` : "",

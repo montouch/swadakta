@@ -33,5 +33,6 @@ Database: Postgres `17.6.1.127`
 ## Watch Items
 
 - Keep Auth leaked-password protection enabled in the Supabase dashboard.
+- Keep the non-secret Vercel flag `SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED=true` aligned with the dashboard setting after advisors are clean.
 - Before paid launch, complete a live sign-up/password-change test using a deliberately weak/leaked test password and confirm Supabase rejects it.
 - Supabase performance advisors currently show only informational unused-index notes for new workflow tables plus the Auth connection-allocation scale note. Keep the indexes until real traffic proves they are unnecessary.
