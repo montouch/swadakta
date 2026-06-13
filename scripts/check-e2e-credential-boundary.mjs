@@ -71,8 +71,17 @@ for (const file of [
 }
 
 assertIncludes("scripts/check-production-auth-flow.mjs", "await page.fill(\"#login-password\", password);");
+assertIncludes("scripts/check-production-auth-flow.mjs", "function redactEmail");
+assertIncludes("scripts/check-production-auth-flow.mjs", "signedInAccount: redactEmail(homeResult.sessionEmail)");
+assertNotIncludes("scripts/check-production-auth-flow.mjs", "sessionEmail: homeResult.sessionEmail");
 assertIncludes("scripts/check-production-admin-flow.mjs", "await page.fill(\"#admin-password\", password);");
+assertIncludes("scripts/check-production-admin-flow.mjs", "function redactEmail");
+assertIncludes("scripts/check-production-admin-flow.mjs", "adminAccount: redactEmail(result.sessionEmail)");
+assertNotIncludes("scripts/check-production-admin-flow.mjs", "adminEmail: result.sessionEmail");
 assertIncludes("scripts/live-readiness-summary.mjs", "body: JSON.stringify({ email, password })");
+assertIncludes("scripts/live-readiness-summary.mjs", "function redactEmail");
+assertIncludes("scripts/live-readiness-summary.mjs", "Admin sign-in failed for ${redactEmail(email)}");
+assertNotIncludes("scripts/live-readiness-summary.mjs", "Admin sign-in failed for ${email}");
 assertIncludes("README.md", "Do not commit those values");
 assertIncludes("README.md", "Real values belong in Vercel Project Settings or an ignored local env file");
 assertIncludes("FOUNDER_MORNING_HANDOFF.md", "Do not commit those values");

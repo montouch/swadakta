@@ -30,6 +30,13 @@ function scrubUrl(value) {
   }
 }
 
+function redactEmail(value = "") {
+  const [name = "", domain = ""] = String(value || "").split("@");
+  if (!name || !domain) return "";
+  const visible = name.length <= 2 ? `${name[0] || ""}*` : `${name.slice(0, 2)}***${name.slice(-1)}`;
+  return `${visible}@${domain}`;
+}
+
 if (!email || !password) {
   console.error("Set SWADAKTA_E2E_EMAIL and SWADAKTA_E2E_PASSWORD to run the production auth-flow check.");
   process.exit(1);
@@ -120,7 +127,7 @@ try {
       baseUrl,
       signedInDestination: scrubUrl(homeResult.href),
       verificationDestination: scrubUrl(verificationResult.href),
-      sessionEmail: homeResult.sessionEmail,
+      signedInAccount: redactEmail(homeResult.sessionEmail),
       identityRequestCount: homeResult.identityRequestCount,
       consoleErrorCount: consoleErrors.length,
     }),

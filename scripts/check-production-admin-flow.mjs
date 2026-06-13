@@ -30,6 +30,13 @@ function scrubUrl(value) {
   }
 }
 
+function redactEmail(value = "") {
+  const [name = "", domain = ""] = String(value || "").split("@");
+  if (!name || !domain) return "";
+  const visible = name.length <= 2 ? `${name[0] || ""}*` : `${name.slice(0, 2)}***${name.slice(-1)}`;
+  return `${visible}@${domain}`;
+}
+
 if (!email || !password) {
   console.error(
     "Set SWADAKTA_E2E_ADMIN_EMAIL and SWADAKTA_E2E_ADMIN_PASSWORD, or SWADAKTA_E2E_EMAIL and SWADAKTA_E2E_PASSWORD, to run the production admin-flow check.",
@@ -94,7 +101,7 @@ try {
     JSON.stringify({
       ok: true,
       baseUrl,
-      adminEmail: result.sessionEmail,
+      adminAccount: redactEmail(result.sessionEmail),
       adminDestination: scrubUrl(result.href),
       adminReadinessStatus: result.readinessStatus,
       opsMode: result.opsMode,

@@ -13,6 +13,13 @@ const args = new Set(process.argv.slice(2));
 const asJson = args.has("--json");
 const strict = args.has("--strict");
 
+function redactEmail(value = "") {
+  const [name = "", domain = ""] = String(value || "").split("@");
+  if (!name || !domain) return "";
+  const visible = name.length <= 2 ? `${name[0] || ""}*` : `${name.slice(0, 2)}***${name.slice(-1)}`;
+  return `${visible}@${domain}`;
+}
+
 function requireCredentials() {
   if (!email || !password) {
     throw new Error(
@@ -34,7 +41,7 @@ async function signIn() {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok || !payload.access_token) {
-    throw new Error(`Admin sign-in failed for ${email}: ${payload.error_description || payload.msg || response.status}`);
+    throw new Error(`Admin sign-in failed for ${redactEmail(email)}: ${payload.error_description || payload.msg || response.status}`);
   }
 
   return payload;
