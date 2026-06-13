@@ -36,9 +36,28 @@ for (const file of ["payments.html", "brief.html", "trust.html", "PAYMENTS_SETUP
     "Swadakta holds funds",
     "Swadakta-held money",
     "Swadakta-held funds",
+    "Quote first. Provider-held money. Release by proof.",
+    "Money is quoted first, tracked by milestone, and released only after proof",
+    "Milestone release still needs proof review",
+    "release receiver payout only after proof review",
   ]) {
     assertNotIncludes(file, forbidden);
   }
+}
+
+for (const [file, marker] of [
+  ["payments.html", "Proof before payout"],
+  ["payments.html", "records provider-action milestones after proof review"],
+  ["payments.html", "Provider-payout milestones still need proof review"],
+  ["payments.html", "request receiver payout through the provider only after proof review"],
+  ["trust.html", "routed through provider action only after proof"],
+  ["trust.html", "before provider-payout action"],
+  ["trust.html", "Provider-action milestones"],
+  ["portal.html", "Know what unlocks paid action"],
+  ["portal.html", "provider-payout milestones"],
+  ["portal.html", "provider-payout readiness"],
+]) {
+  assertIncludes(file, marker);
 }
 
 const paymentCopy = read("payments.html");

@@ -99,10 +99,10 @@
           <div>
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payments & Pricing</p>
             <h1 class="mt-4 font-display text-4xl md:text-6xl font-extrabold leading-tight">
-              Quote first. Provider-held money. Release by proof.
+              Quote first. Provider-held money. Proof before payout.
             </h1>
             <p class="mt-5 max-w-2xl text-lg text-on-surface-variant">
-              Swadakta does not hold client money. Clients pay through payment providers such as Stripe, PayPal, M-Pesa, bank, Paystack, Flutterwave, or a regulated escrow/payment provider where needed. Swadakta earns the disclosed service fee in the quote, tracks evidence, and only moves milestones after proof review.
+              Swadakta does not hold client money. Clients pay through payment providers such as Stripe, PayPal, M-Pesa, bank, Paystack, Flutterwave, or a regulated escrow/payment provider where needed. Swadakta earns the disclosed service fee in the quote, tracks evidence, and records provider-action milestones after proof review.
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
             <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Get a quote</a>
@@ -753,7 +753,7 @@
             <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5" id="africa-rail-result" aria-live="polite">
               <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Recommended rail order</p>
               <h3 class="mt-2 font-display text-2xl font-extrabold">M-Pesa first for Kenya KES jobs</h3>
-              <p class="mt-2 text-on-surface-variant">Use Daraja STK or Paybill only after business approval, callback setup, and receipt evidence. Milestone release still needs proof review.</p>
+              <p class="mt-2 text-on-surface-variant">Use Daraja STK or Paybill only after business approval, callback setup, and receipt evidence. Provider-payout milestones still need proof review.</p>
               <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant list-disc pl-5">
                 <li>Provider confirmation is separate from receiver payout release.</li>
                 <li>Bank or Wise remains fallback when simpler rails fail.</li>
@@ -1023,7 +1023,7 @@
         const flutterwaveCandidateCurrencies = new Set(["KES", "NGN", "GHS", "ZAR", "UGX", "TZS", "RWF"]);
         const checks = [
           "Confirm merchant account approval, settlement account, fees, chargeback/reversal rules, and webhook verification.",
-          "Record provider reference before funds count as protected; release receiver payout only after proof review.",
+          "Record provider reference before funds count as provider-confirmed; request receiver payout through the provider only after proof review.",
         ];
         let title = "Swadakta-reviewed Africa payment route";
         let rail = "Stripe or PayPal first if the client pays in AUD/USD/GBP/EUR; bank or Wise fallback if provider checkout is unsuitable.";
