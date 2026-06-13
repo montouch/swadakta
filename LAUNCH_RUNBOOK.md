@@ -171,6 +171,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Supabase Auth Site URL is `https://swadakta.com`, and Redirect URLs include `https://swadakta.com/**`.
 - `app-config.js` has only the Supabase publishable key, never a service-role key.
 - `scripts/secret-scan.mjs` passes locally, and `scripts/check-production.mjs` includes the secret scan before production checks.
+- `scripts/check-production-auth-flow.mjs` passes with a real test account via `SWADAKTA_E2E_EMAIL` and `SWADAKTA_E2E_PASSWORD`; this confirms password sign-in opens Account Home and signed-in verification access does not bounce back to login.
 - Social sign-in buttons stay hidden until `app-config.js` enables the provider and Supabase has real OAuth credentials configured.
 - Intake consent is required and visible as `Complete` in admin for new requests.
 - Intake captures service package, budget comfort, proof priority, and lead source for quoting and early marketing feedback.
