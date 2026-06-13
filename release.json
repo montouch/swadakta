@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, and public route-payment fit guidance.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, and verification readiness planning.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -17,11 +17,13 @@
     "corridor_place_intelligence",
     "server_payment_economics_gate",
     "admin_corridor_rail_planner",
-    "public_route_payment_fit"
+    "public_route_payment_fit",
+    "verification_readiness_planner"
   ],
-  "queued_commit_count": 13,
+  "queued_commit_count": 14,
   "queued_commits": [
-    "HEAD Add public route payment fit",
+    "HEAD Add verification readiness planner",
+    "756739e Add public route payment fit",
     "0b1773f Add corridor rail planner",
     "d33fc95 Enforce server-side payment economics",
     "bfa2f3e Mark launch readiness batch release",

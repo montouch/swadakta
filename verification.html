@@ -240,6 +240,44 @@
         </form>
       </section>
 
+      <section class="mt-10 glass-panel rounded-[2rem] p-6 md:p-8" id="verification-readiness-planner">
+        <div class="grid gap-8 lg:grid-cols-[0.88fr_1.12fr] lg:items-start">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Before you open the provider check</p>
+            <h2 class="mt-3 font-display text-3xl font-bold">Make the verification attempt count.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              Verification usually fails because names do not match, the ID is expired, the selfie is unclear, the phone cannot receive backup messages, or the user chooses the wrong country route. This planner turns those risks into a quick checklist.
+            </p>
+            <div class="mt-6 rounded-3xl bg-primary/10 border border-primary/20 p-5">
+              <p class="font-label text-sm text-primary">Provider evidence rule</p>
+              <p class="mt-2 text-sm text-on-surface-variant">A Swadakta account can exist before verification, but paid posting, paid work, and sensitive jobs stay locked until provider evidence or a documented exception exists.</p>
+            </div>
+          </div>
+          <div class="grid gap-4">
+            <article class="rounded-3xl bg-white/70 border border-outline-variant/35 p-5">
+              <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Recommended preparation</p>
+                  <h3 class="mt-2 font-display text-2xl font-bold" id="verification-readiness-title">Standard account check</h3>
+                </div>
+                <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary/10 text-primary font-label text-sm" id="verification-readiness-provider">Choose country</span>
+              </div>
+              <p class="mt-3 text-sm text-on-surface-variant" id="verification-readiness-copy">Enter your country and reason above to see the best provider route and what to prepare.</p>
+              <ul class="mt-5 grid gap-3 text-sm text-on-surface-variant" id="verification-readiness-list"></ul>
+            </article>
+            <article class="rounded-3xl bg-white/70 border border-outline-variant/35 p-5">
+              <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Common failure prevention</p>
+              <ul class="mt-3 grid gap-2 text-sm text-on-surface-variant" id="verification-failure-prevention-list">
+                <li>Use the same legal name on the profile and ID.</li>
+                <li>Use an unexpired document with all four corners visible.</li>
+                <li>Take the selfie/liveness check in good light.</li>
+                <li>Keep your mobile/WhatsApp reachable for support or retry messages.</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
       <section class="mt-10 grid gap-6 lg:grid-cols-[1fr_0.85fr]">
         <div class="glass-panel rounded-[2rem] p-6 md:p-8">
           <h2 class="font-display text-2xl font-bold">Request history</h2>
@@ -289,7 +327,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=5"></script>
     <script src="app-data.js?v=61"></script>
-    <script src="verification.js?v=12"></script>
+    <script src="verification.js?v=13"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>

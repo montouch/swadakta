@@ -397,6 +397,12 @@ const requiredVerificationMarkers = [
   "startIdentityVerificationSession",
   "verification-country-options",
   "verification-fallback-list",
+  "verification-readiness-planner",
+  "verification-readiness-list",
+  "verificationReadinessPlan",
+  "renderVerificationReadinessPlan",
+  "Before you open the provider check",
+  "Common failure prevention",
   "providerFallbacks",
   "Fallback ladder",
   "Paid actions unlock",
@@ -1845,8 +1851,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/verification" && !text.includes("verification.js?v=12")) {
-    fail(failures, `${page} does not reference verification.js?v=12`);
+  if (page === "/verification" && !text.includes("verification.js?v=13")) {
+    fail(failures, `${page} does not reference verification.js?v=13`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=10`);

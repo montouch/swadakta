@@ -19,6 +19,11 @@
   const accountGate = document.querySelector("#verification-account-gate");
   const postingGate = document.querySelector("#verification-posting-gate");
   const workGate = document.querySelector("#verification-work-gate");
+  const readinessTitle = document.querySelector("#verification-readiness-title");
+  const readinessProvider = document.querySelector("#verification-readiness-provider");
+  const readinessCopy = document.querySelector("#verification-readiness-copy");
+  const readinessList = document.querySelector("#verification-readiness-list");
+  const failurePreventionList = document.querySelector("#verification-failure-prevention-list");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -347,6 +352,72 @@
     return "Request saved. Swadakta prepares or attaches the provider link next.";
   }
 
+  function verificationReadinessPlan(route, selectedProvider, reason) {
+    const providerName = PROVIDER_LABELS[selectedProvider] || formatStatus(selectedProvider);
+    const sensitive = highRiskReason(reason);
+    const receiverMode = field("#verify-role")?.value === "receiver" || field("#verify-role")?.value === "both";
+    const base = [
+      "Use the exact legal name shown on your ID.",
+      "Have an unexpired government photo ID ready.",
+      "Prepare for a selfie or liveness check in good light.",
+      "Make sure your mobile or WhatsApp number is reachable.",
+    ];
+
+    if (selectedProvider === "smile_id") {
+      base.push("For African IDs, choose the same issuing country you will use in the provider check.");
+      base.push("If network quality is poor, retry on a stable connection before asking for manual review.");
+    } else if (selectedProvider === "sumsub") {
+      base.push("Use the document country supported by the Sumsub WebSDK route, not only your current travel location.");
+      base.push("Keep the browser open until the provider flow confirms submission or redirects back.");
+    } else if (selectedProvider === "youverify") {
+      base.push("Use the Nigeria or Ghana document route only when that country matches your ID or intended check.");
+      base.push("If the country-specific route cannot complete, Swadakta can fall back to Smile ID or Sumsub.");
+    }
+
+    if (receiverMode) {
+      base.push("Receivers also need a real profile photo, coverage area, proof standards, and Swadakta vetting before paid jobs unlock.");
+    }
+
+    if (sensitive) {
+      base.push("Sensitive or high-value work can require extra proof, address/residence checks, and founder/admin review after provider verification.");
+    }
+
+    return {
+      title: sensitive ? "Enhanced verification preparation" : "Standard account verification preparation",
+      provider: providerName,
+      copy: `${route.name || providerName} is the current route. Provider evidence can unlock paid actions, but Swadakta may still require vetting, proof, or founder review for receiver and sensitive work.`,
+      items: base,
+    };
+  }
+
+  function renderVerificationReadinessPlan(route, selectedProvider) {
+    if (!readinessList) return;
+    const plan = verificationReadinessPlan(route, selectedProvider, field("#verify-reason").value);
+    if (readinessTitle) readinessTitle.textContent = plan.title;
+    if (readinessProvider) readinessProvider.textContent = plan.provider;
+    if (readinessCopy) readinessCopy.textContent = plan.copy;
+    readinessList.innerHTML = plan.items
+      .map(
+        (item) => `
+          <li class="flex gap-3 rounded-2xl bg-white/76 border border-outline-variant/30 p-3">
+            <span class="material-symbols-outlined text-primary text-[20px]">check_circle</span>
+            <span>${escapeHtml(item)}</span>
+          </li>
+        `,
+      )
+      .join("");
+    if (failurePreventionList) {
+      failurePreventionList.innerHTML = [
+        "Do not upload screenshots, photocopies, blurred images, cropped IDs, or expired documents.",
+        "Do not let another person complete the selfie/liveness step for you.",
+        "If your legal name changed, prepare the supporting document before opening the provider check.",
+        "If provider coverage fails, Swadakta should switch provider or exception-review the case rather than pretending it is verified.",
+      ]
+        .map((item) => `<li>${escapeHtml(item)}</li>`)
+        .join("");
+    }
+  }
+
   function renderGates(profile = {}, request = null, signedIn = true) {
     const status = request?.status || profile?.identity_verification_status || "not_started";
     const verified = status === "verified" || profile?.identity_verification_status === "verified";
@@ -388,6 +459,7 @@
     if (fallbackList) {
       fallbackList.innerHTML = (route.fallbackPlan || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("");
     }
+    renderVerificationReadinessPlan(route, selectedProvider);
   }
 
   function profileHasBasics(profile = {}) {
@@ -699,6 +771,7 @@
 
   field("#verify-country").addEventListener("input", () => updateProviderRoute({ setProvider: true }));
   field("#verify-reason").addEventListener("change", () => updateProviderRoute({ setProvider: true }));
+  field("#verify-role").addEventListener("change", () => updateProviderRoute({ setProvider: false }));
   field("#verify-provider").addEventListener("change", () => {
     providerTouched = true;
     updateProviderRoute({ setProvider: false });

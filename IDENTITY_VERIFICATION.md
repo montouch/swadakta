@@ -58,6 +58,7 @@ Provider coverage rule:
 - Account-level provider ID evidence now syncs to matching receiver applications by email. This lets one verified Swadakta account support both client and job-seeker use, while receiver vetting still remains a separate Swadakta review.
 - Portal users see their account KYC status, provider, and verification link when available.
 - Receiver portal also shows the applicant their receiver-specific KYC status, provider, reference, and verification link when available.
+- The public Verification Center now includes a readiness planner and common failure-prevention checklist so users prepare the right legal name, ID, selfie/liveness conditions, mobile backup, provider route, and receiver/high-value evidence before opening a provider check.
 - Database constraint blocks `status = 'vetted'` unless ID consent is true and `identity_verification_status = 'verified'`.
 - Database trigger blocks assigning any receiver to a client request unless that receiver is vetted and ID-verified.
 - Assigned-job access also checks that the receiver remains vetted and ID-verified.
