@@ -928,6 +928,9 @@ const requiredPaymentLaunchGateMarkers = [
   ["lib/payment-launch-gate.js", "assertPaymentLaunchAllowed"],
   ["lib/payment-launch-gate.js", "paymentLaunchGatePayload"],
   ["lib/payment-launch-gate.js", "jobPaymentGatePayload"],
+  ["lib/payment-launch-gate.js", "quoteEconomicsGatePayload"],
+  ["lib/payment-launch-gate.js", "QUOTE_ECONOMICS_BELOW_FLOOR"],
+  ["lib/payment-launch-gate.js", "MINIMUM_FOUNDER_MARGIN_RATE"],
   ["lib/payment-launch-gate.js", "acceptance gate: evidence first"],
   ["lib/payment-launch-gate.js", "JOB_ACCEPTANCE_FOUNDER_REVIEW_REQUIRED"],
   ["lib/payment-launch-gate.js", "JOB_ROUTE_EVIDENCE_REQUIRED"],
@@ -937,6 +940,9 @@ const requiredPaymentLaunchGateMarkers = [
   ["lib/payment-launch-gate.js", "statusCode = 423"],
   ["lib/payment-request-context.js", "paymentRoutePayloadFromStoredRequest"],
   ["lib/payment-request-context.js", "PAYMENT_REQUEST_SELECT_FIELDS"],
+  ["lib/payment-request-context.js", "operator_payout"],
+  ["lib/payment-request-context.js", "field_costs"],
+  ["lib/payment-request-context.js", "payment_processing_fee"],
   ["lib/payment-request-context.js", "Save a positive quote amount on the stored Swadakta request"],
   ["lib/payment-request-context.js", "Payment route quote amount must match the saved Swadakta request"],
   ["lib/payment-request-context.js", "Create and save the Swadakta request before creating a payment route"],
@@ -953,8 +959,12 @@ const requiredPaymentLaunchGateMarkers = [
   ["api/payments/mpesa-stk.js", "paymentLaunchGateErrorBody"],
   ["api/payments/wise-payment-request.js", "paymentLaunchGateErrorBody"],
   ["PAYMENTS_SETUP.md", "Server-side Payment Launch Gate"],
+  ["PAYMENTS_SETUP.md", "Server-side Founder Economics Gate"],
+  ["PAYMENTS_SETUP.md", "QUOTE_ECONOMICS_BELOW_FLOOR"],
   ["PAYMENTS_SETUP.md", "Per-job Payment Acceptance Gate"],
   ["PAYMENTS_SETUP.md", "Stored Request Authority"],
+  ["scripts/check-payment-launch-gate.mjs", "Payment launch gate checks passed"],
+  ["scripts/check-payment-launch-gate.mjs", "QUOTE_ECONOMICS_COST_PLAN_MISSING"],
   [".env.example", "SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED"],
   [".env.example", "SWADAKTA_OWNER_REGULATED_ESCROW_READY"],
 ];
@@ -1363,6 +1373,8 @@ for (const marker of requiredSecretScanMarkers) {
 }
 runSecretScan(failures);
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
+runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
+runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
 const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
 if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
   pass(`Local release manifest is ${localRelease.release_id}`);

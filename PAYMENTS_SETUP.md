@@ -74,11 +74,24 @@ The server blocks payment route creation when the request carries any of these u
 
 This protects against accidental payment collection for restricted goods, unclear customs routes, sensitive documents, high-risk work, unsupported routes, or requests that require founder/provider evidence before quote. To proceed, correct the request so the job is genuinely quote-eligible, record the needed evidence, and keep the payment route inside provider-held funds. Do not clear these flags just to make checkout work.
 
+## Server-side Founder Economics Gate
+
+Payment route endpoints also enforce the internal quote floor on the server, not only in the admin browser. Stripe, PayPal, M-Pesa, and Wise route creation stays locked when:
+
+- `QUOTE_ECONOMICS_NOT_PRICED`: no saved client quote exists.
+- `QUOTE_ECONOMICS_COST_PLAN_MISSING`: quote exists, but operator payout, field costs, and payment/FX fees are all missing.
+- `QUOTE_ECONOMICS_MARGIN_LOSS`: direct costs exceed or equal the quote.
+- `QUOTE_ECONOMICS_BELOW_FLOOR`: quote does not clear the confidential founder reserve and margin floor.
+
+The floor uses the saved Swadakta request, not the browser payload. It checks `quote_amount`, `quote_currency`, `operator_payout`, `field_costs`, and `payment_processing_fee` before any checkout session, PayPal order, M-Pesa STK prompt, or Wise fallback request is created.
+
+This keeps founder economics private while still protecting the business. Client-facing quote messages should stay simple; internal payout, field-cost, processor-fee, reserve, and margin assumptions stay in admin only.
+
 ## Stored Request Authority
 
-Before a payment route is created, Stripe, PayPal, M-Pesa, and Wise endpoints now reload the saved Swadakta `service_requests` row by `request_code` using the signed-in admin session. The stored row is the authority for quote amount, quote currency, compliance flags, review status, route status, goods category, sensitive-document state, and payment evidence context.
+Before a payment route is created, Stripe, PayPal, M-Pesa, and Wise endpoints now reload the saved Swadakta `service_requests` row by `request_code` using the signed-in admin session. The stored row is the authority for quote amount, quote currency, operator payout, field costs, payment/FX fees, compliance flags, review status, route status, goods category, sensitive-document state, and payment evidence context.
 
-This means a stale browser page or edited client payload cannot soften a risky request into a normal checkout. If the saved request is missing, the saved quote amount/currency is not ready, or the posted amount/currency does not match the saved row, the payment route is refused. Save the quote and clear the real evidence gates first.
+This means a stale browser page or edited client payload cannot soften a risky request into a normal checkout, and it cannot create a payment route for a job that loses money or lacks a cost plan. If the saved request is missing, the saved quote amount/currency is not ready, the posted amount/currency does not match the saved row, or the founder economics floor is not clear, the payment route is refused. Save the quote, save the cost plan, and clear the real evidence gates first.
 
 ## Offer Acceptance and Work-Start Gates
 

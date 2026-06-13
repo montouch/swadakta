@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, and corridor place intelligence with official-alert handoff into paid briefs.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, and server-side payment economics gates.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -14,11 +14,13 @@
     "stitch_brief_flow",
     "identity_status_mapping",
     "login_verification_return_paths",
-    "corridor_place_intelligence"
+    "corridor_place_intelligence",
+    "server_payment_economics_gate"
   ],
-  "queued_commit_count": 10,
+  "queued_commit_count": 11,
   "queued_commits": [
-    "de4d1f4 Mark launch readiness batch release",
+    "HEAD Enforce server-side payment economics",
+    "bfa2f3e Mark launch readiness batch release",
     "be83ee4 Add corridor place intelligence",
     "ba48675 Preserve return paths through posting verification",
     "18e78d9 Return users to verification after login",

@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `10`
+- Local commits queued behind the Vercel rate limit: `11`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -42,6 +42,7 @@ Queued local release contents:
 6. Verification/login return-path fixes so users return to the right account, verification, or job brief page.
 7. Corridor place intelligence with weather, official-alert links, field checks, and brief handoff.
 8. Release marker and deployment queue documentation for the batched launch-readiness deploy.
+9. Server-side payment economics gate that refuses checkout, M-Pesa STK, PayPal, Stripe, or Wise fallback routes when quote/cost/margin data is missing or below the founder reserve floor.
 
 Before the next push:
 
