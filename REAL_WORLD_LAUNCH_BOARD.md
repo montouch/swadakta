@@ -151,6 +151,12 @@ Priority environment variables:
 - `SUMSUB_LEVEL_NAME`
 - `SUMSUB_WEBHOOK_SECRET`
 
+Auth email before public launch:
+
+- Supabase Auth Site URL and Redirect URLs must point at `https://swadakta.com` and `https://swadakta.com/**`, not localhost.
+- Configure custom SMTP or a reviewed production sender in Supabase Auth, then authenticate the sender domain with SPF/DKIM/DMARC in the email provider or DNS dashboard.
+- Test one new-account confirmation and one password reset from Chrome. Save evidence before setting `SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED=true`.
+
 Later or corridor-specific:
 
 - `SMILE_ID_API_KEY`
@@ -203,7 +209,7 @@ Run `scripts/check-founder-evidence.mjs` before changing either flag so the regi
 Open these tabs and work through them in order:
 
 1. Vercel deployments and environment variables.
-2. Supabase Auth URL configuration and database policies.
+2. Supabase Auth URL configuration, email delivery/templates, and database policies.
 3. Swadakta admin readiness.
 4. Stripe account and webhook setup.
 5. PayPal developer app setup.

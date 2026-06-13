@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `19`
+- Local commits queued behind the Vercel rate limit: `20`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -51,6 +51,7 @@ Queued local release contents:
 15. Official-source founder setup notes clarifying ABN/business-name sequence, AUSTRAC/remittance caution, privacy review, official dashboard evidence, and Daraja/M-Pesa sandbox-first setup.
 16. Signed-in account data-control panel with privacy/trust links and a copyable access, correction, deletion, or restriction request template.
 17. Public landing footer scope language updated from a narrow Global South line to Africa, diaspora, and global corridor work, with ASCII-safe copyright markup.
+18. Auth email deliverability readiness gate covering Supabase production redirects, custom SMTP or reviewed sender, SPF/DKIM/DMARC evidence, and confirmation/reset tests before public campaigns.
 
 Before the next push:
 

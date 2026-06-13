@@ -208,6 +208,8 @@ const DOCS = {
   vercelHeaders: "https://vercel.com/docs/headers",
   supabaseApiSecurity: "https://supabase.com/docs/guides/api/securing-your-api",
   supabaseRedirectUrls: "https://supabase.com/docs/guides/auth/redirect-urls",
+  supabaseAuthSmtp: "https://supabase.com/docs/guides/auth/auth-smtp",
+  supabaseAuthEmailTemplates: "https://supabase.com/docs/guides/auth/auth-email-templates",
   supabasePasswordSecurity: "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
   supabaseAuthRateLimits: "https://supabase.com/docs/guides/auth/rate-limits",
   supabaseAuthCaptcha: "https://supabase.com/docs/guides/auth/auth-captcha",
@@ -1790,6 +1792,7 @@ function buildFirstPaidPilotScript() {
 function authSecurityItems() {
   const projectRef = supabaseProjectRef();
   const projectBase = projectRef ? `https://supabase.com/dashboard/project/${projectRef}` : "";
+  const emailDeliveryReviewed = confirmedEnv("SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED");
 
   return [
     item(
@@ -1803,6 +1806,22 @@ function authSecurityItems() {
         docs_url: DOCS.supabaseRedirectUrls,
         copy_value: projectBase ? `${projectBase}/auth/url-configuration` : `${publicUrl() || "https://swadakta.com"}/auth`,
         priority: 11,
+        owner: "Founder/Supabase admin",
+      },
+    ),
+    item(
+      "supabase_auth_email_delivery",
+      "Auth email deliverability",
+      emailDeliveryReviewed ? "ready" : "manual",
+      "Password resets, email confirmations, and optional magic links need a production sender that does not send users back to localhost.",
+      emailDeliveryReviewed
+        ? "Auth email sender, domain authentication, templates, and a production sign-up/reset test are recorded."
+        : "Configure custom SMTP or a reviewed sender in Supabase Auth, authenticate the sending domain with SPF/DKIM/DMARC, update templates to use swadakta.com redirects, then send one test confirmation and one password reset.",
+      emailDeliveryReviewed ? [] : ["SWADAKTA_OWNER_AUTH_EMAIL_DELIVERABILITY_REVIEWED"],
+      {
+        docs_url: DOCS.supabaseAuthSmtp,
+        copy_value: `${DOCS.supabaseAuthEmailTemplates} | ${DOCS.supabaseAuthSmtp}`,
+        priority: 12,
         owner: "Founder/Supabase admin",
       },
     ),
