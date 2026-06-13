@@ -8,12 +8,12 @@ Last checked: June 13, 2026
 - Team ID: `team_StYyDW74Frdhxtyulw3o2EUI`
 - Project: `swadakta`
 - Project ID: `prj_1AtCToo5VAYDlIjwddKMK9KaZ7hb`
-- Latest production app release verified: `2026-06-13-route-safe-sumsub-webhook-v1`
-- Latest production app behavior verified: `POST /api/identity/sumsub-webhook` reaches Sumsub-specific setup/signature handling instead of the normal signed-in user flow.
-- Latest pushed GitHub `main` commit observed during rate limit: `0892a04` (`Guard Sumsub webhook route health`)
-- Latest deployed GitHub `main` commit observed before the rate limit: `e1de751` (`Keep Sumsub webhook route within identity function`)
-- Production health passed for `https://swadakta.com` with release marker `2026-06-13-route-safe-sumsub-webhook-v1`.
-- Commit `0892a04` is not live yet because Vercel returned `Deployment rate limited - retry in 24 hours.` Its code is a checker/release-marker guard for the Sumsub route behavior already verified manually on production.
+- Latest production app release verified: `2026-06-13-launch-readiness-batch-v1`
+- Latest production app behavior verified: full production health passed for `https://swadakta.com`, including public/account/admin routes, security headers, POST-only API route guards, Sumsub webhook routing, release marker freshness, final UX assets, account profile access guards, proof-media upload guards, payment reconciliation guards, and AI protected-action markers.
+- Latest pushed GitHub `main` commit verified live: `55aba1b` (`Guard proof media uploads`)
+- Latest deployed GitHub `main` commit verified live: `55aba1b` (`Guard proof media uploads`)
+- Production health passed for `https://swadakta.com` with release marker `2026-06-13-launch-readiness-batch-v1`.
+- Vercel Pro upgrade removed the deployment rate-limit blocker for this release; the full batched local queue is now live.
 - Git integration is connected to `montouch/swadakta` on `main`; the latest push created a fresh production deployment.
 - Chrome is logged into Vercel for this team.
 - Local `.vercel/project.json`: present locally and ignored by Git.
@@ -22,17 +22,17 @@ Last checked: June 13, 2026
 - Vercel connector can inspect deployments, but its deploy helper only returns CLI instructions in this environment.
 - Current deployed serverless shape is 12 Node functions. Vercel's Node.js runtime builds `/api` files as functions, so `scripts/check-production.mjs` now guards that budget before deploy; keep shared helpers in `lib/` instead of adding extra files under `api/`. Reference: https://vercel.com/docs/functions/runtimes/node-js
 - June 13, 2026 note: Sumsub webhook handling is folded into `/api/identity/start-verification` and exposed by a Vercel rewrite from `/api/identity/sumsub-webhook`, so ID verification automation does not add a 13th function.
-- June 13, 2026 rate-limit note: Vercel currently reports deployment rate limiting on new pushes. Vercel's published limits page lists Hobby deployments as limited per 86,400-second window. During a rate-limit window, keep improvements local, run local/static checks, and avoid repeated pushes unless production must be fixed.
+- June 13, 2026 Pro deployment note: Vercel Pro is active for the project and the previous Hobby deployment rate-limit blocker has cleared. Keep using one clean verified push for each deploy batch.
 - `release.json` is the production freshness marker. If `scripts/check-production.mjs` reports that `/release.json` is missing or that `release_id` does not match the repo, production is stale even if the public pages still load.
 
-## Local Release Queue
+## Live Release
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `38`
-- Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
-- Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
+- Local commits queued behind production: `0`
+- Production is current on `2026-06-13-launch-readiness-batch-v1`.
+- `/release.json` on production matches the local release marker.
 
-Queued local release contents:
+Live release contents:
 
 1. Vercel rate-limit recovery docs and deployment-state checker.
 2. Founder evidence register for owner, provider, payment, insurance, and legal readiness.
@@ -78,8 +78,8 @@ Before the next push:
 1. Run `git status --short --branch`.
 2. Run the local health check against `http://127.0.0.1:4173`.
 3. Run `scripts/deployment-state.mjs`.
-4. Push only once when the checker no longer reports `local_hold_rate_limited`.
-5. After Vercel is `READY`, run `scripts/check-production.mjs` against `https://swadakta.com` and confirm the production release marker matches `2026-06-13-launch-readiness-batch-v1`.
+4. Push one clean verified batch.
+5. After Vercel is `READY`, run `scripts/check-production.mjs` against `https://swadakta.com` and confirm the production release marker still matches the local release marker.
 
 ## Domain
 
