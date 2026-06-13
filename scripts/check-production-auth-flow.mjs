@@ -55,19 +55,51 @@ try {
     page.click("#login-submit"),
   ]);
   await page.waitForLoadState("networkidle", { timeout: 30000 }).catch(() => {});
+  await page.waitForFunction(
+    async () => {
+      try {
+        const result = await window.SwadaktaData?.getSession?.();
+        return Boolean(result?.session?.user?.email);
+      } catch {
+        return false;
+      }
+    },
+    null,
+    { timeout: 15000 },
+  );
 
-  const homeResult = await page.evaluate(() => ({
-    href: location.href,
-    hasLoginForm: Boolean(document.querySelector("#swadakta-login-form")),
-    hasAccountHomeText:
-      document.body.innerText.includes("Account is open") ||
-      document.body.innerText.includes("Verified gate") ||
-      document.body.innerText.includes("Give jobs") ||
-      document.body.innerText.includes("Find jobs"),
-  }));
+  const homeResult = await page.evaluate(async () => {
+    const session = await window.SwadaktaData.getSession();
+    const profileResult = await window.SwadaktaData.getAccountProfile();
+    const identityRequestsResult = await window.SwadaktaData.listMyIdentityVerificationRequests();
+
+    return {
+      href: location.href,
+      sessionEmail: session?.session?.user?.email || "",
+      hasLoginForm: Boolean(document.querySelector("#swadakta-login-form")),
+      profileMode: profileResult?.mode || "",
+      profileShape: profileResult?.data === null ? "null" : typeof profileResult?.data,
+      profileWarning: profileResult?.warning || "",
+      identityMode: identityRequestsResult?.mode || "",
+      identityWarning: identityRequestsResult?.warning || "",
+      identityRequestCount: Array.isArray(identityRequestsResult?.data) ? identityRequestsResult.data.length : -1,
+      hasAccountHomeText:
+        document.body.innerText.includes("Account is open") ||
+        document.body.innerText.includes("Verified gate") ||
+        document.body.innerText.includes("Give jobs") ||
+        document.body.innerText.includes("Find jobs"),
+    };
+  });
 
   assert.ok(/\/portal(?:\.html)?/.test(homeResult.href), `Expected portal URL after sign-in, got ${scrubUrl(homeResult.href)}`);
+  assert.ok(homeResult.sessionEmail, "No signed-in Supabase session was available after sign-in.");
   assert.equal(homeResult.hasLoginForm, false, "Login form was still visible after sign-in.");
+  assert.equal(homeResult.profileMode, "supabase", "Account profile check did not use Supabase mode.");
+  assert.ok(["object", "null"].includes(homeResult.profileShape), "Account profile RPC did not return object/null.");
+  assert.equal(homeResult.profileWarning, "", `Account profile returned a warning: ${homeResult.profileWarning}`);
+  assert.equal(homeResult.identityMode, "supabase", "Identity verification check did not use Supabase mode.");
+  assert.equal(homeResult.identityWarning, "", `Identity verification RPC returned a warning: ${homeResult.identityWarning}`);
+  assert.ok(homeResult.identityRequestCount >= 0, "Identity verification request RPC did not return an array.");
   assert.ok(homeResult.hasAccountHomeText, "Portal loaded but account-home text was not detected.");
 
   await page.goto(`${baseUrl}/verification.html?next=/portal.html%23home`, { waitUntil: "networkidle", timeout: 30000 });
@@ -88,6 +120,8 @@ try {
       baseUrl,
       signedInDestination: scrubUrl(homeResult.href),
       verificationDestination: scrubUrl(verificationResult.href),
+      sessionEmail: homeResult.sessionEmail,
+      identityRequestCount: homeResult.identityRequestCount,
       consoleErrorCount: consoleErrors.length,
     }),
   );
