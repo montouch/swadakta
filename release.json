@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, and assistant mobile chat viewport fix.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, assistant mobile chat viewport fix, and account transaction readiness hub.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -28,11 +28,13 @@
     "resolution_evidence_path_clarity",
     "verification_location_change_guard",
     "tracking_closeout_review_workflow",
-    "assistant_mobile_chat_viewport_fix"
+    "assistant_mobile_chat_viewport_fix",
+    "account_transaction_readiness_hub"
   ],
-  "queued_commit_count": 24,
+  "queued_commit_count": 25,
   "queued_commits": [
-    "HEAD Fix assistant mobile chat viewport",
+    "HEAD Add account transaction readiness hub",
+    "b0f6645 Fix assistant mobile chat viewport",
     "3ed2376 Add tracking closeout review workflow",
     "a258efe Add verification location change guard",
     "81bf883 Add resolution evidence preview",

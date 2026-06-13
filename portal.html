@@ -302,11 +302,14 @@
         #account-setup-checklist {
             order: 5;
         }
-        #account-home-autopilot {
+        #account-money-verification-hub {
             order: 6;
         }
-        #account-data-control-panel {
+        #account-home-autopilot {
             order: 7;
+        }
+        #account-data-control-panel {
+            order: 8;
         }
         #dashboard > section[aria-label="Main actions"] {
             align-items: stretch;
@@ -314,6 +317,7 @@
         #dashboard > section[aria-label="Main actions"] .quick-action-card h2,
         #dashboard > section[aria-label="Account at a glance"] h2,
         #account-setup-checklist h2,
+        #account-money-verification-hub h2,
         #account-home-autopilot h2,
         #account-data-control-panel h2,
         #find-work h2 {
@@ -722,8 +726,12 @@
         #account-setup-checklist {
             order: 5;
         }
-        #account-home-autopilot {
+        #account-money-verification-hub {
             order: 6;
+            scroll-margin-top: 6.5rem;
+        }
+        #account-home-autopilot {
+            order: 7;
         }
         #marketplace-job-list > article,
         #my-job-offers-list > article,
@@ -1324,6 +1332,64 @@
 </div>
 <p class="mt-4 font-label-md text-on-surface-variant" id="account-setup-next">Next: save your profile details, then verify when you are ready to transact.</p>
 </section>
+<section class="glass-panel rounded-[1.5rem] p-5" id="account-money-verification-hub" aria-live="polite">
+<div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+<div>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Payments &amp; verification hub</p>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Know what can move money</h2>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl" id="account-money-hub-summary">Your account can open first. Paid posting, paid work, milestone release, payouts, refunds, and sensitive jobs wait for verification, payment evidence, proof, and route checks.</p>
+</div>
+<span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-money-hub-pill">Account open</span>
+</div>
+<div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4" id="account-money-hub-list">
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<p class="font-label-md text-on-surface mt-2">Identity gate</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Provider ID, document, selfie, and liveness checks unlock paid actions.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<span class="material-symbols-outlined text-primary">account_balance_wallet</span>
+<p class="font-label-md text-on-surface mt-2">Protected funds</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Stripe, PayPal, M-Pesa, Paystack, or Flutterwave only show when the route is ready.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<span class="material-symbols-outlined text-primary">fact_check</span>
+<p class="font-label-md text-on-surface mt-2">Milestone proof</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Receipts, photos, video, location notes, and reviews control release readiness.</p>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<span class="material-symbols-outlined text-primary">workspace_premium</span>
+<p class="font-label-md text-on-surface mt-2">Provenance</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Starts at 25% and improves only with verified identity, proof, completed jobs, and fair reviews.</p>
+</article>
+</div>
+<div class="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(0,0.9fr)]">
+<article class="rounded-2xl bg-primary-container/10 border border-primary/10 p-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-primary">payments</span>
+<div class="min-w-0">
+<p class="font-label-md text-primary">Visible payment rails</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" id="account-money-hub-rails">Quote first. Card, PayPal, M-Pesa, Paystack, and Flutterwave are route-dependent. Wise stays hidden unless primary rails fail.</p>
+</div>
+</div>
+</article>
+<article class="rounded-2xl bg-white/66 border border-outline-variant/30 p-4">
+<div class="flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary">lock</span>
+<div class="min-w-0">
+<p class="font-label-md text-on-surface">Locked decisions</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1" id="account-money-hub-locks">AI can draft and check readiness, but cannot verify ID, assign paid work, release money, refund, or raise provenance by itself.</p>
+</div>
+</div>
+</article>
+</div>
+<div class="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="account-money-hub-primary" href="verification.html">Open verification</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="payments.html">Payment rules</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" href="tracking.html">Track milestones</a>
+<a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-ai-only href="assistant.html?context=payments-verification&links=payments,verification,tracking">Ask AI to prepare</a>
+</div>
+</section>
 <section class="glass-panel rounded-[1.5rem] p-5" id="account-home-autopilot" aria-live="polite">
 <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
 <div>
@@ -1903,6 +1969,6 @@ Detailed work application
 <script src="app-config.js?v=5"></script>
 <script src="app-data.js?v=61"></script>
 <script src="ai-preferences.js?v=3"></script>
-<script src="stitch-portal.js?v=35"></script>
+<script src="stitch-portal.js?v=36"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body></html>

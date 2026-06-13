@@ -65,6 +65,12 @@
   const accountSetupClient = document.querySelector("#account-setup-client");
   const accountSetupReceiver = document.querySelector("#account-setup-receiver");
   const accountSetupNext = document.querySelector("#account-setup-next");
+  const accountMoneyHubSummary = document.querySelector("#account-money-hub-summary");
+  const accountMoneyHubPill = document.querySelector("#account-money-hub-pill");
+  const accountMoneyHubList = document.querySelector("#account-money-hub-list");
+  const accountMoneyHubRails = document.querySelector("#account-money-hub-rails");
+  const accountMoneyHubLocks = document.querySelector("#account-money-hub-locks");
+  const accountMoneyHubPrimary = document.querySelector("#account-money-hub-primary");
   const receiverApplicationForm = document.querySelector("#receiver-application-form");
   const receiverApplicationStatus = document.querySelector("#receiver-application-status");
   const receiverApplicationList = document.querySelector("#receiver-application-list");
@@ -1276,6 +1282,201 @@
     }
   }
 
+  function accountMoneyReadinessScore(items = []) {
+    const scoringItems = items.filter((item) => item.status !== "protected");
+    if (!scoringItems.length) return 25;
+    const weights = {
+      ready: 1,
+      draft: 0.7,
+      waiting: 0.5,
+      action: 0.25,
+      optional: 0.25,
+      blocked: 0.15,
+    };
+    const total = scoringItems.reduce((sum, item) => sum + (weights[item.status] ?? 0.2), 0);
+    return Math.max(25, Math.round((total / scoringItems.length) * 100));
+  }
+
+  function accountPaymentRailCopy(profile = {}, context = {}) {
+    const receiverSetup = readReceiverProfileSetup();
+    const routeText = [
+      profile.country,
+      profile.kenya_base,
+      receiverSetup.location,
+      receiverSetup.service_regions,
+      ...(context.applications || []).map((application) =>
+        `${application.kenya_base || ""} ${application.service_regions || ""} ${application.notes || ""}`,
+      ),
+    ]
+      .join(" ")
+      .toLowerCase();
+    const country = normalizeCountry(profile.country || "");
+    const routeLooksAfrican = AFRICA_COUNTRIES.has(country) || [...AFRICA_COUNTRIES].some((name) => routeText.includes(name));
+    const rails = ["Card/Stripe and PayPal can support global client pay-ins after quote, route, and webhook evidence."];
+
+    if (routeText.includes("kenya")) {
+      rails.push("M-Pesa can be prepared for Kenya-side mobile payment paths once Daraja, reconciliation, and route checks are ready.");
+    }
+    if (routeLooksAfrican) {
+      rails.push("Paystack or Flutterwave can fit supported African corridors after provider setup, settlement, and webhook checks.");
+    }
+    rails.push("Wise stays hidden as a fallback only when the normal automatic rails fail or are unsuitable.");
+    return rails.join(" ");
+  }
+
+  function accountMoneyHubItems(profile = {}, context = {}) {
+    const requests = context.requests || [];
+    const jobs = context.jobs || [];
+    const applications = context.applications || [];
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const hasProfile = hasProfileBasics(profile);
+    const hasClientTrail = requests.length > 0;
+    const hasWorkTrail = jobs.length > 0;
+    const hasReceiverTrail = applications.length > 0 || Boolean(readReceiverProfileSetup().headline);
+
+    return [
+      {
+        title: "Identity gate",
+        icon: "verified_user",
+        status: verified ? "ready" : latestRequest ? "waiting" : hasProfile ? "action" : "blocked",
+        copy: verified
+          ? "Provider ID evidence is recorded. Job-specific route and payment checks still apply."
+          : latestRequest?.provider_link
+            ? "Open the provider link to finish ID, document, selfie, and liveness checks."
+            : latestRequest
+              ? "Verification is queued. Paid posting, matching, and sensitive jobs wait for provider evidence."
+              : hasProfile
+                ? "Request provider verification before paid posting, paid work, or sensitive tasks."
+                : "Save legal name, mobile, country, and base before requesting provider verification.",
+      },
+      {
+        title: "Payment rails",
+        icon: "account_balance_wallet",
+        status: verified ? (hasClientTrail || hasWorkTrail ? "waiting" : "draft") : "protected",
+        copy: verified
+          ? hasClientTrail || hasWorkTrail
+            ? "Each job still needs quote, cost, route, and provider payment evidence before funds are treated as protected."
+            : "Create a quote-ready brief first. Payment buttons stay hidden until the route and margin checks pass."
+          : "Payment buttons stay locked until provider identity evidence and route readiness exist.",
+      },
+      {
+        title: "Milestone proof",
+        icon: "fact_check",
+        status: hasWorkTrail ? "ready" : hasClientTrail ? "draft" : "action",
+        copy: hasWorkTrail
+          ? "Assigned work can collect photos, receipts, notes, media, issues, and completion review evidence."
+          : hasClientTrail
+            ? "Client requests can now be shaped into proof requirements and milestone release checks."
+            : "No job trail yet. Start with a brief or receiver profile so proof can be planned before money moves.",
+      },
+      {
+        title: "Provenance score",
+        icon: "workspace_premium",
+        status: verified && (hasWorkTrail || hasReceiverTrail) ? "draft" : "action",
+        copy:
+          "Trust starts low and rises only with verified ID, real photo/profile evidence, completed jobs, proof quality, and fair reviews.",
+      },
+    ];
+  }
+
+  function accountMoneyPrimaryAction(profile = {}, context = {}) {
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const role = accountRole(profile);
+    const requests = context.requests || [];
+    const applications = context.applications || [];
+
+    if (!hasProfileBasics(profile)) {
+      return { href: "#work", label: "Save profile", external: false };
+    }
+    if (!verified && latestRequest?.provider_link) {
+      return { href: latestRequest.provider_link, label: "Open provider check", external: true };
+    }
+    if (!verified) {
+      return { href: "verification.html?reason=account_required", label: "Open verification", external: false };
+    }
+    if ((role === "client" || role === "both") && !requests.length) {
+      return { href: "corridor.html", label: "Create quote-ready brief", external: false };
+    }
+    if ((role === "receiver" || role === "both") && !applications.length) {
+      return { href: "#find-work", label: "Set work coverage", external: false };
+    }
+    return { href: "tracking.html", label: "Open milestones", external: false };
+  }
+
+  function renderAccountMoneyVerificationHub(profile = {}, context = {}) {
+    if (!accountMoneyHubSummary && !accountMoneyHubList && !accountMoneyHubPrimary) return;
+    const items = accountMoneyHubItems(profile, context);
+    const latestRequest = latestVerificationRequest(context.verifications || []);
+    const verified = accountIsVerified(profile, latestRequest);
+    const hasProfile = hasProfileBasics(profile);
+    const score = accountMoneyReadinessScore(items);
+    const primaryAction = accountMoneyPrimaryAction(profile, context);
+
+    if (accountMoneyHubPill) {
+      accountMoneyHubPill.textContent = verified ? `${score}% transaction ready` : hasProfile ? "Verification needed" : "Profile needed";
+      accountMoneyHubPill.className = `inline-flex min-h-10 px-4 items-center justify-center rounded-full font-label-md ${
+        verified
+          ? score >= 75
+            ? "bg-emerald-50 text-emerald-700"
+            : "bg-primary-container/10 text-primary"
+          : hasProfile
+            ? "bg-amber-50 text-amber-700"
+            : "bg-white/70 border border-outline-variant/40 text-on-surface-variant"
+      }`.trim();
+    }
+
+    if (accountMoneyHubSummary) {
+      accountMoneyHubSummary.textContent = !hasProfile
+        ? "Your account is open. Add profile basics first so verification, payment, proof, and route checks can be tied to the right person."
+        : !verified && latestRequest?.provider_link
+          ? "Your provider link is ready. Finish ID, document, selfie, and liveness checks before paid posting, paid work, or sensitive jobs unlock."
+          : !verified
+            ? "Verification is not needed to hold an account, but money movement, paid work, payouts, refunds, and sensitive jobs wait for provider evidence."
+            : "Identity is ready. Each job still needs quote, route, payment, proof, and rules evidence before funds, milestones, or receiver assignment move.";
+    }
+
+    if (accountMoneyHubList) {
+      accountMoneyHubList.innerHTML = items
+        .map((item) => {
+          const tone = automationStatusTone(item.status);
+          return `
+            <article class="${tone.card}">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <p class="font-label-md text-on-surface">${escapeHtml(item.title)}</p>
+                  <span class="mt-2 inline-flex min-h-7 px-3 items-center justify-center rounded-full font-label-sm ${tone.pill}">${escapeHtml(tone.label)}</span>
+                </div>
+                <span class="material-symbols-outlined text-primary">${escapeHtml(item.icon)}</span>
+              </div>
+              <p class="font-body-md text-on-surface-variant text-sm mt-3">${escapeHtml(item.copy)}</p>
+            </article>
+          `;
+        })
+        .join("");
+    }
+
+    if (accountMoneyHubRails) {
+      accountMoneyHubRails.textContent = accountPaymentRailCopy(profile, context);
+    }
+    if (accountMoneyHubLocks) {
+      accountMoneyHubLocks.textContent =
+        "AI can prepare quotes, route notes, proof checklists, and messages. It cannot verify ID, assign paid work, release money, refund, raise provenance, or bypass provider evidence.";
+    }
+    if (accountMoneyHubPrimary) {
+      accountMoneyHubPrimary.href = primaryAction.href;
+      accountMoneyHubPrimary.textContent = primaryAction.label;
+      if (primaryAction.external) {
+        accountMoneyHubPrimary.target = "_blank";
+        accountMoneyHubPrimary.rel = "noopener";
+      } else {
+        accountMoneyHubPrimary.removeAttribute("target");
+        accountMoneyHubPrimary.removeAttribute("rel");
+      }
+    }
+  }
+
   function renderAccountHomeVerification(profile = {}, requests = []) {
     const request = latestVerificationRequest(requests);
     const status = verificationDisplayStatus(profile, request);
@@ -1962,6 +2163,7 @@
     if (accountHomeEmail) accountHomeEmail.textContent = displayEmail;
     renderAccountHomeVerification(profile, []);
     renderAccountSetupChecklist(profile);
+    renderAccountMoneyVerificationHub(profile);
     renderAccountHomeDashboard(profile);
     renderAccountHomeAutopilot(profile);
     renderAccountDataControl(profile);
@@ -2007,6 +2209,7 @@
     if (accountHomeVerificationCount) accountHomeVerificationCount.textContent = String(verifications.length);
     renderAccountHomeVerification(profile, verifications);
     renderAccountSetupChecklist(profile, { requests, jobs, verifications, applications });
+    renderAccountMoneyVerificationHub(profile, { requests, jobs, verifications, applications });
     renderAccountHomeDashboard(profile, { requests, jobs, verifications, applications });
     renderAccountHomeAutopilot(profile, { requests, jobs, verifications, applications });
     renderAccountDataControl(profile, { requests, jobs, verifications, applications });

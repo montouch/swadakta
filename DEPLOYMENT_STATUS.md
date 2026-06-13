@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `24`
+- Local commits queued behind the Vercel rate limit: `25`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -56,6 +56,7 @@ Queued local release contents:
 20. Verification country/base-change guard explaining that account access stays open after relocation, but paid posting, paid receiver work, sensitive jobs, and assignments pause until provider route, work-permission, or Swadakta safety evidence is refreshed.
 21. Tracking closeout/review panel lets completed jobs collect a client score and note, open repeat briefs, and start correction issues while reviews stay locked until completion.
 22. Assistant mobile chat viewport fix hides the crowded tool rail on small screens, compacts the header/actions, and gives the conversation pane the remaining height.
+23. Account transaction readiness hub explains whether profile, provider ID, payment rails, milestone proof, and provenance are ready before money movement or paid work.
 
 Before the next push:
 

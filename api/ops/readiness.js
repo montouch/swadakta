@@ -11,7 +11,7 @@ const PUBLIC_BASE_URL =
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
 const EXPECTED_APP_DATA_REF = "app-data.js?v=61";
-const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=35";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=36";
 const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=3";
 const FINAL_UX_THEME_MARKERS = [
   "--sw-primary: #000105",
