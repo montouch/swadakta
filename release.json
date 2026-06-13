@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-account-receiver-id-sync-v1",
-  "release_name": "Account receiver ID evidence sync",
-  "description": "Account-level provider identity evidence now syncs to matching receiver applications by email, preserving separate Swadakta receiver vetting while supporting one account for client and job-seeker use.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-account-receiver-id-sync-1",
+  "release_id": "2026-06-13-monotonic-id-webhooks-v1",
+  "release_name": "Monotonic identity webhook results",
+  "description": "Sumsub provider callbacks now preserve terminal identity results against later non-final callbacks, while final provider decisions remain authoritative.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-monotonic-id-webhooks-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

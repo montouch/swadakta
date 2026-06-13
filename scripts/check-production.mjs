@@ -889,6 +889,9 @@ const requiredSumsubWebhookMarkers = [
   "SUMSUB_WEBHOOK_SECRET",
   "reviewAnswer",
   "Provider evidence",
+  "monotonicSumsubDecision",
+  "preserved_terminal_status",
+  "non-final callback",
   "bodyParser: false",
 ];
 const requiredRobotsMarkers = [
@@ -1039,6 +1042,7 @@ const requiredIdentityVerificationDocMarkers = [
   "/api/identity/start-verification",
   "SMILE_ID_VERIFICATION_URL",
   "Provider coverage rule",
+  "terminal identity result",
   "Do not promise that a provider will support a user",
   "Manual review is a fallback only",
 ];

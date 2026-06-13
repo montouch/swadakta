@@ -37,8 +37,10 @@ const PROVIDER_NATIVE_REQUIRED_ENV = {
 };
 const ALLOWED_PROVIDERS = new Set(Object.keys(PROVIDER_LABELS));
 const OPEN_REQUEST_STATUSES = ["requested", "link_sent", "submitted", "manual_review"];
+const TERMINAL_IDENTITY_STATUSES = new Set(["verified", "failed", "expired", "cancelled"]);
+const NON_TERMINAL_IDENTITY_STATUSES = new Set(["requested", "link_sent", "submitted", "manual_review"]);
 const IDENTITY_REQUEST_SELECT =
-  "id,user_id,request_code,provider,status,provider_link,provider_reference,admin_notes";
+  "id,user_id,request_code,provider,status,provider_link,provider_reference,admin_notes,resolved_at";
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -425,6 +427,28 @@ function sumsubReviewDecision(event) {
   return { status: "submitted", terminal: false };
 }
 
+function monotonicSumsubDecision(request = {}, decision = {}) {
+  const currentStatus = String(request.status || "").trim().toLowerCase();
+  const nextStatus = String(decision.status || "submitted").trim().toLowerCase();
+
+  if (TERMINAL_IDENTITY_STATUSES.has(currentStatus) && NON_TERMINAL_IDENTITY_STATUSES.has(nextStatus)) {
+    return {
+      ...decision,
+      status: currentStatus,
+      terminal: true,
+      preserved_terminal_status: true,
+      original_status: nextStatus,
+    };
+  }
+
+  return {
+    ...decision,
+    status: nextStatus || "submitted",
+    preserved_terminal_status: false,
+    original_status: nextStatus || "submitted",
+  };
+}
+
 async function findIdentityRequestByReference(reference) {
   if (!reference) return null;
 
@@ -444,6 +468,7 @@ async function findIdentityRequestByReference(reference) {
 }
 
 async function patchSumsubIdentityResult({ request, event, decision, reference }) {
+  const effectiveDecision = monotonicSumsubDecision(request, decision);
   const providerReference = reference || request.provider_reference;
   const eventType = String(event.type || "sumsub_webhook");
   const applicantId = String(event.applicantId || "");
@@ -453,6 +478,10 @@ async function patchSumsubIdentityResult({ request, event, decision, reference }
     `Sumsub webhook ${eventType} recorded.`,
     applicantId ? `Applicant: ${applicantId}.` : "",
     `Review: ${reviewStatus}/${reviewAnswer}.`,
+    `Decision: ${decision.status}.`,
+    effectiveDecision.preserved_terminal_status
+      ? `Existing terminal status ${effectiveDecision.status} preserved; non-final callback ${effectiveDecision.original_status} cannot downgrade provider evidence.`
+      : "",
     "Provider evidence decides verification; AI cannot override this result.",
   ]
     .filter(Boolean)
@@ -460,10 +489,10 @@ async function patchSumsubIdentityResult({ request, event, decision, reference }
 
   const requestPayload = {
     provider: "sumsub",
-    status: decision.status,
+    status: effectiveDecision.status,
     provider_reference: providerReference,
     admin_notes: adminNotes,
-    resolved_at: decision.terminal ? new Date().toISOString() : null,
+    resolved_at: effectiveDecision.terminal ? request.resolved_at || new Date().toISOString() : null,
   };
   const requestResponse = await fetch(
     `${SUPABASE_URL}/rest/v1/identity_verification_requests?id=eq.${encodeURIComponent(request.id)}`,
@@ -483,13 +512,13 @@ async function patchSumsubIdentityResult({ request, event, decision, reference }
 
   const profilePayload = {
     identity_verification_provider: "sumsub",
-    identity_verification_status: decision.status,
+    identity_verification_status: effectiveDecision.status,
     identity_verification_reference: providerReference,
     identity_verification_notes: adminNotes,
   };
-  if (decision.status === "verified") {
+  if (effectiveDecision.status === "verified" && !effectiveDecision.preserved_terminal_status) {
     profilePayload.identity_verified_at = new Date().toISOString();
-  } else if (decision.status === "failed") {
+  } else if (["failed", "expired", "cancelled"].includes(effectiveDecision.status)) {
     profilePayload.identity_verified_at = null;
   }
 
@@ -512,7 +541,9 @@ async function patchSumsubIdentityResult({ request, event, decision, reference }
   return {
     updated: true,
     request_code: requestRows[0]?.request_code || request.request_code,
-    status: decision.status,
+    status: effectiveDecision.status,
+    provider_decision_status: decision.status,
+    preserved_terminal_status: effectiveDecision.preserved_terminal_status,
     provider_reference: providerReference,
   };
 }
