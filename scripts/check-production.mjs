@@ -389,6 +389,9 @@ const requiredVerificationMarkers = [
   "providerActionCopy",
   "renderVerificationTimeline",
   "verificationTimeline",
+  "verificationNextPath",
+  "verificationLoginHref",
+  'loginUrl.searchParams.set("next", verificationNextPath())',
   "startIdentityVerificationSession",
   "verification-country-options",
   "verification-fallback-list",
@@ -1788,8 +1791,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/verification" && !text.includes("verification.js?v=10")) {
-    fail(failures, `${page} does not reference verification.js?v=10`);
+  if (page === "/verification" && !text.includes("verification.js?v=11")) {
+    fail(failures, `${page} does not reference verification.js?v=11`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=10`);

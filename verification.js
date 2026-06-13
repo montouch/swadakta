@@ -142,6 +142,18 @@
     return document.querySelector(selector);
   }
 
+  function verificationNextPath() {
+    const next = new URL(window.location.href);
+    next.hash = "";
+    return `${next.pathname}${next.search}`;
+  }
+
+  function verificationLoginHref() {
+    const loginUrl = new URL("/login.html", window.location.origin);
+    loginUrl.searchParams.set("next", verificationNextPath());
+    return `${loginUrl.pathname}${loginUrl.search}`;
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
       ({
@@ -565,7 +577,7 @@
         populate({});
         setPill("Sign in required", "bg-error-container text-on-error-container");
         summaryCopy.textContent = "Sign in or create an account before requesting verification.";
-        signInLink.href = "/portal.html#home";
+        signInLink.href = verificationLoginHref();
         signInLink.textContent = "Sign in to verify";
         signInLink.removeAttribute("data-swadakta-auth-state");
         renderRequests([]);
