@@ -567,6 +567,9 @@ const requiredResolutionPageMarkers = [
   "Resolution Center",
   "Protected decision: AI cannot refund, release money",
   "Stripe / PayPal / M-Pesa / Wise provider evidence",
+  "Refund and dispute evidence ladder",
+  "Release pause is automatic",
+  "resolution-decision-preview",
 ];
 const requiredResolutionScriptMarkers = [
   "createResolutionCase",
@@ -574,6 +577,8 @@ const requiredResolutionScriptMarkers = [
   "Founder review is required",
   "task",
   "source",
+  "renderDecisionPreview",
+  "Founder/provider review required",
 ];
 const requiredMessagesMarkers = [
   "submitLiveReceiverUpdate",
@@ -1904,8 +1909,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/resolution" && !text.includes("resolution.js?v=2")) {
-    fail(failures, `${page} does not reference resolution.js?v=2`);
+  if (page === "/resolution" && !text.includes("resolution.js?v=3")) {
+    fail(failures, `${page} does not reference resolution.js?v=3`);
   }
   if (page === "/resolution") {
     for (const marker of requiredResolutionPageMarkers) {
@@ -2360,11 +2365,11 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
-const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=2");
+const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=3");
 if (resolutionResponse.status !== 200) {
-  fail(failures, `resolution.js?v=2 returned ${resolutionResponse.status}`);
+  fail(failures, `resolution.js?v=3 returned ${resolutionResponse.status}`);
 } else {
-  pass("resolution.js?v=2 returned 200");
+  pass("resolution.js?v=3 returned 200");
 }
 
 for (const marker of requiredResolutionScriptMarkers) {

@@ -19,6 +19,7 @@
   const trackingLink = document.querySelector("#resolution-tracking-link");
   const messageLink = document.querySelector("#resolution-message-link");
   const assistantLink = document.querySelector("#resolution-assistant-link");
+  const decisionPreviewEl = document.querySelector("#resolution-decision-preview");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -96,6 +97,56 @@
     if (["payment_refund", "payment_dispute"].includes(clean)) return "text-tertiary bg-white/80";
     if (["receiver_safety", "restricted_item"].includes(clean)) return "text-error bg-white/80";
     return "text-primary bg-white/80";
+  }
+
+  function isProtectedResolutionPath() {
+    const issue = issueInput?.value || "";
+    const outcome = outcomeInput?.value || "";
+    const severity = severityInput?.value || "";
+    const paymentAction = paymentActionInput?.value || "none";
+    return (
+      paymentAction !== "none" ||
+      ["payment_refund", "payment_dispute", "receiver_safety", "restricted_item"].includes(issue) ||
+      ["partial_refund", "full_refund", "release_milestone", "replace_receiver", "legal_compliance_review"].includes(outcome) ||
+      ["payment", "legal", "safety"].includes(severity)
+    );
+  }
+
+  function renderDecisionPreview() {
+    if (!decisionPreviewEl) return;
+    const issue = formatLabel(issueInput?.value || "other");
+    const outcome = formatLabel(outcomeInput?.value || "explain_status");
+    const paymentAction = paymentActionInput?.value || "none";
+    const providerReference = String(providerReferenceInput?.value || "").trim();
+    const links = evidenceLinks();
+    const protectedPath = isProtectedResolutionPath();
+    const missingEvidence = [];
+
+    if (paymentAction !== "none" && !providerReference) {
+      missingEvidence.push("provider payment, receipt, reversal, or dispute reference");
+    }
+    if (!links.length) {
+      missingEvidence.push("proof links such as photos, receipts, messages, GPS notes, or courier records");
+    }
+
+    const pathTitle = protectedPath ? "Founder/provider review required" : "AI triage can start";
+    const pathCopy = protectedPath
+      ? "Release pause is automatic. AI can organize the facts, but money, receiver, ID, safety, legal, and restricted-item decisions wait for founder/admin or provider evidence."
+      : "AI can summarize the facts, draft a reply, and suggest the next routine update. Protected actions still stay locked if the issue changes.";
+    const evidenceCopy = missingEvidence.length
+      ? `Add ${missingEvidence.join(" and ")} before expecting a money or milestone decision.`
+      : "Evidence looks ready for triage. Swadakta still checks provider evidence before any protected state changes.";
+
+    decisionPreviewEl.innerHTML = `
+      <p class="font-label text-sm uppercase tracking-[0.16em] ${protectedPath ? "text-tertiary" : "text-primary"}">Resolution path preview</p>
+      <h3 class="mt-2 font-display text-xl font-extrabold">${escapeHtml(pathTitle)}</h3>
+      <p class="mt-2 text-sm text-on-surface-variant">${escapeHtml(pathCopy)}</p>
+      <div class="mt-4 grid gap-2 text-sm text-on-surface-variant md:grid-cols-2">
+        <p class="rounded-2xl border border-outline-variant/40 bg-white/76 p-3"><span class="font-label text-primary">Issue:</span> ${escapeHtml(issue)}</p>
+        <p class="rounded-2xl border border-outline-variant/40 bg-white/76 p-3"><span class="font-label text-primary">Requested outcome:</span> ${escapeHtml(outcome)}</p>
+      </div>
+      <p class="mt-3 rounded-2xl border border-outline-variant/40 bg-white/76 p-3 text-sm text-on-surface-variant">${escapeHtml(evidenceCopy)}</p>
+    `;
   }
 
   function renderCases(cases = []) {
@@ -180,13 +231,31 @@
   if (params.get("contact")) contactInput.value = params.get("contact") || "";
 
   updateContextLinks();
+  renderDecisionPreview();
   if (currentCode() && currentContact()) {
     loadCases();
   }
 
-  for (const input of [codeInput, contactInput, issueInput, outcomeInput]) {
-    input?.addEventListener("input", updateContextLinks);
-    input?.addEventListener("change", updateContextLinks);
+  for (const input of [
+    codeInput,
+    contactInput,
+    issueInput,
+    outcomeInput,
+    severityInput,
+    paymentActionInput,
+    amountInput,
+    providerReferenceInput,
+    evidenceInput,
+    summaryInput,
+  ]) {
+    input?.addEventListener("input", () => {
+      updateContextLinks();
+      renderDecisionPreview();
+    });
+    input?.addEventListener("change", () => {
+      updateContextLinks();
+      renderDecisionPreview();
+    });
   }
 
   refreshButton?.addEventListener("click", loadCases);
@@ -216,6 +285,7 @@
       providerReferenceInput.value = "";
       amountInput.value = "";
       evidenceInput.value = "";
+      renderDecisionPreview();
       await loadCases();
     } catch (error) {
       setStatus(error.message || "Could not open the issue.", "text-error");

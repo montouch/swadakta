@@ -105,6 +105,29 @@
           </div>
 
           <div class="glass-panel rounded-[2rem] p-6 md:p-8">
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Refund and dispute evidence ladder</p>
+            <h2 class="mt-3 font-display text-2xl font-extrabold">What happens after you open an issue.</h2>
+            <div class="mt-5 grid gap-3 text-sm text-on-surface-variant">
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
+                <span class="font-label text-primary">1. Release pause is automatic</span>
+                <p class="mt-1">Refund, chargeback, safety, legal, restricted-item, or milestone-release issues pause receiver release until provider evidence and request proof are reviewed.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
+                <span class="font-label text-primary">2. Evidence is gathered from both sides</span>
+                <p class="mt-1">Swadakta keeps the payment reference, receipt, media, GPS/proof notes, messages, courier records, and provider dispute details attached to the request.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
+                <span class="font-label text-primary">3. Provider rules decide the money rail</span>
+                <p class="mt-1">Stripe, PayPal, M-Pesa, Wise, bank, or regulated escrow/provider rules control the actual refund, reversal, dispute, or chargeback path.</p>
+              </div>
+              <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
+                <span class="font-label text-primary">4. Human approval is required for money</span>
+                <p class="mt-1">AI can summarize and draft the next message, but founder/admin or provider evidence must approve refunds, release exceptions, receiver replacement, and final closure.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-panel rounded-[2rem] p-6 md:p-8">
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment rails</p>
             <div class="mt-4 grid gap-3 text-sm">
               <a class="text-on-surface-variant hover:text-primary" href="https://docs.stripe.com/disputes" target="_blank" rel="noreferrer">Stripe dispute evidence</a>
@@ -215,6 +238,11 @@
               <textarea class="min-h-24 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 outline-none focus:border-primary resize-none" id="resolution-evidence-links" placeholder="Paste photos, Drive links, receipts, provider pages, or courier records. One link per line."></textarea>
             </label>
 
+            <div class="rounded-3xl border border-outline-variant/40 bg-white/72 p-5" id="resolution-decision-preview" aria-live="polite">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Resolution path preview</p>
+              <p class="mt-2 text-sm text-on-surface-variant">Choose the issue type, desired outcome, payment action, and evidence links to see whether this can stay in AI triage or needs founder/provider review.</p>
+            </div>
+
             <label class="grid gap-2">
               <span class="font-label text-sm text-on-surface-variant">What happened?</span>
               <textarea class="min-h-36 rounded-2xl border border-outline-variant/50 bg-white/80 p-4 outline-none focus:border-primary resize-none" id="resolution-summary" placeholder="Write the facts, what proof exists, what is missing, and what outcome you want." required></textarea>
@@ -244,7 +272,7 @@
 
     <script src="app-config.js?v=5"></script>
     <script src="app-data.js?v=61"></script>
-    <script src="resolution.js?v=2"></script>
+    <script src="resolution.js?v=3"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>
