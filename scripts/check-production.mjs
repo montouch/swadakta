@@ -1164,7 +1164,9 @@ async function fetchText(urlPath, options = {}) {
     headers: {
       "cache-control": "no-cache",
       "user-agent": "swadakta-production-health",
+      ...(options.headers || {}),
     },
+    body: options.body,
     redirect: "manual",
   });
 
@@ -2030,6 +2032,21 @@ if (isLocalBaseUrl()) {
     } else {
       pass(`${apiEndpoint} 405 response includes Allow: POST`);
     }
+  }
+
+  const { response: sumsubProbeResponse, text: sumsubProbeText } = await fetchText("/api/identity/sumsub-webhook", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "{}",
+  });
+  if (![401, 503].includes(sumsubProbeResponse.status)) {
+    fail(failures, `/api/identity/sumsub-webhook unsigned POST should stop at Sumsub verification/setup, got ${sumsubProbeResponse.status}`);
+  } else if (/Sign in before starting identity verification/i.test(sumsubProbeText)) {
+    fail(failures, "/api/identity/sumsub-webhook fell through to user sign-in flow instead of Sumsub webhook handling");
+  } else if (!/SUMSUB_WEBHOOK_SECRET|Missing Sumsub x-payload-digest/i.test(sumsubProbeText)) {
+    fail(failures, "/api/identity/sumsub-webhook did not return the expected Sumsub-specific setup/signature response");
+  } else {
+    pass("/api/identity/sumsub-webhook routes unsigned POST to Sumsub-specific handling");
   }
 
   const { response: readinessGetResponse } = await fetchText("/api/ops/readiness");
