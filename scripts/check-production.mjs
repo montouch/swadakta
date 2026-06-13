@@ -1512,6 +1512,7 @@ for (const marker of requiredSecretScanMarkers) {
   }
 }
 runSecretScan(failures);
+runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");

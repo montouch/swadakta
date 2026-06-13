@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, assistant mobile chat viewport fix, account transaction readiness hub, job-room communication safety pack, receiver code-of-conduct gate, AI dock mobile sheet fix, client quote disclosure builder, resolution safety-pause workflow, expanded AI dock chat layout, stored payment acceptance gate preservation, PayPal capture request-code matching, AI chat mobile full-height correction, PayPal pre-capture order/quote validation, and decimal-safe payment reconciliation.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, assistant mobile chat viewport fix, account transaction readiness hub, job-room communication safety pack, receiver code-of-conduct gate, AI dock mobile sheet fix, client quote disclosure builder, resolution safety-pause workflow, expanded AI dock chat layout, stored payment acceptance gate preservation, PayPal capture request-code matching, AI chat mobile full-height correction, PayPal pre-capture order/quote validation, decimal-safe payment reconciliation, and Vercel security-header regression checks.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -40,11 +40,13 @@
     "paypal_capture_request_code_matching",
     "ai_chat_mobile_full_height_correction",
     "paypal_pre_capture_order_quote_validation",
-    "decimal_safe_payment_reconciliation"
+    "decimal_safe_payment_reconciliation",
+    "vercel_security_header_regression_checks"
   ],
-  "queued_commit_count": 34,
+  "queued_commit_count": 35,
   "queued_commits": [
-    "HEAD Preserve cents in payment reconciliation",
+    "HEAD Guard Vercel security headers",
+    "6a0e897 Preserve cents in payment reconciliation",
     "e36cc53 Check PayPal order before capture",
     "fa73644 Fix AI chat mobile viewport",
     "bac3aa6 Match PayPal captures to request codes",
