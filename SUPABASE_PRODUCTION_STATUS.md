@@ -1,6 +1,6 @@
 # Supabase Production Status
 
-Last confirmed: June 13, 2026
+Last confirmed: June 14, 2026
 
 Project: `swadakta` (`srwkoulknropnwwyqslj`)  
 Region: `us-west-2`  
@@ -28,8 +28,10 @@ Database: Postgres `17.6.1.127`
   - `noop`
 - Auth leaked-password protection is enabled for the Email provider.
 - Supabase security advisors returned zero security warnings after the Auth setting was saved.
+- Duplicate permissive `SELECT` policies on `job_offers` and `resolution_cases` were consolidated into one visible-row policy per table without changing the access model.
 
 ## Watch Items
 
 - Keep Auth leaked-password protection enabled in the Supabase dashboard.
 - Before paid launch, complete a live sign-up/password-change test using a deliberately weak/leaked test password and confirm Supabase rejects it.
+- Supabase performance advisors currently show only informational unused-index notes for new workflow tables plus the Auth connection-allocation scale note. Keep the indexes until real traffic proves they are unnecessary.
