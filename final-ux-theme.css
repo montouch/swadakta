@@ -298,6 +298,16 @@ body:not([data-admin-theme="dark"]) [class*="grid-cols-"] > * {
   min-width: 0;
 }
 
+body:not([data-admin-theme="dark"]) .brief-action-pill {
+  min-width: 8.75rem !important;
+  white-space: nowrap !important;
+}
+
+body:not([data-admin-theme="dark"]) .brief-action-pill-small {
+  min-width: 7rem !important;
+  white-space: nowrap !important;
+}
+
 body:not([data-admin-theme="dark"]) .swadakta-auth-cta {
   white-space: nowrap;
 }

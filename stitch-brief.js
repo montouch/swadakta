@@ -369,10 +369,10 @@
 
   function serviceType(raw) {
     const value = raw.toLowerCase();
-    if (value.includes("delivery") || value.includes("logistics")) return "shopping";
-    if (value.includes("verification") || value.includes("inspection")) return "site";
-    if (value.includes("research")) return "virtual";
-    if (value.includes("legal") || value.includes("compliance")) return "registry";
+    if (value.includes("document") || value.includes("registry") || value.includes("legal") || value.includes("compliance")) return "registry";
+    if (value.includes("property") || value.includes("construction") || value.includes("verification") || value.includes("inspection")) return "site";
+    if (value.includes("buying") || value.includes("shopping") || value.includes("delivery") || value.includes("logistics") || value.includes("sourcing")) return "shopping";
+    if (value.includes("research") || value.includes("business") || value.includes("assistant") || value.includes("support")) return "virtual";
     return "quick";
   }
 
@@ -394,8 +394,8 @@
     }
 
     const service = String(selectedService || "").toLowerCase();
-    if (service.includes("verification") || service.includes("inspection")) return "site_visit";
-    if (service.includes("legal") || service.includes("compliance")) return "registry_errand";
+    if (service.includes("property") || service.includes("construction") || service.includes("verification") || service.includes("inspection")) return "site_visit";
+    if (service.includes("document") || service.includes("legal") || service.includes("compliance")) return "registry_errand";
     if (service.includes("shopping") || service.includes("sourcing") || service.includes("supplier")) {
       return "shopping_sourcing";
     }
@@ -1444,6 +1444,7 @@
     const original = button.innerHTML;
     const now = new Date().toISOString();
     const selectedService = value("#brief-service-type");
+    const requestTitle = value("#brief-request-title");
     const freeformBrief = value("#brief-freeform");
     const proof = value("#brief-proof");
     const items = value("#brief-items");
@@ -1482,6 +1483,7 @@
         task_location: location,
         kenya_location: location,
         task_type: serviceType(selectedService),
+        urgency: value("#brief-urgency") || "standard",
         service_package: servicePackage(value("#brief-service-package"), selectedService),
         payment_method_preference: paymentMethod(value("#brief-payment")),
         funds_protection_preference: escrowPreference(value("#brief-escrow")),
@@ -1489,7 +1491,19 @@
         logistics_mode: logisticsMode,
         goods_category: goodsCategory,
         logistics_notes: items,
-        notes: [freeformBrief, selectedService, routePlanSummary(), quoteSafetySummary(), compliancePackSummary(), proof, placeIntelligenceSummary(), corridorContext.notes].filter(Boolean).join("\n\n"),
+        notes: [
+          requestTitle ? `Request title: ${requestTitle}` : "",
+          freeformBrief,
+          selectedService ? `Service type: ${selectedService}` : "",
+          routePlanSummary(),
+          quoteSafetySummary(),
+          compliancePackSummary(),
+          proof,
+          placeIntelligenceSummary(),
+          corridorContext.notes,
+        ]
+          .filter(Boolean)
+          .join("\n\n"),
         proof_requirements: proof ? [proof] : ["Photo/video proof", "Receipt or reference where available"],
         required_checks: requiredChecks,
         compliance_flags: complianceFlags,
