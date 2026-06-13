@@ -6,8 +6,8 @@ Last updated: June 14, 2026
 
 - Domain: `https://swadakta.com` is live on Vercel.
 - Production commit freshness is enforced by `scripts/deployment-state.mjs`; `scripts/check-launch-ready.mjs` requires `production_current`.
-- Production health: `scripts/check-production.mjs` passes against `https://swadakta.com`.
-- Visual QA: `SWADAKTA_VISUAL_BASE_URL=https://swadakta.com scripts/check-visual-fit.mjs` passes.
+- Production health: `scripts/check-production.mjs` passes against `https://swadakta.com` and now includes responsive visual-fit checks.
+- Visual QA: `scripts/check-visual-fit.mjs https://swadakta.com` passes, including the About page, phone, tablet, and desktop overflow checks.
 - Normal sign-in: `scripts/check-production-auth-flow.mjs` passes; signed-in users land at `/portal#home` and can open `/verification`.
 - Admin sign-in: `scripts/check-production-admin-flow.mjs` passes; admin users reach `/admin-ops`.
 - Supabase project `srwkoulknropnwwyqslj` is `ACTIVE_HEALTHY`; security advisors return zero lints, and the Email provider has `PASSWORD_HIBP_ENABLED` checked for leaked-password protection.

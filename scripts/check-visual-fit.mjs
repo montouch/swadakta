@@ -10,6 +10,7 @@ const bundledNodeModules =
   "C:/Users/brown/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules";
 const pages = [
   "/",
+  "/about.html",
   "/auth.html",
   "/login.html",
   "/portal.html#home",

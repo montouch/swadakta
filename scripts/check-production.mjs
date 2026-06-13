@@ -1566,9 +1566,9 @@ function runSecretScan(failures) {
   }
 }
 
-function runLocalScript(failures, scriptPath, successLabel) {
+function runLocalScript(failures, scriptPath, successLabel, scriptArgs = []) {
   try {
-    execFileSync(process.execPath, [path.join(root, scriptPath)], {
+    execFileSync(process.execPath, [path.join(root, scriptPath), ...scriptArgs], {
       cwd: root,
       encoding: "utf8",
       stdio: "pipe",
@@ -1602,6 +1602,7 @@ runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Ver
 runLocalScript(failures, "scripts/check-ai-protected-preflight.mjs", "Local AI protected-action preflight check passed");
 runLocalScript(failures, "scripts/check-founder-evidence.mjs", "Local founder evidence register check passed");
 runLocalScript(failures, "scripts/check-ux-simplicity.mjs", "Local UX simplicity guard passed");
+runLocalScript(failures, "scripts/check-visual-fit.mjs", "Responsive visual fit guard passed", [baseUrl]);
 runLocalScript(failures, "scripts/check-supabase-contract.mjs", "Local Supabase contract check passed");
 runLocalScript(failures, "scripts/check-supabase-production-evidence.mjs", "Local Supabase production evidence check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
