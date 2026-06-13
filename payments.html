@@ -147,6 +147,88 @@
         </div>
       </section>
 
+      <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20" id="route-payment-fit">
+        <div class="grid gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:items-start">
+          <div>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Route payment fit checker</p>
+            <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">The route decides which payment path is sensible.</h2>
+            <p class="mt-4 text-on-surface-variant">
+              A client in Australia asking for a Kenya errand is not the same as a Kenya client asking for an Australia purchase, or a China sourcing request. Swadakta chooses the payment rail after the corridor, item risk, ID route, and proof plan are clear.
+            </p>
+            <div class="mt-6 grid gap-3">
+              <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5">
+                <strong class="font-label text-primary">Public rule</strong>
+                <p class="mt-2 text-sm text-on-surface-variant">Users should see the simplest safe choice. Admin sees the deeper provider, settlement, ID, proof, and payout gates.</p>
+              </div>
+              <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5">
+                <strong class="font-label text-primary">Hard stop</strong>
+                <p class="mt-2 text-sm text-on-surface-variant">A route can stay quote-only even if a payment provider exists. Legal goods, customs, ID, and protected-funds rules still win.</p>
+              </div>
+            </div>
+          </div>
+
+          <form class="glass-panel rounded-[2rem] p-6 md:p-8 grid gap-5" id="route-payment-fit-form">
+            <div class="grid gap-4 md:grid-cols-2">
+              <label class="grid gap-2 font-label text-sm">
+                Client location
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="route-client-region">
+                  <option value="outside_africa">Outside Africa</option>
+                  <option value="africa">Africa</option>
+                  <option value="kenya">Kenya</option>
+                  <option value="china">China</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Work location
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="route-work-region">
+                  <option value="africa">Africa</option>
+                  <option value="kenya">Kenya</option>
+                  <option value="outside_africa">Outside Africa</option>
+                  <option value="china">China</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Work type
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="route-work-type">
+                  <option value="service">Errand, proof visit, documents, or VA support</option>
+                  <option value="purchase">Buying, parcel, shopping, or delivery</option>
+                  <option value="sourcing">Supplier sourcing or China buying</option>
+                  <option value="high_value">Property, title, construction, supplier deposit, or sensitive funds</option>
+                </select>
+              </label>
+              <label class="grid gap-2 font-label text-sm">
+                Quote currency
+                <select class="glass-input h-12 rounded-2xl px-4 font-body" id="route-currency">
+                  <option>AUD</option>
+                  <option>USD</option>
+                  <option>GBP</option>
+                  <option>EUR</option>
+                  <option>KES</option>
+                  <option>NGN</option>
+                  <option>GHS</option>
+                  <option>ZAR</option>
+                </select>
+              </label>
+            </div>
+            <label class="flex items-start gap-3 rounded-2xl bg-white/68 border border-outline-variant/35 p-4 text-sm text-on-surface-variant">
+              <input class="mt-1" id="route-cross-border-goods" type="checkbox" />
+              <span>Physical goods, customs, postal/courier, supplier purchase, or airport handoff is involved.</span>
+            </label>
+            <button class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold shadow-lg" type="submit">
+              Check route payment fit
+            </button>
+            <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5" id="route-payment-fit-result" aria-live="polite">
+              <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Likely route class</p>
+              <h3 class="mt-2 font-display text-2xl font-extrabold">Outside Africa to Africa</h3>
+              <p class="mt-2 text-on-surface-variant">Stripe or PayPal first for the client, Smile ID or Sumsub for the receiver, and local payout only after proof and milestone review.</p>
+              <div class="mt-4 rounded-2xl bg-primary/10 border border-primary/20 p-4 text-sm text-on-surface-variant">
+                Wise stays fallback-only. High-value or restricted work stays founder-reviewed.
+              </div>
+            </div>
+          </form>
+        </div>
+      </section>
+
       <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-14 md:pb-20" id="rail-readiness">
         <div class="glass-panel rounded-[2rem] p-6 md:p-8">
           <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
@@ -653,6 +735,8 @@
     <script>
       const form = document.querySelector("#payment-estimator-form");
       const result = document.querySelector("#estimator-result");
+      const routePaymentFitForm = document.querySelector("#route-payment-fit-form");
+      const routePaymentFitResult = document.querySelector("#route-payment-fit-result");
       const africaRailForm = document.querySelector("#africa-rail-planner-form");
       const africaRailResult = document.querySelector("#africa-rail-result");
       const baseAmounts = {
@@ -693,6 +777,90 @@
         if (currency === "KES") return "M-Pesa or bank transfer with provider receipt";
         if (sensitive || logistics) return "card checkout or PayPal, with regulated escrow/provider-held funds for high-value work";
         return "card checkout or PayPal";
+      }
+
+      function globalRoutePaymentFit(clientRegion, workRegion, workType, currency, crossBorderGoods) {
+        const africaClient = clientRegion === "africa" || clientRegion === "kenya";
+        const africaWork = workRegion === "africa" || workRegion === "kenya";
+        const kenyaRoute = clientRegion === "kenya" || workRegion === "kenya" || currency === "KES";
+        const outsideAfricaClient = clientRegion === "outside_africa" || clientRegion === "china";
+        const outsideAfricaWork = workRegion === "outside_africa" || workRegion === "china";
+        const sourcingRoute = workType === "sourcing" || clientRegion === "china" || workRegion === "china";
+        const highValue = workType === "high_value";
+        const physicalOrSensitive = crossBorderGoods || workType === "purchase" || sourcingRoute || highValue;
+        const africaExpansionCurrency = ["NGN", "GHS", "ZAR"].includes(currency);
+
+        if (highValue) {
+          return {
+            eyebrow: "Protected route",
+            title: "High-value or sensitive funds",
+            rail: "Use regulated escrow/provider-held funds or written legal confirmation before any receiver assignment. Ordinary payment links are not enough.",
+            identity: "Provider ID for every party, plus enhanced authority, ownership, document, and proof review.",
+            visibility: "Blocked from normal public launch.",
+            hardStop: "Do not take money, assign receivers, or promise execution until regulated route, legal, insurance, and milestone authority are proven.",
+          };
+        }
+
+        if (sourcingRoute) {
+          return {
+            eyebrow: "Founder-reviewed route",
+            title: "China sourcing or supplier buying",
+            rail: "Quote-only first. Use Stripe or PayPal for a reviewed deposit where supported; Wise or bank only as reconciled fallback.",
+            identity: "Sumsub for global parties; receiver/source helper needs supplier proof, media proof, and item legality checks.",
+            visibility: "Founder-reviewed quote only.",
+            hardStop: "Do not accept restricted, counterfeit, battery, medicine, food, weapon, brand-infringing, or customs-sensitive goods without official evidence.",
+          };
+        }
+
+        if (outsideAfricaClient && africaWork) {
+          return {
+            eyebrow: "Likely route class",
+            title: "Outside Africa to Africa",
+            rail: kenyaRoute && currency === "KES"
+              ? "Use Stripe or PayPal when the client can pay globally; M-Pesa can support Kenya KES after Daraja live approval. Wise stays fallback-only."
+              : "Stripe or PayPal first for global card/client payments. Use Wise only after simpler rails fail or do not fit.",
+            identity: "Sumsub for the client; Smile ID or Sumsub for the African receiver depending on document coverage.",
+            visibility: physicalOrSensitive ? "Founder-reviewed until goods/rules/proof are clear." : "Can be quoted for low-risk service work after readiness gates pass.",
+            hardStop: "Do not collect payment if receiver ID, route rules, cost plan, or provider payment evidence is missing.",
+          };
+        }
+
+        if (africaClient && africaWork) {
+          return {
+            eyebrow: "Africa route",
+            title: "Africa in-country or regional work",
+            rail: kenyaRoute && currency === "KES"
+              ? "M-Pesa/Daraja first for Kenya KES after business approval, callback, and receipt evidence."
+              : africaExpansionCurrency
+                ? "Paystack or Flutterwave can be considered only after merchant, settlement, webhook, and evidence mapping pass."
+                : "Use approved Africa rail where available; otherwise quote in supported global currency or use bank/Wise fallback with reconciliation.",
+            identity: "Smile ID first where supported; Sumsub or approved local provider fallback.",
+            visibility: africaExpansionCurrency || kenyaRoute ? "Pilot-ready after provider evidence." : "Quote-request only until country/currency rail is proven.",
+            hardStop: "Do not show M-Pesa, Paystack, or Flutterwave as normal choices until provider evidence and settlement path are proven.",
+          };
+        }
+
+        if (africaClient && outsideAfricaWork) {
+          return {
+            eyebrow: "Two-way corridor",
+            title: "Africa to overseas purchase or errand",
+            rail: kenyaRoute && currency === "KES"
+              ? "Use approved Africa rail for the client where available, then keep overseas purchase/payout founder-controlled."
+              : "Use global card/PayPal if the client can pay that way; use bank/Wise only as a reconciled fallback.",
+            identity: "Smile ID or local provider for the African client; Sumsub for receiver abroad.",
+            visibility: "Founder-reviewed pilot only until customs and parcel rules are proven.",
+            hardStop: "Do not accept restricted goods, medicines, batteries, food, valuables, or customs-sensitive parcels without official carrier/customs checks.",
+          };
+        }
+
+        return {
+          eyebrow: "Global service route",
+          title: "Non-Africa global corridor",
+          rail: "Stripe or PayPal first for supported currencies. Wise remains hidden fallback for cases that cannot use normal checkout.",
+          identity: "Sumsub first, then approved provider fallback if country or document coverage requires it.",
+          visibility: physicalOrSensitive ? "Quote-request only until item/rules are checked." : "Can be quoted for low-risk service work after readiness gates pass.",
+          hardStop: "Do not promise customs, tax, legal, immigration, or regulated delivery outcomes.",
+        };
       }
 
       function paymentExpansionRail(country, currency, highValue, crossBorder) {
@@ -845,6 +1013,39 @@
               ? `<ul class="mt-4 grid gap-2 text-sm text-on-surface-variant">${flags.map((item) => `<li class="flex gap-2"><span class="material-symbols-outlined text-primary text-[18px]">priority_high</span><span>${item}</span></li>`).join("")}</ul>`
               : ""
           }
+        `;
+      });
+
+      routePaymentFitForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const clientRegion = document.querySelector("#route-client-region").value;
+        const workRegion = document.querySelector("#route-work-region").value;
+        const workType = document.querySelector("#route-work-type").value;
+        const currency = document.querySelector("#route-currency").value;
+        const crossBorderGoods = document.querySelector("#route-cross-border-goods").checked;
+        const plan = globalRoutePaymentFit(clientRegion, workRegion, workType, currency, crossBorderGoods);
+        routePaymentFitResult.innerHTML = `
+          <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">${plan.eyebrow}</p>
+          <h3 class="mt-2 font-display text-2xl font-extrabold">${plan.title}</h3>
+          <div class="mt-4 grid gap-3">
+            <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+              <strong class="block text-primary">Payment path</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">${plan.rail}</p>
+            </div>
+            <div class="rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4">
+              <strong class="block text-primary">ID route</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">${plan.identity}</p>
+            </div>
+            <div class="rounded-2xl bg-white/80 border border-outline-variant/30 p-4">
+              <strong class="block text-primary">Visibility</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">${plan.visibility}</p>
+            </div>
+            <div class="rounded-2xl bg-primary/10 border border-primary/20 p-4">
+              <strong class="block text-primary">Hard stop</strong>
+              <p class="mt-1 text-sm text-on-surface-variant">${plan.hardStop}</p>
+            </div>
+          </div>
+          <p class="mt-4 text-xs text-on-surface-variant">Planner only: final quote still depends on provider approval, settlement currency, lawful route, proof, ID, and Swadakta readiness checks.</p>
         `;
       });
 

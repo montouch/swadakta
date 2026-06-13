@@ -29,7 +29,7 @@ The public site should keep payment choices simple. The admin/readiness layer de
 
 Client-visible rail gate rule: no payment rail becomes a normal public choice until the readiness cockpit proves provider setup, evidence reconciliation, and milestone-release boundaries. Provider confirmation never releases receiver money by itself.
 
-Corridor rail rule: even when a provider is ready, the corridor can still stay hidden or founder-gated. Admin Readiness now separates outside-Africa-to-Africa, Africa in-country, Africa-to-global, non-Africa global, China/sourcing, and high-value/sensitive routes so payment, ID, payout, customs/legal, and proof gates are checked together before a quote is sent.
+Corridor rail rule: even when a provider is ready, the corridor can still stay hidden or founder-gated. Admin Readiness now separates outside-Africa-to-Africa, Africa in-country, Africa-to-global, non-Africa global, China/sourcing, and high-value/sensitive routes so payment, ID, payout, customs/legal, and proof gates are checked together before a quote is sent. The public Payments page mirrors this at a client-safe level with a route-payment fit checker that explains likely rails and hard stops without exposing founder economics or internal provider flags.
 
 ## Server-side Payment Launch Gate
 
