@@ -44,6 +44,18 @@
   const controlPlace = document.querySelector("#tracking-control-place");
   const controlPrimaryLink = document.querySelector("#tracking-control-primary-link");
   const controlAiLink = document.querySelector("#tracking-control-ai-link");
+  const closeoutPanel = document.querySelector("#tracking-closeout-panel");
+  const closeoutTitle = document.querySelector("#tracking-closeout-title");
+  const closeoutPill = document.querySelector("#tracking-closeout-pill");
+  const closeoutCopy = document.querySelector("#tracking-closeout-copy");
+  const reviewForm = document.querySelector("#tracking-review-form");
+  const reviewScore = document.querySelector("#tracking-review-score");
+  const reviewNote = document.querySelector("#tracking-review-note");
+  const reviewSubmit = document.querySelector("#tracking-review-submit");
+  const reviewStatus = document.querySelector("#tracking-review-status");
+  const repeatBriefLink = document.querySelector("#tracking-repeat-brief-link");
+  const closeoutIssueLink = document.querySelector("#tracking-closeout-issue-link");
+  const closeoutBoundary = document.querySelector("#tracking-closeout-boundary");
 
   if (!form || !window.SwadaktaData) return;
 
@@ -70,6 +82,7 @@
     "partially_released",
     "released",
   ]);
+  let currentTrackedRequest = null;
   const paymentReturnLabels = {
     success: { icon: "verified", eyebrow: "Stripe checkout", title: "Payment return received" },
     cancelled: { icon: "undo", eyebrow: "Stripe checkout", title: "Payment was not completed" },
@@ -489,7 +502,122 @@
       if (contact) resolutionUrl.searchParams.set("contact", contact);
       resolutionLink.href = `${resolutionUrl.pathname}${resolutionUrl.search}`;
       if (resolutionOpenLink) resolutionOpenLink.href = resolutionLink.href;
+      if (closeoutIssueLink) closeoutIssueLink.href = resolutionLink.href;
     }
+
+    if (repeatBriefLink) {
+      const repeatUrl = new URL("brief.html", window.location.href);
+      if (code) repeatUrl.searchParams.set("repeat_code", code.toUpperCase());
+      repeatUrl.searchParams.set("source", "tracking_closeout");
+      repeatBriefLink.href = `${repeatUrl.pathname}${repeatUrl.search}`;
+      repeatBriefLink.setAttribute("aria-label", "Create repeat brief from this completed request");
+    }
+  }
+
+  function setReviewStatus(message, tone = "") {
+    if (!reviewStatus) return;
+    reviewStatus.textContent = message;
+    reviewStatus.className = `min-h-6 text-sm font-label ${tone || "text-on-surface-variant"}`.trim();
+  }
+
+  function setCloseoutControls(enabled) {
+    for (const control of [reviewScore, reviewNote, reviewSubmit]) {
+      if (control) control.disabled = !enabled;
+    }
+  }
+
+  function reviewScoreLabel(score) {
+    const normalized = Number(score);
+    if (!normalized) return "No review yet";
+    return `${normalized}/5 client review`;
+  }
+
+  function renderCloseoutReview(request = null) {
+    if (!closeoutPanel) return;
+    const status = String(request?.status || "").toLowerCase();
+    const completed = status === "completed";
+    const reviewed = Boolean(request?.client_review_score);
+    const code = request?.request_code || codeInput.value.trim().toUpperCase();
+    const contact = contactInput.value.trim();
+
+    updateJobRoomLinks(code, contact);
+
+    if (!request) {
+      if (closeoutTitle) closeoutTitle.textContent = "Review after completion";
+      if (closeoutPill) {
+        closeoutPill.textContent = "Waiting";
+        closeoutPill.className = "inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-sm";
+      }
+      if (closeoutCopy) closeoutCopy.textContent = "Open a request to see proof acceptance, review, repeat-brief, and correction options.";
+      if (closeoutBoundary) closeoutBoundary.textContent = "Reviews can improve provenance only after the job is completed and proof records stay available.";
+      if (reviewScore) reviewScore.value = "";
+      if (reviewNote) reviewNote.value = "";
+      setReviewStatus("No request loaded yet.");
+      setCloseoutControls(false);
+      return;
+    }
+
+    if (reviewScore) reviewScore.value = request.client_review_score ? String(request.client_review_score) : "";
+    if (reviewNote) reviewNote.value = request.client_review_note || "";
+
+    if (reviewed) {
+      if (closeoutTitle) closeoutTitle.textContent = "Review recorded";
+      if (closeoutPill) {
+        closeoutPill.textContent = reviewScoreLabel(request.client_review_score);
+        closeoutPill.className = "inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-emerald-50 text-emerald-700 font-label-sm";
+      }
+      if (closeoutCopy) {
+        closeoutCopy.textContent =
+          "This completed job has a client review on record. Swadakta can use it with proof quality, disputes, and receiver behavior for provenance.";
+      }
+      if (closeoutBoundary) {
+        closeoutBoundary.textContent =
+          "A review improves trust only when it matches proof history. Correction issues can still pause provenance or payout decisions.";
+      }
+      setReviewStatus(
+        request.client_reviewed_at
+          ? `Submitted ${new Date(request.client_reviewed_at).toLocaleString()}.`
+          : "Review submitted.",
+        "text-primary",
+      );
+      setCloseoutControls(false);
+      return;
+    }
+
+    if (!completed) {
+      if (closeoutTitle) closeoutTitle.textContent = "Review unlocks after completion";
+      if (closeoutPill) {
+        closeoutPill.textContent = "Locked";
+        closeoutPill.className = "inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-amber-50 text-amber-700 font-label-sm";
+      }
+      if (closeoutCopy) {
+        closeoutCopy.textContent =
+          "Finish proof review and close the job before asking for a client rating. Open an issue if proof, payment, or quality is unclear.";
+      }
+      if (closeoutBoundary) {
+        closeoutBoundary.textContent =
+          "Review stays locked until completion so ratings cannot pressure proof review, refunds, or milestone release.";
+      }
+      setReviewStatus("Review available after completion.");
+      setCloseoutControls(false);
+      return;
+    }
+
+    if (closeoutTitle) closeoutTitle.textContent = "Accept proof and leave review";
+    if (closeoutPill) {
+      closeoutPill.textContent = "Ready";
+      closeoutPill.className = "inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-primary/10 text-primary font-label-sm";
+    }
+    if (closeoutCopy) {
+      closeoutCopy.textContent =
+        "The job is marked completed. Leave a fair review based on proof quality, timing, communication, and whether the result matched the written scope.";
+    }
+    if (closeoutBoundary) {
+      closeoutBoundary.textContent =
+        "Low ratings or correction notes should open a resolution case before future matching or provenance increases.";
+    }
+    setReviewStatus("Choose a score and add a short note.");
+    setCloseoutControls(true);
   }
 
   function renderPaymentReturnHint(params) {
@@ -789,6 +917,8 @@
       renderPaymentRailPlan({});
       renderResolutionCases([], "No matching request found.");
       renderWorkflowControl(null);
+      currentTrackedRequest = null;
+      renderCloseoutReview(null);
       return;
     }
 
@@ -827,6 +957,8 @@
     renderProofChecklist(request);
     renderMediaLinks(request);
     renderWorkflowControl(request);
+    currentTrackedRequest = request;
+    renderCloseoutReview(request);
     setResult(
       `Status: ${status}. Payment: ${payment}. ID verification: ${formatStatus(request.verification_status || "required")}.`,
       "text-primary",
@@ -848,12 +980,50 @@
       setPaymentLink("");
       setResult(error.message || "Could not open request.", "text-error");
       renderResolutionCases([], error.message || "Could not open request.");
+      currentTrackedRequest = null;
+      renderCloseoutReview(null);
     }
   }
 
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     lookup();
+  });
+
+  reviewForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const code = (currentTrackedRequest?.request_code || codeInput.value || "").trim().toUpperCase();
+    const contact = contactInput.value.trim();
+    const score = Number(reviewScore?.value || 0);
+    const note = reviewNote?.value || "";
+
+    if (!currentTrackedRequest) {
+      setReviewStatus("Open a completed request before leaving a review.", "text-error");
+      return;
+    }
+
+    if (String(currentTrackedRequest.status || "").toLowerCase() !== "completed") {
+      setReviewStatus("Reviews open after the job is completed.", "text-error");
+      return;
+    }
+
+    try {
+      if (reviewSubmit) reviewSubmit.disabled = true;
+      setReviewStatus("Submitting review...");
+      const result = await window.SwadaktaData.submitServiceReview(code, contact, score, note);
+      const data = result.data || {};
+      currentTrackedRequest = {
+        ...currentTrackedRequest,
+        client_review_score: data.client_review_score || score,
+        client_review_note: data.client_review_note || note,
+        client_reviewed_at: data.client_reviewed_at || new Date().toISOString(),
+      };
+      renderCloseoutReview(currentTrackedRequest);
+      setReviewStatus("Review recorded. Provenance can now reflect this completed job after Swadakta checks proof history.", "text-primary");
+    } catch (error) {
+      setReviewStatus(error.message || "Could not submit review.", "text-error");
+      if (reviewSubmit) reviewSubmit.disabled = false;
+    }
   });
 
   const params = new URLSearchParams(window.location.search);
@@ -872,6 +1042,7 @@
   if (params.get("contact")) contactInput.value = params.get("contact");
   renderPaymentReturnHint(params);
   updateJobRoomLinks();
+  renderCloseoutReview(null);
   if (
     codeInput.value &&
     !contactInput.value &&

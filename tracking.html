@@ -467,25 +467,49 @@ Open secure payment link
 </div>
 <div class="mt-5 grid gap-3" id="tracking-media-links"></div>
 </div>
-<!-- Review Section (Disabled) -->
-<div class="glass-panel p-6 rounded-3xl opacity-60 relative overflow-hidden group">
-<div class="absolute inset-0 bg-surface/40 backdrop-blur-[2px] z-10 flex items-center justify-center p-4 text-center">
-<div class="bg-white/80 px-4 py-2 rounded-lg border border-outline-variant/30 shadow-sm">
-<span class="material-symbols-outlined text-secondary text-sm">lock</span>
-<p class="font-label-sm">Review available after completion</p>
+<!-- Closeout & Review -->
+<div class="glass-panel p-6 rounded-3xl" id="tracking-closeout-panel">
+<div class="flex items-start justify-between gap-3">
+<div>
+<p class="font-label-sm text-tertiary uppercase tracking-[0.16em]">Closeout</p>
+<h3 class="font-headline-sm mt-1" id="tracking-closeout-title">Review after completion</h3>
 </div>
+<span class="inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-sm" id="tracking-closeout-pill">Locked</span>
 </div>
-<h3 class="font-headline-sm mb-4">Final Review</h3>
-<div class="space-y-4">
-<div class="flex gap-2">
-<span class="material-symbols-outlined text-outline">star</span>
-<span class="material-symbols-outlined text-outline">star</span>
-<span class="material-symbols-outlined text-outline">star</span>
-<span class="material-symbols-outlined text-outline">star</span>
-<span class="material-symbols-outlined text-outline">star</span>
+<p class="mt-3 text-sm text-on-surface-variant" id="tracking-closeout-copy">Open a completed request to accept proof, leave a review, or open a correction issue.</p>
+<form class="mt-5 grid gap-3" id="tracking-review-form">
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">
+Review score
+<select class="h-11 rounded-xl sunken-input px-4 font-body-md text-on-surface" id="tracking-review-score" required>
+<option value="">Choose</option>
+<option value="5">5 - Excellent proof and communication</option>
+<option value="4">4 - Good, minor issues</option>
+<option value="3">3 - Acceptable, needs improvement</option>
+<option value="2">2 - Poor, Swadakta should review</option>
+<option value="1">1 - Serious issue</option>
+</select>
+</label>
+<label class="grid gap-2 font-label-md text-label-md text-on-surface-variant">
+Review note
+<textarea class="min-h-24 rounded-xl sunken-input px-4 py-3 font-body-md text-on-surface resize-none" id="tracking-review-note" placeholder="Mention proof quality, communication, timing, and whether anything needs correction."></textarea>
+</label>
+<button class="inline-flex h-11 items-center justify-center rounded-full bg-primary px-5 font-label-md font-bold text-white" id="tracking-review-submit" type="submit">
+<span class="material-symbols-outlined mr-2 text-[20px]">rate_review</span>
+Submit review
+</button>
+<p class="min-h-6 text-sm font-label text-on-surface-variant" id="tracking-review-status" role="status"></p>
+</form>
+<div class="mt-4 grid gap-2">
+<a class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white/72 border border-outline-variant/40 px-4 font-label-md text-primary" id="tracking-repeat-brief-link" href="brief.html">
+<span class="material-symbols-outlined mr-2 text-[20px]">replay</span>
+Create repeat brief
+</a>
+<a class="inline-flex min-h-10 items-center justify-center rounded-xl bg-white/72 border border-outline-variant/40 px-4 font-label-md text-primary" id="tracking-closeout-issue-link" href="resolution.html">
+<span class="material-symbols-outlined mr-2 text-[20px]">gavel</span>
+Open correction issue
+</a>
 </div>
-<div class="h-20 bg-surface-container rounded-xl"></div>
-</div>
+<p class="mt-4 text-xs text-on-surface-variant" id="tracking-closeout-boundary">Reviews can improve provenance only after the job is completed and proof records stay available. Money release and disputes still follow provider evidence.</p>
 </div>
 </div>
 </div>
@@ -505,6 +529,6 @@ Open secure payment link
 </footer>
 <script src="app-config.js?v=5"></script>
 <script src="app-data.js?v=61"></script>
-<script src="stitch-tracking.js?v=10"></script>
+<script src="stitch-tracking.js?v=11"></script>
 <script src="assistant-dock.js?v=15"></script>
 </body></html>

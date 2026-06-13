@@ -567,6 +567,11 @@ const requiredTrackingMarkers = [
   "renderPaymentReturnHint",
   "renderWorkflowControl",
   "tracking-job-control-panel",
+  "tracking-closeout-panel",
+  "renderCloseoutReview",
+  "submitServiceReview",
+  "Review unlocks after completion",
+  "Create repeat brief",
 ];
 const requiredResolutionPageMarkers = [
   "Resolution Center",
@@ -1901,8 +1906,8 @@ for (const page of requiredPages) {
   if (page === "/verification" && !text.includes("verification.js?v=14")) {
     fail(failures, `${page} does not reference verification.js?v=14`);
   }
-  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
-    fail(failures, `${page} does not reference stitch-tracking.js?v=10`);
+  if (page === "/tracking" && !text.includes("stitch-tracking.js?v=11")) {
+    fail(failures, `${page} does not reference stitch-tracking.js?v=11`);
   }
   if (page === "/assistant" && !text.includes("assistant.js?v=7")) {
     fail(failures, `${page} does not reference assistant.js?v=7`);
@@ -2355,11 +2360,11 @@ for (const marker of requiredBriefScriptMarkers) {
   }
 }
 
-const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=10");
+const { response: trackingResponse, text: trackingText } = await fetchText("/stitch-tracking.js?v=11");
 if (trackingResponse.status !== 200) {
-  fail(failures, `stitch-tracking.js?v=10 returned ${trackingResponse.status}`);
+  fail(failures, `stitch-tracking.js?v=11 returned ${trackingResponse.status}`);
 } else {
-  pass("stitch-tracking.js?v=10 returned 200");
+  pass("stitch-tracking.js?v=11 returned 200");
 }
 
 for (const marker of requiredTrackingMarkers) {

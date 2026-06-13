@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `22`
+- Local commits queued behind the Vercel rate limit: `23`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -54,6 +54,7 @@ Queued local release contents:
 18. Auth email deliverability readiness gate covering Supabase production redirects, custom SMTP or reviewed sender, SPF/DKIM/DMARC evidence, and confirmation/reset tests before public campaigns.
 19. Resolution Center evidence ladder and live path preview so refund, dispute, safety, legal, and milestone-release issues clearly pause protected actions until provider/founder evidence exists.
 20. Verification country/base-change guard explaining that account access stays open after relocation, but paid posting, paid receiver work, sensitive jobs, and assignments pause until provider route, work-permission, or Swadakta safety evidence is refreshed.
+21. Tracking closeout/review panel lets completed jobs collect a client score and note, open repeat briefs, and start correction issues while reviews stay locked until completion.
 
 Before the next push:
 
