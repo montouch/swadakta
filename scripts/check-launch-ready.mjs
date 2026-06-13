@@ -46,6 +46,7 @@ function skipStep(name, reason, { strict = false } = {}) {
 runNodeStep("Deployment state", path.join("scripts", "deployment-state.mjs"), [], {
   requireOutputIncludes: "production_current",
 });
+runNodeStep("Supabase production contract", path.join("scripts", "check-supabase-contract.mjs"));
 runNodeStep("Production health", path.join("scripts", "check-production.mjs"));
 
 if (skipVisual) {

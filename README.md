@@ -95,7 +95,7 @@ Then open:
 
 ## Production health
 
-Run the full launch verifier before demos, provider setup changes, or paid-pilot rehearsal:
+Run the full launch verifier before demos, provider setup changes, or paid-pilot rehearsal. It checks deployment freshness, the Supabase production contract, production health, and visual fit:
 
 ```powershell
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-launch-ready.mjs https://swadakta.com
