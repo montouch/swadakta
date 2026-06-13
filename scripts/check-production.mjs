@@ -84,7 +84,7 @@ const forbiddenSitemapMarkers = [
   "/resolution",
 ];
 const expectedSitemapLastmod = "2026-06-13";
-const expectedBriefScriptRef = "stitch-brief.js?v=23";
+const expectedBriefScriptRef = "stitch-brief.js?v=24";
 const requiredStitchScreens = [
   {
     path: "/",
@@ -391,7 +391,9 @@ const requiredVerificationMarkers = [
   "verificationTimeline",
   "verificationNextPath",
   "verificationLoginHref",
+  "safeReturnPath",
   'loginUrl.searchParams.set("next", verificationNextPath())',
+  "Back to job brief",
   "startIdentityVerificationSession",
   "verification-country-options",
   "verification-fallback-list",
@@ -495,6 +497,10 @@ const requiredBriefHtmlMarkers = [
 ];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
+  "briefLoginHref",
+  "briefVerificationHref",
+  'loginUrl.searchParams.set("next", briefNextPath())',
+  'verificationUrl.searchParams.set("next", briefNextPath())',
   "renderLaunchMode",
   "isPaidLaunchOpen",
   "launch_mode_founder_review",
@@ -1791,8 +1797,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/verification" && !text.includes("verification.js?v=11")) {
-    fail(failures, `${page} does not reference verification.js?v=11`);
+  if (page === "/verification" && !text.includes("verification.js?v=12")) {
+    fail(failures, `${page} does not reference verification.js?v=12`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=10")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=10`);

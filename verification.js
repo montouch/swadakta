@@ -154,6 +154,35 @@
     return `${loginUrl.pathname}${loginUrl.search}`;
   }
 
+  function safeReturnPath() {
+    const raw = params.get("next") || "";
+    if (!raw) return "";
+
+    try {
+      const target = new URL(raw, window.location.origin);
+      const allowedPaths = new Set([
+        "/portal",
+        "/portal.html",
+        "/brief",
+        "/brief.html",
+        "/tracking",
+        "/tracking.html",
+        "/messages",
+        "/messages.html",
+        "/payments",
+        "/payments.html",
+      ]);
+      if (target.origin !== window.location.origin || !allowedPaths.has(target.pathname)) return "";
+      if (target.pathname === "/portal") target.pathname = "/portal.html";
+      if ((target.pathname === "/portal.html" || target.pathname === "/portal") && !target.hash) {
+        target.hash = "home";
+      }
+      return `${target.pathname}${target.search}${target.hash}`;
+    } catch {
+      return "";
+    }
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (character) =>
       ({
@@ -587,8 +616,9 @@
       }
 
       setEnabled(true);
-      signInLink.href = "/portal.html#home";
-      signInLink.textContent = "Back to account home";
+      const returnPath = safeReturnPath();
+      signInLink.href = returnPath || "/portal.html#home";
+      signInLink.textContent = returnPath && returnPath.includes("/brief") ? "Back to job brief" : "Back to account home";
       signInLink.setAttribute("data-swadakta-auth-state", "signed-in");
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};

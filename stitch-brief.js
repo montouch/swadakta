@@ -4,6 +4,8 @@
   const submitButton = document.querySelector("#brief-submit");
   const gateTitle = document.querySelector("#brief-gate-title");
   const gateCopy = document.querySelector("#brief-gate-copy");
+  const gateAccountLink = document.querySelector("#brief-gate-account-link");
+  const gateVerificationLink = document.querySelector("#brief-gate-verification-link");
   const launchModePanel = document.querySelector("#brief-launch-mode");
   const launchModeTitle = document.querySelector("#brief-launch-mode-title");
   const launchModeCopy = document.querySelector("#brief-launch-mode-copy");
@@ -612,6 +614,35 @@
   function setStatus(message, tone = "") {
     status.textContent = message;
     status.className = `font-label-md text-label-md min-h-6 ${tone}`.trim();
+  }
+
+  function briefNextPath() {
+    const next = new URL(window.location.href);
+    next.hash = "";
+    return `${next.pathname}${next.search}`;
+  }
+
+  function briefLoginHref() {
+    const loginUrl = new URL("/login.html", window.location.origin);
+    loginUrl.searchParams.set("next", briefNextPath());
+    return `${loginUrl.pathname}${loginUrl.search}`;
+  }
+
+  function briefVerificationHref(reason = "paid_work") {
+    const verificationUrl = new URL("/verification.html", window.location.origin);
+    verificationUrl.searchParams.set("reason", reason);
+    verificationUrl.searchParams.set("next", briefNextPath());
+    return `${verificationUrl.pathname}${verificationUrl.search}`;
+  }
+
+  function setGateLinks({ signedIn = false, verificationReason = "paid_work" } = {}) {
+    if (gateAccountLink) {
+      gateAccountLink.href = signedIn ? "portal.html#home" : briefLoginHref();
+      gateAccountLink.textContent = signedIn ? "Open account" : "Sign in";
+    }
+    if (gateVerificationLink) {
+      gateVerificationLink.href = briefVerificationHref(verificationReason);
+    }
   }
 
   function setGate(title, copy, canPost = false) {
@@ -1349,6 +1380,7 @@
 
   async function refreshPostingGate() {
     setGate("Checking account access", "You can draft the brief, but posting paid work requires a signed-in verified account.", false);
+    setGateLinks({ signedIn: false });
 
     try {
       const acceptancePack = rulesPackFromContext();
@@ -1374,9 +1406,11 @@
       const email = sessionResult.session?.user?.email || "";
       if (!email) {
         setGate("Account needed before posting", "Create or sign in to your account first. ID verification is not needed to hold an account, but it is required before paid jobs go live.", false);
+        setGateLinks({ signedIn: false });
         return;
       }
 
+      setGateLinks({ signedIn: true });
       setValue("#brief-email", email);
       const profileResult = await window.SwadaktaData.getAccountProfile();
       const profile = profileResult.data || {};
@@ -1421,8 +1455,10 @@
         `Your account is open, but paid posting is locked until the automated ID provider verifies you. Current status: ${formatStatus(profile.identity_verification_status || "not_started")}.`,
         false,
       );
+      setGateLinks({ signedIn: true, verificationReason: "paid_work" });
     } catch (error) {
       setGate("Account check needs attention", "Sign in again or open Verification. The app will not post paid work until verification is confirmed.", false);
+      setGateLinks({ signedIn: false });
     }
   }
 
