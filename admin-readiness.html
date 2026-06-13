@@ -121,6 +121,7 @@
             </div>
             <div class="flex items-center gap-2">
               <button class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary sm:inline-flex" id="copy-checklist" type="button">Copy checklist</button>
+              <button class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary lg:inline-flex" id="copy-decision-register" type="button">Copy decisions</button>
               <button class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary sm:inline-flex" id="copy-founder-pack" type="button">Copy founder pack</button>
               <button class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary xl:inline-flex" id="copy-pilot-script" type="button">Copy pilot script</button>
               <button class="hidden h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary 2xl:inline-flex" id="copy-provider-matrix" type="button">Copy matrix</button>
@@ -239,6 +240,22 @@
             </div>
           </section>
 
+          <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="launch-decision-register-panel">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Founder go/no-go register</p>
+                <h2 class="mt-1 font-display text-3xl font-extrabold">Know what is allowed before money moves.</h2>
+                <p class="mt-3 max-w-3xl text-on-surface-variant" id="launch-decision-register-summary">
+                  Loading launch decisions for demos, paid pilots, receiver work, Africa expansion, high-value jobs, and AI operations.
+                </p>
+              </div>
+              <button class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary lg:hidden" id="copy-decision-register-mobile" type="button">Copy decisions</button>
+            </div>
+            <div class="mt-6 grid gap-3 xl:grid-cols-2" id="launch-decision-register-list" aria-live="polite">
+              <div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading launch decision register...</div>
+            </div>
+          </section>
+
           <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="provider-matrix-panel">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -335,7 +352,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=5"></script>
     <script src="app-data.js?v=57"></script>
-    <script src="admin-readiness.js?v=7"></script>
+    <script src="admin-readiness.js?v=8"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>

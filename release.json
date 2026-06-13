@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-founder-reviewed-pilot-mode-v1",
-  "release_name": "Founder-reviewed pilot mode for paid briefs",
-  "description": "Adds explicit launch-mode config and forces submitted paid briefs into founder review while Swadakta is in pilot mode.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-founder-reviewed-pilot-mode",
+  "release_id": "2026-06-13-launch-decision-register-v1",
+  "release_name": "Founder launch decision register",
+  "description": "Adds an admin go/no-go register for demos, paid pilots, public paid jobs, receiver work, Africa expansion, high-value work, and AI operations.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-launch-decision-register",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

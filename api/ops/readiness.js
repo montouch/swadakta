@@ -412,6 +412,274 @@ function providerLaunchRail(options) {
   };
 }
 
+function statusFromBlockers(blockers, fallbackReady = "ready") {
+  return blockers.length ? "blocked" : fallbackReady;
+}
+
+function launchDecision(options) {
+  return {
+    id: options.id,
+    label: options.label,
+    status: options.status,
+    status_label:
+      {
+        ready: "Allowed",
+        controlled: "Controlled",
+        blocked: "Blocked",
+        manual: "Founder gate",
+      }[options.status] || "Review",
+    summary: options.summary,
+    allowed_now: options.allowed_now,
+    locked_until: options.locked_until || [],
+    evidence_needed: options.evidence_needed || [],
+    next: options.next,
+    owner: options.owner || "Founder/admin",
+    docs_url: options.docs_url || "",
+    flags: options.flags || [],
+    hard_rule: options.hard_rule || "",
+  };
+}
+
+function buildLaunchDecisionRegister(context = {}) {
+  const businessReady = confirmedEnv("SWADAKTA_OWNER_BUSINESS_REGISTERED");
+  const taxReady = confirmedEnv("SWADAKTA_OWNER_TAX_REVIEWED");
+  const insuranceReady = confirmedEnv("SWADAKTA_OWNER_INSURANCE_ACTIVE");
+  const legalReady = confirmedEnv("SWADAKTA_OWNER_LEGAL_REVIEWED");
+  const financialBoundaryReady = confirmedEnv("SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED");
+  const privacyReady = confirmedEnv("SWADAKTA_OWNER_PRIVACY_REVIEWED");
+  const contractorReady = confirmedEnv("SWADAKTA_OWNER_CONTRACTOR_TERMS_READY");
+  const providerAccountsReady = confirmedEnv("SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED");
+  const kenyaReady = confirmedEnv("SWADAKTA_OWNER_KENYA_SETUP_REVIEWED");
+  const secretRotationReady = confirmedEnv("SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED");
+  const firstPilotPassed = confirmedEnv("SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED");
+  const regulatedEscrowReady = confirmedEnv("SWADAKTA_OWNER_REGULATED_ESCROW_READY");
+  const serviceRoleReady = Boolean(context.serviceRoleConfigured);
+  const stripeEvidenceReady = hasEnv("STRIPE_SECRET_KEY") && context.stripeWebhookMissing?.length === 0 && serviceRoleReady;
+  const paypalReady = context.paypalMissing?.length === 0;
+  const mpesaEvidenceReady =
+    context.mpesaMissing?.length === 0 &&
+    serviceRoleReady &&
+    hasEnv("MPESA_CALLBACK_TOKEN") &&
+    mpesaMode() === "live" &&
+    kenyaReady;
+  const paystackReady =
+    context.paystackMissing?.length === 0 &&
+    confirmedEnv("PAYSTACK_MERCHANT_APPROVED") &&
+    confirmedEnv("PAYSTACK_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED");
+  const flutterwaveReady =
+    context.flutterwaveMissing?.length === 0 &&
+    confirmedEnv("FLUTTERWAVE_MERCHANT_APPROVED") &&
+    confirmedEnv("FLUTTERWAVE_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED");
+  const hostedIdentityReady = anyEnv([
+    "SMILE_ID_VERIFICATION_URL",
+    "SUMSUB_VERIFICATION_URL",
+    "YOUVERIFY_VERIFICATION_URL",
+  ]);
+  const sumsubEvidenceReady =
+    context.sumsubNativeMissing?.length === 0 && context.sumsubWebhookMissing?.length === 0 && serviceRoleReady;
+  const identityEvidenceReady = hostedIdentityReady || sumsubEvidenceReady;
+  const primaryPaymentReady = stripeEvidenceReady || paypalReady || mpesaEvidenceReady;
+  const africaPaymentReady = mpesaEvidenceReady || paystackReady || flutterwaveReady;
+  const ownerCoreMissing = [
+    ...(businessReady ? [] : ["SWADAKTA_OWNER_BUSINESS_REGISTERED"]),
+    ...(taxReady ? [] : ["SWADAKTA_OWNER_TAX_REVIEWED"]),
+    ...(insuranceReady ? [] : ["SWADAKTA_OWNER_INSURANCE_ACTIVE"]),
+    ...(legalReady ? [] : ["SWADAKTA_OWNER_LEGAL_REVIEWED"]),
+    ...(financialBoundaryReady ? [] : ["SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED"]),
+    ...(privacyReady ? [] : ["SWADAKTA_OWNER_PRIVACY_REVIEWED"]),
+    ...(providerAccountsReady ? [] : ["SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED"]),
+    ...(secretRotationReady ? [] : ["SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED"]),
+  ];
+  const paidPilotMissing = [
+    ...ownerCoreMissing,
+    ...(identityEvidenceReady ? [] : ["SUMSUB/SMILE/YOUVERIFY provider evidence route"]),
+    ...(primaryPaymentReady ? [] : ["Stripe, PayPal, or M-Pesa provider evidence route"]),
+  ];
+  const publicPaidMissing = [
+    ...paidPilotMissing,
+    ...(contractorReady ? [] : ["SWADAKTA_OWNER_CONTRACTOR_TERMS_READY"]),
+    ...(firstPilotPassed ? [] : ["SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED"]),
+  ];
+  const receiverMissing = [
+    ...(contractorReady ? [] : ["SWADAKTA_OWNER_CONTRACTOR_TERMS_READY"]),
+    ...(insuranceReady ? [] : ["SWADAKTA_OWNER_INSURANCE_ACTIVE"]),
+    ...(identityEvidenceReady ? [] : ["ID provider evidence route"]),
+    ...(providerAccountsReady ? [] : ["SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED"]),
+  ];
+  const africaMissing = [
+    ...(businessReady ? [] : ["SWADAKTA_OWNER_BUSINESS_REGISTERED"]),
+    ...(privacyReady ? [] : ["SWADAKTA_OWNER_PRIVACY_REVIEWED"]),
+    ...(kenyaReady ? [] : ["SWADAKTA_OWNER_KENYA_SETUP_REVIEWED"]),
+    ...(identityEvidenceReady ? [] : ["Africa-capable ID provider route"]),
+    ...(africaPaymentReady ? [] : ["M-Pesa, Paystack, or Flutterwave provider evidence route"]),
+  ];
+  const highValueMissing = [
+    ...(legalReady ? [] : ["SWADAKTA_OWNER_LEGAL_REVIEWED"]),
+    ...(financialBoundaryReady ? [] : ["SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED"]),
+    ...(insuranceReady ? [] : ["SWADAKTA_OWNER_INSURANCE_ACTIVE"]),
+    ...(regulatedEscrowReady ? [] : ["SWADAKTA_OWNER_REGULATED_ESCROW_READY"]),
+  ];
+
+  return {
+    title: "Founder go/no-go decision register",
+    summary:
+      "Use this register before demos, paid pilots, receiver onboarding, Africa expansion, or high-value work. It is an operating control, not legal advice.",
+    decisions: [
+      launchDecision({
+        id: "public_demo_interest",
+        label: "Public demo and interest capture",
+        status: "ready",
+        summary: "The public site can be shown and used to collect non-sensitive interest, questions, and pilot briefs.",
+        allowed_now: "Show the site, collect non-sensitive briefs, explain the model, and invite friendly pilot users.",
+        next: "Keep paid work in founder-reviewed pilot mode until the money, ID, legal, insurance, and provider evidence gates are clear.",
+        docs_url: `${publicUrl() || "https://swadakta.com"}/trust`,
+        evidence_needed: ["Live domain loads", "Trust/payment boundaries are visible", "Admin readiness keeps paid launch blocked"],
+        hard_rule: "Do not imply Swadakta is a bank, escrow provider, remittance service, lawyer, customs broker, or insurer.",
+      }),
+      launchDecision({
+        id: "first_low_risk_paid_pilot",
+        label: "First low-risk paid pilot",
+        status: statusFromBlockers(paidPilotMissing, "controlled"),
+        summary:
+          "One low-value friendly-client job can run only when the core owner, payment evidence, and ID provider gates are ready.",
+        allowed_now: paidPilotMissing.length
+          ? "Not yet. Collect the brief and keep it founder-reviewed without taking money."
+          : "Run one low-risk paid pilot with written scope, provider-confirmed funds, ID route, proof plan, and founder closeout.",
+        locked_until: paidPilotMissing,
+        evidence_needed: [
+          "Owner legal/tax/insurance/privacy/provider flags are true",
+          "At least one payment provider can confirm amount, currency, and request reference",
+          "At least one ID provider route can create or store provider evidence",
+        ],
+        next: paidPilotMissing.length
+          ? "Finish the missing owner/provider flags, then run the first paid pilot script before ordinary public paid work."
+          : "Run the first paid pilot script and set SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED=true only after closeout.",
+        docs_url: `${publicUrl() || "https://swadakta.com"}/admin-readiness`,
+        flags: ["SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED"],
+        hard_rule: "The first pilot must avoid land/title, restricted goods, cash handling, legal advice, medical advice, and high-value purchases.",
+      }),
+      launchDecision({
+        id: "normal_public_paid_jobs",
+        label: "Normal public paid jobs",
+        status: statusFromBlockers(publicPaidMissing, "controlled"),
+        summary:
+          "Ordinary paid work should stay locked until the first paid pilot has passed and receiver terms, provider evidence, and owner approvals are complete.",
+        allowed_now: publicPaidMissing.length
+          ? "No. Keep submitted paid jobs in founder-reviewed pilot mode."
+          : "Open carefully to low-risk categories and keep high-risk jobs founder-gated.",
+        locked_until: publicPaidMissing,
+        evidence_needed: [
+          "First paid pilot passed without unresolved dispute",
+          "Receiver terms/code are approved",
+          "Payment and ID evidence routes have test records",
+          "Insurance and legal boundary records are saved",
+        ],
+        next: publicPaidMissing.length
+          ? "Clear the missing flags before removing founder-reviewed pilot mode."
+          : "Start with narrow low-risk categories and monitor refunds, disputes, receiver quality, and founder workload weekly.",
+        docs_url: DOCS.businessInsurance,
+        flags: [
+          "SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED",
+          "SWADAKTA_OWNER_CONTRACTOR_TERMS_READY",
+        ],
+        hard_rule: "Public paid launch does not authorize high-value or regulated jobs.",
+      }),
+      launchDecision({
+        id: "receiver_marketplace_work",
+        label: "Receiver marketplace and job applications",
+        status: statusFromBlockers(receiverMissing, "controlled"),
+        summary:
+          "Receivers can create accounts and express interest now, but paid assignment requires vetted identity, terms, insurance, and founder/provider gates.",
+        allowed_now: receiverMissing.length
+          ? "Let receivers register interest and build profiles; do not assign paid work."
+          : "Allow vetted receivers to make controlled offers on suitable low-risk jobs.",
+        locked_until: receiverMissing,
+        evidence_needed: [
+          "Receiver/contractor terms ready",
+          "ID provider route and status storage are working",
+          "Insurance covers the accepted field-work categories",
+          "Provider accounts and payout route are clear",
+        ],
+        next: receiverMissing.length
+          ? "Keep job applications visible but assignment locked until receiver terms and ID/provider gates pass."
+          : "Run small batches; score provenance after each job and keep lowest-price-only selection disabled.",
+        docs_url: DOCS.fairWorkContractors,
+        flags: ["SWADAKTA_OWNER_CONTRACTOR_TERMS_READY"],
+        hard_rule: "AI may recommend matches, but it must not assign receivers or override identity/provenance gates.",
+      }),
+      launchDecision({
+        id: "africa_incountry_and_expansion",
+        label: "Africa in-country and cross-border expansion",
+        status: statusFromBlockers(africaMissing, africaPaymentReady && identityEvidenceReady ? "controlled" : "blocked"),
+        summary:
+          "Africa-wide operations need country/payment/ID evidence per corridor. Kenya and wider Africa should not be treated as one compliance bucket.",
+        allowed_now: africaMissing.length
+          ? "Collect briefs and route them to founder review; do not promise execution or payment options."
+          : "Pilot specific countries/corridors with named payment, ID, receiver, proof, and restricted-goods checks.",
+        locked_until: africaMissing,
+        evidence_needed: [
+          "Country-specific receiver coverage",
+          "Africa-capable ID evidence route",
+          "M-Pesa/Paystack/Flutterwave provider evidence for the chosen country/currency",
+          "Restricted-goods and logistics rules reviewed per corridor",
+        ],
+        next: africaMissing.length
+          ? "Keep Africa corridors in pilot review until Kenya setup or an approved Africa payment rail is confirmed."
+          : "Open one corridor at a time and review job evidence after every pilot.",
+        docs_url: DOCS.daraja,
+        flags: ["SWADAKTA_OWNER_KENYA_SETUP_REVIEWED"],
+        hard_rule: "Do not treat provider coverage, postal acceptance, or legal permissions as global; verify per country and item.",
+      }),
+      launchDecision({
+        id: "high_value_sensitive_jobs",
+        label: "High-value, property, title, supplier, and sensitive jobs",
+        status: statusFromBlockers(highValueMissing, "manual"),
+        summary:
+          "High-value work stays blocked unless a regulated escrow/provider-held funds model, insurance, and legal review are confirmed.",
+        allowed_now: highValueMissing.length
+          ? "No. Accept questions only; route to founder/legal review and do not collect client funds."
+          : "Consider case-by-case only with written terms, regulated provider-held funds, proof pack, and founder approval.",
+        locked_until: highValueMissing,
+        evidence_needed: [
+          "Regulated escrow/payment-provider agreement or legal confirmation",
+          "Insurance that covers the exact job category",
+          "Written milestone, dispute, refund, proof, and release rules",
+        ],
+        next: highValueMissing.length
+          ? "Keep these jobs outside normal intake and mark them founder/legal review only."
+          : "Use a separate high-value operating checklist before any quote is sent.",
+        docs_url: DOCS.asicAfs,
+        flags: ["SWADAKTA_OWNER_REGULATED_ESCROW_READY"],
+        hard_rule: "Do not hold or move high-value client funds informally.",
+      }),
+      launchDecision({
+        id: "ai_operations_mode",
+        label: "AI operations mode",
+        status: "controlled",
+        summary:
+          "AI can lower admin load by drafting, summarizing, classifying, explaining screens, and preparing checklists, but protected decisions stay gated.",
+        allowed_now: "Use AI for drafts, triage, checklists, user guidance, and founder yes/no prompts.",
+        locked_until: [],
+        evidence_needed: [
+          "Manual mode remains available",
+          "Protected action boundaries are visible",
+          "Admin/founder confirms before external messages, assignments, money release, refunds, or ID exceptions",
+        ],
+        next: "Keep improving autopilot prompts, but do not turn AI into the payment, identity, assignment, refund, or legal decision-maker.",
+        docs_url: `${publicUrl() || "https://swadakta.com"}/assistant`,
+        hard_rule: "AI is an assistant and workflow engine, not the authority for money, ID, legal, customs, or receiver assignment decisions.",
+      }),
+    ],
+    policy_boundary: [
+      "Allowed means the system can proceed within the stated limits.",
+      "Controlled means founder/admin gates and provider evidence still decide before paid work scales.",
+      "Blocked means collect interest only; do not take money, assign receivers, or promise execution.",
+    ],
+  };
+}
+
 function buildProviderLaunchMatrix(context) {
   const ownerProviderReady = confirmedEnv("SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED");
   const legalReady = confirmedEnv("SWADAKTA_OWNER_LEGAL_REVIEWED");
@@ -1214,6 +1482,30 @@ function ownerLaunchItems() {
         docs_url: DOCS.brsKenya,
         priority: 14,
         owner: "Founder/Kenya advisor",
+      },
+    ),
+    ownerFlagItem(
+      "owner_first_paid_pilot_passed",
+      "First paid pilot passed",
+      "SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED",
+      "Public paid launch should wait until one low-risk friendly-client pilot proves account access, ID handoff, provider payment evidence, receiver/proof workflow, tracking, and closeout.",
+      "Run the first paid pilot script, save the proof/payment/closeout notes, then set SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED=true only if there is no unresolved dispute.",
+      {
+        docs_url: `${publicUrl() || "https://swadakta.com"}/admin-readiness`,
+        priority: 15,
+        owner: "Founder/admin",
+      },
+    ),
+    ownerFlagItem(
+      "owner_regulated_escrow_ready",
+      "Regulated escrow/high-value provider ready",
+      "SWADAKTA_OWNER_REGULATED_ESCROW_READY",
+      "High-value property, title, construction, supplier-deposit, or sensitive-funds jobs need a regulated escrow/payment-provider route or written legal confirmation before normal acceptance.",
+      "Choose a regulated escrow/provider-held funds route or get legal confirmation for the high-value operating model, then set SWADAKTA_OWNER_REGULATED_ESCROW_READY=true.",
+      {
+        docs_url: DOCS.asicAfs,
+        priority: 16,
+        owner: "Founder/legal reviewer",
       },
     ),
   ];
@@ -2058,6 +2350,16 @@ async function readinessReport(user, authHeader) {
     identityStartUrl,
     sumsubWebhookUrl,
   });
+  const launchDecisionRegister = buildLaunchDecisionRegister({
+    serviceRoleConfigured,
+    stripeWebhookMissing,
+    paypalMissing,
+    paystackMissing,
+    flutterwaveMissing,
+    mpesaMissing,
+    sumsubNativeMissing,
+    sumsubWebhookMissing,
+  });
   const counts = flatItems.reduce(
     (acc, entry) => {
       acc[entry.status] = (acc[entry.status] || 0) + 1;
@@ -2075,6 +2377,7 @@ async function readinessReport(user, authHeader) {
     },
     counts,
     launch_gate: launchGate,
+    launch_decision_register: launchDecisionRegister,
     provider_launch_matrix: providerLaunchMatrix,
     founder_action_pack: buildFounderActionPack(),
     first_paid_pilot_script: buildFirstPaidPilotScript(),

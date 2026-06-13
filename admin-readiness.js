@@ -11,6 +11,7 @@
   const signOutButtons = document.querySelectorAll(".admin-sign-out-control");
   const refreshButton = document.querySelector("#refresh-readiness");
   const copyChecklistButton = document.querySelector("#copy-checklist");
+  const copyDecisionRegisterButtons = document.querySelectorAll("#copy-decision-register, #copy-decision-register-mobile");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
   const copyProviderMatrixButtons = document.querySelectorAll("#copy-provider-matrix, #copy-provider-matrix-mobile");
   const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
@@ -34,6 +35,8 @@
   const launchBlockersList = document.querySelector("#launch-blockers-list");
   const launchEvidenceList = document.querySelector("#launch-evidence-list");
   const copyLaunchGateButton = document.querySelector("#copy-launch-gate");
+  const launchDecisionRegisterSummary = document.querySelector("#launch-decision-register-summary");
+  const launchDecisionRegisterList = document.querySelector("#launch-decision-register-list");
 
   let latestReport = null;
 
@@ -64,6 +67,22 @@
     if (status === "warning") return "bg-amber-400/20 text-amber-800";
     if (status === "manual") return "bg-sky-500/10 text-sky-800";
     return "bg-surface-container text-secondary";
+  }
+
+  function decisionStatusTone(status) {
+    if (status === "ready") return "bg-emerald-500/10 text-emerald-700";
+    if (status === "controlled" || status === "manual") return "bg-amber-400/20 text-amber-800";
+    if (status === "blocked") return "bg-error-container text-on-error-container";
+    return statusTone(status);
+  }
+
+  function decisionStatusLabel(status) {
+    return {
+      ready: "Allowed",
+      controlled: "Controlled",
+      blocked: "Blocked",
+      manual: "Founder gate",
+    }[status] || statusLabel(status);
   }
 
   function setLoginStatus(message, tone = "text-on-surface-variant") {
@@ -187,6 +206,36 @@
     ].join("\n");
   }
 
+  function buildLaunchDecisionRegisterPack(report = latestReport) {
+    const register = report?.launch_decision_register || {};
+    const decisions = Array.isArray(register.decisions) ? register.decisions : [];
+    const boundaries = Array.isArray(register.policy_boundary) ? register.policy_boundary : [];
+
+    return [
+      register.title || "Swadakta founder go/no-go decision register",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      register.summary || "Use this register before demos, paid pilots, receiver onboarding, Africa expansion, or high-value work.",
+      "",
+      "Decisions:",
+      ...(decisions.length
+        ? decisions.map((decision, index) => {
+            const locked = decision.locked_until?.length ? ` Locked until: ${decision.locked_until.join(", ")}.` : "";
+            const evidence = decision.evidence_needed?.length ? ` Evidence: ${decision.evidence_needed.join(" / ")}.` : "";
+            const flags = decision.flags?.length ? ` Flags: ${decision.flags.join(", ")}.` : "";
+            const docs = decision.docs_url ? ` Docs: ${decision.docs_url}.` : "";
+            const hardRule = decision.hard_rule ? ` Hard rule: ${decision.hard_rule}` : "";
+            return `${index + 1}. [${decisionStatusLabel(decision.status)}] ${decision.label || "Decision"}: ${decision.summary || ""} Allowed now: ${decision.allowed_now || ""} Next: ${decision.next || ""}${locked}${evidence}${flags}${docs}${hardRule}`;
+          })
+        : ["1. No launch decisions returned by the readiness API."]),
+      "",
+      "Policy boundary:",
+      ...(boundaries.length ? boundaries.map((entry) => `- ${entry}`) : ["- Blocked means collect interest only."]),
+      "",
+      "Founder rule: when in doubt, keep the work in founder-reviewed pilot mode and do not take money.",
+    ].join("\n");
+  }
+
   function renderLaunchGate(report = latestReport) {
     const gate = report?.launch_gate || {};
     const blockers = Array.isArray(gate.blockers) ? gate.blockers : [];
@@ -231,6 +280,65 @@
         ? evidence.map((entry) => `<li class="rounded-2xl bg-white/70 p-3">${escapeHtml(entry)}</li>`).join("")
         : `<li class="rounded-2xl bg-white/70 p-3">No evidence notes returned yet.</li>`;
     }
+  }
+
+  function renderLaunchDecisionRegister(report = latestReport) {
+    const register = report?.launch_decision_register || {};
+    const decisions = Array.isArray(register.decisions) ? register.decisions : [];
+
+    if (launchDecisionRegisterSummary) {
+      launchDecisionRegisterSummary.textContent =
+        register.summary ||
+        "Launch decision register has not loaded yet. Keep paid work in founder-reviewed pilot mode.";
+    }
+    if (!launchDecisionRegisterList) return;
+
+    launchDecisionRegisterList.innerHTML = decisions.length
+      ? decisions
+          .map((decision) => {
+            const locked = Array.isArray(decision.locked_until) ? decision.locked_until : [];
+            const evidence = Array.isArray(decision.evidence_needed) ? decision.evidence_needed : [];
+            const flags = Array.isArray(decision.flags) ? decision.flags : [];
+            return `
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <strong class="font-display text-xl">${escapeHtml(decision.label || "Launch decision")}</strong>
+                      <span class="rounded-full px-3 py-1 font-label text-xs ${decisionStatusTone(decision.status)}">${escapeHtml(decision.status_label || decisionStatusLabel(decision.status))}</span>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(decision.summary || "")}</p>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant"><strong class="text-on-surface">Allowed now:</strong> ${escapeHtml(decision.allowed_now || "")}</p>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant"><strong class="text-on-surface">Next:</strong> ${escapeHtml(decision.next || "")}</p>
+                    ${locked.length ? `<p class="mt-3 font-label text-xs uppercase tracking-[0.14em] text-secondary">Locked until: ${escapeHtml(locked.join(", "))}</p>` : ""}
+                    ${
+                      evidence.length
+                        ? `<ul class="mt-3 grid gap-2 text-xs leading-5 text-secondary">${evidence
+                            .map((entry) => `<li class="rounded-2xl bg-white/70 p-3">${escapeHtml(entry)}</li>`)
+                            .join("")}</ul>`
+                        : ""
+                    }
+                    ${flags.length ? `<p class="mt-3 font-label text-xs uppercase tracking-[0.14em] text-secondary">Flags: ${escapeHtml(flags.join(", "))}</p>` : ""}
+                    ${decision.hard_rule ? `<p class="mt-3 text-xs leading-5 text-on-error-container">${escapeHtml(decision.hard_rule)}</p>` : ""}
+                  </div>
+                  <div class="flex shrink-0 flex-wrap gap-2">
+                    ${
+                      decision.docs_url
+                        ? `<a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(decision.docs_url)}" target="_blank" rel="noopener">Open</a>`
+                        : ""
+                    }
+                    ${
+                      locked.length || flags.length
+                        ? `<button class="copy-value inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-on-surface-variant" data-copy-value="${escapeHtml([...locked, ...flags].join("\n"))}" type="button">Copy gates</button>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No launch decision register returned by the readiness API.</div>`;
   }
 
   function providerPackCategoryText(category = {}, report = latestReport) {
@@ -659,6 +767,7 @@
     );
     updateStats(counts);
     renderLaunchGate(report);
+    renderLaunchDecisionRegister(report);
     renderProviderMatrix(report);
     renderFounderActionPack(report);
     renderPilotScript(report);
@@ -691,6 +800,12 @@
     if (providerMatrixList) {
       providerMatrixList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
+    if (launchDecisionRegisterSummary) {
+      launchDecisionRegisterSummary.textContent = "Launch decision register is unavailable until readiness checks load.";
+    }
+    if (launchDecisionRegisterList) {
+      launchDecisionRegisterList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
     if (founderActionList) {
       founderActionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
@@ -701,6 +816,7 @@
       pilotPassConditions.innerHTML = "";
     }
     renderLaunchGate({});
+    renderLaunchDecisionRegister({});
     protectedActions.innerHTML = "";
   }
 
@@ -793,6 +909,12 @@
   copyProviderMatrixButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildProviderMatrixPack(), "Provider launch matrix copied.");
+    });
+  });
+
+  copyDecisionRegisterButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildLaunchDecisionRegisterPack(), "Launch decision register copied.");
     });
   });
 
