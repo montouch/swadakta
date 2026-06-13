@@ -10,6 +10,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - Inline brief goods-safety selector that carries item category, handoff mode, compliance checks, risk level, and official reference links into quote/admin triage
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances
 - Account-first flow blueprint in `FLOW_BLUEPRINT.md` for the Google Stitch rebuild
+- Founder morning handoff in `FOUNDER_MORNING_HANDOFF.md` for live status, launch blockers, and daily verification commands
 - One account flow for client, job seeker, or both account modes
 - Email/password account access with sanitized account summaries
 - Account creation/opening for clients, job seekers, and mixed-role users, with social sign-in hooks ready for Google/Apple
