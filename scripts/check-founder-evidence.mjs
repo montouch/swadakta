@@ -40,6 +40,7 @@ const requiredUrls = [
   "https://paystack.com/docs/payments/webhooks/",
   "https://paystack.com/docs/payments/verify-payments/",
   "https://developer.flutterwave.com/docs/webhooks",
+  "https://supabase.com/docs/guides/auth/password-security#password-strength-and-leaked-password-protection",
 ];
 
 async function readProjectFile(file) {
@@ -87,6 +88,7 @@ const requiredPhrases = [
   "Do not set true if",
   "High-value property",
   "A Vercel flag is only a mirror of the evidence",
+  "Revoke or rotate it before paid launch",
 ];
 
 const missingPhrases = requiredPhrases.filter((phrase) => !register.includes(phrase));

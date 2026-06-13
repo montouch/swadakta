@@ -373,6 +373,12 @@ function buildLaunchGate(categories) {
     : checks.length
       ? "soft_launch_with_checks"
       : "launch_ready";
+  const sortedBlockers = [...blockers].sort(
+    (a, b) => (a.priority || 50) - (b.priority || 50) || String(a.label).localeCompare(String(b.label)),
+  );
+  const sortedChecks = [...checks].sort(
+    (a, b) => (a.priority || 50) - (b.priority || 50) || String(a.label).localeCompare(String(b.label)),
+  );
   const label = {
     paid_launch_blocked: "Paid launch blocked",
     soft_launch_with_checks: "Soft launch with checks",
@@ -391,7 +397,7 @@ function buildLaunchGate(categories) {
     public_site: publicTrustReady ? "ready" : "check",
     paid_jobs: blockers.length || !livePaymentReady ? "blocked" : providerEvidenceReady ? "ready" : "check",
     founder_load: blockers.length ? "high" : checks.length ? "medium" : "low",
-    blockers: blockers.slice(0, 6).map((entry) => ({
+    blockers: sortedBlockers.slice(0, 6).map((entry) => ({
       id: entry.id,
       category: entry.category,
       label: entry.label,
@@ -399,7 +405,7 @@ function buildLaunchGate(categories) {
       missing: entry.missing || [],
       owner: entry.owner || "Founder/admin",
     })),
-    checks: checks.slice(0, 6).map((entry) => ({
+    checks: sortedChecks.slice(0, 6).map((entry) => ({
       id: entry.id,
       category: entry.category,
       label: entry.label,
@@ -1966,7 +1972,7 @@ function ownerLaunchItems() {
       "Rotate exposed keys, store fresh values only as server-side Vercel/Supabase secrets, then set SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED=true.",
       {
         docs_url: DOCS.vercelEnv,
-        priority: 13,
+        priority: 6.5,
         owner: "Founder/security admin",
       },
     ),
