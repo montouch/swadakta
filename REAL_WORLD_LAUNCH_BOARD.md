@@ -15,6 +15,7 @@ Best first paid offer:
 - Low-value errands, site checks, family support runs, document collection support, sourcing checks, and virtual assistant work.
 - No high-value land, title, construction, vehicle, medical, legal, immigration, or restricted-goods work until the legal and insurance setup is reviewed.
 - Every paid job needs written scope, provider payment evidence, ID verification, proof requirements, and a dispute/refund path.
+- Receiver selection and work permission are separate. A vetted receiver can be selected after a controlled offer is accepted, but work must stay locked until protected funds, route, compliance, and sensitive-document checks are clear.
 
 ## Founder Decisions To Make First
 
@@ -148,7 +149,8 @@ The pilot passes only if:
 - Admin can quote.
 - Client pays through a provider or a documented fallback.
 - Payment evidence can be reconciled to request code, amount, and currency.
-- Receiver is verified/vetted before assignment.
+- Receiver is verified/vetted before offer acceptance can select them.
+- Active work cannot start unless the request has assigned receiver, protected amount, paid/deposit-paid status, provider-held/confirmed funds state, safe route, and cleared compliance/admin review.
 - Receiver submits proof.
 - Milestones can be updated without automatically releasing money.
 - Client can track the job and receive a final report.

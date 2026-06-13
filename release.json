@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-stored-payment-request-v1",
-  "release_name": "Stored payment request authority",
-  "description": "Payment routes reload the saved Swadakta request before provider creation so stored quote, compliance, goods, and review state control the launch gate.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-stored-payment-request-2",
+  "release_id": "2026-06-13-offer-work-start-gates-v1",
+  "release_name": "Offer acceptance and work-start gates",
+  "description": "Receiver offer acceptance now selects only vetted verified receivers, declines competing offers, preserves assignments during updates, and locks active work states until protected funds, route, compliance, and verification gates pass.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-offer-work-start-gates-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

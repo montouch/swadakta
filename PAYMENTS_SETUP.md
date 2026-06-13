@@ -80,6 +80,17 @@ Before a payment route is created, Stripe, PayPal, M-Pesa, and Wise endpoints no
 
 This means a stale browser page or edited client payload cannot soften a risky request into a normal checkout. If the saved request is missing, the saved quote amount/currency is not ready, or the posted amount/currency does not match the saved row, the payment route is refused. Save the quote and clear the real evidence gates first.
 
+## Offer Acceptance and Work-Start Gates
+
+The receiver offer market now separates selection from permission to work.
+
+- Accepting an offer is allowed only when the receiver is vetted, ID verified, has accepted ID/proof standards, and the offer has no safety flags.
+- Acceptance selects the receiver on the request and declines competing submitted/shortlisted offers.
+- Acceptance does not release funds, mark money paid, bypass compliance, or start the job.
+- Database work-start locks block `in_progress`, `waiting_client`, and `completed` unless the request has an assigned receiver, active/pilot route, cleared compliance/admin review, sensitive-document verification where needed, protected amount, paid/deposit-paid status, and provider-held/confirmed funds state.
+
+This is the safe operating model: Swadakta can choose a trusted receiver early, while the actual work remains locked until provider evidence and compliance conditions are real.
+
 ## Funds Protection and Milestones
 
 Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:

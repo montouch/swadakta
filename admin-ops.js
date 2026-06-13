@@ -1649,12 +1649,12 @@
           offerCode,
           status,
           status === "accepted"
-            ? "Offer marked accepted in ops. Verified/vetted assignment and protected funds are still required before work starts."
+            ? "Offer accepted and receiver selected. Work start remains locked until protected funds, route, and compliance gates pass."
             : `Offer marked ${formatStatus(status)} in founder ops.`,
         );
         setStatus(
           status === "accepted"
-            ? `Offer ${offerCode} marked accepted. Now verify/vet assignment and payment protection before any work starts.`
+            ? `Offer ${offerCode} accepted. Receiver assignment is selected; work still waits for protected funds and compliance clearance.`
             : `Offer ${offerCode} marked ${formatStatus(status)}.`,
           "text-primary",
         );

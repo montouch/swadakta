@@ -15,7 +15,7 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 - Keep AI optional. When AI mode is off, Swadakta must hide AI-only shortcuts and keep the manual queues, provider checks, verification flow, messages, tracking, and payments usable.
 - Keep Stripe, PayPal, Wise fallback, M-Pesa/Daraja, Paystack, and Flutterwave code paths provider-ready without exposing unfinished rails as public defaults.
 - Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, release conditions, and protected-funds boundaries without exposing founder economics.
-- Keep the receiver offer market controlled: job seekers can compete on eligible jobs, but accepted offers still require verified/vetted assignment, protected funds, legal/compliance clearance, and milestone release review.
+- Keep the receiver offer market controlled: job seekers can compete on eligible jobs, accepted offers can auto-select an already vetted/verified receiver, and work still cannot start until protected funds, route, compliance, and milestone controls are clear.
 - Keep testing scripts and browser audits current before every deploy.
 
 ### What the owner must do before public paid launch
@@ -147,9 +147,9 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 15. Admin sets payment and funds statuses after confirmation.
 16. Eligible vetted or pending job seekers can make controlled offers from Account Home, including amount, currency, delivery timeline, proof plan, and message.
 17. Admin/AI compares offers by price, timing, proof quality, provenance, identity status, vetting status, and route fit. Lowest price does not automatically win.
-18. Admin may shortlist or accept an offer, but accepted means `preferred receiver for review`; it does not release money, bypass ID checks, or automatically start the job.
-19. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification.
-20. Admin assigns only a vetted and ID-verified receiver/operator in the request card, then copies the operator brief.
+18. Admin may shortlist or accept an offer. Acceptance is only allowed for a vetted, ID-verified receiver with proof standards accepted; the system then selects that receiver and declines competing submitted/shortlisted offers.
+19. Work still cannot start after acceptance unless the request has an assigned receiver, active/pilot route, cleared compliance/admin review, client verification where sensitive documents are expected, protected amount, paid/deposit-paid status, and provider-held/confirmed funds state.
+20. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification, then copies the operator brief only after the work-start lock is clear.
 21. Receiver-side operator executes the task and submits field updates/proof links from the receiver portal.
 22. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
 23. Admin adds approved proof links, report URL, and final client notes.
@@ -185,6 +185,8 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Account Home has a controlled offer board for eligible open jobs. Job seekers can compete by amount, timeline, and proof plan, while Swadakta ranks offers by trust and fit.
 - Receiver offers with missing vetting, ID verification, consent, or proof standards carry safety flags before any acceptance or assignment decision.
 - Admin Operations includes the receiver offer market, where offers can be shortlisted, declined, or marked accepted for protected receiver review.
+- Accepting an offer auto-selects the receiver only when their receiver profile is vetted, ID verified, consented, and free of offer safety flags; otherwise the offer must stay shortlisted or blocked.
+- Active work states are database-gated: `in_progress`, `waiting_client`, and `completed` require assigned receiver, safe route, cleared compliance/admin review, sensitive-document verification where needed, protected amount, paid/deposit-paid status, and provider-held/confirmed funds state.
 - Only vetted and ID-verified receivers can be assigned to client jobs.
 - Assigned vetted and ID-verified receivers can see their paid/in-progress jobs in the receiver portal without seeing client payment links or founder economics.
 - Assigned vetted and ID-verified receivers can submit field updates and proof links for admin review before anything becomes client-facing.

@@ -1049,6 +1049,49 @@ begin
 end;
 $$;
 
+create or replace function app_private.ensure_work_start_is_protected()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.status in ('in_progress', 'waiting_client', 'completed') then
+    if new.assigned_partner_id is null then
+      raise exception 'Assign a verified receiver before work can start.';
+    end if;
+
+    if new.route_status not in ('active', 'pilot') then
+      raise exception 'This route is not approved for active work.';
+    end if;
+
+    if new.compliance_status in ('restricted', 'prohibited')
+      or new.compliance_risk_level in ('high', 'blocked')
+      or new.admin_review_required is true then
+      raise exception 'Compliance review must be cleared before work can start.';
+    end if;
+
+    if new.sensitive_documents_expected is true and new.verification_status <> 'verified' then
+      raise exception 'Verify the client before starting sensitive-document work.';
+    end if;
+
+    if coalesce(new.protected_amount, 0) <= 0
+      or new.payment_status not in ('deposit_paid', 'paid')
+      or new.funds_status not in (
+        'authorized',
+        'held_by_provider',
+        'deposit_confirmed',
+        'partially_released',
+        'released'
+      ) then
+      raise exception 'Protected payment evidence is required before work can start.';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
 drop trigger if exists service_requests_set_updated_at on public.service_requests;
 create trigger service_requests_set_updated_at
 before update on public.service_requests
@@ -1060,6 +1103,24 @@ create trigger service_requests_assigned_partner_verified
 before insert or update of assigned_partner_id on public.service_requests
 for each row
 execute function app_private.ensure_assigned_partner_is_verified();
+
+drop trigger if exists service_requests_work_start_protected on public.service_requests;
+create trigger service_requests_work_start_protected
+before insert or update of
+  status,
+  assigned_partner_id,
+  payment_status,
+  funds_status,
+  protected_amount,
+  route_status,
+  compliance_status,
+  compliance_risk_level,
+  admin_review_required,
+  sensitive_documents_expected,
+  verification_status
+on public.service_requests
+for each row
+execute function app_private.ensure_work_start_is_protected();
 
 drop trigger if exists partner_applications_set_updated_at on public.partner_applications;
 create trigger partner_applications_set_updated_at

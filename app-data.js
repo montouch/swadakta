@@ -315,6 +315,14 @@
     return Promise.race([promise, timeout]).finally(() => window.clearTimeout(timeoutId));
   }
 
+  function hasOwnValue(object, key) {
+    return Object.prototype.hasOwnProperty.call(object || {}, key);
+  }
+
+  function compactDefined(payload = {}) {
+    return Object.fromEntries(Object.entries(payload).filter(([, value]) => value !== undefined));
+  }
+
   function createSupabaseClient(createClient) {
     return createClient(config().supabaseUrl, config().supabasePublishableKey, {
       auth: {
@@ -936,11 +944,11 @@
   }
 
   async function updateRequest(id, updates) {
-    const updatePayload = {
+    const updatePayload = compactDefined({
       status: updates.status,
       payment_status: updates.payment_status,
       assigned_to: updates.assigned_to,
-      assigned_partner_id: updates.assigned_partner_id || null,
+      assigned_partner_id: hasOwnValue(updates, "assigned_partner_id") ? updates.assigned_partner_id || null : undefined,
       operator_notes: updates.operator_notes,
       client_report: updates.client_report,
       quote_amount: updates.quote_amount,
@@ -981,13 +989,16 @@
       payment_processing_fee: updates.payment_processing_fee,
       client_report_url: updates.client_report_url,
       proof_links: updates.proof_links,
-    };
+    });
     const supabase = await getSupabase();
 
     if (!supabase) {
-      const requests = readLocalRequests().map((request) =>
-        request.id === id ? { ...request, ...updatePayload, updated_at: new Date().toISOString() } : request,
-      );
+      const requests = readLocalRequests().map((request) => {
+        if (request.id !== id) return request;
+        const nextRequest = { ...request, ...updatePayload, updated_at: new Date().toISOString() };
+        assertLocalWorkStartGate(nextRequest);
+        return nextRequest;
+      });
       writeLocalRequests(requests);
       return { data: requests.find((request) => request.id === id), mode: "local" };
     }
@@ -1251,6 +1262,89 @@
     );
   }
 
+  function workStartBlockers(request = {}) {
+    const status = String(request.status || "new").toLowerCase();
+    if (!["in_progress", "waiting_client", "completed"].includes(status)) {
+      return [];
+    }
+
+    const blockers = [];
+    const routeStatus = String(request.route_status || "").toLowerCase();
+    const complianceStatus = String(request.compliance_status || "").toLowerCase();
+    const riskLevel = String(request.compliance_risk_level || "").toLowerCase();
+    const paymentStatus = String(request.payment_status || "").toLowerCase();
+    const fundsStatus = String(request.funds_status || "").toLowerCase();
+
+    if (!request.assigned_partner_id) blockers.push("Assign a verified receiver before work can start.");
+    if (!["active", "pilot"].includes(routeStatus)) blockers.push("This route is not approved for active work.");
+    if (
+      ["restricted", "prohibited"].includes(complianceStatus) ||
+      ["high", "blocked"].includes(riskLevel) ||
+      request.admin_review_required === true
+    ) {
+      blockers.push("Compliance review must be cleared before work can start.");
+    }
+    if (request.sensitive_documents_expected === true && String(request.verification_status || "") !== "verified") {
+      blockers.push("Verify the client before starting sensitive-document work.");
+    }
+    if (
+      Number(request.protected_amount || 0) <= 0 ||
+      !["deposit_paid", "paid"].includes(paymentStatus) ||
+      !["authorized", "held_by_provider", "deposit_confirmed", "partially_released", "released"].includes(fundsStatus)
+    ) {
+      blockers.push("Protected payment evidence is required before work can start.");
+    }
+
+    return blockers;
+  }
+
+  function assertLocalWorkStartGate(request = {}) {
+    const blockers = workStartBlockers(request);
+    if (blockers.length) {
+      throw new Error(blockers[0]);
+    }
+  }
+
+  function offerAcceptanceBlockers(offer = {}, request = {}, application = {}) {
+    const blockers = [];
+    const routeStatus = String(request.route_status || "").toLowerCase();
+    const complianceStatus = String(request.compliance_status || "").toLowerCase();
+    const riskLevel = String(request.compliance_risk_level || "").toLowerCase();
+
+    if (!request.id) blockers.push("Linked request was not found.");
+    if (!application.id) blockers.push("Receiver profile was not found.");
+    if (
+      request.assigned_partner_id &&
+      request.assigned_partner_id !== offer.partner_application_id
+    ) {
+      blockers.push("This request already has another receiver assigned.");
+    }
+    if (!["active", "pilot"].includes(routeStatus)) blockers.push("This route is not approved for receiver assignment.");
+    if (
+      ["restricted", "prohibited"].includes(complianceStatus) ||
+      ["high", "blocked"].includes(riskLevel) ||
+      request.admin_review_required === true
+    ) {
+      blockers.push("Clear compliance/admin review before accepting a receiver offer.");
+    }
+    if (request.sensitive_documents_expected === true && String(request.verification_status || "") !== "verified") {
+      blockers.push("Verify the client before accepting sensitive-document work.");
+    }
+    if (
+      application.status !== "vetted" ||
+      application.identity_verification_status !== "verified" ||
+      application.id_verification_consent !== true ||
+      application.proof_standard_consent !== true
+    ) {
+      blockers.push("Shortlist only: receiver must be vetted, ID verified, and proof standards accepted before acceptance.");
+    }
+    if (Array.isArray(offer.safety_flags) && offer.safety_flags.length) {
+      blockers.push("Clear offer safety flags before accepting this offer.");
+    }
+
+    return blockers;
+  }
+
   function marketplacePayload(request = {}) {
     const offers = readLocalJobOffers().filter(
       (offer) => String(offer.request_code || "").toUpperCase() === String(request.request_code || "").toUpperCase(),
@@ -1461,7 +1555,50 @@
 
     if (!supabase) {
       let updated = null;
-      const offers = readLocalJobOffers().map((offer) => {
+      const existingOffers = readLocalJobOffers();
+      const targetOffer = existingOffers.find((offer) => String(offer.offer_code || "").toUpperCase() === cleanCode);
+      if (!targetOffer) {
+        throw new Error("Offer not found.");
+      }
+
+      if (cleanStatus === "accepted") {
+        const request =
+          readLocalRequests().find((item) => String(item.id || "") === String(targetOffer.service_request_id || "")) ||
+          readLocalRequests().find(
+            (item) => String(item.request_code || "").toUpperCase() === String(targetOffer.request_code || "").toUpperCase(),
+          ) ||
+          {};
+        const application =
+          readLocalPartnerApplications().find((item) => item.id === targetOffer.partner_application_id) || {};
+        const blockers = offerAcceptanceBlockers(targetOffer, request, application);
+        if (blockers.length) {
+          throw new Error(blockers[0]);
+        }
+
+        const requests = readLocalRequests().map((item) => {
+          if (
+            String(item.id || "") !== String(targetOffer.service_request_id || "") &&
+            String(item.request_code || "").toUpperCase() !== String(targetOffer.request_code || "").toUpperCase()
+          ) {
+            return item;
+          }
+          return {
+            ...item,
+            assigned_partner_id: targetOffer.partner_application_id,
+            automation_status: "receiver_routed",
+            operator_notes: [
+              item.operator_notes,
+              `Offer ${targetOffer.offer_code} accepted and receiver assigned. Work start remains locked until protected payment, route, and compliance gates pass.`,
+            ]
+              .filter(Boolean)
+              .join("\n"),
+            updated_at: new Date().toISOString(),
+          };
+        });
+        writeLocalRequests(requests);
+      }
+
+      const offers = existingOffers.map((offer) => {
         if (String(offer.offer_code || "").toUpperCase() !== cleanCode) return offer;
         updated = normalizeJobOffer({
           ...offer,
@@ -1470,10 +1607,22 @@
           updated_at: new Date().toISOString(),
         });
         return updated;
+      }).map((offer) => {
+        if (
+          cleanStatus === "accepted" &&
+          String(offer.request_code || "").toUpperCase() === String(targetOffer.request_code || "").toUpperCase() &&
+          String(offer.offer_code || "").toUpperCase() !== cleanCode &&
+          ["submitted", "shortlisted"].includes(String(offer.status || "").toLowerCase())
+        ) {
+          return normalizeJobOffer({
+            ...offer,
+            status: "declined",
+            admin_notes: offer.admin_notes || "Another verified receiver offer was accepted for this request.",
+            updated_at: new Date().toISOString(),
+          });
+        }
+        return offer;
       });
-      if (!updated) {
-        throw new Error("Offer not found.");
-      }
       writeLocalJobOffers(offers);
       return { data: updated, mode: "local" };
     }

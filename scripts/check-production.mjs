@@ -257,6 +257,10 @@ const requiredAppDataMarkers = [
   "listMyJobOffers",
   "listJobOffersForAdmin",
   "updateJobOfferStatus",
+  "compactDefined",
+  "workStartBlockers",
+  "assertLocalWorkStartGate",
+  "offerAcceptanceBlockers",
   "startIdentityVerificationSession",
   "/api/identity/start-verification",
   "providerRouteErrorMessage",
@@ -639,6 +643,8 @@ const requiredAdminOpsMarkers = [
   "Lowest price does not automatically win",
   "coverage_scopes",
   "Protected decisions are not delegated to AI",
+  "Work start remains locked until protected funds",
+  "Receiver assignment is selected",
   "Local static mode cannot call the Vercel readiness API",
 ];
 const requiredAdminVerificationMarkers = [
@@ -715,7 +721,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=59",
+  "app-data.js?v=60",
   "stitch-portal.js?v=34",
   "final-ux-theme.css?v=2",
   "final_ux_live_freshness",
@@ -1621,8 +1627,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=9")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=9`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=10")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=10`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
@@ -1963,11 +1969,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=9");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=10");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=9 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=10 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=9 returned 200");
+  pass("admin-ops.js?v=10 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {
