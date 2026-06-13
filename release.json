@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-public-admin-link-guard-v1",
-  "release_name": "Public admin link guard",
-  "description": "Public payment guidance now keeps normal users on public trust/payment routes, and production health checks fail if public pages expose admin-only links.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-public-admin-link-guard-1",
+  "release_id": "2026-06-13-public-sitemap-contract-v1",
+  "release_name": "Public sitemap contract",
+  "description": "Sitemap lastmod dates are current and readiness checks now verify that search discovery includes only public trust/business pages while keeping admin, auth, account, and workflow surfaces out.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-public-sitemap-contract-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

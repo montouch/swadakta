@@ -61,6 +61,29 @@ const forbiddenPublicAdminLinkMarkers = [
   "admin-readiness.html",
   "admin-verification.html",
 ];
+const requiredSitemapUrls = [
+  "https://swadakta.com/",
+  "https://swadakta.com/corridor",
+  "https://swadakta.com/trust",
+  "https://swadakta.com/payments",
+  "https://swadakta.com/rules",
+  "https://swadakta.com/privacy",
+  "https://swadakta.com/terms",
+];
+const forbiddenSitemapMarkers = [
+  "/admin",
+  "/auth",
+  "/login",
+  "/portal",
+  "/brief",
+  "/tracking",
+  "/verification",
+  "/assistant",
+  "/messages",
+  "/notifications",
+  "/resolution",
+];
+const expectedSitemapLastmod = "2026-06-13";
 const requiredStitchScreens = [
   {
     path: "/",
@@ -1195,6 +1218,34 @@ function checkStitchScreenContract(failures, label, html, screen) {
   }
 }
 
+function checkSitemapContract(failures, label, text) {
+  if (!/<urlset\b/i.test(text)) {
+    fail(failures, `${label} is missing urlset`);
+  }
+
+  for (const url of requiredSitemapUrls) {
+    if (!text.includes(`<loc>${url}</loc>`)) {
+      fail(failures, `${label} is missing public URL ${url}`);
+    }
+  }
+
+  for (const marker of forbiddenSitemapMarkers) {
+    if (text.includes(marker)) {
+      fail(failures, `${label} exposes private URL marker ${marker}`);
+    }
+  }
+
+  const lastmods = [...text.matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1]);
+  if (lastmods.length !== requiredSitemapUrls.length) {
+    fail(failures, `${label} should have ${requiredSitemapUrls.length} lastmod entries, found ${lastmods.length}`);
+  }
+  for (const lastmod of lastmods) {
+    if (lastmod !== expectedSitemapLastmod) {
+      fail(failures, `${label} has stale lastmod ${lastmod}; expected ${expectedSitemapLastmod}`);
+    }
+  }
+}
+
 function fail(failures, message) {
   failures.push(message);
   console.error(`FAIL ${message}`);
@@ -1570,6 +1621,8 @@ for (const marker of requiredRobotsMarkers) {
     fail(failures, `Local robots.txt is missing marker ${marker}`);
   }
 }
+const sitemap = await readLocal("sitemap.xml");
+checkSitemapContract(failures, "Local sitemap.xml", sitemap);
 const favicon = await readLocal("favicon.svg");
 if (!favicon.includes("Swadakta") || !favicon.includes("linearGradient")) {
   fail(failures, "Local favicon.svg is missing Swadakta mark metadata");
@@ -1764,6 +1817,14 @@ for (const marker of requiredRobotsMarkers) {
   } else {
     pass(`Production robots.txt contains ${marker}`);
   }
+}
+
+const { response: sitemapResponse, text: sitemapText } = await fetchText("/sitemap.xml");
+if (sitemapResponse.status !== 200) {
+  fail(failures, `sitemap.xml returned ${sitemapResponse.status}`);
+} else {
+  pass("sitemap.xml returned 200");
+  checkSitemapContract(failures, "Production sitemap.xml", sitemapText);
 }
 
 const { response: securityTxtResponse, text: securityTxtText } = await fetchText("/.well-known/security.txt");

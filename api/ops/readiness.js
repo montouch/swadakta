@@ -23,6 +23,29 @@ const FINAL_UX_THEME_MARKERS = [
 const FINAL_UX_PORTAL_MARKERS = ["account-home-workflow-first-final-ux", "What do you want to do?"];
 const LEGACY_PURPLE_UI_MARKERS = ["#4648d4", "#8127cf", "rgba(70,72,212", "rgba(70, 72, 212"];
 const PROOF_BUCKET_ID = "swadakta-proof";
+const PUBLIC_SITEMAP_URLS = [
+  "https://swadakta.com/",
+  "https://swadakta.com/corridor",
+  "https://swadakta.com/trust",
+  "https://swadakta.com/payments",
+  "https://swadakta.com/rules",
+  "https://swadakta.com/privacy",
+  "https://swadakta.com/terms",
+];
+const PRIVATE_SITEMAP_MARKERS = [
+  "/admin",
+  "/auth",
+  "/login",
+  "/portal",
+  "/brief",
+  "/tracking",
+  "/verification",
+  "/assistant",
+  "/messages",
+  "/notifications",
+  "/resolution",
+];
+const EXPECTED_SITEMAP_LASTMOD = "2026-06-13";
 
 function sendJson(res, status, body) {
   res.statusCode = status;
@@ -95,6 +118,17 @@ function mpesaCallbackUrl() {
 
   const base = publicUrl() || "https://swadakta.com";
   return `${base}/api/payments/mpesa-callback`;
+}
+
+function sitemapMissingItems(text = "") {
+  const lastmods = [...String(text || "").matchAll(/<lastmod>([^<]+)<\/lastmod>/g)].map((match) => match[1]);
+  return [
+    /<urlset\b/i.test(text) ? "" : "urlset",
+    ...PUBLIC_SITEMAP_URLS.map((url) => (text.includes(`<loc>${url}</loc>`) ? "" : url)),
+    ...PRIVATE_SITEMAP_MARKERS.map((marker) => (text.includes(marker) ? `private ${marker}` : "")),
+    lastmods.length === PUBLIC_SITEMAP_URLS.length ? "" : "lastmod count",
+    ...lastmods.map((lastmod) => (lastmod === EXPECTED_SITEMAP_LASTMOD ? "" : `stale lastmod ${lastmod}`)),
+  ].filter(Boolean);
 }
 
 async function assertAdmin(authHeader) {
@@ -2034,7 +2068,7 @@ async function siteTrustItems() {
   ].filter(Boolean);
   const publicFilesMissing = [
     robots.ok ? "" : "robots.txt",
-    sitemap.ok && /<urlset/i.test(sitemap.text) ? "" : "sitemap.xml",
+    ...(sitemap.ok ? sitemapMissingItems(sitemap.text) : ["sitemap.xml"]),
   ].filter(Boolean);
   const adminNoindex = String(adminReadiness.headers.get("x-robots-tag") || "");
   const portalBundleMissing = [
@@ -2142,8 +2176,10 @@ async function siteTrustItems() {
       "search_files",
       "Robots and sitemap",
       publicFilesMissing.length ? "warning" : "ready",
-      "robots.txt and sitemap.xml help the public site be discoverable while admin surfaces stay hidden.",
-      publicFilesMissing.length ? "Publish robots.txt and sitemap.xml at the domain root." : "robots.txt and sitemap.xml are reachable.",
+      "robots.txt and sitemap.xml help the public site be discoverable while admin, auth, and account surfaces stay hidden.",
+      publicFilesMissing.length
+        ? "Publish a public-only sitemap with current lastmod dates, and keep robots.txt blocking admin/auth/private surfaces."
+        : "robots.txt is reachable, and sitemap.xml is public-only with current launch-work dates.",
       publicFilesMissing,
       {
         copy_value: `${publicUrl() || "https://swadakta.com"}/sitemap.xml`,
