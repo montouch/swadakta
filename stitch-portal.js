@@ -1315,7 +1315,7 @@
     const rails = ["Card/Stripe and PayPal can support global client pay-ins after quote, route, and webhook evidence."];
 
     if (routeText.includes("kenya")) {
-      rails.push("M-Pesa can be prepared for Kenya-side mobile payment paths once Daraja, reconciliation, and route checks are ready.");
+      rails.push("M-Pesa can be prepared for Kenya KES mobile-money paths once Daraja, reconciliation, and route checks are ready.");
     }
     if (routeLooksAfrican) {
       rails.push("Paystack or Flutterwave can fit supported African corridors after provider setup, settlement, and webhook checks.");

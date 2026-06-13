@@ -879,7 +879,7 @@ const requiredReadinessApiMarkers = [
   "storage_read_policy_probe",
   "swadakta-proof",
   "app-data.js?v=65",
-  "stitch-portal.js?v=37",
+  "stitch-portal.js?v=38",
   "final-ux-theme.css?v=3",
   "final_ux_live_freshness",
   "final_ux_theme_url",
