@@ -43,6 +43,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 - HTTP/HTTPS-only validation for supporting, payment, report, and proof links
 - Quote amount, payment link, due date, report URL, and proof-link workflow
 - Admin quote-message generator for payment links, proof scope, and payment safety wording
+- Provider evidence playbook in `PAYMENTS_SETUP.md` for Stripe, PayPal, M-Pesa, Paystack, Flutterwave, Wise, and bank fallback routes
 - Founder margin tracking for quote revenue, operator payout, field costs, and payment fees
 - Funds-protection controls for held/authorized/deposit/released/refunded/disputed payments
 - Milestone release ledger for staged receiver payouts and client-visible release status

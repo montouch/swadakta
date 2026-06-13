@@ -31,6 +31,28 @@ Client-visible rail gate rule: no payment rail becomes a normal public choice un
 
 Corridor rail rule: even when a provider is ready, the corridor can still stay hidden or founder-gated. Admin Readiness now separates outside-Africa-to-Africa, Africa in-country, Africa-to-global, non-Africa global, China/sourcing, and high-value/sensitive routes so payment, ID, payout, customs/legal, and proof gates are checked together before a quote is sent. The public Payments page mirrors this at a client-safe level with a route-payment fit checker that explains likely rails and hard stops without exposing founder economics or internal provider flags.
 
+## Provider Evidence Playbook
+
+The money rule is simple: a provider event can update Swadakta records only after server-side evidence matches the saved Swadakta request. It never releases receiver payout by itself.
+
+| Provider | Official evidence pattern | Swadakta implementation | Founder/admin rule |
+| --- | --- | --- | --- |
+| Stripe | Verify webhook signatures and match Checkout Session or PaymentIntent evidence. | `/api/payments/stripe-webhook` checks the signature, requires `payment_status = paid`, and matches `request_code`, amount, and currency. | Keep the Stripe webhook secret server-side and run one low-value test before public card collection. |
+| PayPal | Inspect the order and capture through the Orders API before treating payment as captured. | `/api/payments/paypal-capture` gets order details, requires `custom_id`/`invoice_id`/`reference_id` evidence to include the Swadakta request code, and checks amount/currency before capture. | Do not capture if PayPal evidence lacks the Swadakta request code or differs from the saved quote. |
+| M-Pesa Daraja | Treat the STK callback receipt and CheckoutRequestID/MerchantRequestID as provider evidence. | `/api/payments/mpesa-stk` blocks duplicate prompts unless intentionally replaced, and `/api/payments/mpesa-callback` records the provider callback without releasing payouts. | Use sandbox first; live KES collection waits for Kenya setup, callback token, and reconciliation evidence. |
+| Paystack | Verify the webhook signature, then verify the transaction by reference before updating records. | `/api/payments/paystack-webhook` checks `x-paystack-signature`, calls `/transaction/verify/{reference}`, and maps reference, status, amount, currency, and request code. | Keep Paystack hidden until merchant approval, settlement, webhook, and transaction verification evidence are proven. |
+| Flutterwave | Verify the webhook signature/hash and re-query transaction evidence before updating records. | `/api/payments/flutterwave-webhook` checks `flutterwave-signature` or the configured hash, calls transaction verify, and maps transaction id/reference, status, amount, currency, and request code. | Keep Flutterwave hidden until merchant approval, settlement, webhook, and verification evidence are proven. |
+| Wise/bank fallback | Use receipt or statement evidence only when normal automatic rails fail or are unsuitable. | `/api/payments/wise-payment-request` prepares an admin-only fallback request; receipt checks can draft reconciliation notes but do not mark funds cleared automatically. | Wise stays fallback-only; do not make it a public self-serve rail unless the business model changes and legal/accounting review approves it. |
+
+Official references to use during setup:
+
+- Stripe webhook signatures: https://docs.stripe.com/webhooks/signature
+- PayPal Orders API: https://developer.paypal.com/docs/api/orders/v2/
+- Safaricom Daraja: https://developer.safaricom.co.ke/
+- Paystack webhooks and transaction verification: https://paystack.com/docs/payments/webhooks/ and https://paystack.com/docs/payments/verify-payments/
+- Flutterwave webhooks: https://developer.flutterwave.com/docs/webhooks
+- Wise API/guides: https://docs.wise.com/guides
+
 ## Server-side Payment Launch Gate
 
 All admin payment route endpoints now run a shared launch gate before creating real provider payment routes:
