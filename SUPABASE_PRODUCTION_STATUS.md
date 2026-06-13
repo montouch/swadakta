@@ -13,6 +13,7 @@ Database: Postgres `17.6.1.127`
   - 28/28 launch-critical RPCs exist, including `app_private.is_admin()` and `app_private.resolution_ai_triage(...)`.
   - proof bucket `swadakta-proof` is private, 6MB-limited, and accepts image/PDF/video/audio proof MIME types.
   - `job_offers` and `resolution_cases` use the consolidated visible-row SELECT policies, not duplicate role-specific SELECT policies.
+- Repeat the same live check with `supabase/live_contract_check.sql`; every section should return `ok = total` and `missing_or_bad = null`.
 - Public RLS is enabled on the launch-critical tables checked for accounts, service requests, partner applications, field updates, fund milestones, reviews, notifications, and resolution cases.
 - `account_profiles` access is routed through authenticated RPCs so signed-in users can open their account without direct-table permission failures.
 - Receiver code-of-conduct gating is applied:

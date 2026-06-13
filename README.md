@@ -95,13 +95,15 @@ Then open:
 
 ## Production health
 
-Run the full launch verifier before demos, provider setup changes, or paid-pilot rehearsal. It checks deployment freshness, the Supabase production contract, production health, and visual fit:
+Run the full launch verifier before demos, provider setup changes, or paid-pilot rehearsal. It checks deployment freshness, the Supabase schema contract, production health, and visual fit:
 
 ```powershell
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-launch-ready.mjs https://swadakta.com
 ```
 
 Add `--strict-auth` after setting `SWADAKTA_E2E_EMAIL`, `SWADAKTA_E2E_PASSWORD`, `SWADAKTA_E2E_ADMIN_EMAIL`, and `SWADAKTA_E2E_ADMIN_PASSWORD` in the shell to require live user/admin sign-in and readiness-summary checks. Do not commit those values.
+
+For live production database confirmation, run `supabase/live_contract_check.sql` in the Supabase SQL editor or through the Supabase MCP SQL tool. The expected result is `ok = total` and `missing_or_bad = null` for every section.
 
 Run a no-secret bundle check before demos or after Vercel deploys:
 
