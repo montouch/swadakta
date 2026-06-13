@@ -14,8 +14,12 @@ const EXPECTED_APP_DATA_REF = "app-data.js?v=65";
 const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=38";
 const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=3";
 const FINAL_UX_THEME_MARKERS = [
-  "--sw-primary: #000105",
+  "--sw-primary: #101a3a",
+  "--sw-corridor: #0ea5e9",
+  "--sw-tertiary: #23c283",
+  "--sw-coral: #ff7a59",
   "final-ux-sitewide-shell-v2",
+  "color-magic-stitch-palette-v1",
   'body:not([data-admin-theme="dark"])',
   ".primary-glass-button",
   "overflow-wrap: anywhere",
