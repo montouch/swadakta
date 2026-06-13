@@ -81,7 +81,7 @@ Start with quote-based payment links, then automate later.
 
 - Stripe: create/verify the business account, then add `STRIPE_SECRET_KEY` and `STRIPE_WEBHOOK_SECRET` to Vercel. Webhook URL: `https://swadakta.com/api/payments/stripe-webhook`.
 - PayPal Business: create a REST app, then add `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET`, and `PAYPAL_ENVIRONMENT` to Vercel.
-- Safaricom Daraja/M-Pesa: complete Kenya business setup first, create/approve the Daraja app, then add `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, `MPESA_PASSKEY`, and eventually `MPESA_ENVIRONMENT=live`. Callback URL: `https://swadakta.com/api/payments/mpesa-callback`.
+- Safaricom Daraja/M-Pesa: complete Kenya business setup first, create/approve the Daraja app, then add `MPESA_CONSUMER_KEY`, `MPESA_CONSUMER_SECRET`, `MPESA_SHORTCODE`, `MPESA_PASSKEY`, `MPESA_CALLBACK_TOKEN`, and eventually `MPESA_ENVIRONMENT=live`. Callback URL: `https://swadakta.com/api/payments/mpesa-callback?token=<MPESA_CALLBACK_TOKEN>`.
 - Paystack and Flutterwave: open only as Africa expansion merchant accounts. Keep them hidden until merchant approval, settlement currencies, webhook signature checks, and provider-evidence mapping have all been tested.
 - Wise Business: open as fallback only, not the public default rail. Add `WISE_PAYMENT_LINK_URL` or `WISE_PAYMENT_REQUEST_URL` only after the account is approved and you are ready to manually reconcile receipts.
 

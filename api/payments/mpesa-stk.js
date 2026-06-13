@@ -158,13 +158,15 @@ function mpesaTimestamp(date = new Date()) {
 }
 
 function callbackUrl() {
+  const token = requiredText(process.env.MPESA_CALLBACK_TOKEN, "MPESA_CALLBACK_TOKEN");
   if (process.env.MPESA_CALLBACK_URL) {
-    return process.env.MPESA_CALLBACK_URL;
+    const configuredUrl = new URL(process.env.MPESA_CALLBACK_URL);
+    configuredUrl.searchParams.set("token", token);
+    return configuredUrl.toString();
   }
 
   const base = PUBLIC_BASE_URL.replace(/\/$/, "");
-  const token = process.env.MPESA_CALLBACK_TOKEN;
-  return `${base}/api/payments/mpesa-callback${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+  return `${base}/api/payments/mpesa-callback?token=${encodeURIComponent(token)}`;
 }
 
 async function assertAdmin(authHeader) {

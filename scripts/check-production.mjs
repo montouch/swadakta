@@ -1041,6 +1041,17 @@ const requiredPaymentIdempotencyMarkers = [
   ["PAYMENTS_SETUP.md", "force_new_stk"],
   ["PAYMENTS_SETUP.md", "returns the existing `CheckoutRequestID`"],
 ];
+const requiredMpesaCallbackGuardMarkers = [
+  ["api/payments/mpesa-callback.js", "MPESA_CALLBACK_TOKEN is required before M-Pesa callbacks can be processed"],
+  ["api/payments/mpesa-callback.js", "Invalid M-Pesa callback token"],
+  ["api/payments/mpesa-stk.js", "configuredUrl.searchParams.set(\"token\", token)"],
+  ["api/payments/mpesa-stk.js", "MPESA_CALLBACK_TOKEN"],
+  ["api/ops/readiness.js", "Callback token is required before M-Pesa callbacks can update Swadakta payment state"],
+  ["PAYMENTS_SETUP.md", "required shared callback token"],
+  ["LAUNCH_RUNBOOK.md", "MPESA_CALLBACK_TOKEN"],
+  ["scripts/check-mpesa-callback-guard.mjs", "M-Pesa callback token guard checks passed"],
+  ["scripts/check-mpesa-callback-guard.mjs", "tokenEnvName"],
+];
 const requiredPaymentLaunchGateMarkers = [
   ["lib/payment-launch-gate.js", "assertPaymentLaunchAllowed"],
   ["lib/payment-launch-gate.js", "paymentLaunchGatePayload"],
@@ -1540,6 +1551,7 @@ runLocalScript(failures, "scripts/check-money-custody-boundary.mjs", "Local mone
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
 runLocalScript(failures, "scripts/check-paypal-capture-guard.mjs", "Local PayPal capture guard check passed");
+runLocalScript(failures, "scripts/check-mpesa-callback-guard.mjs", "Local M-Pesa callback guard check passed");
 const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
 if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
   pass(`Local release manifest is ${localRelease.release_id}`);
@@ -1748,6 +1760,12 @@ for (const [file, marker] of requiredPaymentIdempotencyMarkers) {
   const content = await readLocal(file);
   if (!content.includes(marker)) {
     fail(failures, `Local ${file} is missing payment idempotency marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredMpesaCallbackGuardMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing M-Pesa callback guard marker ${marker}`);
   }
 }
 for (const [file, marker] of requiredPaymentLaunchGateMarkers) {

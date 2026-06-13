@@ -41,7 +41,9 @@ async function readJsonBody(req) {
 function verifyCallbackToken(req) {
   const expectedToken = process.env.MPESA_CALLBACK_TOKEN;
   if (!expectedToken) {
-    return;
+    const error = new Error("MPESA_CALLBACK_TOKEN is required before M-Pesa callbacks can be processed.");
+    error.statusCode = 503;
+    throw error;
   }
 
   const url = new URL(req.url || "/api/payments/mpesa-callback", `https://${req.headers.host || "swadakta.com"}`);

@@ -463,7 +463,7 @@ Optional Vercel environment variables:
 - `MPESA_BASE_URL`: explicit Daraja base URL override.
 - `MPESA_TRANSACTION_TYPE`: defaults to `CustomerPayBillOnline`; set the Daraja-approved value for Till/Buy Goods if needed.
 - `MPESA_CALLBACK_URL`: explicit callback URL if Safaricom needs a fixed URL.
-- `MPESA_CALLBACK_TOKEN`: shared callback token. If set, the generated callback URL includes `?token=...` and the endpoint rejects callbacks without it.
+- `MPESA_CALLBACK_TOKEN`: required shared callback token. The generated callback URL includes `?token=...`, explicit callback URLs are tokenized by the server, and the endpoint rejects callbacks without the matching token.
 
 Admin workflow:
 
@@ -472,7 +472,7 @@ Admin workflow:
 3. Enter the Kenyan M-Pesa phone number that should receive the prompt.
 4. Do not keep clicking if the payer says nothing happened. If the same quote already has an active STK prompt, Swadakta reuses the existing checkout reference instead of prompting the phone again.
 5. Wait for the client/payer to approve on their phone.
-6. The callback marks the request paid only after Safaricom confirms success.
+6. The callback marks the request paid only after Safaricom confirms success through the token-protected callback URL.
 7. Use `force_new_stk` only after confirming the previous prompt expired, failed, or was sent to the wrong number.
 8. Review the M-Pesa receipt and protected amount before assigning or releasing any receiver payout.
 

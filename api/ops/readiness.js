@@ -2599,12 +2599,15 @@ async function readinessReport(user, authHeader) {
         item(
           "mpesa_callback",
           "M-Pesa callback protection",
-          !serviceRoleConfigured ? "missing" : hasEnv("MPESA_CALLBACK_TOKEN") ? "ready" : "warning",
+          serviceRoleConfigured && hasEnv("MPESA_CALLBACK_TOKEN") ? "ready" : "missing",
           hasEnv("MPESA_CALLBACK_TOKEN")
             ? "Callback token is configured."
-            : "Callback works, but a token is recommended so random callbacks cannot hit the endpoint.",
-          "Set MPESA_CALLBACK_TOKEN and register the full callback URL with Safaricom.",
-          serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"],
+            : "Callback token is required before M-Pesa callbacks can update Swadakta payment state.",
+          "Set MPESA_CALLBACK_TOKEN and register the full tokenized callback URL with Safaricom.",
+          [
+            ...(serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"]),
+            ...(hasEnv("MPESA_CALLBACK_TOKEN") ? [] : ["MPESA_CALLBACK_TOKEN"]),
+          ],
           {
             docs_url: DOCS.daraja,
             copy_value: mpesaWebhookUrl,
