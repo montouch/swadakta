@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 24
 
-      - name: Check production bundle
-        run: node scripts/check-production.mjs
+      - name: Check launch readiness without desktop visual pass
+        run: node scripts/check-launch-ready.mjs "${{ inputs.base_url }}" --skip-visual
         env:
           SWADAKTA_BASE_URL: ${{ inputs.base_url }}

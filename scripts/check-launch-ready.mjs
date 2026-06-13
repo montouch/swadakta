@@ -34,11 +34,11 @@ function runNodeStep(name, script, scriptArgs = [], { requireOutputIncludes } = 
   return ok;
 }
 
-function skipStep(name, reason, { strict = false } = {}) {
+function skipStep(name, reason, { strict = false, credentialGated = false } = {}) {
   console.log(`\n=== ${name} ===`);
   console.log(`Skipped: ${reason}`);
   const ok = !strict;
-  results.push({ name, ok, skipped: true });
+  results.push({ name, ok, skipped: true, credentialGated });
   if (!ok) console.error(`Launch-ready step required by strict mode: ${name}`);
   return ok;
 }
@@ -60,6 +60,7 @@ if (hasEnv("SWADAKTA_E2E_EMAIL", "SWADAKTA_E2E_PASSWORD")) {
 } else {
   skipStep("User auth E2E", "set SWADAKTA_E2E_EMAIL and SWADAKTA_E2E_PASSWORD to verify live account sign-in", {
     strict: strictAuth,
+    credentialGated: true,
   });
 }
 
@@ -73,12 +74,14 @@ if (
   skipStep(
     "Admin auth E2E and live readiness summary",
     "set SWADAKTA_E2E_ADMIN_EMAIL and SWADAKTA_E2E_ADMIN_PASSWORD, or the fallback SWADAKTA_E2E_EMAIL/SWADAKTA_E2E_PASSWORD pair",
-    { strict: strictAuth },
+    { strict: strictAuth, credentialGated: true },
   );
 }
 
 const failed = results.filter((result) => !result.ok);
 const skipped = results.filter((result) => result.skipped);
+const credentialSkipped = skipped.filter((result) => result.credentialGated);
+const optionalSkipped = skipped.filter((result) => !result.credentialGated);
 console.log("\n=== Launch-ready summary ===");
 for (const result of results) {
   const marker = result.ok ? (result.skipped ? "SKIP" : "OK") : "FAIL";
@@ -91,8 +94,15 @@ if (failed.length) {
   );
   process.exitCode = 1;
 } else {
-  const skippedText = skipped.length
-    ? ` ${skipped.length} credential-gated step${skipped.length === 1 ? " was" : "s were"} skipped; run with --strict-auth and E2E env vars before a paid pilot.`
-    : "";
+  const skippedParts = [];
+  if (optionalSkipped.length) {
+    skippedParts.push(`${optionalSkipped.length} optional step${optionalSkipped.length === 1 ? " was" : "s were"} skipped`);
+  }
+  if (credentialSkipped.length) {
+    skippedParts.push(
+      `${credentialSkipped.length} credential-gated step${credentialSkipped.length === 1 ? " was" : "s were"} skipped; run with --strict-auth and E2E env vars before a paid pilot`,
+    );
+  }
+  const skippedText = skippedParts.length ? ` ${skippedParts.join(". ")}.` : "";
   console.log(`\nLaunch-ready checks passed for ${baseUrl}.${skippedText}`);
 }

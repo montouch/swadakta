@@ -105,6 +105,8 @@ Add `--strict-auth` after setting `SWADAKTA_E2E_EMAIL`, `SWADAKTA_E2E_PASSWORD`,
 
 For live production database confirmation, run `supabase/live_contract_check.sql` in the Supabase SQL editor or through the Supabase MCP SQL tool. The expected result is `ok = total` and `missing_or_bad = null` for every section.
 
+The manual GitHub Action named `Production Health` runs the same launch verifier with `--skip-visual`; the full desktop/mobile visual pass remains part of local and Codex desktop verification.
+
 Run a no-secret bundle check before demos or after Vercel deploys:
 
 ```powershell
