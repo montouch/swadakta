@@ -2995,10 +2995,32 @@
   function providerRouteErrorMessage(data, fallback) {
     if (data?.payment_launch_locked) {
       const missing = Array.isArray(data.missing) && data.missing.length ? ` Missing: ${data.missing.join(", ")}.` : "";
-      return `${data.error || "Payment launch gate locked."}${missing} Open Admin Readiness before creating a real payment route.`;
+      const blockers =
+        Array.isArray(data.job_blockers) && data.job_blockers.length
+          ? ` Job blockers: ${data.job_blockers.join(", ")}.`
+          : "";
+      return `${data.error || "Payment launch gate locked."}${missing}${blockers} Open Admin Readiness before creating a real payment route.`;
     }
 
     return data?.error || fallback;
+  }
+
+  function paymentRouteRiskPayload(request = {}) {
+    return {
+      job_acceptance_status: request.job_acceptance_status || "",
+      compliance_status: request.compliance_status || "",
+      compliance_risk_level: request.compliance_risk_level || "",
+      admin_review_required: request.admin_review_required === true,
+      admin_review_reason: request.admin_review_reason || "",
+      compliance_flags: Array.isArray(request.compliance_flags) ? request.compliance_flags : [],
+      required_checks: Array.isArray(request.required_checks) ? request.required_checks : [],
+      goods_category: request.goods_category || "none",
+      logistics_mode: request.logistics_mode || "not_needed",
+      route_status: request.route_status || "",
+      task_type: request.task_type || "",
+      service_direction: request.service_direction || "",
+      sensitive_documents_expected: request.sensitive_documents_expected === true,
+    };
   }
 
   async function createStripeCheckoutSession(request, updates = {}) {
@@ -3025,6 +3047,7 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        ...paymentRouteRiskPayload(request),
         request_code: request.request_code,
         client_name: request.client_name,
         email: request.email,
@@ -3070,6 +3093,7 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        ...paymentRouteRiskPayload(request),
         request_code: request.request_code,
         client_name: request.client_name,
         email: request.email,
@@ -3115,6 +3139,7 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        ...paymentRouteRiskPayload(request),
         request_code: request.request_code,
         client_name: request.client_name,
         email: request.email,
@@ -3197,6 +3222,7 @@
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        ...paymentRouteRiskPayload(request),
         request_code: request.request_code,
         client_name: request.client_name,
         whatsapp: request.whatsapp,

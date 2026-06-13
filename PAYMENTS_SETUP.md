@@ -55,6 +55,25 @@ The gate also requires at least one ID-provider evidence route, such as a provid
 
 If the gate blocks a route, the admin UI shows the missing flag names and points the founder back to Admin Readiness. Do not bypass this by adding fake `true` values. Set those flags only after the real provider, legal, insurance, tax, privacy, and evidence steps are actually complete.
 
+## Per-job Payment Acceptance Gate
+
+Payment route endpoints also check the specific job before creating a real payment link, PayPal order, M-Pesa STK prompt, or Wise fallback request. The browser warning is not the only guard.
+
+The server blocks payment route creation when the request carries any of these unresolved states:
+
+- `JOB_ACCEPTANCE_REFUSE`
+- `JOB_ACCEPTANCE_FOUNDER_REVIEW_REQUIRED`
+- `JOB_ROUTE_EVIDENCE_REQUIRED`
+- `JOB_COMPLIANCE_PROHIBITED`
+- `JOB_COMPLIANCE_RESTRICTED`
+- `JOB_ADMIN_REVIEW_REQUIRED`
+- `JOB_HIGH_RISK_REVIEW_REQUIRED`
+- `JOB_SENSITIVE_DOCUMENTS_REVIEW_REQUIRED`
+- `JOB_GOODS_RESTRICTED_OR_UNSURE`
+- `JOB_ROUTE_NOT_SUPPORTED`
+
+This protects against accidental payment collection for restricted goods, unclear customs routes, sensitive documents, high-risk work, unsupported routes, or requests that require founder/provider evidence before quote. To proceed, correct the request so the job is genuinely quote-eligible, record the needed evidence, and keep the payment route inside provider-held funds. Do not clear these flags just to make checkout work.
+
 ## Funds Protection and Milestones
 
 Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:
