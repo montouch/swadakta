@@ -49,6 +49,8 @@ These decisions are never autonomous:
 
 The system needs provider evidence, system evidence, or explicit founder/admin confirmation before any protected decision changes state.
 
+The server AI routes now run a protected-action preflight before the model is called. If a prompt directly asks AI to release/refund money, mark payment paid, verify ID, vet/assign a receiver, change a provenance seal, send an external message, change admin access, provide legal/tax/customs/title/financial advice, or reveal secrets, Swadakta returns a deterministic `Founder approval required` response instead of letting the model improvise. If the user only asks for a draft, summary, checklist, or risk review, the request can continue, but the protected-action warning is passed into the model context.
+
 ## Data Boundary
 
 - User AI can send sanitized summaries upward to admin AI.

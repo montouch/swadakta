@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `14`
+- Local commits queued behind the Vercel rate limit: `15`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -46,6 +46,7 @@ Queued local release contents:
 10. Admin corridor rail planner for global-to-Africa, Africa in-country, Africa-to-global, China/sourcing, non-Africa global, and high-value/sensitive routes, with payment, ID, payout, visibility, and hard-stop guidance.
 11. Public route-payment fit checker on Payments so clients can understand why different corridors use different payment, ID, payout, and hard-stop paths before requesting a quote.
 12. Verification readiness planner that prepares users for provider ID checks, receiver vetting, high-value/sensitive review, and common failure prevention before they open Smile ID, Sumsub, or Youverify.
+13. AI protected-action preflight on the Vercel and Supabase assistant routes so direct requests to move money, verify ID, assign receivers, send external messages, change admin access, change provenance, give regulated advice, or reveal secrets return a deterministic founder-approval gate before any model call.
 
 Before the next push:
 

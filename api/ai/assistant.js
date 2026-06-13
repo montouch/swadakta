@@ -22,6 +22,92 @@ const ROLE_POLICIES = {
   },
 };
 const MAX_JSON_BODY_BYTES = 64 * 1024;
+const SAFE_ASSIST_ONLY_PATTERN =
+  /\b(draft|write|summari[sz]e|summary|explain|how|what|why|where|when|guide|steps|instructions|checklist|template|reply|message draft|review|risk|recommend|suggest|prepare|outline|question|yes\/no|need evidence|help me understand)\b/i;
+const DIRECT_ACTION_PATTERN =
+  /\b(do it|apply|approve|mark|set|release|refund|pay out|payout|verify|vet|assign|select|award|send|email|whatsapp|sms|text|notify|delete|remove|add admin|promote|override|bypass|clear)\b/i;
+const PROTECTED_ACTION_POLICIES = [
+  {
+    id: "money_movement",
+    label: "money movement or payment-state change",
+    patterns: [
+      /\b(release|refund|pay out|payout|move|transfer|capture)\b.{0,48}\b(funds?|money|payment|milestone|receiver|operator)\b/i,
+      /\b(mark|set|confirm|clear)\b.{0,48}\b(payment|deposit|funds?)\b.{0,48}\b(paid|released|confirmed|refunded|reconciled)\b/i,
+    ],
+    founderDecision: "Founder/provider approval is required before payment state or milestone funds change.",
+    safeAssist: "I can draft a payment note, reconciliation checklist, or founder yes/no prompt.",
+  },
+  {
+    id: "identity_approval",
+    label: "identity verification approval",
+    patterns: [
+      /\b(mark|set|approve|pass|verify|clear)\b.{0,48}\b(id|identity|kyc|verification|document|selfie|liveness)\b/i,
+      /\b(id|identity|kyc|verification)\b.{0,48}\b(verified|approved|passed|cleared)\b/i,
+    ],
+    founderDecision: "Provider evidence or documented exception review is required before identity status changes.",
+    safeAssist: "I can draft retry guidance, readiness steps, or an exception-review prompt.",
+  },
+  {
+    id: "receiver_assignment",
+    label: "receiver vetting, rejection, or assignment",
+    patterns: [
+      /\b(assign|select|award|give|vet|approve|reject|ban|shortlist)\b.{0,56}\b(receiver|runner|worker|operator|job seeker|concierge)\b/i,
+      /\b(receiver|runner|worker|operator|job seeker|concierge)\b.{0,56}\b(assigned|vetted|rejected|selected|approved)\b/i,
+    ],
+    founderDecision: "Receiver decisions require verified/vetted status, route fit, proof standards, and founder/admin confirmation.",
+    safeAssist: "I can compare offers, summarize provenance, or prepare a selection prompt.",
+  },
+  {
+    id: "external_message",
+    label: "external WhatsApp, email, SMS, or client/receiver message sending",
+    patterns: [
+      /\b(send|email|whatsapp|sms|text|notify|message)\b.{0,64}\b(client|customer|receiver|runner|worker|operator|founder|steward|family|supplier)\b/i,
+      /\b(send it|send now|notify them|message them)\b/i,
+    ],
+    founderDecision: "External messages require a human/admin send action after reviewing the draft.",
+    safeAssist: "I can draft the message and list the evidence that should be attached.",
+  },
+  {
+    id: "provenance_change",
+    label: "provenance score or trust-seal change",
+    patterns: [
+      /\b(change|set|raise|lower|adjust|increase|decrease|reset)\b.{0,48}\b(provenance|trust score|seal|rating|score)\b/i,
+      /\b(provenance|trust score|seal)\b.{0,48}\b(100|green|approved|boost|penalty)\b/i,
+    ],
+    founderDecision: "Provenance changes must come from reviews, completed jobs, disputes, verification, and admin-visible evidence.",
+    safeAssist: "I can explain why the seal moved or draft a review note.",
+  },
+  {
+    id: "admin_access",
+    label: "admin access or permission change",
+    patterns: [
+      /\b(add|remove|promote|demote|grant|revoke)\b.{0,48}\b(admin|founder|permission|role|access)\b/i,
+      /\b(admin|founder)\b.{0,48}\b(access granted|role changed|permission changed)\b/i,
+    ],
+    founderDecision: "Admin access changes require authenticated owner action outside AI.",
+    safeAssist: "I can draft the access checklist and audit note.",
+  },
+  {
+    id: "legal_financial_customs_advice",
+    label: "legal, tax, customs, title, or financial advice",
+    patterns: [
+      /\b(give|provide|confirm|guarantee|clear)\b.{0,48}\b(legal advice|tax advice|customs advice|title advice|financial advice)\b/i,
+      /\b(clear|approve|guarantee)\b.{0,48}\b(restricted goods|customs|title|land|property transfer|remittance)\b/i,
+    ],
+    founderDecision: "Legal, tax, customs, title, and financial-service questions require qualified professional/provider review.",
+    safeAssist: "I can prepare questions for the lawyer, accountant, customs provider, or payment provider.",
+  },
+  {
+    id: "secret_or_credential",
+    label: "secret, password, token, or API-key exposure",
+    patterns: [
+      /\b(show|reveal|send|paste|share|print|return)\b.{0,48}\b(api key|secret key|password|token|service role|webhook secret)\b/i,
+      /\b(api key|secret key|password|token|service role|webhook secret)\b.{0,48}\b(show|reveal|send|paste|share|print|return)\b/i,
+    ],
+    founderDecision: "Secrets must stay in provider dashboards, Vercel, or Supabase server-side secrets, never model prompts or browser pages.",
+    safeAssist: "I can explain where to rotate and store secrets without exposing values.",
+  },
+];
 
 function httpError(message, statusCode) {
   const error = new Error(message);
@@ -94,6 +180,64 @@ function safeContext(value) {
   }
 
   return JSON.parse(JSON.stringify(value));
+}
+
+function protectedActionReview(payload) {
+  const text = [payload.task, payload.draft, payload.action, payload.intent]
+    .map((value) => safeText(value, 4000))
+    .filter(Boolean)
+    .join("\n");
+  if (!text) {
+    return { required: false, direct_action: false, matches: [] };
+  }
+
+  const matches = PROTECTED_ACTION_POLICIES.filter((policy) => policy.patterns.some((pattern) => pattern.test(text))).map(
+    (policy) => ({
+      id: policy.id,
+      label: policy.label,
+      founder_decision: policy.founderDecision,
+      safe_assist: policy.safeAssist,
+    }),
+  );
+  const directAction = matches.length > 0 && DIRECT_ACTION_PATTERN.test(text) && !SAFE_ASSIST_ONLY_PATTERN.test(text);
+
+  return {
+    required: matches.length > 0,
+    direct_action: directAction,
+    matches,
+  };
+}
+
+function protectedActionInstruction(review) {
+  if (!review?.required) return "";
+  return [
+    "Protected action preflight:",
+    ...review.matches.map(
+      (match) =>
+        `- ${match.label}: ${match.founder_decision} Safe assist path: ${match.safe_assist}`,
+    ),
+    "If the user asked you to perform the protected action, refuse to perform it and provide a founder/admin approval prompt instead.",
+  ].join("\n");
+}
+
+function protectedActionOutput(role, review) {
+  const decisions = review.matches.map((match) => `- ${match.label}: ${match.founder_decision}`).join("\n");
+  const safePaths = review.matches.map((match) => `- ${match.safe_assist}`).join("\n");
+  return [
+    "Founder approval required.",
+    "",
+    "I cannot perform that protected action from AI.",
+    "",
+    "Decision gate:",
+    decisions,
+    "",
+    "What I can do now:",
+    safePaths,
+    "",
+    role === "admin"
+      ? "Use this as a Yes / No / Need evidence admin prompt. Apply the actual change only after the provider evidence or founder/admin confirmation exists in Swadakta."
+      : "Open the relevant Swadakta page and wait for provider evidence or founder/admin review before the protected state changes.",
+  ].join("\n");
 }
 
 async function verifiedUser(authHeader) {
@@ -170,16 +314,18 @@ function systemPrompt(role) {
   ].join(" ");
 }
 
-function userPrompt(payload, role, user) {
+function userPrompt(payload, role, user, review) {
   const task = safeText(payload.task || "draft next step", 240);
   const draft = safeText(payload.draft, 4000);
   const context = safeText(JSON.stringify(safeContext(payload.context), null, 2), 12000);
+  const protectedInstruction = protectedActionInstruction(review);
 
   return [
     `Role policy: ${ROLE_POLICIES[role].label}.`,
     `Signed-in user: ${user.email || user.id || "unknown"}.`,
     `Task: ${task}`,
     draft ? `Existing draft:\n${draft}` : "",
+    protectedInstruction,
     "Context JSON:",
     context || "{}",
   ]
@@ -199,7 +345,7 @@ function extractOutputText(data) {
   return textPart?.text || "";
 }
 
-async function callOpenAI(payload, role, user) {
+async function callOpenAI(payload, role, user, review) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     const error = new Error("OPENAI_API_KEY is not configured in Vercel.");
@@ -231,7 +377,7 @@ async function callOpenAI(payload, role, user) {
           },
           {
             role: "user",
-            content: [{ type: "input_text", text: userPrompt(payload, role, user) }],
+            content: [{ type: "input_text", text: userPrompt(payload, role, user, review) }],
           },
         ],
       }),
@@ -255,10 +401,12 @@ async function callOpenAI(payload, role, user) {
     model: data.model || process.env.OPENAI_MODEL || "gpt-5.5",
     guardrails: [
       "draft_only",
+      "protected_action_preflight",
       "founder_approval_for_money_identity_assignment_and_messages",
       "wise_and_bank_transfer_require_verified_receipt_or_statement",
       "no_legal_tax_title_or_financial_advice",
     ],
+    protected_action_review: review,
   };
 }
 
@@ -279,12 +427,31 @@ module.exports = async function handler(req, res) {
     const payload = await readJsonBody(req);
     const role = safeRole(payload.role);
     const user = await verifiedUser(req.headers.authorization);
+    const review = protectedActionReview(payload);
 
     if (ROLE_POLICIES[role].requireAdmin) {
       await assertAdmin(req.headers.authorization, user.id);
     }
 
-    const result = await callOpenAI(payload, role, user);
+    if (review.direct_action) {
+      sendJson(res, 200, {
+        role,
+        output: protectedActionOutput(role, review),
+        response_id: null,
+        model: "deterministic-guardrail",
+        guardrails: [
+          "draft_only",
+          "protected_action_preflight",
+          "founder_approval_for_money_identity_assignment_and_messages",
+          "wise_and_bank_transfer_require_verified_receipt_or_statement",
+          "no_legal_tax_title_or_financial_advice",
+        ],
+        protected_action_review: review,
+      });
+      return;
+    }
+
+    const result = await callOpenAI(payload, role, user, review);
     sendJson(res, 200, result);
   } catch (error) {
     sendJson(res, error.statusCode || 500, {

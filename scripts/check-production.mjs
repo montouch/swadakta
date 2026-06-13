@@ -1174,8 +1174,23 @@ const requiredAiBoundaryDocMarkers = [
   "AI on",
   "AI off",
   "User AI cannot command admin AI",
+  "protected-action preflight",
   "These decisions are never autonomous",
   "Manual mode must always work",
+];
+const requiredAiServerMarkers = [
+  ["api/ai/assistant.js", "PROTECTED_ACTION_POLICIES"],
+  ["api/ai/assistant.js", "protectedActionReview"],
+  ["api/ai/assistant.js", "protectedActionOutput"],
+  ["api/ai/assistant.js", "protected_action_preflight"],
+  ["api/ai/assistant.js", "deterministic-guardrail"],
+  ["api/ai/assistant.js", "secret_or_credential"],
+  ["supabase/functions/swadakta-assistant/index.ts", "protectedActionPolicies"],
+  ["supabase/functions/swadakta-assistant/index.ts", "protectedActionReview"],
+  ["supabase/functions/swadakta-assistant/index.ts", "protectedActionOutput"],
+  ["supabase/functions/swadakta-assistant/index.ts", "protected_action_preflight"],
+  ["supabase/functions/swadakta-assistant/index.ts", "deterministic-guardrail"],
+  ["supabase/functions/swadakta-assistant/index.ts", "secret_or_credential"],
 ];
 const requiredIdentityVerificationDocMarkers = [
   "Current app routing",
@@ -1555,6 +1570,12 @@ const localAiBoundaryDoc = await readLocal("AI_OPERATING_BOUNDARIES.md");
 for (const marker of requiredAiBoundaryDocMarkers) {
   if (!localAiBoundaryDoc.includes(marker)) {
     fail(failures, `AI operating boundary doc is missing marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredAiServerMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing AI server guardrail marker ${marker}`);
   }
 }
 const localIdentityVerificationDoc = await readLocal("IDENTITY_VERIFICATION.md");
