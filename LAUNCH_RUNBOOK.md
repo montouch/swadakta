@@ -47,6 +47,7 @@ Until the owner-only steps above are complete, Swadakta can be shown as a live p
 - Vercel auto-deploys new pushes to `main`.
 - `swadakta.com` and `www.swadakta.com` are valid in Vercel.
 - `www.swadakta.com` redirects to the apex domain through `vercel.json`.
+- During heavy build sessions, batch changes and run local checks before pushing. If GitHub/Vercel reports `Deployment rate limited — retry in 24 hours`, stop pushing non-urgent commits until the Vercel window resets; keep working locally and push one verified batch later.
 - Cloudflare Domain Connect added the current Vercel DNS and verification records. If DNS is ever reset, follow the exact records Vercel shows in the project Domains screen. Vercel's docs explain that the dashboard displays required DNS values after the domain is added: https://vercel.com/docs/domains/working-with-domains/add-a-domain
 - Remember Vercel does not provide email hosting. Add MX records through Google Workspace, Microsoft 365, Zoho, or another email host if you want addresses like `hello@swadakta.com`: https://vercel.com/docs/domains/managing-dns-records
 - After DNS settles, verify:

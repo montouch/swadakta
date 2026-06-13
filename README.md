@@ -105,6 +105,8 @@ Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. 
 
 By default the Vercel function-budget guard allows 12 `api/**/*.js` files, matching the current deployed project shape. Keep shared helpers in `lib/` instead of `api/`; set `SWADAKTA_VERCEL_FUNCTION_BUDGET` only if the hosting plan or Vercel project limit is intentionally changed.
 
+If Vercel reports `Deployment rate limited — retry in 24 hours`, do not keep pushing low-risk or cosmetic changes. Continue locally, run targeted checks, and push one clean batch when the deployment window resets. Current Vercel limits are tracked in [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md).
+
 Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
 
 ```powershell
