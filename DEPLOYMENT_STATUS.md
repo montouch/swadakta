@@ -25,6 +25,32 @@ Last checked: June 13, 2026
 - June 13, 2026 rate-limit note: Vercel currently reports deployment rate limiting on new pushes. Vercel's published limits page lists Hobby deployments as limited per 86,400-second window. During a rate-limit window, keep improvements local, run local/static checks, and avoid repeated pushes unless production must be fixed.
 - `release.json` is the production freshness marker. If `scripts/check-production.mjs` reports that `/release.json` is missing or that `release_id` does not match the repo, production is stale even if the public pages still load.
 
+## Local Release Queue
+
+- Current local release marker: `2026-06-13-launch-readiness-batch-v1`
+- Local commits queued behind the Vercel rate limit: `10`
+- Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
+- Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
+
+Queued local release contents:
+
+1. Vercel rate-limit recovery docs and deployment-state checker.
+2. Founder evidence register for owner, provider, payment, insurance, and legal readiness.
+3. Final UX cache freshness bump.
+4. Stitch-aligned request/brief flow.
+5. Sumsub identity status mapping guard.
+6. Verification/login return-path fixes so users return to the right account, verification, or job brief page.
+7. Corridor place intelligence with weather, official-alert links, field checks, and brief handoff.
+8. Release marker and deployment queue documentation for the batched launch-readiness deploy.
+
+Before the next push:
+
+1. Run `git status --short --branch`.
+2. Run the local health check against `http://127.0.0.1:4173`.
+3. Run `scripts/deployment-state.mjs`.
+4. Push only once when the checker no longer reports `local_hold_rate_limited`.
+5. After Vercel is `READY`, run `scripts/check-production.mjs` against `https://swadakta.com` and confirm the production release marker matches `2026-06-13-launch-readiness-batch-v1`.
+
 ## Domain
 
 - `swadakta.com` is purchased in Cloudflare under `swadakta111@gmail.com`.

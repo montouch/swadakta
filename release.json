@@ -1,9 +1,32 @@
 {
-  "release_id": "2026-06-13-sumsub-route-health-v1",
-  "release_name": "Sumsub route health guard",
-  "description": "Production health now verifies that /api/identity/sumsub-webhook routes unsigned POSTs into Sumsub-specific setup/signature handling instead of the normal user sign-in flow. The route stays inside the shared identity function and within the 12-function Vercel shape.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-sumsub-route-health-1",
+  "release_id": "2026-06-13-launch-readiness-batch-v1",
+  "release_name": "Launch readiness batch",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, and corridor place intelligence with official-alert handoff into paid briefs.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
-  "source_branch": "main"
+  "source_branch": "main",
+  "rate_limit_status": "local_batch_hold_until_vercel_window_resets",
+  "release_scope": [
+    "deployment_recovery",
+    "founder_evidence_register",
+    "final_ux_cache_freshness",
+    "stitch_brief_flow",
+    "identity_status_mapping",
+    "login_verification_return_paths",
+    "corridor_place_intelligence"
+  ],
+  "queued_commit_count": 10,
+  "queued_commits": [
+    "de4d1f4 Mark launch readiness batch release",
+    "be83ee4 Add corridor place intelligence",
+    "ba48675 Preserve return paths through posting verification",
+    "18e78d9 Return users to verification after login",
+    "2b56c36 Guard Sumsub account status mapping",
+    "77ff3d7 Bump final UX theme cache version",
+    "738875b Align brief flow with Stitch request UX",
+    "3e4229f Add founder evidence register",
+    "80bc284 Add deployment state checker",
+    "ba6fc03 Document Vercel rate limit recovery"
+  ]
 }
