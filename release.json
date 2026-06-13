@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, and signed-in account data-control tooling.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, and broader public scope language.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -22,11 +22,13 @@
     "ai_protected_action_preflight",
     "ai_preflight_test_harness",
     "official_source_founder_setup_notes",
-    "account_data_control_panel"
+    "account_data_control_panel",
+    "public_scope_language_polish"
   ],
-  "queued_commit_count": 18,
+  "queued_commit_count": 19,
   "queued_commits": [
-    "HEAD Add account data control panel",
+    "HEAD Polish public scope language",
+    "b1701f4 Add account data control panel",
     "6b6d6f1 Add official founder setup notes",
     "d220e38 Add AI protected preflight checks",
     "8abbecb Add AI protected action preflight",
