@@ -1,5 +1,11 @@
 {
   "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/api/identity/sumsub-webhook",
+      "destination": "/api/identity/start-verification"
+    }
+  ],
   "redirects": [
     {
       "source": "/(.*)",

@@ -77,6 +77,14 @@ function publicOrigin() {
   }
 }
 
+function requestPath(req) {
+  try {
+    return new URL(req.url || "/api/identity/start-verification", `https://${req.headers.host || "swadakta.com"}`).pathname;
+  } catch {
+    return String(req.url || "");
+  }
+}
+
 function cleanProvider(value) {
   const provider = String(value || "sumsub").trim().toLowerCase();
   return ALLOWED_PROVIDERS.has(provider) ? provider : "sumsub";
@@ -653,7 +661,7 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  if (req.headers["x-payload-digest"]) {
+  if (requestPath(req).includes("/api/identity/sumsub-webhook") || req.headers["x-payload-digest"]) {
     if (req.method !== "POST") {
       res.setHeader("Allow", "POST");
       sendJson(res, 405, { error: "Method not allowed." });
@@ -680,8 +688,6 @@ module.exports = async function handler(req, res) {
     });
   }
 };
-
-module.exports.handleSumsubWebhook = handleSumsubWebhook;
 
 module.exports.config = {
   api: {

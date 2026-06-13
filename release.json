@@ -1,9 +1,9 @@
 {
-  "release_id": "2026-06-13-explicit-sumsub-webhook-v1",
-  "release_name": "Explicit Sumsub webhook route",
-  "description": "Sumsub now has a dedicated webhook function at /api/identity/sumsub-webhook instead of relying on a rewrite into the start-verification route. Payment callback reconciliation remains monotonic and Flutterwave supports current HMAC signatures.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-explicit-sumsub-webhook-1",
-  "expected_api_function_budget": 13,
+  "release_id": "2026-06-13-route-safe-sumsub-webhook-v1",
+  "release_name": "Route-safe Sumsub webhook",
+  "description": "The Sumsub webhook URL now routes by request path inside the shared identity function, so unsigned webhook probes receive Sumsub-specific signature errors while the deployment stays within the 12-function Vercel shape. Payment callback reconciliation remains monotonic and Flutterwave supports current HMAC signatures.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-route-safe-sumsub-webhook-1",
+  "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"
 }
