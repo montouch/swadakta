@@ -59,6 +59,7 @@ Remove-Item Env:\SWADAKTA_VISUAL_BASE_URL
 
 `scripts/live-readiness-summary.mjs` needs the admin test email/password in environment variables. Do not commit those values.
 Use `scripts/check-launch-ready.mjs https://swadakta.com --strict-auth` when those E2E credentials are set and a paid-pilot rehearsal needs user/admin sign-in proof.
+Use `scripts/check-launch-ready.mjs https://swadakta.com --paid-pilot` for the actual paid-pilot rehearsal gate. It requires auth E2E credentials, founder evidence controls, live admin readiness, and the visual pass; it also refuses `--skip-visual`.
 
 ## Admin Entry
 

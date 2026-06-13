@@ -3,7 +3,8 @@ import path from "node:path";
 
 const root = process.cwd();
 const args = process.argv.slice(2);
-const strictAuth = args.includes("--strict-auth") || args.includes("--strict");
+const paidPilot = args.includes("--paid-pilot") || args.includes("--paid-launch");
+const strictAuth = paidPilot || args.includes("--strict-auth") || args.includes("--strict");
 const skipVisual = args.includes("--skip-visual");
 const explicitBase = args.find((arg) => /^https?:\/\//i.test(arg)) || args.find((arg) => arg.startsWith("--base="))?.slice("--base=".length);
 const baseUrl = (explicitBase || process.env.SWADAKTA_BASE_URL || "https://swadakta.com").replace(/\/+$/, "");
@@ -43,14 +44,23 @@ function skipStep(name, reason, { strict = false, credentialGated = false } = {}
   return ok;
 }
 
+if (paidPilot) {
+  console.log("Paid pilot mode: requiring live auth E2E, admin readiness summary, founder evidence controls, and visual fit.");
+}
+
 runNodeStep("Deployment state", path.join("scripts", "deployment-state.mjs"), [], {
   requireOutputIncludes: "production_current",
 });
 runNodeStep("Supabase schema contract", path.join("scripts", "check-supabase-contract.mjs"));
+if (paidPilot) {
+  runNodeStep("Founder evidence controls", path.join("scripts", "check-founder-evidence.mjs"));
+}
 runNodeStep("Production health", path.join("scripts", "check-production.mjs"));
 
 if (skipVisual) {
-  skipStep("Visual fit", "--skip-visual was provided");
+  skipStep("Visual fit", paidPilot ? "--skip-visual is not allowed with --paid-pilot" : "--skip-visual was provided", {
+    strict: paidPilot,
+  });
 } else {
   runNodeStep("Visual fit", path.join("scripts", "check-visual-fit.mjs"), [baseUrl]);
 }
@@ -69,7 +79,7 @@ if (
   hasEnv("SWADAKTA_E2E_EMAIL", "SWADAKTA_E2E_PASSWORD")
 ) {
   runNodeStep("Admin auth E2E", path.join("scripts", "check-production-admin-flow.mjs"));
-  runNodeStep("Live readiness summary", path.join("scripts", "live-readiness-summary.mjs"));
+  runNodeStep("Live readiness summary", path.join("scripts", "live-readiness-summary.mjs"), paidPilot ? ["--strict"] : []);
 } else {
   skipStep(
     "Admin auth E2E and live readiness summary",
@@ -104,5 +114,6 @@ if (failed.length) {
     );
   }
   const skippedText = skippedParts.length ? ` ${skippedParts.join(". ")}.` : "";
-  console.log(`\nLaunch-ready checks passed for ${baseUrl}.${skippedText}`);
+  const paidPilotText = paidPilot ? " Paid-pilot gates were enforced." : "";
+  console.log(`\nLaunch-ready checks passed for ${baseUrl}.${skippedText}${paidPilotText}`);
 }

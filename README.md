@@ -103,6 +103,12 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 
 Add `--strict-auth` after setting `SWADAKTA_E2E_EMAIL`, `SWADAKTA_E2E_PASSWORD`, `SWADAKTA_E2E_ADMIN_EMAIL`, and `SWADAKTA_E2E_ADMIN_PASSWORD` in the shell to require live user/admin sign-in and readiness-summary checks. Do not commit those values.
 
+For a paid-pilot rehearsal, use `--paid-pilot` instead of the normal demo check. This mode also requires live auth E2E credentials, refuses `--skip-visual`, runs the founder evidence register check as its own gate, and runs the live readiness summary in strict mode so paid work cannot be treated as ready while owner/provider blockers remain:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-launch-ready.mjs https://swadakta.com --paid-pilot
+```
+
 For live production database confirmation, run `supabase/live_contract_check.sql` in the Supabase SQL editor or through the Supabase MCP SQL tool. The expected result is `ok = total` and `missing_or_bad = null` for every section.
 
 The manual GitHub Action named `Production Health` runs the same launch verifier with `--skip-visual`; the full desktop/mobile visual pass remains part of local and Codex desktop verification.
