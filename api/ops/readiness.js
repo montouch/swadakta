@@ -936,6 +936,204 @@ function buildProviderLaunchMatrix(context) {
   };
 }
 
+function corridorRailPlan(options) {
+  return {
+    id: options.id,
+    label: options.label,
+    status: options.status,
+    status_label: options.status_label || providerRailStatus(options.status),
+    client_side: options.client_side,
+    receiver_side: options.receiver_side,
+    client_payment: options.client_payment,
+    receiver_payout: options.receiver_payout,
+    identity_route: options.identity_route,
+    public_visibility: options.public_visibility,
+    next: options.next,
+    hard_stop: options.hard_stop,
+    missing: options.missing || [],
+    docs_url: options.docs_url || "",
+    safe_values: options.safe_values || [],
+  };
+}
+
+function buildCorridorRailPlanner(context = {}) {
+  const ownerProviderReady = confirmedEnv("SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED");
+  const legalReady = confirmedEnv("SWADAKTA_OWNER_LEGAL_REVIEWED");
+  const financialBoundaryReady = confirmedEnv("SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED");
+  const insuranceReady = confirmedEnv("SWADAKTA_OWNER_INSURANCE_ACTIVE");
+  const kenyaReady = confirmedEnv("SWADAKTA_OWNER_KENYA_SETUP_REVIEWED");
+  const regulatedEscrowReady = confirmedEnv("SWADAKTA_OWNER_REGULATED_ESCROW_READY");
+  const paidPrereqs = [
+    ...(ownerProviderReady ? [] : ["SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED"]),
+    ...(legalReady ? [] : ["SWADAKTA_OWNER_LEGAL_REVIEWED"]),
+    ...(financialBoundaryReady ? [] : ["SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED"]),
+  ];
+  const stripeReady =
+    missingEnv(["STRIPE_SECRET_KEY"]).length === 0 &&
+    context.stripeWebhookMissing?.length === 0 &&
+    context.serviceRoleConfigured;
+  const paypalReady = context.paypalMissing?.length === 0;
+  const mpesaLiveReady =
+    context.mpesaMissing?.length === 0 &&
+    context.serviceRoleConfigured &&
+    hasEnv("MPESA_CALLBACK_TOKEN") &&
+    mpesaMode() === "live" &&
+    kenyaReady;
+  const paystackReady =
+    context.paystackMissing?.length === 0 &&
+    confirmedEnv("PAYSTACK_MERCHANT_APPROVED") &&
+    confirmedEnv("PAYSTACK_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED");
+  const flutterwaveReady =
+    context.flutterwaveMissing?.length === 0 &&
+    confirmedEnv("FLUTTERWAVE_MERCHANT_APPROVED") &&
+    confirmedEnv("FLUTTERWAVE_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED");
+  const sumsubReady =
+    context.sumsubNativeMissing?.length === 0 &&
+    context.sumsubWebhookMissing?.length === 0 &&
+    context.serviceRoleConfigured;
+  const smileLinkReady = anyEnv(["SMILE_ID_VERIFICATION_URL", "SMILE_ID_WEB_LINK_URL", "SMILE_ID_PORTAL_URL"]);
+  const smileReady = Boolean(context.smileIdConfigured || smileLinkReady);
+  const primaryGlobalPaymentReady = (stripeReady || paypalReady) && paidPrereqs.length === 0;
+  const africaPaymentReady = (mpesaLiveReady || paystackReady || flutterwaveReady) && paidPrereqs.length === 0;
+  const globalIdReady = sumsubReady;
+  const africaIdReady = smileReady || sumsubReady;
+  const globalPaymentMissing = [
+    ...(stripeReady || paypalReady ? [] : ["STRIPE_SECRET_KEY/STRIPE_WEBHOOK_SECRET or PAYPAL_CLIENT_ID/PAYPAL_CLIENT_SECRET"]),
+    ...paidPrereqs,
+  ];
+  const africaPaymentMissing = [
+    ...(mpesaLiveReady || paystackReady || flutterwaveReady
+      ? []
+      : ["M-Pesa live evidence or Paystack/Flutterwave approved evidence"]),
+    ...paidPrereqs,
+  ];
+  const globalIdMissing = globalIdReady
+    ? []
+    : ["SUMSUB_APP_TOKEN", "SUMSUB_SECRET_KEY", "SUMSUB_LEVEL_NAME", "SUMSUB_WEBHOOK_SECRET"];
+  const africaIdMissing = africaIdReady
+    ? []
+    : ["SMILE_ID_VERIFICATION_URL or SMILE_ID_API_KEY/SMILE_ID_PARTNER_ID", "or Sumsub native verification"];
+
+  return {
+    title: "Corridor rail planner",
+    summary:
+      "Use this planner before quoting a corridor. It separates what the client can pay with, how the receiver can be verified or paid, and when the route must stay founder-gated.",
+    public_visibility_rule:
+      "A corridor can be public only when payment evidence, ID evidence, legal/payment boundary, route rules, and proof requirements are all ready. Wise stays fallback-only.",
+    route_classes: [
+      corridorRailPlan({
+        id: "global_to_africa",
+        label: "Outside Africa to Africa",
+        status: primaryGlobalPaymentReady && africaIdReady && globalIdReady ? "ready" : "manual",
+        client_side: "Client may be in Australia, USA, Europe, China, Middle East, or another non-African country.",
+        receiver_side: "Receiver/operator is in an African country and must be provider-verified before paid work.",
+        client_payment: "Stripe or PayPal first. Use Wise only as admin fallback after easier rails fail.",
+        receiver_payout: "Local payout stays founder/provider controlled after proof; Kenya can later use M-Pesa where approved.",
+        identity_route: "Sumsub for the client; Smile ID or Sumsub for the African receiver depending on document coverage.",
+        public_visibility: primaryGlobalPaymentReady && africaIdReady ? "Can be quoted publicly for low-risk work." : "Founder-reviewed pilot only.",
+        next: "Start with Australia to Kenya and Kenya in-country pilots before opening broader Africa demand.",
+        hard_stop: "Do not collect money if receiver ID, route rules, cost plan, or provider payment evidence is missing.",
+        missing: [...globalPaymentMissing, ...globalIdMissing, ...africaIdMissing],
+        docs_url: DOCS.sumsubWebsdkLink,
+        safe_values: [context.identityStartUrl, context.sumsubWebhookUrl],
+      }),
+      corridorRailPlan({
+        id: "africa_incountry",
+        label: "Africa in-country work",
+        status: africaPaymentReady && africaIdReady ? "ready" : "manual",
+        client_side: "Client and receiver are in the same African country or region.",
+        receiver_side: "Receiver must be verified and vetted for local errands, sourcing, document support, or field proof.",
+        client_payment: "M-Pesa for Kenya KES after Daraja live approval; Paystack/Flutterwave only after expansion evidence is ready.",
+        receiver_payout: "Local payout after milestone proof and founder/admin reconciliation.",
+        identity_route: "Smile ID first where supported; Sumsub or approved local provider fallback.",
+        public_visibility: africaPaymentReady ? "Can be piloted in approved countries." : "Keep hidden or quote-request only.",
+        next: "Keep Kenya as the first in-country launch path; add other African countries after payment settlement and ID coverage are confirmed.",
+        hard_stop: "Do not show Paystack, Flutterwave, or M-Pesa as normal choices until merchant, callback, settlement, and evidence mapping are proven.",
+        missing: [...africaPaymentMissing, ...africaIdMissing],
+        docs_url: DOCS.daraja,
+        safe_values: [context.mpesaWebhookUrl, context.paystackWebhookUrl, context.flutterwaveWebhookUrl],
+      }),
+      corridorRailPlan({
+        id: "africa_to_global",
+        label: "Africa to overseas purchase or errand",
+        status: africaPaymentReady && globalIdReady ? "manual" : "missing",
+        client_side: "Client may be in Kenya or another African country asking someone abroad to buy, inspect, or coordinate.",
+        receiver_side: "Receiver abroad must be verified and the item must pass local law, customs, carrier, and platform rules.",
+        client_payment: "Use approved Africa rail first; global card/PayPal if the client can use it; Wise only as reconciled fallback.",
+        receiver_payout: "Payout abroad stays manual/provider-controlled until proof and item legality are clear.",
+        identity_route: "Smile ID or local provider for African client; Sumsub for receiver abroad.",
+        public_visibility: "Founder-reviewed pilot only until customs and cross-border goods playbook is proven.",
+        next: "Use low-value non-restricted shopping or inspection pilots before allowing parcel movement.",
+        hard_stop: "Do not accept restricted goods, medicines, batteries, food, valuables, or customs-sensitive parcels without official carrier/customs checks.",
+        missing: [...africaPaymentMissing, ...globalIdMissing],
+        docs_url: DOCS.paystackWebhooks,
+        safe_values: [context.identityStartUrl],
+      }),
+      corridorRailPlan({
+        id: "global_non_africa",
+        label: "Non-Africa global corridor",
+        status: primaryGlobalPaymentReady && globalIdReady ? "ready" : "manual",
+        client_side: "Client and receiver are outside Africa.",
+        receiver_side: "Receiver uses global ID verification and job-specific proof requirements.",
+        client_payment: "Stripe or PayPal for supported currencies; Wise stays hidden fallback.",
+        receiver_payout: "Provider/bank payout after proof and milestone approval.",
+        identity_route: "Sumsub first, then approved provider fallback if country/document coverage requires it.",
+        public_visibility: primaryGlobalPaymentReady && globalIdReady ? "Can be quoted for low-risk service work." : "Quote-request only.",
+        next: "Keep item movement and country-specific regulated tasks founder-reviewed until rules are documented.",
+        hard_stop: "Do not promise customs, tax, legal, immigration, or regulated delivery outcomes.",
+        missing: [...globalPaymentMissing, ...globalIdMissing],
+        docs_url: DOCS.paypalOrders,
+        safe_values: [context.stripeWebhookUrl],
+      }),
+      corridorRailPlan({
+        id: "china_sourcing",
+        label: "China sourcing or buying",
+        status: "manual",
+        client_side: "Client can be global or African; supplier/source may be in China.",
+        receiver_side: "Receiver/sourcing helper needs strong identity, media proof, supplier verification, and item legality checks.",
+        client_payment: "Stripe or PayPal quote deposit where supported; no public self-serve payment until supplier/item review is complete.",
+        receiver_payout: "Milestone payout after supplier proof, inspection media, and shipping/legal checks.",
+        identity_route: "Sumsub for global parties; local/provider exception only after admin review.",
+        public_visibility: "Founder-reviewed quote only.",
+        next: "Create a supplier/source verification checklist before allowing purchase deposits or shipping.",
+        hard_stop: "No restricted goods, counterfeit goods, brand-infringing goods, batteries, medicines, food, weapons, or customs-sensitive goods without official proof.",
+        missing: ["Supplier due-diligence checklist", "Customs/carrier evidence for item category"],
+        docs_url: DOCS.stripeCheckout,
+        safe_values: [],
+      }),
+      corridorRailPlan({
+        id: "high_value_sensitive",
+        label: "High-value, property, title, construction, or sensitive funds",
+        status: regulatedEscrowReady && legalReady && financialBoundaryReady && insuranceReady ? "manual" : "missing",
+        client_side: "Any country.",
+        receiver_side: "Only specialist vetted operators with extra proof and legal/provider review.",
+        client_payment: "Use regulated escrow/provider-held funds or written legal confirmation; do not rely on informal Swadakta-held money.",
+        receiver_payout: "Milestone release only after provider evidence, proof review, dispute window, and founder/legal signoff.",
+        identity_route: "Provider ID for all parties, plus enhanced review for authority, ownership, and sensitive documents.",
+        public_visibility: "Blocked from normal public launch.",
+        next: "Keep as collect-interest-only until escrow/legal/insurance evidence is complete.",
+        hard_stop: "Do not take money, assign receivers, or promise execution for high-value/sensitive-funds jobs without regulated route approval.",
+        missing: [
+          ...(regulatedEscrowReady ? [] : ["SWADAKTA_OWNER_REGULATED_ESCROW_READY"]),
+          ...(legalReady ? [] : ["SWADAKTA_OWNER_LEGAL_REVIEWED"]),
+          ...(financialBoundaryReady ? [] : ["SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED"]),
+          ...(insuranceReady ? [] : ["SWADAKTA_OWNER_INSURANCE_ACTIVE"]),
+        ],
+        docs_url: DOCS.asicAfs,
+        safe_values: [],
+      }),
+    ],
+    activation_notes: [
+      "Default public launch: low-value, legal, quote-first service work only.",
+      "First corridor to prove: Australia to Kenya plus Kenya in-country errands.",
+      "Africa-wide and China/sourcing corridors can collect interest and quotes, but stay founder-reviewed until payment, ID, and rules evidence is complete.",
+      "Payment rail readiness never overrides corridor legality, customs, insurance, ID, proof, or founder economics gates.",
+    ],
+  };
+}
+
 function founderStep(id, label, status, summary, action, options = {}) {
   return {
     id,
@@ -2608,7 +2806,7 @@ async function readinessReport(user, authHeader) {
 
   const flatItems = categories.flatMap((category) => category.items);
   const launchGate = buildLaunchGate(categories);
-  const providerLaunchMatrix = buildProviderLaunchMatrix({
+  const providerContext = {
     serviceRoleConfigured,
     stripeWebhookMissing,
     paypalMissing,
@@ -2625,17 +2823,10 @@ async function readinessReport(user, authHeader) {
     flutterwaveWebhookUrl,
     identityStartUrl,
     sumsubWebhookUrl,
-  });
-  const launchDecisionRegister = buildLaunchDecisionRegister({
-    serviceRoleConfigured,
-    stripeWebhookMissing,
-    paypalMissing,
-    paystackMissing,
-    flutterwaveMissing,
-    mpesaMissing,
-    sumsubNativeMissing,
-    sumsubWebhookMissing,
-  });
+  };
+  const providerLaunchMatrix = buildProviderLaunchMatrix(providerContext);
+  const corridorRailPlanner = buildCorridorRailPlanner(providerContext);
+  const launchDecisionRegister = buildLaunchDecisionRegister(providerContext);
   const counts = flatItems.reduce(
     (acc, entry) => {
       acc[entry.status] = (acc[entry.status] || 0) + 1;
@@ -2655,6 +2846,7 @@ async function readinessReport(user, authHeader) {
     launch_gate: launchGate,
     launch_decision_register: launchDecisionRegister,
     provider_launch_matrix: providerLaunchMatrix,
+    corridor_rail_planner: corridorRailPlanner,
     founder_launch_session: buildFounderLaunchSession(),
     founder_action_pack: buildFounderActionPack(),
     first_paid_pilot_script: buildFirstPaidPilotScript(),

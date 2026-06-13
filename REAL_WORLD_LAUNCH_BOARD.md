@@ -40,6 +40,21 @@ Best first paid offer:
    - Smile ID for Africa-first coverage.
    - Manual review only as a rare exception when the provider cannot support the document/country.
 
+## Corridor Rail Policy
+
+Use the Admin Readiness corridor rail planner before quoting a job. Payment availability is not enough; each route also needs identity coverage, local-law/customs checks, proof standards, payout path, and founder economics clearance.
+
+Initial policy:
+
+- Outside Africa to Africa: Stripe or PayPal for the client first, Smile ID or Sumsub for the African receiver, and local payout only after proof.
+- Africa in-country: Kenya KES through M-Pesa only after Daraja/live Kenya setup; Paystack/Flutterwave stay hidden pilots until merchant, settlement, webhook, and evidence mapping are proven.
+- Africa to overseas purchase/errand: founder-reviewed pilot only until customs, carrier, item legality, and receiver proof are documented.
+- Non-Africa global: Stripe/PayPal and Sumsub can support low-risk service work after owner/provider/legal gates pass.
+- China sourcing/buying: quote-only founder review until supplier due diligence, item legality, and shipping/customs evidence are documented.
+- High-value property, title, construction, supplier-deposit, or sensitive-funds work: blocked from normal public launch until regulated escrow/provider-held funds or legal confirmation exists.
+
+Wise stays fallback-only in every corridor. Do not expose it as a normal self-serve payment route.
+
 ## Real-Life Setup Checklist
 
 ### 1. Register and Structure

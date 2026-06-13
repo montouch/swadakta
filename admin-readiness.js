@@ -15,6 +15,7 @@
   const copyLaunchSessionButtons = document.querySelectorAll("#copy-launch-session, #copy-launch-session-mobile");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
   const copyProviderMatrixButtons = document.querySelectorAll("#copy-provider-matrix, #copy-provider-matrix-mobile");
+  const copyCorridorPlannerButtons = document.querySelectorAll("#copy-corridor-planner, #copy-corridor-planner-mobile");
   const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
   const copyPilotScriptButtons = document.querySelectorAll("#copy-pilot-script, #copy-pilot-script-mobile");
   const readinessMode = document.querySelector("#readiness-mode");
@@ -26,6 +27,8 @@
   const nextActionsCount = document.querySelector("#next-actions-count");
   const categories = document.querySelector("#readiness-categories");
   const providerMatrixList = document.querySelector("#provider-matrix-list");
+  const corridorRailPlannerSummary = document.querySelector("#corridor-rail-planner-summary");
+  const corridorRailPlannerList = document.querySelector("#corridor-rail-planner-list");
   const providerPackList = document.querySelector("#provider-pack-list");
   const protectedActions = document.querySelector("#protected-actions");
   const launchGateSummary = document.querySelector("#launch-gate-summary");
@@ -461,6 +464,35 @@
     ].join("\n");
   }
 
+  function buildCorridorRailPlannerPack(report = latestReport) {
+    const planner = report?.corridor_rail_planner || {};
+    const routeClasses = Array.isArray(planner.route_classes) ? planner.route_classes : [];
+    return [
+      planner.title || "Swadakta corridor rail planner",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      planner.summary || "Use route-specific payment, ID, payout, and hard-stop rules before quoting.",
+      planner.public_visibility_rule || "Corridors should stay hidden or founder-gated until rails and evidence are ready.",
+      "",
+      "Route classes:",
+      ...(routeClasses.length
+        ? routeClasses.map((route) => {
+            const missing = route.missing?.length ? ` Missing: ${route.missing.join(", ")}.` : "";
+            const refs = route.safe_values?.length ? ` Safe refs: ${route.safe_values.join(" / ")}.` : "";
+            const docs = route.docs_url ? ` Docs: ${route.docs_url}.` : "";
+            return `[${route.status_label || statusLabel(route.status)}] ${route.label || "Corridor"}: Client side: ${route.client_side || ""} Receiver side: ${route.receiver_side || ""} Client payment: ${route.client_payment || ""} Receiver payout: ${route.receiver_payout || ""} ID route: ${route.identity_route || ""} Visibility: ${route.public_visibility || ""} Next: ${route.next || ""} Hard stop: ${route.hard_stop || ""}${missing}${refs}${docs}`;
+          })
+        : ["No corridor route classes returned by the readiness API."]),
+      "",
+      "Activation notes:",
+      ...(planner.activation_notes?.length
+        ? planner.activation_notes.map((entry) => `- ${entry}`)
+        : ["- Keep launch quote-first and low-risk until corridor evidence is proven."]),
+      "",
+      "Boundary: Payment rail readiness never overrides corridor legality, customs, insurance, ID, proof, founder economics, or payout gates.",
+    ].join("\n");
+  }
+
   function founderStepText(step = {}, index = 0) {
     const safeValues = Array.isArray(step.safe_values) ? step.safe_values : [];
     return [
@@ -686,6 +718,61 @@
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider launch matrix returned by the readiness API.</div>`;
   }
 
+  function renderCorridorRailPlanner(report) {
+    const planner = report?.corridor_rail_planner || {};
+    const routeClasses = Array.isArray(planner.route_classes) ? planner.route_classes : [];
+    if (corridorRailPlannerSummary) {
+      corridorRailPlannerSummary.textContent =
+        planner.summary ||
+        "Corridor rail planner is unavailable until readiness checks load. Keep paid work quote-first and founder-reviewed.";
+    }
+    if (!corridorRailPlannerList) return;
+
+    corridorRailPlannerList.innerHTML = routeClasses.length
+      ? routeClasses
+          .map((route) => {
+            const missing = Array.isArray(route.missing) ? route.missing : [];
+            const safeValues = Array.isArray(route.safe_values) ? route.safe_values : [];
+            return `
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <strong class="font-display text-xl">${escapeHtml(route.label || "Corridor route")}</strong>
+                      <span class="rounded-full px-3 py-1 font-label text-xs ${statusTone(route.status)}">${escapeHtml(route.status_label || statusLabel(route.status))}</span>
+                    </div>
+                    <div class="mt-3 grid gap-2 text-sm leading-6 text-on-surface-variant">
+                      <p><strong class="text-on-surface">Client:</strong> ${escapeHtml(route.client_side || "")}</p>
+                      <p><strong class="text-on-surface">Receiver:</strong> ${escapeHtml(route.receiver_side || "")}</p>
+                      <p><strong class="text-on-surface">Client payment:</strong> ${escapeHtml(route.client_payment || "")}</p>
+                      <p><strong class="text-on-surface">Receiver payout:</strong> ${escapeHtml(route.receiver_payout || "")}</p>
+                      <p><strong class="text-on-surface">ID route:</strong> ${escapeHtml(route.identity_route || "")}</p>
+                      <p><strong class="text-on-surface">Visibility:</strong> ${escapeHtml(route.public_visibility || "")}</p>
+                      <p><strong class="text-on-surface">Next:</strong> ${escapeHtml(route.next || "")}</p>
+                    </div>
+                    <p class="mt-3 rounded-2xl bg-white/68 p-3 text-xs leading-5 text-secondary">${escapeHtml(route.hard_stop || "Keep protected actions founder-gated.")}</p>
+                    ${missing.length ? `<p class="mt-3 font-label text-xs uppercase tracking-[0.14em] text-secondary">Missing: ${escapeHtml(missing.join(", "))}</p>` : ""}
+                  </div>
+                  <div class="flex shrink-0 flex-wrap gap-2">
+                    ${
+                      route.docs_url
+                        ? `<a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(route.docs_url)}" target="_blank" rel="noopener">Docs</a>`
+                        : ""
+                    }
+                    ${
+                      safeValues.length
+                        ? `<button class="copy-value inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-on-surface-variant" data-copy-value="${escapeHtml(safeValues.join("\n"))}" type="button">Copy refs</button>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No corridor rail planner returned by the readiness API.</div>`;
+  }
+
   function renderLaunchSession(report) {
     const session = report?.founder_launch_session || {};
     const tabs = Array.isArray(session.recommended_tabs) ? session.recommended_tabs : [];
@@ -897,6 +984,7 @@
     renderLaunchDecisionRegister(report);
     renderLaunchSession(report);
     renderProviderMatrix(report);
+    renderCorridorRailPlanner(report);
     renderFounderActionPack(report);
     renderPilotScript(report);
     nextActionsCount.textContent = `${nextActions.length} priorit${nextActions.length === 1 ? "y" : "ies"}`;
@@ -927,6 +1015,12 @@
     }
     if (providerMatrixList) {
       providerMatrixList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (corridorRailPlannerSummary) {
+      corridorRailPlannerSummary.textContent = "Corridor rail planner is unavailable until readiness checks load.";
+    }
+    if (corridorRailPlannerList) {
+      corridorRailPlannerList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
     if (launchDecisionRegisterSummary) {
       launchDecisionRegisterSummary.textContent = "Launch decision register is unavailable until readiness checks load.";
@@ -1047,6 +1141,12 @@
   copyProviderMatrixButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildProviderMatrixPack(), "Provider launch matrix copied.");
+    });
+  });
+
+  copyCorridorPlannerButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildCorridorRailPlannerPack(), "Corridor rail planner copied.");
     });
   });
 

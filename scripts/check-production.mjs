@@ -744,14 +744,21 @@ const requiredAdminReadinessMarkers = [
   "Launch decision register copied",
   "buildProviderMatrixPack",
   "renderProviderMatrix",
+  "buildCorridorRailPlannerPack",
+  "renderCorridorRailPlanner",
+  "corridor_rail_planner",
+  "Corridor rail planner",
   "provider_launch_matrix",
   "Provider launch matrix",
   "provider-matrix-list",
+  "corridor-rail-planner-list",
   "copy-provider-pack",
   "copy-provider-matrix",
+  "copy-corridor-planner",
   "copy-category-pack",
   "Provider setup pack copied",
   "Provider launch matrix copied",
+  "Corridor rail planner copied",
   "Do not paste secret keys",
 ];
 const requiredAdminReadinessHtmlMarkers = [
@@ -762,6 +769,10 @@ const requiredAdminReadinessHtmlMarkers = [
   "provider-matrix-list",
   "Provider activation matrix",
   "Copy matrix",
+  "corridor-rail-planner-panel",
+  "corridor-rail-planner-list",
+  "Corridor rail planner",
+  "Copy corridors",
   "launch-session-panel",
   "launch-session-tabs",
   "Founder Chrome work session",
@@ -818,9 +829,17 @@ const requiredReadinessApiMarkers = [
   "SWADAKTA_OWNER_REGULATED_ESCROW_READY",
   "normal_public_paid_jobs",
   "buildProviderLaunchMatrix",
+  "buildCorridorRailPlanner",
   "provider_launch_matrix",
+  "corridor_rail_planner",
+  "Corridor rail planner",
+  "global_to_africa",
+  "africa_incountry",
+  "africa_to_global",
+  "high_value_sensitive",
   "Provider launch matrix",
   "user_visibility_rule",
+  "Payment rail readiness never overrides corridor legality",
   "activation_sequence",
   "public_visibility",
   "buildFounderLaunchSession",
@@ -1808,8 +1827,8 @@ for (const page of requiredPages) {
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
   }
-  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=9")) {
-    fail(failures, `${page} does not reference admin-readiness.js?v=9`);
+  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=10")) {
+    fail(failures, `${page} does not reference admin-readiness.js?v=10`);
   }
   if (page === "/admin-readiness") {
     for (const marker of requiredAdminReadinessHtmlMarkers) {
@@ -2197,11 +2216,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=9");
+const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=10");
 if (adminReadinessResponse.status !== 200) {
-  fail(failures, `admin-readiness.js?v=9 returned ${adminReadinessResponse.status}`);
+  fail(failures, `admin-readiness.js?v=10 returned ${adminReadinessResponse.status}`);
 } else {
-  pass("admin-readiness.js?v=9 returned 200");
+  pass("admin-readiness.js?v=10 returned 200");
 }
 
 for (const marker of requiredAdminReadinessMarkers) {
