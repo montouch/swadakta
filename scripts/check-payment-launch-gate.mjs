@@ -125,6 +125,41 @@ const storedFounderReviewPayload = mergeStoredPaymentPayload(
 );
 assert.equal(storedFounderReviewPayload.job_acceptance_status, "founder_review");
 
+const decimalStoredQuotePayload = mergeStoredPaymentPayload(
+  {
+    request_code: "SW-4402",
+    quote_amount: "180.49",
+    quote_currency: "AUD",
+  },
+  {
+    id: "stored-request-id",
+    request_code: "SW-4402",
+    client_name: "Test Client",
+    quote_amount: "180.49",
+    quote_currency: "AUD",
+  },
+);
+assert.equal(decimalStoredQuotePayload.quote_amount, "180.49");
+
+assert.throws(
+  () =>
+    mergeStoredPaymentPayload(
+      {
+        request_code: "SW-4402",
+        quote_amount: "180.00",
+        quote_currency: "AUD",
+      },
+      {
+        id: "stored-request-id",
+        request_code: "SW-4402",
+        client_name: "Test Client",
+        quote_amount: "180.49",
+        quote_currency: "AUD",
+      },
+    ),
+  /Payment route quote amount must match/,
+);
+
 const storedFounderReviewGate = paymentLaunchGatePayload("stripe", storedFounderReviewPayload);
 assert.equal(storedFounderReviewGate.job_gate.acceptance_status, "founder_review");
 assert.ok(storedFounderReviewGate.missing.includes("JOB_ACCEPTANCE_FOUNDER_REVIEW_REQUIRED"));

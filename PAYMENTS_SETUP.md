@@ -87,6 +87,8 @@ Payment route endpoints also enforce the internal quote floor on the server, not
 
 The floor uses the saved Swadakta request, not the browser payload. It checks `quote_amount`, `quote_currency`, `operator_payout`, `field_costs`, and `payment_processing_fee` before any checkout session, PayPal order, M-Pesa STK prompt, or Wise fallback request is created.
 
+Payment reconciliation compares provider payments and saved quotes in minor units, not rounded whole dollars. A provider payment of `AUD 100.00` against a saved quote of `AUD 100.49` stays `Deposit paid` until the missing cents are reconciled; it is not treated as fully paid by rounding.
+
 This keeps founder economics private while still protecting the business. Client-facing quote messages should stay simple; internal payout, field-cost, processor-fee, reserve, and margin assumptions stay in admin only.
 
 ## Stored Request Authority

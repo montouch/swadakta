@@ -1,5 +1,7 @@
 const {
   REQUEST_SELECT_FIELDS,
+  moneyAmount,
+  moneyMinorUnits,
   paymentReconciliationPayload,
 } = require("../../lib/payment-reconciliation");
 
@@ -233,16 +235,6 @@ function assertPayPalOrderMatchesRequestCode(orderDetails, requestCode) {
 
 function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
   return assertPayPalEvidenceMatchesRequestCode(captureResponse, requestCode, "PayPal capture");
-}
-
-function moneyAmount(value) {
-  const amount = Number(value || 0);
-  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
-}
-
-function moneyMinorUnits(value) {
-  const amount = Number(value || 0);
-  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0;
 }
 
 function firstPurchaseUnitAmount(providerEvidence = {}) {

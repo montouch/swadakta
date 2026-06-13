@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   REQUEST_SELECT_FIELDS,
+  moneyAmount,
   paymentReconciliationPayload,
 } = require("../../lib/payment-reconciliation");
 
@@ -95,11 +96,6 @@ function requestCodeFromMeta(meta) {
   }
 
   return requestCodeFromText(meta.request_code, meta.swadakta_request_code, meta.requestCode);
-}
-
-function moneyAmount(value) {
-  const amount = Number(value || 0);
-  return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
 }
 
 async function verifyFlutterwaveTransaction(transactionId) {

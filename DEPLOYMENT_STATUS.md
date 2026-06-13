@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `33`
+- Local commits queued behind the Vercel rate limit: `34`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -67,6 +67,7 @@ Queued local release contents:
 31. PayPal capture request-code matching blocks a capture from marking a Swadakta request paid unless the PayPal provider evidence returns the same Swadakta `request_code`, reducing wrong-request payment reconciliation risk.
 32. AI chat mobile viewport correction removes the leftover fixed-height dock behavior, uses the full available mobile sheet height, and cache-busts the assistant dock across all public, account, and admin pages.
 33. PayPal pre-capture order/quote validation reloads the saved request first, inspects PayPal order details before capture, blocks mismatched request codes, and refuses stale/wrong-amount orders before money is taken.
+34. Decimal-safe payment reconciliation compares provider payments and saved quotes in minor units, preserves cents from Stripe/Paystack/Flutterwave/PayPal evidence, and blocks stale browser quote amounts that differ by cents from the stored request.
 
 Before the next push:
 

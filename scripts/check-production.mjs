@@ -984,6 +984,8 @@ const requiredFlutterwaveWebhookMarkers = [
 const requiredPaymentReconciliationMarkers = [
   "paymentReconciliationPayload",
   "REQUEST_SELECT_FIELDS",
+  "moneyMinorUnits",
+  "moneyFromSmallestUnit",
   "monotonicPaymentReconciliationPayload",
   "nonFinalPaymentCallbackPayload",
   "Existing payment status",
@@ -996,7 +998,12 @@ const requiredPaymentReconciliationMarkers = [
 ];
 const requiredPaymentIdempotencyMarkers = [
   ["scripts/check-payment-reconciliation.mjs", "Payment reconciliation checks passed"],
+  ["scripts/check-payment-reconciliation.mjs", "short-by-cents"],
+  ["scripts/check-payment-reconciliation.mjs", "AUD 100\\.49"],
   ["scripts/check-payment-reconciliation.mjs", "non-final callback cannot downgrade provider evidence"],
+  ["api/payments/stripe-webhook.js", "moneyFromSmallestUnit"],
+  ["api/payments/paystack-webhook.js", "moneyFromSmallestUnit"],
+  ["api/payments/flutterwave-webhook.js", "moneyAmount"],
   ["scripts/check-paypal-capture-guard.mjs", "PayPal capture guard checks passed"],
   ["scripts/check-paypal-capture-guard.mjs", "PayPal order request code mismatch"],
   ["scripts/check-paypal-capture-guard.mjs", "does not match the saved quote"],
@@ -1043,6 +1050,7 @@ const requiredPaymentLaunchGateMarkers = [
   ["lib/payment-request-context.js", "field_costs"],
   ["lib/payment-request-context.js", "payment_processing_fee"],
   ["lib/payment-request-context.js", "job_acceptance_status"],
+  ["lib/payment-request-context.js", "moneyMinorUnits"],
   ["lib/payment-request-context.js", "Save a positive quote amount on the stored Swadakta request"],
   ["lib/payment-request-context.js", "Payment route quote amount must match the saved Swadakta request"],
   ["lib/payment-request-context.js", "Create and save the Swadakta request before creating a payment route"],

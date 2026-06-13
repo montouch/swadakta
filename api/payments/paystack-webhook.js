@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   REQUEST_SELECT_FIELDS,
+  moneyFromSmallestUnit,
   paymentReconciliationPayload,
 } = require("../../lib/payment-reconciliation");
 
@@ -88,15 +89,6 @@ function requestCodeFromMetadata(metadata) {
   }
 
   return "";
-}
-
-function moneyFromPaystackAmount(value) {
-  const amount = Number(value || 0);
-  if (!Number.isFinite(amount) || amount <= 0) {
-    return 0;
-  }
-
-  return Math.round(amount / 100);
 }
 
 async function verifyPaystackTransaction(reference) {
@@ -219,7 +211,7 @@ async function updateRequestFromPaystack(eventData, verifiedData) {
     };
   }
 
-  const amount = moneyFromPaystackAmount(verifiedData.amount || eventData.amount);
+  const amount = moneyFromSmallestUnit(verifiedData.amount || eventData.amount);
   const currency = String(verifiedData.currency || eventData.currency || "").toUpperCase();
   const referenceParts = ["Paystack", reference, verifiedData.id ? `id ${verifiedData.id}` : ""].filter(Boolean);
   const updatePayload = paymentReconciliationPayload({

@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const {
   REQUEST_SELECT_FIELDS,
+  moneyFromSmallestUnit,
   normalizeCurrency,
   paymentReconciliationPayload,
 } = require("../../lib/payment-reconciliation");
@@ -95,15 +96,6 @@ function verifyStripeSignature(rawBody, signatureHeader, webhookSecret) {
   if (!signatures.some((signature) => safeCompare(signature, expectedSignature))) {
     throw new Error("Stripe webhook signature verification failed.");
   }
-}
-
-function moneyFromSmallestUnit(amount) {
-  const number = Number(amount || 0);
-  if (!Number.isFinite(number) || number <= 0) {
-    return 0;
-  }
-
-  return Math.round(number / 100);
 }
 
 function requestCodeFromSession(session) {

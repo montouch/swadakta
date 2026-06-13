@@ -3,6 +3,8 @@ import { createRequire } from "node:module";
 
 const require = createRequire(import.meta.url);
 const {
+  moneyFromSmallestUnit,
+  moneyMinorUnits,
   nonFinalPaymentCallbackPayload,
   paymentReconciliationPayload,
 } = require("../lib/payment-reconciliation.js");
@@ -33,6 +35,41 @@ assert.match(matched.payment_reference, /cs_existing/);
 assert.match(matched.payment_reference, /cs_paid/);
 assert.match(matched.release_notes, /provider evidence matched quote amount\/currency/);
 assert.match(matched.release_notes, /Payment reconciliation is monotonic/);
+
+assert.equal(moneyFromSmallestUnit(10049), 100.49);
+assert.equal(moneyMinorUnits("100.49"), 10049);
+
+const decimalMatched = paymentReconciliationPayload({
+  amount: 100.49,
+  currency: "AUD",
+  paymentReference: "Stripe decimal cs_paid / pi_paid",
+  providerName: "Stripe",
+  request: {
+    ...baseRequest,
+    quote_amount: "100.49",
+    protected_amount: 0,
+  },
+  successNotePrefix: "Stripe webhook confirmed payment",
+});
+assert.equal(decimalMatched.payment_status, "paid");
+assert.equal(decimalMatched.funds_status, "deposit_confirmed");
+assert.equal(decimalMatched.protected_amount, 100.49);
+assert.match(decimalMatched.release_notes, /AUD 100\.49/);
+
+const shortByCents = paymentReconciliationPayload({
+  amount: 100,
+  currency: "AUD",
+  paymentReference: "Stripe short-by-cents",
+  providerName: "Stripe",
+  request: {
+    ...baseRequest,
+    quote_amount: "100.49",
+  },
+  successNotePrefix: "Stripe webhook confirmed payment",
+});
+assert.equal(shortByCents.payment_status, "deposit_paid");
+assert.equal(shortByCents.funds_status, "deposit_confirmed");
+assert.match(shortByCents.release_notes, /below quote AUD 100\.49/);
 
 const partial = paymentReconciliationPayload({
   amount: 400,
