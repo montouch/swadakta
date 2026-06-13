@@ -458,7 +458,7 @@ const requiredAssistantHtmlMarkers = [
 ];
 const requiredDockMarkers = [
   "swadakta-ai-dock",
-  'const DOCK_VERSION = "17"',
+  'const DOCK_VERSION = "18"',
   "collectPageContext",
   "inferSafeIntent",
   "protectedIntentPattern",
@@ -1599,8 +1599,8 @@ for (const marker of forbiddenLegacyPurpleMarkers) {
   }
 }
 for (const [file, content] of localHtml) {
-  if (!content.includes("assistant-dock.js?v=17")) {
-    fail(failures, `${file} does not reference assistant-dock.js?v=17`);
+  if (!content.includes("assistant-dock.js?v=18")) {
+    fail(failures, `${file} does not reference assistant-dock.js?v=18`);
   }
   if (file.startsWith("admin-")) {
     if (content.includes("final-ux-theme.css")) {
@@ -1864,8 +1864,8 @@ for (const page of requiredPages) {
       fail(failures, `${page} does not include favicon marker ${marker}`);
     }
   }
-  if (!text.includes("assistant-dock.js?v=17")) {
-    fail(failures, `${page} does not reference assistant-dock.js?v=17`);
+  if (!text.includes("assistant-dock.js?v=18")) {
+    fail(failures, `${page} does not reference assistant-dock.js?v=18`);
   }
   if (page.startsWith("/admin-")) {
     if (text.includes("final-ux-theme.css")) {
@@ -2360,11 +2360,11 @@ for (const marker of requiredAssistantMarkers) {
   }
 }
 
-const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=17");
+const { response: assistantDockResponse, text: assistantDockText } = await fetchText("/assistant-dock.js?v=18");
 if (assistantDockResponse.status !== 200) {
-  fail(failures, `assistant-dock.js?v=17 returned ${assistantDockResponse.status}`);
+  fail(failures, `assistant-dock.js?v=18 returned ${assistantDockResponse.status}`);
 } else {
-  pass("assistant-dock.js?v=17 returned 200");
+  pass("assistant-dock.js?v=18 returned 200");
 }
 
 for (const marker of requiredDockMarkers) {

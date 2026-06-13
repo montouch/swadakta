@@ -1,7 +1,7 @@
 (function () {
   if (window.SwadaktaAssistantDock) return;
 
-  const DOCK_VERSION = "17";
+  const DOCK_VERSION = "18";
   const rootId = "swadakta-ai-dock";
   const manualModeId = "swadakta-manual-mode-chip";
   const protectedBoundary =
@@ -104,9 +104,11 @@
           right: 8px;
           bottom: max(8px, calc(env(safe-area-inset-bottom) + 8px));
           left: 8px;
+          height: auto;
           width: auto;
           max-width: calc(100vw - 16px);
           max-height: none;
+          min-height: 0;
           border-radius: 22px;
         }
         .sw-ai-header { flex: 0 0 auto; padding: 10px 12px; }
@@ -125,14 +127,15 @@
         .sw-ai-icon-button { width: 32px; height: 32px; }
         .sw-ai-quick {
           flex: 0 0 auto;
-          padding: 8px 12px;
+          gap: 6px;
+          padding: 7px 10px;
           scrollbar-width: none;
         }
         .sw-ai-quick::-webkit-scrollbar,
         .sw-ai-actions::-webkit-scrollbar {
           display: none;
         }
-        .sw-ai-chip { min-height: 32px; padding: 0 11px; font-size: 12px; }
+        .sw-ai-chip { min-height: 30px; padding: 0 10px; font-size: 11.5px; }
         .sw-ai-messages {
           min-height: 0;
           flex: 1 1 auto;
@@ -142,13 +145,14 @@
         .sw-ai-actions {
           flex: 0 0 auto;
           flex-wrap: nowrap;
-          max-height: 44px;
+          gap: 6px;
+          max-height: 38px;
           overflow-x: auto;
-          padding: 0 12px 8px;
+          padding: 0 10px 7px;
           scrollbar-width: none;
         }
-        .sw-ai-action { flex: 0 0 auto; min-height: 32px; }
-        .sw-ai-composer { flex: 0 0 auto; padding: 8px 10px 10px; }
+        .sw-ai-action { flex: 0 0 auto; min-height: 30px; padding-inline: 10px; font-size: 11.5px; }
+        .sw-ai-composer { flex: 0 0 auto; padding: 7px 10px 9px; }
         .sw-ai-compose-box { border-radius: 16px; padding: 6px; }
         .sw-ai-input { min-height: 34px; max-height: 84px; font-size: 13px; }
         .sw-ai-send { width: 36px; height: 36px; }
@@ -157,7 +161,9 @@
       }
       @media (max-width: 640px) and (max-height: 700px) {
         .sw-ai-page { display: none; }
+        .sw-ai-header { padding-block: 8px; }
         .sw-ai-quick { padding-block: 6px; }
+        .sw-ai-actions { padding-bottom: 6px; }
       }
     `;
     document.head.append(style);
