@@ -31,6 +31,22 @@ When the visual direction changes, update the matching screen in Stitch first, e
 | `/admin-verification` | `admin_verification_queue_swadakta_final_ux_coverage` |
 | `/admin-readiness` | `admin_readiness_launch_gate_swadakta_final_ux_coverage` |
 
+## Stitch visual polish QA
+
+Every Stitch screen export must pass this visual standard before it is copied into the live site:
+
+- Tabs, chips, buttons, cards, sidebars, top bars, bottom mobile nav, request workflow tabs, Find Jobs filters, and admin tabs must be symmetrical, evenly spaced, visually balanced, and aligned to the same grid rhythm.
+- Words must fit inside their tabs, buttons, cards, and tiles on phone, tablet, and desktop. No text may spill out, clip, overlap icons, wrap awkwardly, or push nearby content out of alignment.
+- Phone layouts are the priority check. Use shorter labels, familiar icons, stacked mobile labels, controlled two-line wrapping, and at least 44px touch targets.
+- Keep the Final UX look consistent: white/light pages for normal users, black/dark pages for admin only, glass panels, soft 3D tiles/buttons, simple visual-first layouts, and less copy wherever an icon plus short label is clearer.
+- Fix small visual defects before export: uneven tab widths, crowded filters, misaligned chips, inconsistent icon/text gaps, cramped mobile rows, button labels touching edges, unequal card heights, and text overflowing tiles.
+
+Stitch prompt used for this project:
+
+```text
+Create a screen named "Swadakta UI Polish QA - Mobile Symmetry". It must show the final design standard for every Swadakta page: all tabs, chips, buttons, cards, nav items, sidebars, top bars, bottom mobile nav, request workflow tabs, Find Jobs filters, and admin tabs must be symmetrical, evenly spaced, visually balanced, and mobile-safe. Words must always fit inside tabs/cards/buttons on phone, tablet, and desktop with no clipping, spilling, overlap, cramped wrapping, or misaligned icons. Use shorter labels, icons, stacked mobile labels, equal padding, 44px minimum touch targets, aligned grids, equal card heights, and clean glass/3D Final UX styling. Include desktop and phone examples. White/light pages are normal users; black/dark pages are admin only.
+```
+
 ## Guardrail
 
 Every required workflow screen must include:

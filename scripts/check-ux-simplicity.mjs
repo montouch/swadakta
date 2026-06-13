@@ -6,6 +6,7 @@ const root = process.cwd();
 const portal = readFileSync(path.join(root, "portal.html"), "utf8");
 const brief = readFileSync(path.join(root, "brief.html"), "utf8");
 const stitchPortal = readFileSync(path.join(root, "stitch-portal.js"), "utf8");
+const stitchSourceContract = readFileSync(path.join(root, "STITCH_UI_SOURCE.md"), "utf8");
 const failures = [];
 
 function fail(message) {
@@ -82,6 +83,13 @@ if (briefStepCount !== 3) fail(`brief flow should stay at 3 visible steps; found
 assertIncludes(stitchPortal, "Add name, mobile, country, and base.", "dynamic account copy");
 assertIncludes(stitchPortal, "Describe it once. Swadakta shapes the quote.", "dynamic account copy");
 assertIncludes(stitchPortal, "Give jobs and take jobs here.", "dynamic account copy");
+
+assertIncludes(stitchSourceContract, "Stitch visual polish QA", "Stitch visual QA contract");
+assertIncludes(stitchSourceContract, "symmetrical, evenly spaced, visually balanced", "Stitch visual QA contract");
+assertIncludes(stitchSourceContract, "Words must fit inside their tabs", "Stitch visual QA contract");
+assertIncludes(stitchSourceContract, "Phone layouts are the priority check", "Stitch visual QA contract");
+assertIncludes(stitchSourceContract, "44px touch targets", "Stitch visual QA contract");
+assertIncludes(stitchSourceContract, "text overflowing tiles", "Stitch visual QA contract");
 
 checkParagraphBudget({
   label: "account home hero",
