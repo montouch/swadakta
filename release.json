@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-signed-in-dashboard-v1",
-  "release_name": "Signed-in dashboard home",
-  "description": "The portal home now follows the corrected Stitch signed-in dashboard with a command bar, clear client/receiver navigation, four primary actions, wallet/messages/verification access, mobile bottom navigation, and regression checks.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-signed-in-dashboard-1",
+  "release_id": "2026-06-13-payment-reconciliation-v1",
+  "release_name": "Monotonic payment reconciliation",
+  "description": "Provider payment callbacks now reconcile against saved quote amount/currency while preserving stronger paid, released, refunded, disputed, or refund-pending states. Non-final callbacks record evidence without downgrading confirmed money states, and Flutterwave accepts current raw-body HMAC signatures with legacy verif-hash fallback.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-payment-reconciliation-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

@@ -110,6 +110,9 @@ Every automatic provider confirmation must be reconciled against the saved Swada
 - If provider amount and currency match the quote, set `Payment` to `Paid` and `Funds` to `Deposit confirmed`.
 - If the provider amount is below the quote, or no quote amount is recorded, set `Payment` to `Deposit paid` and keep the balance unresolved.
 - If the provider currency does not match the quote currency, set `Funds` to `Disputed` and leave paid status unresolved until founder/admin reconciliation.
+- Reconciliation is monotonic. A duplicate, retry, late partial callback, or non-final provider callback cannot downgrade an existing `Paid`, `Released`, `Refunded`, `Disputed`, or `Refund pending` state.
+- A later matching callback cannot clear `Disputed` or `Refund pending`; founder/admin reconciliation must decide after checking the provider dashboard and proof pack.
+- Provider references are merged rather than replaced so duplicate callbacks keep the original payment trail.
 - In all cases, provider evidence only confirms collection state. It must not assign receivers, release milestones, refund money, or override proof review.
 
 ## Africa Expansion Rail Readiness
@@ -131,7 +134,7 @@ Webhook endpoints are now reserved at:
 - `POST /api/payments/paystack-webhook`
 - `POST /api/payments/flutterwave-webhook`
 
-The Paystack endpoint verifies `x-paystack-signature`, then calls Paystack transaction verification by reference before updating a request. The Flutterwave endpoint verifies `verif-hash`, then calls Flutterwave transaction verification by transaction id before updating a request. Both endpoints reconcile provider amount and currency against the saved quote before marking a request fully paid, and neither endpoint can assign receivers, release milestones, refund money, or override founder/admin proof review.
+The Paystack endpoint verifies `x-paystack-signature`, then calls Paystack transaction verification by reference before updating a request. The Flutterwave endpoint prefers the current raw-body HMAC `flutterwave-signature` header and still accepts legacy `verif-hash` where an existing dashboard sends it, then calls Flutterwave transaction verification by transaction id before updating a request. Both endpoints reconcile provider amount and currency against the saved quote before marking a request fully paid, and neither endpoint can assign receivers, release milestones, refund money, or override founder/admin proof review.
 
 ## Stripe
 
@@ -210,6 +213,7 @@ The webhook:
 - Sets `protected_amount` from Stripe `amount_total`.
 - Stores the Checkout Session/PaymentIntent reference.
 - Adds a release note saying founder proof review is still required.
+- Preserves stronger existing payment/funds states if Stripe retries a webhook or a late event would otherwise downgrade the record.
 - Does not release funds, assign receivers, or mark milestones released.
 
 Stripe's webhook docs require raw-body signature verification:
@@ -397,6 +401,7 @@ The callback endpoint:
 - Marks `Funds: Disputed` if the request quote currency is not `KES`.
 - Stores the M-Pesa receipt and protected amount either way, so founder/admin can reconcile safely.
 - On failed/cancelled STK, records the callback result in release notes without marking funds paid.
+- On failed/cancelled STK after a previous confirmed callback, preserves the existing payment/funds state and records the non-final result as evidence only.
 - Does not release receiver payouts.
 
 Required Vercel environment variables:

@@ -1,5 +1,6 @@
 const {
   REQUEST_SELECT_FIELDS,
+  nonFinalPaymentCallbackPayload,
   paymentReconciliationPayload,
 } = require("../../lib/payment-reconciliation");
 
@@ -129,9 +130,12 @@ async function updateRequest(request, details) {
         request,
         successNotePrefix: "M-Pesa callback confirmed payment",
       })
-    : {
-        release_notes: `M-Pesa callback did not confirm payment. Result ${details.result_code}: ${details.result_description || "No result description."}`,
-      };
+    : nonFinalPaymentCallbackPayload({
+        providerName: "M-Pesa",
+        request,
+        paymentReference: referenceParts.join(" / "),
+        reason: `Result ${details.result_code}: ${details.result_description || "No result description."}`,
+      });
 
   const response = await fetch(`${SUPABASE_URL}/rest/v1/service_requests?id=eq.${encodeURIComponent(request.id)}`, {
     method: "PATCH",

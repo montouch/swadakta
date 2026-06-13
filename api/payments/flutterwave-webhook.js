@@ -16,13 +16,13 @@ const FLUTTERWAVE_BASE_URL = (process.env.FLUTTERWAVE_BASE_URL || "https://api.f
 
 const HANDLED_EVENTS = new Set(["charge.completed"]);
 
-async function readJsonBody(req) {
-  if (req.body && typeof req.body === "object") {
-    return req.body;
+async function readRawBody(req) {
+  if (Buffer.isBuffer(req.body)) {
+    return req.body.toString("utf8");
   }
 
   if (req.body && typeof req.body === "string") {
-    return JSON.parse(req.body);
+    return req.body;
   }
 
   const chunks = [];
@@ -30,8 +30,7 @@ async function readJsonBody(req) {
     chunks.push(Buffer.from(chunk));
   }
 
-  const raw = Buffer.concat(chunks).toString("utf8");
-  return raw ? JSON.parse(raw) : {};
+  return Buffer.concat(chunks).toString("utf8");
 }
 
 function sendJson(res, status, body) {
@@ -52,7 +51,11 @@ function safeCompareText(first, second) {
   return crypto.timingSafeEqual(firstBuffer, secondBuffer);
 }
 
-function verifyFlutterwaveSignature(signatureHeader) {
+function hmacFlutterwaveSignature(rawBody, webhookSecret) {
+  return crypto.createHmac("sha256", webhookSecret).update(rawBody, "utf8").digest("base64");
+}
+
+function verifyFlutterwaveSignature(rawBody, headers = {}) {
   const webhookSecret = process.env.FLUTTERWAVE_WEBHOOK_SECRET;
   if (!webhookSecret) {
     const error = new Error("FLUTTERWAVE_WEBHOOK_SECRET is not configured.");
@@ -60,7 +63,20 @@ function verifyFlutterwaveSignature(signatureHeader) {
     throw error;
   }
 
-  if (!safeCompareText(signatureHeader, webhookSecret)) {
+  const hmacSignature = headers["flutterwave-signature"];
+  if (hmacSignature) {
+    const expectedSignature = hmacFlutterwaveSignature(rawBody, webhookSecret);
+    if (!safeCompareText(hmacSignature, expectedSignature)) {
+      const error = new Error("Flutterwave webhook signature verification failed.");
+      error.statusCode = 401;
+      throw error;
+    }
+    return;
+  }
+
+  // Legacy Flutterwave dashboards may still send only verif-hash. Prefer the current HMAC-SHA256
+  // flutterwave-signature header when present, but keep verif-hash for already-configured accounts.
+  if (!safeCompareText(headers["verif-hash"], webhookSecret)) {
     const error = new Error("Flutterwave webhook signature verification failed.");
     error.statusCode = 401;
     throw error;
@@ -264,9 +280,10 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    verifyFlutterwaveSignature(req.headers["verif-hash"]);
+    const rawBody = await readRawBody(req);
+    verifyFlutterwaveSignature(rawBody, req.headers || {});
 
-    const event = await readJsonBody(req);
+    const event = rawBody ? JSON.parse(rawBody) : {};
     if (!HANDLED_EVENTS.has(event.event)) {
       sendJson(res, 200, { received: true, ignored: true, event: event.event || "unknown" });
       return;
@@ -279,4 +296,10 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     sendJson(res, error.statusCode || 400, { error: error.message || "Flutterwave webhook failed." });
   }
+};
+
+module.exports.config = {
+  api: {
+    bodyParser: false,
+  },
 };

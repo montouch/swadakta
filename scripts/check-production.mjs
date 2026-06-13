@@ -857,6 +857,8 @@ const requiredPaystackWebhookMarkers = [
   "bodyParser: false",
 ];
 const requiredFlutterwaveWebhookMarkers = [
+  "flutterwave-signature",
+  "HMAC-SHA256",
   "verif-hash",
   "verifyFlutterwaveSignature",
   "verifyFlutterwaveTransaction",
@@ -864,10 +866,15 @@ const requiredFlutterwaveWebhookMarkers = [
   "/verify",
   "Flutterwave webhook and transaction verification confirmed",
   "Founder/admin must still review milestone proof before any receiver release",
+  "bodyParser: false",
 ];
 const requiredPaymentReconciliationMarkers = [
   "paymentReconciliationPayload",
   "REQUEST_SELECT_FIELDS",
+  "monotonicPaymentReconciliationPayload",
+  "nonFinalPaymentCallbackPayload",
+  "Existing payment status",
+  "cannot clear a dispute/refund hold",
   "provider evidence matched quote amount/currency",
   "Treat as deposit only",
   "does not match quote currency",
@@ -875,6 +882,8 @@ const requiredPaymentReconciliationMarkers = [
   'payment_status: "deposit_paid"',
 ];
 const requiredPaymentIdempotencyMarkers = [
+  ["scripts/check-payment-reconciliation.mjs", "Payment reconciliation checks passed"],
+  ["scripts/check-payment-reconciliation.mjs", "non-final callback cannot downgrade provider evidence"],
   ["api/payments/stripe-checkout.js", "stripeIdempotencyKey"],
   ["api/payments/stripe-checkout.js", '"idempotency-key": idempotencyKey'],
   ["api/payments/stripe-checkout.js", "swadakta-checkout"],
