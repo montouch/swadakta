@@ -1,3 +1,5 @@
+const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -291,6 +293,7 @@ async function findRequestByCode(authHeader, requestCode) {
 }
 
 async function createMpesaStk(authHeader, payload) {
+  const launchGate = assertPaymentLaunchAllowed("mpesa", payload);
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const amount = normalizeAmount(payload.quote_amount);
   const currency = normalizeCurrency(payload.quote_currency);
@@ -306,6 +309,7 @@ async function createMpesaStk(authHeader, payload) {
       checkout_request_id: existingPrompt.checkout_request_id || null,
       merchant_request_id: existingPrompt.merchant_request_id || null,
       reused: true,
+      launch_gate: launchGate,
       customer_message:
         "An active M-Pesa STK prompt is already recorded for this quote. Wait for the callback or send a new prompt only after confirming the previous one expired or failed.",
       payment_status: existingRequest.payment_status,
@@ -375,6 +379,7 @@ async function createMpesaStk(authHeader, payload) {
     id: data.CheckoutRequestID,
     checkout_request_id: data.CheckoutRequestID,
     merchant_request_id: data.MerchantRequestID,
+    launch_gate: launchGate,
     reused: false,
     customer_message: data.CustomerMessage || data.ResponseDescription || "M-Pesa prompt sent.",
     payment_status: updatePayload.payment_status,
@@ -404,8 +409,6 @@ module.exports = async function handler(req, res) {
     const result = await createMpesaStk(req.headers.authorization, payload);
     sendJson(res, 200, result);
   } catch (error) {
-    sendJson(res, error.statusCode || 500, {
-      error: error.message || "Could not send M-Pesa STK Push.",
-    });
+    sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not send M-Pesa STK Push."));
   }
 };

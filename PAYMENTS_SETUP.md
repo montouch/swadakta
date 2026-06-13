@@ -1,6 +1,6 @@
 # Swadakta Payments Setup
 
-Last updated: June 12, 2026
+Last updated: June 13, 2026
 
 Swadakta should stay quote-first at launch. Each request can vary by travel, access, risk, urgency, corridor, compliance, and proof requirements, so the autopilot should classify the request and the founder console should create or approve a client-specific payment link before money moves.
 
@@ -28,6 +28,32 @@ The public site should keep payment choices simple. The admin/readiness layer de
 | Regulated escrow/provider-held funds | Use only for high-value or legally sensitive jobs | Provider/escrow account, written milestone terms, release authority, dispute path, and proof pack | Provider contract/reference, milestone status, release authority, proof review, and dispute status |
 
 Client-visible rail gate rule: no payment rail becomes a normal public choice until the readiness cockpit proves provider setup, evidence reconciliation, and milestone-release boundaries. Provider confirmation never releases receiver money by itself.
+
+## Server-side Payment Launch Gate
+
+All admin payment route endpoints now run a shared launch gate before creating real provider payment routes:
+
+- `POST /api/payments/stripe-checkout`
+- `POST /api/payments/paypal-order`
+- `POST /api/payments/mpesa-stk`
+- `POST /api/payments/wise-payment-request`
+
+The gate blocks route creation with HTTP `423` until the owner and provider evidence flags are ready. This is deliberate: even an admin should not accidentally send a real checkout link, PayPal order, M-Pesa STK prompt, or Wise fallback request before Swadakta is legally and operationally ready to collect money.
+
+Required owner confirmations before payment route creation:
+
+- `SWADAKTA_OWNER_BUSINESS_REGISTERED`
+- `SWADAKTA_OWNER_TAX_REVIEWED`
+- `SWADAKTA_OWNER_INSURANCE_ACTIVE`
+- `SWADAKTA_OWNER_LEGAL_REVIEWED`
+- `SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED`
+- `SWADAKTA_OWNER_PRIVACY_REVIEWED`
+- `SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED`
+- `SWADAKTA_OWNER_SECRET_ROTATION_CONFIRMED`
+
+The gate also requires at least one ID-provider evidence route, such as a provider handoff URL or native Sumsub credentials. Provider-specific evidence is required per rail: Stripe webhook plus server Supabase key, PayPal REST credentials, M-Pesa live/Kenya/callback controls, or a Wise fallback link. High-value, property, title, construction, supplier-deposit, or sensitive-funds work additionally requires `SWADAKTA_OWNER_REGULATED_ESCROW_READY`.
+
+If the gate blocks a route, the admin UI shows the missing flag names and points the founder back to Admin Readiness. Do not bypass this by adding fake `true` values. Set those flags only after the real provider, legal, insurance, tax, privacy, and evidence steps are actually complete.
 
 ## Funds Protection and Milestones
 

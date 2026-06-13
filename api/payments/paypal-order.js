@@ -1,3 +1,5 @@
+const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -173,6 +175,7 @@ function paypalRequestId({ requestCode, amount, currency }) {
 }
 
 async function createPayPalOrder(payload) {
+  const launchGate = assertPaymentLaunchAllowed("paypal", payload);
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const clientName = requiredText(payload.client_name, "Client name");
   const amount = normalizeAmount(payload.quote_amount);
@@ -235,6 +238,7 @@ async function createPayPalOrder(payload) {
   return {
     id: data.id,
     url,
+    launch_gate: launchGate,
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
     provider_reference: data.id,
@@ -261,8 +265,6 @@ module.exports = async function handler(req, res) {
     const order = await createPayPalOrder(payload);
     sendJson(res, 200, order);
   } catch (error) {
-    sendJson(res, error.statusCode || 500, {
-      error: error.message || "Could not create PayPal order.",
-    });
+    sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not create PayPal order."));
   }
 };

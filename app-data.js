@@ -2992,6 +2992,15 @@
     return { data, mode: "vercel" };
   }
 
+  function providerRouteErrorMessage(data, fallback) {
+    if (data?.payment_launch_locked) {
+      const missing = Array.isArray(data.missing) && data.missing.length ? ` Missing: ${data.missing.join(", ")}.` : "";
+      return `${data.error || "Payment launch gate locked."}${missing} Open Admin Readiness before creating a real payment route.`;
+    }
+
+    return data?.error || fallback;
+  }
+
   async function createStripeCheckoutSession(request, updates = {}) {
     const supabase = await getSupabase();
 
@@ -3031,7 +3040,7 @@
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Could not create Stripe checkout session.");
+      throw new Error(providerRouteErrorMessage(data, "Could not create Stripe checkout session."));
     }
 
     return { data, mode: "stripe" };
@@ -3076,7 +3085,7 @@
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Could not create PayPal order.");
+      throw new Error(providerRouteErrorMessage(data, "Could not create PayPal order."));
     }
 
     return { data, mode: "paypal" };
@@ -3121,7 +3130,7 @@
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Could not prepare Wise payment request.");
+      throw new Error(providerRouteErrorMessage(data, "Could not prepare Wise payment request."));
     }
 
     return { data, mode: "wise" };
@@ -3206,7 +3215,7 @@
 
     const data = await response.json().catch(() => ({}));
     if (!response.ok) {
-      throw new Error(data.error || "Could not send M-Pesa STK Push.");
+      throw new Error(providerRouteErrorMessage(data, "Could not send M-Pesa STK Push."));
     }
 
     return { data, mode: "mpesa" };

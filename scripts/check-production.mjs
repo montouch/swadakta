@@ -259,6 +259,9 @@ const requiredAppDataMarkers = [
   "updateJobOfferStatus",
   "startIdentityVerificationSession",
   "/api/identity/start-verification",
+  "providerRouteErrorMessage",
+  "payment_launch_locked",
+  "Open Admin Readiness before creating a real payment route",
   "withTimeout",
   "createSupabaseClient",
 ];
@@ -710,7 +713,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=57",
+  "app-data.js?v=58",
   "stitch-portal.js?v=34",
   "final-ux-theme.css?v=2",
   "final_ux_live_freshness",
@@ -822,6 +825,24 @@ const requiredPaymentIdempotencyMarkers = [
   ["PAYMENTS_SETUP.md", "PayPal-Request-Id"],
   ["PAYMENTS_SETUP.md", "force_new_stk"],
   ["PAYMENTS_SETUP.md", "returns the existing `CheckoutRequestID`"],
+];
+const requiredPaymentLaunchGateMarkers = [
+  ["lib/payment-launch-gate.js", "assertPaymentLaunchAllowed"],
+  ["lib/payment-launch-gate.js", "paymentLaunchGatePayload"],
+  ["lib/payment-launch-gate.js", "SWADAKTA_OWNER_REGULATED_ESCROW_READY"],
+  ["lib/payment-launch-gate.js", "ID_PROVIDER_EVIDENCE_ROUTE"],
+  ["lib/payment-launch-gate.js", "statusCode = 423"],
+  ["api/payments/stripe-checkout.js", "assertPaymentLaunchAllowed(\"stripe\""],
+  ["api/payments/paypal-order.js", "assertPaymentLaunchAllowed(\"paypal\""],
+  ["api/payments/mpesa-stk.js", "assertPaymentLaunchAllowed(\"mpesa\""],
+  ["api/payments/wise-payment-request.js", "assertPaymentLaunchAllowed(\"wise\""],
+  ["api/payments/stripe-checkout.js", "paymentLaunchGateErrorBody"],
+  ["api/payments/paypal-order.js", "paymentLaunchGateErrorBody"],
+  ["api/payments/mpesa-stk.js", "paymentLaunchGateErrorBody"],
+  ["api/payments/wise-payment-request.js", "paymentLaunchGateErrorBody"],
+  ["PAYMENTS_SETUP.md", "Server-side Payment Launch Gate"],
+  [".env.example", "SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED"],
+  [".env.example", "SWADAKTA_OWNER_REGULATED_ESCROW_READY"],
 ];
 const requiredIdentityEndpointMarkers = [
   "startVerification",
@@ -1372,6 +1393,12 @@ for (const [file, marker] of requiredPaymentIdempotencyMarkers) {
   const content = await readLocal(file);
   if (!content.includes(marker)) {
     fail(failures, `Local ${file} is missing payment idempotency marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredPaymentLaunchGateMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing payment launch gate marker ${marker}`);
   }
 }
 const localIdentityEndpoint = await readLocal("api/identity/start-verification.js");

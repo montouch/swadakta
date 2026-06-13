@@ -1,4 +1,5 @@
 const crypto = require("crypto");
+const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
 
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
@@ -141,6 +142,7 @@ function stripeIdempotencyKey({ requestCode, currency, unitAmount, paymentKind, 
 }
 
 async function createStripeSession(payload) {
+  const launchGate = assertPaymentLaunchAllowed("stripe", payload);
   const apiKey = process.env.STRIPE_SECRET_KEY;
   if (!apiKey) {
     const error = new Error("STRIPE_SECRET_KEY is not configured in Vercel.");
@@ -211,6 +213,7 @@ async function createStripeSession(payload) {
   return {
     id: data.id,
     url: data.url,
+    launch_gate: launchGate,
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
     provider_reference: data.id,
@@ -237,8 +240,6 @@ module.exports = async function handler(req, res) {
     const session = await createStripeSession(payload);
     sendJson(res, 200, session);
   } catch (error) {
-    sendJson(res, error.statusCode || 500, {
-      error: error.message || "Could not create checkout session.",
-    });
+    sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not create checkout session."));
   }
 };

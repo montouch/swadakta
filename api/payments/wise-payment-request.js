@@ -1,3 +1,5 @@
+const { assertPaymentLaunchAllowed, paymentLaunchGateErrorBody } = require("../../lib/payment-launch-gate");
+
 const SUPABASE_URL =
   process.env.SUPABASE_URL ||
   process.env.SWADAKTA_SUPABASE_URL ||
@@ -185,6 +187,7 @@ function buildProviderReference(requestCode) {
 }
 
 async function createWisePaymentRequest(payload) {
+  const launchGate = assertPaymentLaunchAllowed("wise", payload);
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const clientName = requiredText(payload.client_name, "Client name");
   const amount = normalizeAmount(payload.quote_amount);
@@ -196,6 +199,7 @@ async function createWisePaymentRequest(payload) {
   return {
     id: providerReference,
     url,
+    launch_gate: launchGate,
     payment_status: "invoice_sent",
     funds_status: "payment_link_sent",
     provider_reference: providerReference,
@@ -233,8 +237,6 @@ module.exports = async function handler(req, res) {
     const request = await createWisePaymentRequest(payload);
     sendJson(res, 200, request);
   } catch (error) {
-    sendJson(res, error.statusCode || 500, {
-      error: error.message || "Could not prepare Wise payment request.",
-    });
+    sendJson(res, error.statusCode || 500, paymentLaunchGateErrorBody(error, "Could not prepare Wise payment request."));
   }
 };

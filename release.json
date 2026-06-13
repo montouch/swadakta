@@ -1,8 +1,8 @@
 {
-  "release_id": "2026-06-13-launch-decision-register-v1",
-  "release_name": "Founder launch decision register",
-  "description": "Adds an admin go/no-go register for demos, paid pilots, public paid jobs, receiver work, Africa expansion, high-value work, and AI operations.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-launch-decision-register",
+  "release_id": "2026-06-13-payment-launch-gate-v1",
+  "release_name": "Server-side payment launch gate",
+  "description": "Blocks real payment route creation until owner readiness, provider evidence, identity routes, and high-value controls are complete.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-payment-launch-gate",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

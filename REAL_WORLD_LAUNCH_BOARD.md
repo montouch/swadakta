@@ -155,6 +155,10 @@ The pilot passes only if:
 
 Use `PILOT_TEST_SCRIPT.md` for the exact rehearsal.
 
+After this passes, set `SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED=true` in Vercel only if the proof, payment, identity, tracking, and closeout records are complete. Leave it false if anything felt improvised.
+
+High-value property, title, construction, supplier-deposit, or sensitive-funds jobs stay blocked until a regulated escrow/provider-held funds route or written legal confirmation exists. Set `SWADAKTA_OWNER_REGULATED_ESCROW_READY=true` only after that route is real, documented, and usable.
+
 ## What The Founder Must Not Skip
 
 - Do not take high-value jobs before legal/insurance review.
