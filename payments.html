@@ -6,7 +6,7 @@
     <title>Payments & Pricing | Swadakta</title>
     <meta
       name="description"
-      content="Swadakta payment rails, quote-first pricing, service fees, milestone controls, M-Pesa, Stripe, PayPal, bank transfer, Wise fallback, and protected payout boundaries."
+      content="Swadakta payment rails, quote-first pricing, service fees, provider-held milestone controls, M-Pesa, Stripe, PayPal, bank transfer, Wise fallback, and payout boundaries."
     />
     <link rel="canonical" href="https://swadakta.com/payments" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -99,10 +99,10 @@
           <div>
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payments & Pricing</p>
             <h1 class="mt-4 font-display text-4xl md:text-6xl font-extrabold leading-tight">
-              Quote first. Protect money. Release by proof.
+              Quote first. Provider-held money. Release by proof.
             </h1>
             <p class="mt-5 max-w-2xl text-lg text-on-surface-variant">
-              Swadakta uses a clear service fee built into each quote. Clients pay through provider rails where possible, receivers are paid after proof and milestone checks, and risky money decisions stay protected.
+              Swadakta does not hold client money. Clients pay through payment providers such as Stripe, PayPal, M-Pesa, bank, Paystack, Flutterwave, or a regulated escrow/payment provider where needed. Swadakta earns the disclosed service fee in the quote, tracks evidence, and only moves milestones after proof review.
             </p>
             <div class="mt-7 flex flex-wrap gap-3">
             <a class="inline-flex h-12 px-6 items-center justify-center rounded-full bg-primary text-white font-bold" href="corridor.html">Get a quote</a>
@@ -162,7 +162,7 @@
               </div>
               <div class="rounded-3xl bg-white/72 border border-outline-variant/35 p-5">
                 <strong class="font-label text-primary">Hard stop</strong>
-                <p class="mt-2 text-sm text-on-surface-variant">A route can stay quote-only even if a payment provider exists. Legal goods, customs, ID, and protected-funds rules still win.</p>
+                <p class="mt-2 text-sm text-on-surface-variant">A route can stay quote-only even if a payment provider exists. Legal goods, customs, ID, and provider-held money rules still win.</p>
               </div>
             </div>
           </div>
@@ -628,8 +628,8 @@
                   <p class="mt-2 text-sm text-on-surface-variant">Swadakta's fee is included in the quote. It covers coordination, support, verification workflow, AI tooling, payment administration, proof review, and operating risk.</p>
                 </div>
                 <div class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
-                  <strong class="font-label text-primary">Pass-through / protected funds</strong>
-                  <p class="mt-2 text-sm text-on-surface-variant">Supplier deposits, construction funds, title/property money, family support funds, and other protected amounts stay separated from ordinary service fees and need written milestone controls.</p>
+                  <strong class="font-label text-primary">Provider-held / pass-through money</strong>
+                  <p class="mt-2 text-sm text-on-surface-variant">Supplier deposits, construction money, title/property money, family support money, and other pass-through amounts must stay with the payment provider, bank, regulated escrow route, supplier, or named recipient. Swadakta records the reference and milestone state; it does not hold those client funds.</p>
                 </div>
               </div>
             </div>
@@ -644,15 +644,15 @@
                 </div>
                 <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
                   <strong class="block">2. What is protected or pass-through</strong>
-                  <p class="mt-1 text-sm text-on-surface-variant">Any supplier, family, construction, title, or high-value funds are named separately from service work.</p>
+                  <p class="mt-1 text-sm text-on-surface-variant">Any supplier, family, construction, title, or high-value money is named separately from service work and tied to a provider reference.</p>
                 </div>
                 <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
                   <strong class="block">3. When money can move</strong>
-                  <p class="mt-1 text-sm text-on-surface-variant">Provider confirmation comes before paid work; milestone release comes after proof review.</p>
+                  <p class="mt-1 text-sm text-on-surface-variant">Provider confirmation comes before paid work; milestone approval comes after proof review and points to the next provider action.</p>
                 </div>
                 <div class="rounded-2xl bg-white/78 border border-outline-variant/35 p-4">
                   <strong class="block">4. What Swadakta is not</strong>
-                  <p class="mt-1 text-sm text-on-surface-variant">Unless written otherwise through a regulated provider, Swadakta is not a bank, law firm, trustee, or licensed escrow agent.</p>
+                  <p class="mt-1 text-sm text-on-surface-variant">Swadakta is not a bank, law firm, trustee, money-transfer business, or escrow agent. Money custody stays with the payment provider or regulated route.</p>
                 </div>
               </div>
             </div>
@@ -769,9 +769,10 @@
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">What clients see</p>
             <h2 class="mt-3 font-display text-3xl font-extrabold">Transparent status, not internal costs.</h2>
             <ul class="mt-6 grid gap-3 text-on-surface-variant">
-              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Quote amount, payment status, funds status, safe payment link, and release condition.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Quote amount, provider payment status, safe payment link, milestone condition, and Swadakta service fee wording.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Payment providers process or hold client money; Swadakta records provider references and proof decisions.</span></li>
               <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Proof requirements, milestone progress, receipts, media, and client-safe reports.</span></li>
-              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Refund or dispute pauses when scope, proof, or provider evidence needs review.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">check_circle</span><span>Refund or dispute pauses when scope, proof, or provider evidence needs review under the provider's rules.</span></li>
             </ul>
           </div>
           <div class="glass-panel rounded-[2rem] p-6 md:p-8">
@@ -780,7 +781,7 @@
             <ul class="mt-6 grid gap-3 text-on-surface-variant">
               <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>Quote amount, receiver payout, field costs, payment processing fee, and quote-safety risk.</span></li>
               <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>Provider reference, callback state, reconciliation notes, and fallback payment evidence.</span></li>
-              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>AI can draft and check. It cannot mark paid, release funds, refund, or assign paid work.</span></li>
+              <li class="flex gap-3"><span class="material-symbols-outlined text-primary">lock</span><span>AI can draft and check. It cannot mark paid, approve provider payout, refund, or assign paid work.</span></li>
             </ul>
           </div>
         </div>
@@ -789,10 +790,10 @@
       <section class="max-w-container-max mx-auto px-margin-mobile md:px-margin-desktop pb-16 md:pb-24">
         <div class="glass-panel rounded-[2rem] p-6 md:p-8 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
           <div>
-            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Escrow boundary</p>
-            <h2 class="mt-2 font-display text-3xl font-extrabold">Swadakta is not currently a licensed escrow provider.</h2>
+            <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Money custody boundary</p>
+            <h2 class="mt-2 font-display text-3xl font-extrabold">Swadakta does not hold client money.</h2>
             <p class="mt-3 text-on-surface-variant max-w-3xl">
-              For high-value property, title, construction, supplier deposits, or legally sensitive jobs, use a regulated escrow/payment provider or staged provider-held funds before receiver release. Swadakta can track milestones and proof, but should not pretend to be a bank, escrow company, law firm, or tax advisor.
+              For high-value property, title, construction, supplier deposits, or legally sensitive jobs, use a regulated escrow/payment provider, payment processor, bank, or direct supplier/recipient route before receiver payout. Swadakta can track milestones and proof, but it is not currently a licensed escrow provider and should not pretend to be a bank, escrow company, money-transfer service, law firm, or tax advisor.
             </p>
           </div>
           <div class="flex flex-wrap gap-3">
@@ -882,7 +883,7 @@
 
       function railFor(currency, sensitive, logistics) {
         if (currency === "KES") return "M-Pesa or bank transfer with provider receipt";
-        if (sensitive || logistics) return "card checkout or PayPal, with regulated escrow/provider-held funds for high-value work";
+        if (sensitive || logistics) return "card checkout or PayPal, with regulated escrow or provider-held payment evidence for high-value work";
         return "card checkout or PayPal";
       }
 
@@ -893,17 +894,17 @@
           mpesa: "M-Pesa Daraja or Paybill",
           bank: "bank transfer after receipt matching",
           wise: "Wise fallback after simpler rails fail",
-          escrow: "regulated escrow or provider-held funds",
+          escrow: "regulated escrow or provider-held payment route",
         }[rail] || "provider payment rail";
       }
 
       function milestoneDisclosure(value) {
         return {
-          single: "Receiver payout is released only after completion proof, client-safe report, payment evidence, and dispute checks pass.",
-          two: "Receiver payout is split into two milestone releases after agreed proof is reviewed for each stage.",
-          three: "Receiver payout is split into three milestone releases after agreed proof is reviewed for each stage.",
-          regulated: "Release follows the regulated provider or escrow schedule, written milestone terms, proof review, and dispute path.",
-        }[value] || "Release follows the written milestone and proof plan.";
+          single: "Receiver payout is approved only after completion proof, client-safe report, payment evidence, and dispute checks pass.",
+          two: "Receiver payout is split into two provider-payout instructions after agreed proof is reviewed for each stage.",
+          three: "Receiver payout is split into three provider-payout instructions after agreed proof is reviewed for each stage.",
+          regulated: "Provider action follows the regulated provider or escrow schedule, written milestone terms, proof review, and dispute path.",
+        }[value] || "Provider action follows the written milestone and proof plan.";
       }
 
       function buildQuoteDisclosure({ scope, amount, currency, rail, milestones, protectedFunds, separateFee }) {
@@ -914,12 +915,12 @@
           ? "Any separate payment-provider processing fee must be shown before payment and limited to the actual provider/payment cost."
           : "Any payment-provider fee is treated as included in this quote unless Swadakta shows it separately before checkout.";
         const protectedCopy = protectedFunds
-          ? "This quote includes protected or pass-through money, so those funds stay separated from ordinary service work and require written milestone controls before release."
-          : "This quote is for ordinary service work. If supplier, family, property, construction, title, or other protected funds are added later, Swadakta must issue a new written payment note.";
+          ? "This quote includes provider-held or pass-through money, so those amounts stay separated from ordinary service work, remain with the payment provider or named recipient, and require written milestone controls before any provider action."
+          : "This quote is for ordinary service work. If supplier, family, property, construction, title, or other pass-through money is added later, Swadakta must issue a new written payment note.";
         const escrowCopy =
           rail === "escrow" || protectedFunds
-            ? "For high-value, title, construction, supplier-deposit, or legally sensitive work, Swadakta should use a regulated provider or written specialist approval before treating money as protected."
-            : "Swadakta is not a bank, law firm, trustee, or licensed escrow provider unless a regulated provider agreement says otherwise.";
+            ? "For high-value, title, construction, supplier-deposit, or legally sensitive work, Swadakta should use a regulated provider or written specialist approval before any provider-held milestone instruction."
+            : "Swadakta is not a bank, law firm, trustee, money-transfer business, or licensed escrow provider; client money stays with the payment provider or approved route.";
 
         return [
           `Payment note for client: ${cleanScope}`,
@@ -929,7 +930,7 @@
           protectedCopy,
           milestoneDisclosure(milestones),
           escrowCopy,
-          "Refunds, disputes, restricted goods, ID, receiver assignment, and money release stay paused until provider/system evidence and Swadakta proof review are complete.",
+          "Refunds, disputes, restricted goods, ID, receiver assignment, and provider-payout instructions stay paused until provider/system evidence and Swadakta proof review are complete.",
         ].join("\n\n");
       }
 
@@ -948,7 +949,7 @@
           return {
             eyebrow: "Protected route",
             title: "High-value or sensitive funds",
-            rail: "Use regulated escrow/provider-held funds or written legal confirmation before any receiver assignment. Ordinary payment links are not enough.",
+            rail: "Use regulated escrow or provider-held payment evidence plus written legal confirmation before any receiver assignment. Ordinary payment links are not enough.",
             identity: "Provider ID for every party, plus enhanced authority, ownership, document, and proof review.",
             visibility: "Blocked from normal public launch.",
             hardStop: "Do not take money, assign receivers, or promise execution until regulated route, legal, insurance, and milestone authority are proven.",
@@ -1041,7 +1042,7 @@
           checks.push("If local settlement is unclear, quote in a supported global currency and use Stripe, PayPal, or bank/Wise fallback.");
         }
 
-        if (highValue) checks.push("High-value work needs regulated escrow/payment-provider review or staged provider-held funds.");
+        if (highValue) checks.push("High-value work needs regulated escrow/payment-provider review or staged provider-held payment evidence.");
         if (crossBorder) checks.push("Cross-border goods also need carrier/customs/tax checks before purchase, shipment, or release.");
 
         return { title, rail, checks };
@@ -1185,7 +1186,7 @@
         quoteDisclosureResult.innerHTML = `
           <p class="font-label text-sm uppercase tracking-[0.16em] text-primary">Client-safe payment note</p>
           <pre class="mt-3 max-h-80 overflow-auto whitespace-pre-wrap rounded-2xl bg-surface-container-low/80 border border-outline-variant/30 p-4 text-sm leading-6 text-on-surface-variant">${escapeHtml(note)}</pre>
-          <p class="mt-3 text-xs text-on-surface-variant">Attach this to the request code, quote expiry, provider payment link, and proof plan. Do not use it to approve ID, release funds, refund money, or assign a receiver.</p>
+          <p class="mt-3 text-xs text-on-surface-variant">Attach this to the request code, quote expiry, provider payment link, and proof plan. Do not use it to approve ID, approve provider payout, refund money, or assign a receiver.</p>
         `;
       });
 
@@ -1260,7 +1261,7 @@
       });
     </script>
     <script src="app-config.js?v=5"></script>
-    <script src="app-data.js?v=64"></script>
+    <script src="app-data.js?v=65"></script>
   <script src="assistant-dock.js?v=18"></script>
 </body>
 </html>

@@ -215,7 +215,7 @@
         "Likely blockers to check:",
         "",
         "- ID verification: account can open first, but paid posting and paid work stay locked until provider evidence is recorded.",
-        "- Money: provider confirmation is needed before funds count as protected; AI cannot mark paid or release money.",
+        "- Money: provider confirmation is needed before funds count as provider-confirmed; AI cannot mark paid or approve provider payout.",
         "- Corridor: pilot or unsupported lanes need founder approval before quote, purchase, shipping, or assignment.",
         "- Goods: batteries, perfume/liquids, medicines, food, plants, animal-origin goods, valuables, and controlled documents need rules checks.",
         "- Proof: every job needs clear proof requirements before receiver work starts.",
@@ -225,7 +225,7 @@
     if (/draft|reply|message|whatsapp|email/i.test(text)) {
       return messageDraftAnswer();
     }
-    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or take jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, money release, refunds, operator assignment, and sensitive task approval cannot be done by AI alone.";
+    return "Create or sign in to your account, choose the action you need from Account Home, and use verification only when you are ready to post paid work or take jobs. AI can explain the flow, draft messages, improve briefs, and predict blockers. Protected actions still need provider/system signals: ID approval, provider-payout approval, refunds, operator assignment, and sensitive task approval cannot be done by AI alone.";
   }
 
   function messageDraftAnswer() {

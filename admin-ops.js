@@ -297,7 +297,7 @@
         next: "Proceed with normal quote, provider payment evidence, verified receiver, proof, and milestone controls.",
         payment: "Payment request after quote approval.",
         receiver: "Receiver assignment after ID and protected payment evidence.",
-        hardStops: ["Do not release money before proof review."],
+        hardStops: ["Do not approve any provider payout before proof review."],
       },
       evidence_before_quote: {
         status: "evidence_before_quote",
@@ -322,7 +322,7 @@
         hardStops: [
           "Do not collect money until route and scope are approved.",
           "Do not use Wise/bank fallback unless normal rails are unsuitable.",
-          "Do not release funds without proof and dispute check.",
+          "Do not approve provider payout without proof and dispute check.",
         ],
       },
       refuse: {
@@ -431,7 +431,7 @@
           badge: "Human/provider stop",
           tone: "bg-amber-400/20 text-amber-800",
           copy:
-            "AI can brief the founder, but money release, refunds, ID approval, paid assignment, restricted goods, legal authority, customs, tax, and high-value exceptions stay gated.",
+            "AI can brief the founder, but provider-payout approval, refunds, ID approval, paid assignment, restricted goods, legal authority, customs, tax, and high-value exceptions stay gated.",
         },
       }[lane] || {
         title: "Operations lane",
@@ -594,7 +594,7 @@
         yes: "Yes, shortlist draft",
         no: "No, decline draft",
         hold: "Need vetting",
-        protectedStop: "AI cannot accept the offer or assign work; verification, vetting, and protected funds must be checked first.",
+        protectedStop: "AI cannot accept the offer or assign work; verification, vetting, and provider-held payment evidence must be checked first.",
       });
     });
 
@@ -1048,7 +1048,7 @@
             <p class="font-label text-xs uppercase tracking-[0.18em] text-tertiary">Acceptance gate</p>
             <h3 class="mt-1 font-display text-xl font-extrabold">${escapeHtml(gate.title)}</h3>
             <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(gate.next)}</p>
-            <p class="mt-2 text-xs leading-5 text-on-surface-variant">AI can summarize and chase evidence for this gate, but it cannot quote, collect, assign, refuse, or release money when provider evidence or founder approval is required.</p>
+            <p class="mt-2 text-xs leading-5 text-on-surface-variant">AI can summarize and chase evidence for this gate, but it cannot quote, collect, assign, refuse, or approve provider payout when provider evidence or founder approval is required.</p>
           </div>
           <span class="inline-flex min-h-10 items-center justify-center rounded-full px-4 font-label text-sm font-bold ${gate.tone}">
             ${escapeHtml(gate.label)}
@@ -1507,7 +1507,7 @@
     button.disabled = true;
     button.textContent = "Preparing...";
     if (status) {
-      status.textContent = `Preparing ${paymentRailLabel(rail)}. This does not mark funds paid or release money.`;
+      status.textContent = `Preparing ${paymentRailLabel(rail)}. This does not mark funds paid or approve provider payout.`;
       status.className = "payment-route-status mt-3 min-h-6 text-sm text-primary";
     }
 
@@ -1649,12 +1649,12 @@
           offerCode,
           status,
           status === "accepted"
-            ? "Offer accepted and receiver selected. Work start remains locked until protected funds, route, and compliance gates pass."
+            ? "Offer accepted and receiver selected. Work start remains locked until provider-held payment evidence, route, and compliance gates pass."
             : `Offer marked ${formatStatus(status)} in founder ops.`,
         );
         setStatus(
           status === "accepted"
-            ? `Offer ${offerCode} accepted. Receiver assignment is selected; work still waits for protected funds and compliance clearance.`
+            ? `Offer ${offerCode} accepted. Receiver assignment is selected; work still waits for provider-held payment evidence and compliance clearance.`
             : `Offer ${offerCode} marked ${formatStatus(status)}.`,
           "text-primary",
         );

@@ -515,7 +515,7 @@
             "This looks suitable for the normal Swadakta flow: account, brief, quote, provider payment evidence, verified receiver, proof, then milestone closeout.",
           payment_gate: "Payment request after quote approval.",
           receiver_gate: "Receiver assignment after ID and protected payment evidence.",
-          hard_stops: ["Do not release money before proof review"],
+          hard_stops: ["Do not approve provider payout before proof review"],
           checks: baseChecks,
         };
       }
@@ -786,7 +786,7 @@
       });
     </script>
     <script src="app-config.js?v=5"></script>
-    <script src="app-data.js?v=64"></script>
+    <script src="app-data.js?v=65"></script>
   <script src="assistant-dock.js?v=18"></script>
 </body>
 </html>

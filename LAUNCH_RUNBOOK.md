@@ -16,8 +16,8 @@ Launch Swadakta first as a quote-first concierge/marketplace pilot, not as a ban
 - Keep protected actions gated: AI can draft and triage, but cannot verify ID, release/refund money, assign paid work, mark funds paid, or send external messages by itself.
 - Keep AI optional. When AI mode is off, Swadakta must hide AI-only shortcuts and keep the manual queues, provider checks, verification flow, messages, tracking, and payments usable.
 - Keep Stripe, PayPal, Wise fallback, M-Pesa/Daraja, Paystack, and Flutterwave code paths provider-ready without exposing unfinished rails as public defaults.
-- Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, release conditions, and protected-funds boundaries without exposing founder economics.
-- Keep the receiver offer market controlled: job seekers can compete on eligible jobs, accepted offers can auto-select an already vetted/verified receiver, and work still cannot start until protected funds, route, compliance, and milestone controls are clear.
+- Keep public pages client-safe: quotes show scope, service fee, payment rail, proof, milestone conditions, and the rule that Swadakta does not hold client money, without exposing founder economics.
+- Keep the receiver offer market controlled: job seekers can compete on eligible jobs, accepted offers can auto-select an already vetted/verified receiver, and work still cannot start until provider-held payment evidence, route, compliance, and milestone controls are clear.
 - Keep testing scripts and browser audits current before every deploy.
 
 ### What the owner must do before public paid launch
@@ -145,22 +145,22 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 7. Admin reviews budget comfort, proof priority, and lead source, then confirms missing details by WhatsApp or email.
 8. Admin sends or records the client account verification link before paid or sensitive work proceeds.
 9. Admin sets status to `quoted`, adds quote amount, currency, due date, and payment link.
-10. Admin sets the funds status, protected amount, release condition, provider reference, and request ID verification status.
-11. Admin creates one or more release milestones, for example deposit, travel/access confirmation, site media delivered, final report accepted, or receiver payout.
-12. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, funds-protection wording, and safety wording.
+10. Admin sets the provider payment status, provider-confirmed amount, milestone condition, provider reference, and request ID verification status.
+11. Admin creates one or more provider-action milestones, for example deposit confirmation, travel/access confirmation, site media delivered, final report accepted, receiver payout instruction, refund request, or dispute hold.
+12. Admin uses `Copy quote` to send the client the amount, secure payment link, due date, proof plan, provider-held money wording, and safety wording.
 13. Admin records operator payout, field costs, and payment fees to confirm the founder margin before work starts.
 14. Client pays through the agreed provider.
-15. Admin sets payment and funds statuses after confirmation.
+15. Admin sets payment and funds statuses after provider confirmation.
 16. Eligible vetted or pending job seekers can make controlled offers from Account Home, including amount, currency, delivery timeline, proof plan, and message.
 17. Admin/AI compares offers by price, timing, proof quality, provenance, identity status, vetting status, and route fit. Lowest price does not automatically win.
 18. Admin may shortlist or accept an offer. Acceptance is only allowed for a vetted, ID-verified receiver with proof standards accepted; the system then selects that receiver and declines competing submitted/shortlisted offers.
-19. Work still cannot start after acceptance unless the request has an assigned receiver, active/pilot route, cleared compliance/admin review, client verification where sensitive documents are expected, protected amount, paid/deposit-paid status, and provider-held/confirmed funds state.
+19. Work still cannot start after acceptance unless the request has an assigned receiver, active/pilot route, cleared compliance/admin review, client verification where sensitive documents are expected, provider-confirmed amount, paid/deposit-paid status, and provider-held/confirmed funds state.
 20. Admin confirms the receiver has completed Smile ID, Persona, Sumsub, Stripe Identity, or approved-provider identity verification, then copies the operator brief only after the work-start lock is clear.
 21. Receiver-side operator executes the task and submits field updates/proof links from the receiver portal.
-22. Admin reviews receiver updates, then updates release milestones bit by bit as proof is verified.
+22. Admin reviews receiver updates, then updates milestones bit by bit as proof is verified. Any receiver payout or refund is a provider/bank action, not Swadakta holding client money.
 23. Admin adds approved proof links, report URL, and final client notes.
 24. Admin sets status to `completed`.
-25. Client tracks status, protected funds, milestone release status, and report links with request code plus original email or WhatsApp.
+25. Client tracks status, provider payment evidence, milestone status, and report links with request code plus original email or WhatsApp.
 26. Client leaves a post-completion review from tracking or their client account.
 27. Admin reviews the rating/note before assigning the same receiver again; low ratings reduce the receiver provenance seal.
 
@@ -200,7 +200,7 @@ Swadakta handles names, contact details, task notes, local contacts, documents, 
 - Completed clients can leave a 1-5 review that feeds the receiver provenance seal and future assignment sorting.
 - Receiver provenance starts at 25%, can reach 100% green through verified identity and clean delivery, and can drop into risk bands after poor reviews, blocked updates, disputes, or safety issues.
 - Client accounts show a quieter client seal based on ID status, funded requests, completions, and dispute history.
-- Admin tracks protected funds, provider references, and milestone releases before paying receivers.
+- Admin tracks provider-held payment evidence, provider references, and milestone approvals before paying receivers.
 - Wise and bank-transfer receipts require receipt/statement review before the admin marks funds paid; AI can draft the checklist but cannot make the protected money decision.
 - Use `Run safe autopilot` on request cards for routine admin work. It may prepare supported payment requests, save internal notes, set due dates, and route low-risk active-lane work forward; it still pauses at money confirmation, ID approval, receiver assignment, compliance/legal uncertainty, outbound messages, and milestone release.
 - Review the admin Operations Readiness panel after every Vercel or provider setup change. It checks domain/auth, Stripe, PayPal, Wise, M-Pesa, OpenAI fallback, and ID-provider setup without exposing secret values.

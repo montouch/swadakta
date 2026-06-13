@@ -1040,7 +1040,7 @@
     return {
       ...request,
       compliance_flags: complianceFlags,
-      required_checks: uniqueStrings([...requiredChecks, "Do not release money before proof review"]),
+      required_checks: uniqueStrings([...requiredChecks, "Do not approve provider payout before proof review"]),
     };
   }
 
@@ -1050,7 +1050,7 @@
     }
     if (request.professional_boundary_accepted !== true) {
       throw new Error(
-        "Confirm the funds boundary before submitting paid work. Swadakta is not a licensed escrow provider unless a regulated payment or escrow provider is agreed in writing.",
+        "Confirm the funds boundary before submitting paid work. Swadakta does not hold client money or act as escrow; payment providers handle the money.",
       );
     }
     if (request.identity_verification_consent !== true) {
@@ -2135,7 +2135,7 @@
               : "Summarize facts, evidence gaps, and the next safe message.";
 
     const boundary = founderRequired
-      ? "Protected decision: AI may draft and summarize, but cannot refund, release money, mark payment paid, replace a receiver, approve ID, or clear legal/import risk."
+      ? "Protected decision: AI may draft and summarize, but cannot refund, approve provider payout, mark payment paid, replace a receiver, approve ID, or clear legal/import risk."
       : "AI may draft the next message and checklist; admin review is only needed if evidence or risk changes.";
 
     return `${opening} ${evidence} ${boundary} Requested outcome: ${cleanOutcome.replaceAll("_", " ")}.`;

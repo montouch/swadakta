@@ -108,17 +108,17 @@ The receiver offer market now separates selection from permission to work.
 
 This is the safe operating model: Swadakta can choose a trusted receiver early, while the actual work remains locked until provider evidence and compliance conditions are real.
 
-## Funds Protection and Milestones
+## Provider-Held Money and Milestones
 
-Swadakta should not present itself as a licensed escrow company unless that legal and payment setup exists. Use the admin ledger to run escrow-style controls:
+Swadakta should not hold client money. The payment provider, bank, regulated escrow route, supplier, or named recipient handles custody/processing. Swadakta's role is to issue a quote, earn the disclosed service/platform fee, record provider evidence, review proof, and decide whether the next milestone instruction is ready.
 
-- Set `Funds status` to show whether funds are not collected, authorized, held by provider, deposit confirmed, partially released, released, refunded, or disputed.
-- Set `Protected amount` to the amount currently held, authorized, or confirmed through the provider.
-- Add one milestone per release event: deposit, travel/access, media proof, document submission, final report, receiver payout, refund, or dispute hold.
-- Release receiver money bit by bit only after admin reviews receiver proof and updates the milestone.
-- Keep provider references for Stripe PaymentIntent/Checkout, PayPal authorization/invoice, Wise transfer, M-Pesa receipt, bank reference, or escrow transaction ID.
+- Set `Funds status` to show whether provider evidence is not collected, authorized, provider-held, deposit confirmed, provider-payout pending, released by provider, refunded, or disputed.
+- Set `Protected amount` to the amount currently authorized, held, or confirmed by the provider, not by Swadakta.
+- Add one milestone per provider action or proof event: deposit confirmation, travel/access confirmation, media proof delivered, document submission, final report accepted, receiver payout instruction, refund request, or dispute hold.
+- Approve receiver payout bit by bit only after admin reviews receiver proof and updates the milestone. The payout itself happens through the configured provider, bank, or approved payout route.
+- Keep provider references for Stripe PaymentIntent/Checkout/Connect transfer, PayPal order/authorization/capture, Wise transfer, M-Pesa receipt, Paystack/Flutterwave transaction, bank reference, or regulated escrow transaction ID.
 - Client tracking can show safe milestone status, but internal notes and founder economics stay in admin.
-- Require ID verification for high-value, title/document, local-authority, family-authority, or sensitive-document jobs before funds are released.
+- Require ID verification for high-value, title/document, local-authority, family-authority, or sensitive-document jobs before any provider-payout instruction is approved.
 
 ## Provider Evidence Reconciliation
 
@@ -130,7 +130,7 @@ Every automatic provider confirmation must be reconciled against the saved Swada
 - Reconciliation is monotonic. A duplicate, retry, late partial callback, or non-final provider callback cannot downgrade an existing `Paid`, `Released`, `Refunded`, `Disputed`, or `Refund pending` state.
 - A later matching callback cannot clear `Disputed` or `Refund pending`; founder/admin reconciliation must decide after checking the provider dashboard and proof pack.
 - Provider references are merged rather than replaced so duplicate callbacks keep the original payment trail.
-- In all cases, provider evidence only confirms collection state. It must not assign receivers, release milestones, refund money, or override proof review.
+- In all cases, provider evidence only confirms collection state. It must not assign receivers, approve payout milestones, refund money, or override proof review.
 
 ## Africa Expansion Rail Readiness
 
@@ -315,7 +315,7 @@ Admin workflow:
 5. Use `Copy quote` to send the client the approved payment message.
 6. After the client approves/pays through PayPal, click `Capture PayPal order`.
 7. If PayPal order details or capture evidence returns a different/missing Swadakta request code, or if the order amount/currency does not match the saved quote, keep the payment in founder review and reconcile it manually before marking any request paid.
-8. Confirm the request now shows paid/protected funds before assigning or continuing work.
+8. Confirm the request now shows paid/provider-confirmed funds before assigning or continuing work.
 
 PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Keep `KES` jobs on M-Pesa, bank transfer, Wise, or manual PayPal invoice until account/currency support is confirmed.
 
@@ -507,7 +507,7 @@ Recommended order:
 
 ## Operating Rules
 
-- Do not hold client construction or family-support funds as an informal escrow.
+- Do not hold client construction, supplier, property, or family-support money as an informal escrow.
 - Do not call funds "escrow" in client terms unless a regulated escrow/payment provider is actually holding them.
 - Treat client payment confirmation and receiver payout release as separate protected decisions.
 - Require founder review before any milestone release involving high-value goods, unsupported corridors, customs uncertainty, identity mismatch, or a dispute.

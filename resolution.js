@@ -123,7 +123,7 @@
   function safetyPauseChecklist() {
     return [
       "Emergency first: contact local emergency services or police if anyone may be in immediate danger.",
-      "Stop risky activity: do not meet, travel, purchase, ship, continue handoff, or release money while risk is unclear.",
+      "Stop risky activity: do not meet, travel, purchase, ship, continue handoff, or approve provider payout while risk is unclear.",
       "Preserve evidence: screenshots, call logs, receipts, location notes, photos, video, provider references, and message history.",
       "Swadakta action: pause receiver release, keep the job record intact, and route to founder/provider review before any protected decision.",
     ];

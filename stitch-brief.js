@@ -1639,7 +1639,7 @@
       }
 
       if (!fundsBoundaryAccepted) {
-        throw new Error("Confirm the funds boundary before submitting: Swadakta is not a licensed escrow provider unless a regulated provider is agreed in writing.");
+        throw new Error("Confirm the funds boundary before submitting: Swadakta does not hold client money or act as escrow; payment providers handle the money.");
       }
 
       const result = await window.SwadaktaData.createRequest(payload);

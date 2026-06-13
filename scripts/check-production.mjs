@@ -84,7 +84,7 @@ const forbiddenSitemapMarkers = [
   "/resolution",
 ];
 const expectedSitemapLastmod = "2026-06-13";
-const expectedBriefScriptRef = "stitch-brief.js?v=25";
+const expectedBriefScriptRef = "stitch-brief.js?v=26";
 const requiredStitchScreens = [
   {
     path: "/",
@@ -434,7 +434,7 @@ const requiredVerificationMarkers = [
   "Fallback ladder",
   "Paid actions unlock",
   "Automation boundary",
-  "release money, assign paid work",
+  "approve provider payout, assign paid work",
   "Checking your signed-in Swadakta account",
   "Back to account home",
   "Session check failed",
@@ -530,7 +530,7 @@ const requiredBriefHtmlMarkers = [
   "Publish request",
   "provider-confirmed milestone protection",
   "funds-boundary",
-  "not a licensed escrow provider unless a regulated payment or escrow provider is agreed",
+  "Swadakta does not hold client money or act as escrow",
 ];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
@@ -593,7 +593,7 @@ const requiredTrackingMarkers = [
 ];
 const requiredResolutionPageMarkers = [
   "Resolution Center",
-  "Protected decision: AI cannot refund, release money",
+  "Protected decision: AI cannot refund, approve provider payout",
   "Stripe / PayPal / M-Pesa / Wise provider evidence",
   "Refund and dispute evidence ladder",
   "Release pause is automatic",
@@ -639,8 +639,8 @@ const requiredNotificationScriptMarkers = [
 ];
 const requiredTrustMarkers = [
   "Trust & Safety Center",
-  "Swadakta is not currently a licensed escrow provider",
-  "AI cannot mark ID verified, release money, assign paid work",
+  "Swadakta does not hold client money",
+  "AI cannot mark ID verified, approve provider payout",
   "Receiver provenance starts at 25%",
   "Restricted goods",
 ];
@@ -673,12 +673,12 @@ const requiredPaymentsMarkers = [
   "Client-visible rail gate",
   "Show a rail only after its evidence chain works",
   "Read trust rules",
-  "Regulated escrow/provider-held funds",
+  "Provider-held / pass-through money",
   "Africa payment expansion planner",
   "paymentExpansionRail",
   "Paystack",
   "Flutterwave",
-  "Swadakta is not currently a licensed escrow provider",
+  "Swadakta does not hold client money",
 ];
 const requiredRulesMarkers = [
   "Item & Corridor Rules",
@@ -782,7 +782,7 @@ const requiredAdminOpsMarkers = [
   "Lowest price does not automatically win",
   "coverage_scopes",
   "Protected decisions are not delegated to AI",
-  "Work start remains locked until protected funds",
+  "Work start remains locked until provider-held payment evidence",
   "Receiver assignment is selected",
   "Local static mode cannot call the Vercel readiness API",
 ];
@@ -853,7 +853,7 @@ const requiredAdminReadinessHtmlMarkers = [
 const requiredAdminThemeMarkers = [
   '<html class="dark" lang="en">',
   'data-admin-theme="dark"',
-  "admin-theme.css?v=1",
+  "admin-theme.css?v=2",
 ];
 const requiredAdminThemeCssMarkers = [
   'body[data-admin-theme="dark"]',
@@ -878,8 +878,8 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=64",
-  "stitch-portal.js?v=36",
+  "app-data.js?v=65",
+  "stitch-portal.js?v=37",
   "final-ux-theme.css?v=3",
   "final_ux_live_freshness",
   "final_ux_theme_url",
@@ -1522,6 +1522,7 @@ runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Ver
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 runLocalScript(failures, "scripts/check-proof-media-guard.mjs", "Local proof media guard check passed");
+runLocalScript(failures, "scripts/check-money-custody-boundary.mjs", "Local money custody boundary check passed");
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
 runLocalScript(failures, "scripts/check-paypal-capture-guard.mjs", "Local PayPal capture guard check passed");
@@ -1958,8 +1959,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=10")) {
-    fail(failures, `${page} does not reference admin-ops.js?v=10`);
+  if (page === "/admin-ops" && !text.includes("admin-ops.js?v=11")) {
+    fail(failures, `${page} does not reference admin-ops.js?v=11`);
   }
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
@@ -1974,14 +1975,14 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/verification" && !text.includes("verification.js?v=14")) {
-    fail(failures, `${page} does not reference verification.js?v=14`);
+  if (page === "/verification" && !text.includes("verification.js?v=15")) {
+    fail(failures, `${page} does not reference verification.js?v=15`);
   }
   if (page === "/tracking" && !text.includes("stitch-tracking.js?v=11")) {
     fail(failures, `${page} does not reference stitch-tracking.js?v=11`);
   }
-  if (page === "/assistant" && !text.includes("assistant.js?v=7")) {
-    fail(failures, `${page} does not reference assistant.js?v=7`);
+  if (page === "/assistant" && !text.includes("assistant.js?v=8")) {
+    fail(failures, `${page} does not reference assistant.js?v=8`);
   }
   if (page === "/assistant") {
     for (const marker of requiredAssistantHtmlMarkers) {
@@ -1990,8 +1991,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/resolution" && !text.includes("resolution.js?v=4")) {
-    fail(failures, `${page} does not reference resolution.js?v=4`);
+  if (page === "/resolution" && !text.includes("resolution.js?v=5")) {
+    fail(failures, `${page} does not reference resolution.js?v=5`);
   }
   if (page === "/resolution") {
     for (const marker of requiredResolutionPageMarkers) {
@@ -2134,15 +2135,15 @@ if (releaseResponse.status !== 200) {
   }
 }
 
-const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=1");
+const { response: adminThemeResponse, text: adminThemeText } = await fetchText("/admin-theme.css?v=2");
 if (adminThemeResponse.status !== 200) {
-  fail(failures, `admin-theme.css?v=1 returned ${adminThemeResponse.status}`);
+  fail(failures, `admin-theme.css?v=2 returned ${adminThemeResponse.status}`);
 } else {
-  pass("admin-theme.css?v=1 returned 200");
+  pass("admin-theme.css?v=2 returned 200");
 }
 for (const marker of requiredAdminThemeCssMarkers) {
   if (!adminThemeText.includes(marker)) {
-    fail(failures, `admin-theme.css?v=1 is missing marker ${marker}`);
+    fail(failures, `admin-theme.css?v=2 is missing marker ${marker}`);
   } else {
     pass(`admin-theme.css contains ${marker}`);
   }
@@ -2323,11 +2324,11 @@ if (expectedStitchPortalVersion) {
   }
 }
 
-const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=10");
+const { response: adminOpsResponse, text: adminOpsText } = await fetchText("/admin-ops.js?v=11");
 if (adminOpsResponse.status !== 200) {
-  fail(failures, `admin-ops.js?v=10 returned ${adminOpsResponse.status}`);
+  fail(failures, `admin-ops.js?v=11 returned ${adminOpsResponse.status}`);
 } else {
-  pass("admin-ops.js?v=10 returned 200");
+  pass("admin-ops.js?v=11 returned 200");
 }
 
 for (const marker of requiredAdminOpsMarkers) {
@@ -2368,11 +2369,11 @@ for (const marker of requiredAdminReadinessMarkers) {
   }
 }
 
-const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=7");
+const { response: assistantResponse, text: assistantText } = await fetchText("/assistant.js?v=8");
 if (assistantResponse.status !== 200) {
-  fail(failures, `assistant.js?v=7 returned ${assistantResponse.status}`);
+  fail(failures, `assistant.js?v=8 returned ${assistantResponse.status}`);
 } else {
-  pass("assistant.js?v=7 returned 200");
+  pass("assistant.js?v=8 returned 200");
 }
 
 for (const marker of requiredAssistantMarkers) {
@@ -2446,11 +2447,11 @@ for (const marker of requiredTrackingMarkers) {
   }
 }
 
-const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=4");
+const { response: resolutionResponse, text: resolutionText } = await fetchText("/resolution.js?v=5");
 if (resolutionResponse.status !== 200) {
-  fail(failures, `resolution.js?v=4 returned ${resolutionResponse.status}`);
+  fail(failures, `resolution.js?v=5 returned ${resolutionResponse.status}`);
 } else {
-  pass("resolution.js?v=4 returned 200");
+  pass("resolution.js?v=5 returned 200");
 }
 
 for (const marker of requiredResolutionScriptMarkers) {

@@ -5,7 +5,7 @@ A launch-ready MVP for a global corridor concierge, virtual assistant, sourcing,
 ## What is included
 
 - Client-facing landing page and real intake form
-- Public Payments & Pricing page with a launch quote estimator, provider-rail order, client-safe service-fee wording, Wise fallback boundary, and escrow disclaimer
+- Public Payments & Pricing page with a launch quote estimator, provider-rail order, client-safe service-fee wording, Wise fallback boundary, and a clear rule that Swadakta does not hold client money
 - Public Item & Corridor Rules page with a postal/courier/customs pre-check for batteries, perfume, medicines, food, plants, valuables, documents, and restricted goods
 - Inline brief goods-safety selector that carries item category, handoff mode, compliance checks, risk level, and official reference links into quote/admin triage
 - Portal page at `portal.html` with client, receiver-partner, and admin entrances

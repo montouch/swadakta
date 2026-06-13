@@ -1462,7 +1462,7 @@
     }
     if (accountMoneyHubLocks) {
       accountMoneyHubLocks.textContent =
-        "AI can prepare quotes, route notes, proof checklists, and messages. It cannot verify ID, assign paid work, release money, refund, raise provenance, or bypass provider evidence.";
+        "AI can prepare quotes, route notes, proof checklists, and messages. It cannot verify ID, assign paid work, approve provider payout, refund, raise provenance, or bypass provider evidence.";
     }
     if (accountMoneyHubPrimary) {
       accountMoneyHubPrimary.href = primaryAction.href;

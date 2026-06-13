@@ -10,8 +10,8 @@ const PUBLIC_BASE_URL =
   process.env.PUBLIC_BASE_URL ||
   process.env.SWADAKTA_PUBLIC_BASE_URL ||
   "https://swadakta.com";
-const EXPECTED_APP_DATA_REF = "app-data.js?v=64";
-const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=36";
+const EXPECTED_APP_DATA_REF = "app-data.js?v=65";
+const EXPECTED_PORTAL_SCRIPT_REF = "stitch-portal.js?v=37";
 const EXPECTED_FINAL_UX_THEME_REF = "final-ux-theme.css?v=3";
 const FINAL_UX_THEME_MARKERS = [
   "--sw-primary: #000105",
@@ -701,7 +701,7 @@ function buildLaunchDecisionRegister(context = {}) {
         evidence_needed: [
           "Manual mode remains available",
           "Protected action boundaries are visible",
-          "Admin/founder confirms before external messages, assignments, money release, refunds, or ID exceptions",
+          "Admin/founder confirms before external messages, assignments, provider-payout approval, refunds, or ID exceptions",
         ],
         next: "Keep improving autopilot prompts, but do not turn AI into the payment, identity, assignment, refund, or legal decision-maker.",
         docs_url: `${publicUrl() || "https://swadakta.com"}/assistant`,
@@ -889,7 +889,7 @@ function buildProviderLaunchMatrix(context) {
       next: paystackReady
         ? "Run one pilot payment and verify transaction reference, amount, currency, and customer server-side."
         : "Complete Paystack merchant approval, webhook secret, settlement currencies, and provider-evidence mapping.",
-      founder_rule: "Expansion rails do not release money automatically; milestone proof still controls payout release.",
+      founder_rule: "Expansion rails do not approve provider payout automatically; milestone proof still controls payout approval.",
       missing: [
         ...context.paystackMissing,
         ...(confirmedEnv("PAYSTACK_MERCHANT_APPROVED") ? [] : ["PAYSTACK_MERCHANT_APPROVED"]),
@@ -912,7 +912,7 @@ function buildProviderLaunchMatrix(context) {
       next: flutterwaveReady
         ? "Run one pilot payment and verify transaction id/reference, amount, currency, and customer server-side."
         : "Complete Flutterwave merchant approval, webhook secret, settlement currencies, and provider-evidence mapping.",
-      founder_rule: "Expansion rails do not release money automatically; milestone proof still controls payout release.",
+      founder_rule: "Expansion rails do not approve provider payout automatically; milestone proof still controls payout approval.",
       missing: [
         ...context.flutterwaveMissing,
         ...(confirmedEnv("FLUTTERWAVE_MERCHANT_APPROVED") ? [] : ["FLUTTERWAVE_MERCHANT_APPROVED"]),
@@ -1111,7 +1111,7 @@ function buildCorridorRailPlanner(context = {}) {
         status: regulatedEscrowReady && legalReady && financialBoundaryReady && insuranceReady ? "manual" : "missing",
         client_side: "Any country.",
         receiver_side: "Only specialist vetted operators with extra proof and legal/provider review.",
-        client_payment: "Use regulated escrow/provider-held funds or written legal confirmation; do not rely on informal Swadakta-held money.",
+        client_payment: "Use regulated escrow/provider-held payment evidence or written legal confirmation; do not rely on Swadakta holding client money.",
         receiver_payout: "Milestone release only after provider evidence, proof review, dispute window, and founder/legal signoff.",
         identity_route: "Provider ID for all parties, plus enhanced review for authority, ownership, and sensitive documents.",
         public_visibility: "Blocked from normal public launch.",

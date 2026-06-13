@@ -551,7 +551,7 @@
     if (routeAction) routeAction.textContent = providerActionCopy(request);
     if (boundaryCopy) {
       boundaryCopy.textContent =
-        "AI can explain next steps and draft friendly messages. It cannot mark an ID verified, release money, assign paid work, or override provider evidence.";
+        "AI can explain next steps and draft friendly messages. It cannot mark an ID verified, approve provider payout, assign paid work, or override provider evidence.";
     }
     if (requirementsList) {
       requirementsList.innerHTML = route.requirements.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
