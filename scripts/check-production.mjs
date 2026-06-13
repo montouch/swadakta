@@ -997,12 +997,16 @@ const requiredPaymentReconciliationMarkers = [
 const requiredPaymentIdempotencyMarkers = [
   ["scripts/check-payment-reconciliation.mjs", "Payment reconciliation checks passed"],
   ["scripts/check-payment-reconciliation.mjs", "non-final callback cannot downgrade provider evidence"],
+  ["scripts/check-paypal-capture-guard.mjs", "PayPal capture guard checks passed"],
+  ["scripts/check-paypal-capture-guard.mjs", "PayPal capture request code mismatch"],
   ["api/payments/stripe-checkout.js", "stripeIdempotencyKey"],
   ["api/payments/stripe-checkout.js", '"idempotency-key": idempotencyKey'],
   ["api/payments/stripe-checkout.js", "swadakta-checkout"],
   ["api/payments/paypal-order.js", "paypalRequestId"],
   ["api/payments/paypal-order.js", '"PayPal-Request-Id": paypalRequestId'],
   ["api/payments/paypal-order.js", "swadakta-order"],
+  ["api/payments/paypal-capture.js", "assertPayPalCaptureMatchesRequestCode"],
+  ["api/payments/paypal-capture.js", "paypal_request_codes"],
   ["api/payments/mpesa-stk.js", "activeMpesaPromptFromRequest"],
   ["api/payments/mpesa-stk.js", "force_new_stk"],
   ["api/payments/mpesa-stk.js", "Duplicate STK prompts are suppressed"],
@@ -1497,6 +1501,7 @@ runSecretScan(failures);
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
 runLocalScript(failures, "scripts/check-payment-launch-gate.mjs", "Local payment launch gate check passed");
+runLocalScript(failures, "scripts/check-paypal-capture-guard.mjs", "Local PayPal capture guard check passed");
 const localRelease = parseJson(await readLocal("release.json"), "Local release.json", failures);
 if (localRelease?.release_id && localRelease?.sumsub_webhook_path) {
   pass(`Local release manifest is ${localRelease.release_id}`);

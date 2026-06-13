@@ -163,6 +163,51 @@ function firstCapture(captureResponse) {
   return null;
 }
 
+function requestCodeFromText(...values) {
+  const haystack = values.filter(Boolean).map(String).join(" ").toUpperCase();
+  const match = haystack.match(/\bSW-[A-Z0-9]{4,24}\b/);
+  return match ? match[0] : "";
+}
+
+function collectPayPalRequestCodes(captureResponse = {}) {
+  const codes = new Set();
+  const add = (...values) => {
+    const code = requestCodeFromText(...values);
+    if (code) codes.add(code);
+  };
+
+  for (const unit of Array.isArray(captureResponse.purchase_units) ? captureResponse.purchase_units : []) {
+    add(unit?.reference_id, unit?.custom_id, unit?.invoice_id);
+    for (const capture of Array.isArray(unit?.payments?.captures) ? unit.payments.captures : []) {
+      add(capture?.custom_id, capture?.invoice_id);
+    }
+  }
+
+  return [...codes];
+}
+
+function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
+  const expectedCode = requiredText(requestCode, "Request code").toUpperCase();
+  const codes = collectPayPalRequestCodes(captureResponse);
+  if (!codes.length) {
+    const error = new Error(
+      "PayPal capture response did not include a Swadakta request code. Keep the captured funds in founder review and reconcile manually before marking a request paid.",
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
+  if (!codes.includes(expectedCode)) {
+    const error = new Error(
+      `PayPal capture request code mismatch. Expected ${expectedCode}, but provider evidence returned ${codes.join(", ")}.`,
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
+  return codes;
+}
+
 function moneyAmount(value) {
   const amount = Number(value || 0);
   return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
@@ -246,6 +291,7 @@ async function capturePayPalOrder(authHeader, payload) {
     throw error;
   }
 
+  const paypalRequestCodes = assertPayPalCaptureMatchesRequestCode(data, requestCode);
   const amount = moneyAmount(capture.amount?.value || data.purchase_units?.[0]?.amount?.value);
   const currency = capture.amount?.currency_code || data.purchase_units?.[0]?.amount?.currency_code || "";
   const reference = [orderId, capture.id].filter(Boolean).join(" / ");
@@ -274,6 +320,7 @@ async function capturePayPalOrder(authHeader, payload) {
     funds_status: updatedRequest?.funds_status || updatePayload.funds_status || request.funds_status,
     protected_amount: updatePayload.protected_amount,
     provider_reference: updatePayload.payment_reference,
+    paypal_request_codes: paypalRequestCodes,
     updated_request_id: updatedRequest?.id || null,
   };
 }
@@ -301,4 +348,10 @@ module.exports = async function handler(req, res) {
       error: error.message || "Could not capture PayPal order.",
     });
   }
+};
+
+module.exports.__test = {
+  assertPayPalCaptureMatchesRequestCode,
+  collectPayPalRequestCodes,
+  requestCodeFromText,
 };
