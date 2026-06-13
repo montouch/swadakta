@@ -12,6 +12,7 @@
   const refreshButton = document.querySelector("#refresh-readiness");
   const copyChecklistButton = document.querySelector("#copy-checklist");
   const copyDecisionRegisterButtons = document.querySelectorAll("#copy-decision-register, #copy-decision-register-mobile");
+  const copyLaunchSessionButtons = document.querySelectorAll("#copy-launch-session, #copy-launch-session-mobile");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
   const copyProviderMatrixButtons = document.querySelectorAll("#copy-provider-matrix, #copy-provider-matrix-mobile");
   const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
@@ -37,6 +38,9 @@
   const copyLaunchGateButton = document.querySelector("#copy-launch-gate");
   const launchDecisionRegisterSummary = document.querySelector("#launch-decision-register-summary");
   const launchDecisionRegisterList = document.querySelector("#launch-decision-register-list");
+  const launchSessionSummary = document.querySelector("#launch-session-summary");
+  const launchSessionTabs = document.querySelector("#launch-session-tabs");
+  const launchSessionList = document.querySelector("#launch-session-list");
 
   let latestReport = null;
 
@@ -233,6 +237,49 @@
       ...(boundaries.length ? boundaries.map((entry) => `- ${entry}`) : ["- Blocked means collect interest only."]),
       "",
       "Founder rule: when in doubt, keep the work in founder-reviewed pilot mode and do not take money.",
+    ].join("\n");
+  }
+
+  function launchSessionStepText(step = {}, index = 0) {
+    const supportingTabs = Array.isArray(step.supporting_tabs) ? step.supporting_tabs : [];
+    return [
+      `${index + 1}. [${statusLabel(step.status)}] ${step.label || "Founder work step"}`,
+      `Owner: ${step.owner || "Founder"}`,
+      `Open: ${step.tab_url || "Swadakta readiness"}`,
+      `Action: ${step.action || "Complete this setup step."}`,
+      `Evidence: ${step.evidence || "Save evidence before setting the readiness flag."}`,
+      step.flag ? `Readiness flag: ${step.flag}` : "",
+      step.stop_rule ? `Stop rule: ${step.stop_rule}` : "",
+      ...(supportingTabs.length ? supportingTabs.map((tab) => `Supporting tab: ${tab}`) : []),
+    ]
+      .filter(Boolean)
+      .join("\n");
+  }
+
+  function buildLaunchSessionPack(report = latestReport) {
+    const session = report?.founder_launch_session || {};
+    const tabs = Array.isArray(session.recommended_tabs) ? session.recommended_tabs : [];
+    const phases = Array.isArray(session.phases) ? session.phases : [];
+    return [
+      session.title || "Swadakta founder Chrome work session",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      session.summary || "Work the launch setup in order before accepting paid jobs.",
+      "",
+      `Rule: ${session.rule || "Do not paste secret keys into chat or public pages."}`,
+      "",
+      "Recommended tabs:",
+      ...(tabs.length
+        ? tabs.map((tab, index) => `${index + 1}. ${tab.label || "Setup tab"}: ${tab.url || ""} - ${tab.purpose || "Review setup."}`)
+        : ["1. No recommended tabs returned by the readiness API."]),
+      "",
+      ...phases.flatMap((phase) => [
+        phase.label || "Founder work phase",
+        ...((phase.steps || []).map((step, index) => launchSessionStepText(step, index))),
+        "",
+      ]),
+      "Boundary:",
+      "Set owner flags only after evidence exists. If a step depends on legal, tax, insurance, payment, or ID-provider approval, the provider dashboard or written professional advice is the authority.",
     ].join("\n");
   }
 
@@ -639,6 +686,86 @@
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider launch matrix returned by the readiness API.</div>`;
   }
 
+  function renderLaunchSession(report) {
+    const session = report?.founder_launch_session || {};
+    const tabs = Array.isArray(session.recommended_tabs) ? session.recommended_tabs : [];
+    const phases = Array.isArray(session.phases) ? session.phases : [];
+
+    if (launchSessionSummary) {
+      launchSessionSummary.textContent =
+        session.summary ||
+        "Founder work session is unavailable until readiness checks load. Keep paid work in founder-reviewed pilot mode.";
+    }
+
+    if (launchSessionTabs) {
+      launchSessionTabs.innerHTML = tabs.length
+        ? tabs
+            .map(
+              (tab) => `
+                <a class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 transition hover:bg-white/78" href="${escapeHtml(tab.url || "#")}" target="_blank" rel="noopener">
+                  <span class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(tab.label || "Setup tab")}</span>
+                  <span class="mt-2 block text-sm leading-6 text-on-surface-variant">${escapeHtml(tab.purpose || "Review setup.")}</span>
+                </a>
+              `,
+            )
+            .join("")
+        : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No recommended tabs returned by the readiness API.</div>`;
+    }
+
+    if (!launchSessionList) return;
+
+    launchSessionList.innerHTML = phases.length
+      ? phases
+          .map(
+            (phase) => `
+              <section class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="font-label text-xs uppercase tracking-[0.16em] text-secondary">${escapeHtml(phase.id || "launch-session")}</p>
+                    <h3 class="mt-1 font-display text-2xl font-extrabold">${escapeHtml(phase.label || "Founder work phase")}</h3>
+                  </div>
+                  <span class="shrink-0 rounded-full bg-white/70 px-4 py-2 font-label text-xs text-secondary">${escapeHtml(String((phase.steps || []).length))} steps</span>
+                </div>
+                <div class="mt-4 grid gap-3">
+                  ${(phase.steps || [])
+                    .map((step) => {
+                      const supportingTabs = Array.isArray(step.supporting_tabs) ? step.supporting_tabs : [];
+                      return `
+                        <article class="rounded-2xl border border-outline-variant/30 bg-white/70 p-4">
+                          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                            <div class="min-w-0">
+                              <div class="flex flex-wrap items-center gap-2">
+                                <strong class="font-display text-xl">${escapeHtml(step.label || "Founder work step")}</strong>
+                                <span class="rounded-full px-3 py-1 font-label text-xs ${statusTone(step.status)}">${escapeHtml(statusLabel(step.status))}</span>
+                              </div>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant">${escapeHtml(step.action || "")}</p>
+                              <p class="mt-2 text-sm leading-6 text-on-surface-variant"><strong class="text-on-surface">Evidence:</strong> ${escapeHtml(step.evidence || "")}</p>
+                              ${step.flag ? `<p class="mt-2 font-label text-xs uppercase tracking-[0.14em] text-secondary">Flag: ${escapeHtml(step.flag)}</p>` : ""}
+                              ${step.stop_rule ? `<p class="mt-2 text-xs leading-5 text-on-error-container">${escapeHtml(step.stop_rule)}</p>` : ""}
+                              ${
+                                supportingTabs.length
+                                  ? `<p class="mt-2 text-xs leading-5 text-secondary">Supporting: ${escapeHtml(supportingTabs.join(" / "))}</p>`
+                                  : ""
+                              }
+                            </div>
+                            ${
+                              step.tab_url
+                                ? `<a class="inline-flex h-10 shrink-0 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(step.tab_url)}" target="_blank" rel="noopener">Open</a>`
+                                : ""
+                            }
+                          </div>
+                        </article>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              </section>
+            `,
+          )
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No founder Chrome work session returned by the readiness API.</div>`;
+  }
+
   function renderFounderActionPack(report) {
     if (!founderActionList) return;
     const pack = report?.founder_action_pack || {};
@@ -768,6 +895,7 @@
     updateStats(counts);
     renderLaunchGate(report);
     renderLaunchDecisionRegister(report);
+    renderLaunchSession(report);
     renderProviderMatrix(report);
     renderFounderActionPack(report);
     renderPilotScript(report);
@@ -806,6 +934,15 @@
     if (launchDecisionRegisterList) {
       launchDecisionRegisterList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
+    if (launchSessionSummary) {
+      launchSessionSummary.textContent = "Founder Chrome work session is unavailable until readiness checks load.";
+    }
+    if (launchSessionTabs) {
+      launchSessionTabs.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (launchSessionList) {
+      launchSessionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
     if (founderActionList) {
       founderActionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
@@ -817,6 +954,7 @@
     }
     renderLaunchGate({});
     renderLaunchDecisionRegister({});
+    renderLaunchSession({});
     protectedActions.innerHTML = "";
   }
 
@@ -915,6 +1053,12 @@
   copyDecisionRegisterButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildLaunchDecisionRegisterPack(), "Launch decision register copied.");
+    });
+  });
+
+  copyLaunchSessionButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildLaunchSessionPack(), "Founder Chrome work session copied.");
     });
   });
 

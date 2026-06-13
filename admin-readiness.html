@@ -256,6 +256,25 @@
             </div>
           </section>
 
+          <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="launch-session-panel">
+            <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+              <div>
+                <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Founder Chrome work session</p>
+                <h2 class="mt-1 font-display text-3xl font-extrabold">Do the real-world setup in the right order.</h2>
+                <p class="mt-3 max-w-3xl text-on-surface-variant" id="launch-session-summary">
+                  Loading the founder work-session ladder for registration, legal review, payment evidence, ID evidence, and the first paid pilot.
+                </p>
+              </div>
+              <button class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/50 bg-white/70 px-5 font-label font-bold text-primary xl:hidden" id="copy-launch-session-mobile" type="button">Copy session</button>
+            </div>
+            <div class="mt-6 grid gap-3 md:grid-cols-2 xl:grid-cols-3" id="launch-session-tabs" aria-live="polite">
+              <div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading recommended tabs...</div>
+            </div>
+            <div class="mt-6 grid gap-4" id="launch-session-list" aria-live="polite">
+              <div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">Loading founder work session...</div>
+            </div>
+          </section>
+
           <section class="glass-panel rounded-[2rem] p-6 md:p-8" id="provider-matrix-panel">
             <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
@@ -352,7 +371,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-config.js?v=5"></script>
     <script src="app-data.js?v=61"></script>
-    <script src="admin-readiness.js?v=8"></script>
+    <script src="admin-readiness.js?v=9"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>
