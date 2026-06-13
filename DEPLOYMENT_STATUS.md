@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `35`
+- Local commits queued behind the Vercel rate limit: `36`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -69,6 +69,7 @@ Queued local release contents:
 33. PayPal pre-capture order/quote validation reloads the saved request first, inspects PayPal order details before capture, blocks mismatched request codes, and refuses stale/wrong-amount orders before money is taken.
 34. Decimal-safe payment reconciliation compares provider payments and saved quotes in minor units, preserves cents from Stripe/Paystack/Flutterwave/PayPal evidence, and blocks stale browser quote amounts that differ by cents from the stored request.
 35. Vercel security-header regression checks guard the apex/www redirect, Sumsub webhook rewrite, global CSP/HSTS/no-sniff/frame/referrer/permissions headers, and no-store/noindex rules for private account and admin surfaces.
+36. Account-profile access regression checks guard the signed-in profile table grants, own-row/admin RLS policies, safe read/save RPC grants, and frontend fallback that lets users enter the account while paid work remains locked if profile storage is unavailable.
 
 Before the next push:
 
