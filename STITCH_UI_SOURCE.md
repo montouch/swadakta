@@ -13,7 +13,7 @@ When the visual direction changes, update the matching screen in Stitch first, e
 | `/` | `swadakta_home_final_ux_refined` |
 | `/auth` | `support_auth_swadakta_final_ux_coverage` |
 | `/login` | `welcome_swadakta_final_ux` |
-| `/portal` | `dashboard_swadakta_mobile_final_ux`, `account_setup_profile_swadakta_final_ux_coverage`, `find_work_swadakta_final_ux` |
+| `/portal` | `dashboard_swadakta_signed_in`, `dashboard_swadakta_mobile_signed_in`, `account_setup_profile_swadakta_final_ux_coverage`, `find_work_swadakta_final_ux` |
 | `/assistant` | `ai_assistant_swadakta_final_ux_coverage` |
 | `/brief` | `create_brief_swadakta_final_ux` |
 | `/corridor` | `corridor_place_intelligence_swadakta_final_ux_coverage` |
