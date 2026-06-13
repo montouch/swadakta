@@ -7,7 +7,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const baseUrl = (process.env.SWADAKTA_BASE_URL || "https://swadakta.com").replace(/\/+$/, "");
 const cacheBust = Date.now();
 const localBaseHosts = new Set(["localhost", "127.0.0.1", "::1"]);
-const vercelApiFunctionBudget = Number(process.env.SWADAKTA_VERCEL_FUNCTION_BUDGET || 12);
+const vercelApiFunctionBudget = Number(process.env.SWADAKTA_VERCEL_FUNCTION_BUDGET || 13);
 
 const htmlFiles = [
   "admin.html",
@@ -958,6 +958,12 @@ const requiredSumsubWebhookMarkers = [
   "non-final callback",
   "bodyParser: false",
 ];
+const requiredSumsubWebhookRouteMarkers = [
+  'require("./start-verification")',
+  "handleSumsubWebhook",
+  'res.setHeader("Allow", "POST")',
+  "bodyParser: false",
+];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
   "Disallow: /admin-ops",
@@ -1533,6 +1539,12 @@ const localSumsubWebhook = localIdentityEndpoint;
 for (const marker of requiredSumsubWebhookMarkers) {
   if (!localSumsubWebhook.includes(marker)) {
     fail(failures, `Local Sumsub webhook is missing marker ${marker}`);
+  }
+}
+const localSumsubWebhookRoute = await readLocal("api/identity/sumsub-webhook.js");
+for (const marker of requiredSumsubWebhookRouteMarkers) {
+  if (!localSumsubWebhookRoute.includes(marker)) {
+    fail(failures, `Local explicit Sumsub webhook route is missing marker ${marker}`);
   }
 }
 

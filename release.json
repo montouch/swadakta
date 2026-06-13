@@ -1,9 +1,9 @@
 {
-  "release_id": "2026-06-13-payment-reconciliation-v1",
-  "release_name": "Monotonic payment reconciliation",
-  "description": "Provider payment callbacks now reconcile against saved quote amount/currency while preserving stronger paid, released, refunded, disputed, or refund-pending states. Non-final callbacks record evidence without downgrading confirmed money states, and Flutterwave accepts current raw-body HMAC signatures with legacy verif-hash fallback.",
-  "deployment_trigger": "2026-06-13T00:00:00Z-payment-reconciliation-1",
-  "expected_api_function_budget": 12,
+  "release_id": "2026-06-13-explicit-sumsub-webhook-v1",
+  "release_name": "Explicit Sumsub webhook route",
+  "description": "Sumsub now has a dedicated webhook function at /api/identity/sumsub-webhook instead of relying on a rewrite into the start-verification route. Payment callback reconciliation remains monotonic and Flutterwave supports current HMAC signatures.",
+  "deployment_trigger": "2026-06-13T00:00:00Z-explicit-sumsub-webhook-1",
+  "expected_api_function_budget": 13,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"
 }

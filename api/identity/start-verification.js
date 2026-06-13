@@ -681,6 +681,8 @@ module.exports = async function handler(req, res) {
   }
 };
 
+module.exports.handleSumsubWebhook = handleSumsubWebhook;
+
 module.exports.config = {
   api: {
     bodyParser: false,
