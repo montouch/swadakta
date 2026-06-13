@@ -617,14 +617,65 @@
             padding: clamp(1rem, 2vw, 1.35rem);
             overflow: hidden;
         }
+        .account-dashboard-card:first-child {
+            position: relative;
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(229, 242, 255, 0.78)),
+                rgba(255, 255, 255, 0.9);
+        }
+        .account-dashboard-card:first-child::after {
+            content: "";
+            position: absolute;
+            right: clamp(1rem, 3vw, 2rem);
+            top: clamp(1rem, 3vw, 2rem);
+            width: clamp(5rem, 14vw, 9rem);
+            aspect-ratio: 1;
+            border-radius: 2rem;
+            background:
+                linear-gradient(135deg, rgba(14, 165, 233, 0.95), rgba(35, 194, 131, 0.75)),
+                radial-gradient(circle at 28% 25%, rgba(255, 255, 255, 0.95), transparent 36%);
+            box-shadow:
+                0 28px 54px rgba(14, 165, 233, 0.22),
+                inset 0 2px 2px rgba(255, 255, 255, 0.7);
+            opacity: 0.22;
+            transform: rotate(10deg);
+            pointer-events: none;
+        }
+        .account-visual-status-grid {
+            position: relative;
+            z-index: 1;
+        }
+        .account-mini-visual-card {
+            display: grid;
+            min-height: 8.4rem;
+            gap: 0.7rem;
+            border-radius: 1.25rem;
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(229, 242, 255, 0.66)),
+                rgba(255, 255, 255, 0.78);
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 18px 38px rgba(16, 26, 58, 0.08);
+            padding: 1rem;
+        }
+        .account-mini-visual-card .material-symbols-outlined {
+            display: inline-grid;
+            height: 2.5rem;
+            width: 2.5rem;
+            place-items: center;
+            border-radius: 0.95rem;
+            background: rgba(14, 165, 233, 0.12);
+            color: #0ea5e9;
+        }
         .account-action-grid {
             display: grid;
             gap: 0.85rem;
-            grid-template-columns: repeat(4, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
         }
         .account-action-tile {
             display: grid;
-            min-height: 9.25rem;
+            min-height: 10.25rem;
             grid-template-rows: auto 1fr auto;
             gap: 0.7rem;
             border-radius: 1.35rem;
@@ -649,6 +700,16 @@
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(188, 197, 238, 0.45));
             color: #000105;
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.92), 0 14px 28px rgba(16, 26, 58, 0.1);
+        }
+        .account-action-tile:nth-child(4) {
+            min-height: 5.8rem;
+            grid-column: 1 / -1;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            grid-template-rows: auto;
+            align-items: center;
+        }
+        .account-action-tile:nth-child(4) .quick-action-cta {
+            margin-top: 0;
         }
         .account-dashboard-grid {
             display: grid;
@@ -1206,28 +1267,31 @@
 <div class="min-w-0">
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Signed-in dashboard</p>
 <h1 class="font-display-lg text-headline-lg text-on-surface mt-1">Welcome back</h1>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Post a job, find paid work, track proof, manage milestones, and message safely from one account.</p>
-<p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence." data-ai-status-off="Manual mode is on. Nothing breaks: use jobs, verification, messages, payments, tracking, and issues yourself.">AI mode is on for drafts, routing, and safe suggestions. Protected actions still need provider or founder evidence.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-2xl">Post, apply, track proof, and message from one account.</p>
+<p class="font-label-sm text-on-surface-variant mt-2" data-ai-mode-status data-ai-status-on="AI helps with drafts and routing. Protected actions stay gated." data-ai-status-off="Manual mode is on. Use the normal tools anytime.">AI helps with drafts and routing. Protected actions stay gated.</p>
 </div>
 <a class="inline-flex h-12 shrink-0 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" href="brief.html"><span class="material-symbols-outlined mr-2 text-[20px]">edit_note</span>Post a brief</a>
 </div>
-<div class="mt-5 grid gap-3 md:grid-cols-3">
-<div class="rounded-2xl bg-white/68 border border-outline-variant/30 p-4">
+<div class="account-visual-status-grid mt-5 grid gap-3 md:grid-cols-3">
+<div class="account-mini-visual-card">
+<span class="material-symbols-outlined">swap_horiz</span>
 <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.12em]">Mode</p>
 <h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="account-home-mode-title">One account</h2>
 <p class="font-body-md text-on-surface-variant text-sm mt-2" id="account-home-mode-copy">Use the same sign-in to give jobs, apply for jobs, or do both.</p>
 <span class="inline-flex min-h-8 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm mt-3" id="account-home-mode-pill">Loading</span>
 </div>
-<div class="rounded-2xl bg-white/68 border border-outline-variant/30 p-4">
+<div class="account-mini-visual-card">
+<span class="material-symbols-outlined">route</span>
 <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.12em]">Corridor</p>
 <h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="account-home-route-title">Set your corridor</h2>
-<p class="font-body-md text-on-surface-variant text-sm mt-2" id="account-home-route-copy">Add country, base, and coverage so Swadakta can match lawful work properly.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-2" id="account-home-route-copy">Add base and coverage.</p>
 <span class="inline-flex min-h-8 px-3 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-on-surface-variant font-label-sm mt-3" id="account-home-route-pill">No route yet</span>
 </div>
-<div class="rounded-2xl bg-white/68 border border-outline-variant/30 p-4">
+<div class="account-mini-visual-card">
+<span class="material-symbols-outlined">task_alt</span>
 <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.12em]">Next step</p>
 <h2 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="account-home-next-step-title">Save profile basics</h2>
-<p class="font-body-md text-on-surface-variant text-sm mt-2" id="account-home-next-step-copy">Start with name, mobile, country, and base. Verification can happen after account setup.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-2" id="account-home-next-step-copy">Start with profile basics.</p>
 <a class="inline-flex h-10 px-4 items-center justify-center rounded-full bg-primary text-white font-bold text-sm mt-3" id="account-home-next-step-action" href="#work">Continue</a>
 </div>
 </div>
@@ -1240,7 +1304,7 @@
 </div>
 <button class="h-10 shrink-0 rounded-full border border-outline-variant/40 bg-white/70 px-4 text-xs font-bold text-primary" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
 </div>
-<p class="font-body-md text-on-surface-variant mt-3">AI can draft briefs, compare offers, summarize proof, and flag risk. Money release, identity, refunds, and sensitive assignment stay gated.</p>
+<p class="font-body-md text-on-surface-variant mt-3">AI drafts and flags risk. You approve protected actions.</p>
 <div class="mt-4 grid gap-2">
 <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-tertiary text-white font-bold" data-ai-only href="assistant.html?context=home&links=portal,corridor,tracking">Open AI chat</a>
 <a class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-bold" data-no-ai-copy hidden href="tracking.html">Use normal tools</a>
@@ -1254,7 +1318,7 @@
 <span class="account-action-icon"><span class="material-symbols-outlined text-[28px]">add_circle</span></span>
 <span>
 <strong class="block font-headline-sm text-headline-sm">Post a job</strong>
-<span class="block font-body-md text-on-surface-variant text-sm mt-2">Create a brief, set proof, upload media, and prepare milestones.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-2">Brief + media</span>
 </span>
 <span class="quick-action-cta">Start brief <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1262,7 +1326,7 @@
 <span class="account-action-icon"><span class="material-symbols-outlined text-[28px]">work</span></span>
 <span>
 <strong class="block font-headline-sm text-headline-sm">Find jobs</strong>
-<span class="block font-body-md text-on-surface-variant text-sm mt-2">Set your profile, browse work, and submit proof-ready offers.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-2">Browse + offer</span>
 </span>
 <span class="quick-action-cta">Open jobs <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1270,7 +1334,7 @@
 <span class="account-action-icon"><span class="material-symbols-outlined text-[28px]">track_changes</span></span>
 <span>
 <strong class="block font-headline-sm text-headline-sm">Track</strong>
-<span class="block font-body-md text-on-surface-variant text-sm mt-2">Follow requests, assigned jobs, evidence, milestones, and issues.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-2">Proof timeline</span>
 </span>
 <span class="quick-action-cta">Track work <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1278,7 +1342,7 @@
 <span class="account-action-icon"><span class="material-symbols-outlined text-[28px]">fingerprint</span></span>
 <span>
 <strong class="block font-headline-sm text-headline-sm">Verify ID</strong>
-<span class="block font-body-md text-on-surface-variant text-sm mt-2">Browse now; paid posting and paid work unlock after provider checks.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-2">Unlock paid actions</span>
 </span>
 <span class="quick-action-cta">Verify <span class="material-symbols-outlined text-[18px]" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1288,7 +1352,7 @@
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Account setup</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Get ready to give jobs or take jobs</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">Your account opens first. Paid posting, paid work, sensitive jobs, and high-value milestones unlock only after profile, payment, corridor, and provider ID checks are ready.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-2xl">Account opens now. Paid actions unlock after profile, payment, corridor, and provider ID checks.</p>
 </div>
 <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-white/70 border border-outline-variant/40 text-primary font-label-md" id="account-setup-progress">Setup started</span>
 </div>
@@ -1552,7 +1616,7 @@
 <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Jobs board</p>
-<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Available work and active jobs</h2>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Open jobs</h2>
 </div>
 <div class="flex flex-wrap gap-2">
 <a class="inline-flex h-10 px-4 items-center justify-center rounded-full bg-primary text-white font-bold text-sm" href="#find-work">Apply</a>
@@ -1564,7 +1628,7 @@
 <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 <div>
 <strong class="font-label-md text-on-surface">Kmart purchase and delivery</strong>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Australia to Africa corridor, or Africa to diaspora when reversed. Needs product photo, receipt, lawful-goods check, and delivery proof.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Shopping, receipt, item photo, delivery proof.</p>
 </div>
 <span class="inline-flex min-h-8 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm">Global lane</span>
 </div>
@@ -1576,7 +1640,7 @@
 <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 <div>
 <strong class="font-label-md text-on-surface">Land or site progress check</strong>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Receiver visits a site, records video, asks standard questions, and submits location-aware proof.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Site visit, video, location-aware proof.</p>
 </div>
 <span class="inline-flex min-h-8 px-3 items-center justify-center rounded-full bg-tertiary/10 text-tertiary font-label-sm">Verification required</span>
 </div>
@@ -1588,7 +1652,7 @@
 <div class="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
 <div>
 <strong class="font-label-md text-on-surface">Document pickup or registry errand</strong>
-<p class="font-body-md text-on-surface-variant text-sm mt-1">Sensitive task. Requires verified account, clear authority, receipts, and founder/provider review.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-1">Verified ID, authority, receipt, review.</p>
 </div>
 <span class="inline-flex min-h-8 px-3 items-center justify-center rounded-full bg-error-container text-on-error-container font-label-sm">Protected</span>
 </div>
@@ -1602,10 +1666,10 @@
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.16em]">Controlled offers</p>
 <h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Make an offer without racing to the bottom</h3>
-<p class="font-body-md text-on-surface-variant text-sm mt-2">Receivers can compete on price, timing, proof quality, route fit, and provenance. Lowest price does not automatically win; protected assignment and provider-payout rules still apply.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-2">Price matters, but proof, timing, route fit, and provenance decide trust.</p>
 <div class="mt-4 grid gap-2 text-sm text-on-surface-variant">
-<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">Before acceptance</strong>ID verification, profile consistency, legal route, and payment protection must pass.</span>
-<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">After acceptance</strong>Milestones and proof control the provider-payout instruction. AI can help draft updates but cannot approve payout.</span>
+<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">Before acceptance</strong>ID, route, and payment protection.</span>
+<span class="rounded-2xl bg-white/72 p-3"><strong class="block text-on-surface">After acceptance</strong>Proof controls payout readiness.</span>
 </div>
 </div>
 <form class="grid gap-3" id="marketplace-offer-form">
@@ -1657,13 +1721,13 @@ Submit offer
 <div class="min-w-0">
 <p class="font-label-sm text-tertiary uppercase tracking-[0.18em]">Find jobs</p>
 <h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Set up once, then get matched to suitable work</h2>
-<p class="font-body-md text-on-surface-variant mt-2 max-w-3xl">One account can give jobs and take jobs. Your work profile opens in four simple steps, and paid work stays locked until ID, route, payment, and proof checks pass.</p>
+<p class="font-body-md text-on-surface-variant mt-2 max-w-2xl">One account. Real profile. Verified work only.</p>
 <div class="find-job-path mt-5">
 <a class="find-job-step" href="#receiver-profile-setup" aria-label="Complete job seeker profile">
 <span class="find-job-step-icon"><span class="material-symbols-outlined text-[26px]">badge</span></span>
 <span class="find-job-step-body">
 <span class="block font-label-md text-on-surface">1. Real profile</span>
-<span class="block font-body-md text-on-surface-variant text-sm mt-1">Name, mobile, current base, face photo, languages, and proof tools.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Photo, base, languages, proof tools.</span>
 </span>
 <span class="find-job-step-action">Open <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1679,7 +1743,7 @@ Submit offer
 <span class="find-job-step-icon bg-tertiary/10 text-tertiary"><span class="material-symbols-outlined text-[26px]">work_history</span></span>
 <span class="find-job-step-body">
 <span class="block font-label-md text-on-surface">3. Browse jobs</span>
-<span class="block font-body-md text-on-surface-variant text-sm mt-1">See lawful routes, proof-ready work, and payment-protected briefs.</span>
+<span class="block font-body-md text-on-surface-variant text-sm mt-1">Routes, proof, payment status.</span>
 </span>
 <span class="find-job-step-action">See <span class="material-symbols-outlined" aria-hidden="true">arrow_forward</span></span>
 </a>
@@ -1688,7 +1752,7 @@ Submit offer
 <aside class="rounded-[1.35rem] border border-outline-variant/30 bg-white/66 p-4 min-w-0">
 <p class="font-label-sm text-on-surface-variant uppercase tracking-[0.14em]">Status</p>
 <span class="mt-3 inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-md" id="receiver-application-summary">No application yet</span>
-<p class="font-body-md text-on-surface-variant text-sm mt-3">You can save the profile now. Offers are reviewed by price, timing, proof quality, route fit, and provenance. Lowest price does not automatically win.</p>
+<p class="font-body-md text-on-surface-variant text-sm mt-3">Offers win on trust, timing, proof, and fit. Lowest price does not automatically win.</p>
 <div class="find-job-metrics mt-4">
 <div class="find-job-metric">
 <span class="font-label-sm text-on-surface-variant">Account</span>

@@ -200,17 +200,22 @@
 
         .brief-flow-steps {
             display: grid;
-            grid-template-columns: repeat(5, minmax(0, 1fr));
+            grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 0.75rem;
             margin-bottom: 1.25rem;
         }
 
         .brief-flow-step {
             min-width: 0;
-            border-radius: 1rem;
-            border: 1px solid rgba(199, 196, 215, 0.42);
-            background: rgba(255, 255, 255, 0.68);
-            padding: 0.8rem;
+            border-radius: 1.25rem;
+            border: 1px solid rgba(255, 255, 255, 0.72);
+            background:
+                linear-gradient(145deg, rgba(255, 255, 255, 0.94), rgba(229, 242, 255, 0.7)),
+                rgba(255, 255, 255, 0.76);
+            box-shadow:
+                inset 0 1px 0 rgba(255, 255, 255, 0.9),
+                0 16px 34px rgba(16, 26, 58, 0.08);
+            padding: 1rem;
         }
 
         .brief-flow-step strong {
@@ -233,6 +238,18 @@
             color: #fff;
             font-size: 0.75rem;
             font-weight: 800;
+        }
+
+        .brief-simple-form > section.glass-panel:nth-of-type(1),
+        .brief-simple-form > section.glass-panel:nth-of-type(3),
+        .brief-simple-form > section.glass-panel:nth-of-type(5),
+        .brief-simple-form > section.glass-panel:nth-of-type(6) {
+            border-radius: 1.5rem;
+            background: rgba(255, 255, 255, 0.52);
+            border: 1px solid rgba(255, 255, 255, 0.68);
+            padding: clamp(1rem, 2vw, 1.5rem);
+            box-shadow: 0 18px 42px rgba(16, 26, 58, 0.06);
+            margin-bottom: 0.75rem;
         }
 
         .brief-service-grid {
@@ -293,7 +310,7 @@
 <div>
 <p class="font-label-md text-label-md text-primary uppercase tracking-[0.18em]">Post a job</p>
 <h1 class="font-display-lg text-headline-lg md:text-display-lg text-on-surface mt-2 mb-3">Create a request.</h1>
-<p class="font-body-lg text-body-lg text-secondary max-w-3xl">Write it naturally. Swadakta turns the route, proof, payment, media, and safety checks into one clear request for local, Africa-wide, diaspora, or digital work.</p>
+<p class="font-body-lg text-body-lg text-secondary max-w-2xl">Say what you need. Swadakta shapes the route, proof, media, and quote checks.</p>
 <p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>AI is off. You can still fill the brief normally and submit it for Swadakta review after verification.</p>
 </div>
 <aside class="glass-panel rounded-3xl p-5">
@@ -301,7 +318,7 @@
 <p class="font-label-md text-label-md text-primary uppercase tracking-[0.14em]">Ask Swadakta AI</p>
 <button class="h-9 px-4 rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" data-ai-toggle data-ai-on-label="AI mode on" data-ai-off-label="Manual mode" type="button" aria-pressed="true">AI mode on</button>
 </div>
-<p class="font-body-md text-on-surface-variant mt-2">Messy details are okay. Add links, photos, deadlines, budget, and proof expectations. Protected actions stay gated until verification and payment evidence are ready.</p>
+<p class="font-body-md text-on-surface-variant mt-2">Messy is fine. Add photos, links, deadline, budget, and proof.</p>
 <p class="font-body-md text-on-surface-variant mt-2" data-no-ai-copy hidden>Use the short fields below. The site still works without AI.</p>
 <p class="font-label-sm text-primary mt-3" data-ai-mode-status data-ai-status-on="AI can organize the brief, but you stay in control of what gets submitted." data-ai-status-off="Manual mode is active. Fill the sections directly and submit when ready.">AI can organize the brief, but you stay in control of what gets submitted.</p>
 </aside>
@@ -379,18 +396,16 @@
 </section>
 <form class="brief-simple-form space-y-2" id="client-brief-form">
 <nav class="brief-flow-steps" aria-label="Request steps">
-<div class="brief-flow-step"><strong><span>1</span> Basics</strong></div>
+<div class="brief-flow-step"><strong><span>1</span> Need</strong></div>
 <div class="brief-flow-step"><strong><span>2</span> Route</strong></div>
-<div class="brief-flow-step"><strong><span>3</span> Details</strong></div>
-<div class="brief-flow-step"><strong><span>4</span> Budget</strong></div>
-<div class="brief-flow-step"><strong><span>5</span> Review</strong></div>
+<div class="brief-flow-step"><strong><span>3</span> Proof + quote</strong></div>
 </nav>
 <section class="glass-panel">
 <div class="brief-step-title">
 <span class="material-symbols-outlined">auto_awesome</span>
 <div>
-<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Basics</p>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">Start with the request</h2>
+<p class="font-label-sm text-primary uppercase tracking-[0.14em]">Need</p>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Start messy</h2>
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_220px] gap-4 mb-4">
@@ -407,7 +422,7 @@
 </select>
 </div>
 </div>
-<textarea class="sunken-input w-full p-4 rounded-2xl text-body-md resize-none" id="brief-freeform" name="brief_freeform" placeholder="Example: I need someone in Lagos to visit a supplier this week, record a clear video, confirm stock, upload photos, and send a short voice note. I want provider-confirmed milestone protection until proof is accepted." rows="5"></textarea>
+<textarea class="sunken-input w-full p-4 rounded-2xl text-body-md resize-none" id="brief-freeform" name="brief_freeform" placeholder="Example: Buy Kmart items, deliver to Nairobi, upload receipt/photos/video, and use provider-confirmed milestone protection until proof is accepted." rows="5"></textarea>
 <div class="mt-3 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
 <div class="flex flex-wrap gap-2 text-sm text-on-surface-variant">
 <span class="rounded-full bg-white/70 px-3 py-1">Photos</span>
@@ -425,7 +440,7 @@
 <span class="material-symbols-outlined">account_circle</span>
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Account</p>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">Contact for this request</h2>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Your details</h2>
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -453,7 +468,7 @@
 <span class="material-symbols-outlined">map</span>
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Route</p>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">Where the work happens</h2>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Where it happens</h2>
 </div>
 </div>
 <div class="grid grid-cols-1 gap-6">
@@ -488,8 +503,8 @@
 <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">Quick route</p>
-<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Start from the lane, then add details</h3>
-<p class="font-body-md text-on-surface-variant mt-2">Use these when you already know whether the job is local, Africa-wide, diaspora-to-Africa, Africa-to-diaspora, or remote.</p>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mt-1">Pick a lane</h3>
+<p class="font-body-md text-on-surface-variant mt-2">Local, Africa-wide, diaspora, or remote.</p>
 </div>
 <span class="inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm" id="brief-route-shortcut-status">No quick lane selected</span>
 </div>
@@ -519,7 +534,7 @@
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Place brief</p>
 <h3 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-place-title">Enter a task location</h3>
-<p class="font-body-md text-on-surface-variant mt-2" id="brief-place-copy">Swadakta will show weather, field-work planning notes, and where to check official local alerts before a field partner accepts the job.</p>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-place-copy">Weather, field notes, and alert links appear here.</p>
 </div>
 </div>
 <button class="inline-flex h-10 px-4 items-center justify-center rounded-full bg-white/80 border border-outline-variant/40 text-primary font-bold text-sm" id="brief-place-refresh" type="button">Refresh</button>
@@ -588,7 +603,7 @@
 <div>
 <p class="font-label-sm text-tertiary uppercase tracking-[0.14em]">Goods safety quick check</p>
 <h3 class="font-headline-sm text-headline-sm text-on-surface mt-1" id="brief-goods-safety-title">Tell Swadakta what is moving</h3>
-<p class="font-body-md text-on-surface-variant mt-2" id="brief-goods-safety-copy">Postal services, couriers, airlines, customs, and local law decide what can move. Choose the item type and handoff mode so the brief carries the right checks into admin before quote, purchase, pickup, shipment, or payout.</p>
+<p class="font-body-md text-on-surface-variant mt-2" id="brief-goods-safety-copy">Choose item type and handoff so rules travel with the quote.</p>
 </div>
 <span class="inline-flex min-h-9 px-3 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label-sm" id="brief-goods-safety-risk">No goods declared</span>
 </div>
@@ -647,7 +662,7 @@
 <span class="material-symbols-outlined">verified</span>
 <div>
 <p class="font-label-sm text-primary uppercase tracking-[0.14em]">Proof</p>
-<h2 class="font-headline-sm text-headline-sm text-on-surface">What proof should the receiver provide?</h2>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Proof needed</h2>
 </div>
 </div>
 <div class="space-y-6">
@@ -729,7 +744,7 @@
 <div class="p-4 rounded-2xl bg-primary-container/10 border border-primary-container/20 flex gap-4">
 <span class="material-symbols-outlined text-primary">info</span>
 <p class="text-label-sm font-label-md text-on-surface-variant leading-relaxed">
-                            Swadakta does not hold client money. It records provider-held, authorized, deposited, or milestone-controlled payment evidence from Stripe, PayPal, M-Pesa, bank, Paystack, Flutterwave, or a regulated escrow/payment provider before any receiver payout.
+                            Swadakta does not hold client money. Payment providers hold, authorize, deposit, or milestone-control funds before receiver payout evidence is recorded.
                         </p>
 </div>
 </section>

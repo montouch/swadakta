@@ -772,7 +772,7 @@
     if (!hasProfileBasics(profile)) {
       return {
         title: "Save profile basics",
-        copy: "Add legal name, mobile, current country, and operating base so Swadakta can route work properly.",
+        copy: "Add name, mobile, country, and base.",
         href: "#work",
         label: "Save profile",
       };
@@ -781,7 +781,7 @@
     if (!verified && latestRequest?.provider_link) {
       return {
         title: "Finish provider verification",
-        copy: "Your provider link is ready. Complete ID, document, and selfie/liveness checks before paid actions unlock.",
+        copy: "Finish ID, document, and liveness checks.",
         href: latestRequest.provider_link,
         label: "Open provider",
         external: true,
@@ -792,8 +792,8 @@
       return {
         title: latestRequest ? "Wait for verification result" : "Request verification",
         copy: latestRequest
-          ? "Verification is queued. You can still prepare briefs, profile, and messages while Swadakta waits for provider evidence."
-          : "Verification is not needed to hold an account, but it is required before paid posting, paid work, or sensitive jobs.",
+          ? "Verification is queued. You can keep preparing."
+          : "Needed before paid posting, paid work, or sensitive jobs.",
         href: "verification.html?reason=account_required",
         label: "Open verification",
       };
@@ -802,7 +802,7 @@
     if (jobs.length) {
       return {
         title: "Update assigned work",
-        copy: "Open tracking to submit proof, photos, notes, receipts, milestones, or issue updates for assigned jobs.",
+        copy: "Submit proof, notes, receipts, and updates.",
         href: "tracking.html",
         label: "Track jobs",
       };
@@ -811,7 +811,7 @@
     if (canGiveJobs && !requests.length) {
       return {
         title: "Create your first brief",
-        copy: "Choose a route, describe the task, upload helpful media, and let Swadakta shape it into a quote-ready job.",
+        copy: "Describe it once. Swadakta shapes the quote.",
         href: "corridor.html",
         label: "Give a job",
       };
@@ -820,7 +820,7 @@
     if (canReceiveJobs && !applications.length) {
       return {
         title: "Set job coverage",
-        copy: "Tell Swadakta where you can work, what proof tools you can use, and which categories fit you.",
+        copy: "Set locations, categories, and proof tools.",
         href: "#find-work",
         label: "Apply for jobs",
       };
@@ -829,7 +829,7 @@
     if (requests.length) {
       return {
         title: "Track active work",
-        copy: "Open your jobs to check proof, payment route, messages, milestones, and any resolution cases.",
+        copy: "See proof, payments, messages, and issues.",
         href: "tracking.html",
         label: "Open tracking",
       };
@@ -837,7 +837,7 @@
 
     return {
       title: "Keep route rules current",
-      copy: "Review lawful-goods, proof, payment, and corridor rules before taking or giving cross-border work.",
+      copy: "Check rules before cross-border work.",
       href: "rules.html",
       label: "Check rules",
     };
@@ -1068,10 +1068,10 @@
     if (accountHomeModeCopy) {
       accountHomeModeCopy.textContent =
         role === "both"
-          ? "You can give jobs and receive matched work from this same account."
+          ? "Give jobs and take jobs here."
           : role === "receiver"
-            ? "This account is set up for paid work. You can still create client briefs later."
-            : "This account is set up to give jobs. You can add job-seeker coverage later.";
+            ? "Ready to take paid work."
+            : "Ready to post jobs.";
     }
     if (accountHomeModePill) {
       accountHomeModePill.textContent = verified ? "Verified gate ready" : "Account open";
@@ -1087,8 +1087,8 @@
       accountHomeRouteCopy.textContent = coverageLabels.length
         ? `Coverage: ${coverageLabels.slice(0, 3).join(", ")}${coverageLabels.length > 3 ? "..." : ""}.`
         : routeText
-          ? `Current route context is ${routeText}. Choose a corridor per job before money or assignment.`
-          : "Add country, base, and coverage so Swadakta can match lawful work properly.";
+          ? `Route: ${routeText}.`
+          : "Add base and coverage.";
     }
     if (accountHomeRoutePill) {
       accountHomeRoutePill.textContent = coverageLabels.length
