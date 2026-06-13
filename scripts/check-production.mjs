@@ -635,10 +635,23 @@ const requiredAdminReadinessMarkers = [
   "renderLaunchGate",
   "launchGateBrief",
   "Swadakta public launch gate",
+  "buildProviderMatrixPack",
+  "renderProviderMatrix",
+  "provider_launch_matrix",
+  "Provider launch matrix",
+  "provider-matrix-list",
   "copy-provider-pack",
+  "copy-provider-matrix",
   "copy-category-pack",
   "Provider setup pack copied",
+  "Provider launch matrix copied",
   "Do not paste secret keys",
+];
+const requiredAdminReadinessHtmlMarkers = [
+  "provider-matrix-panel",
+  "provider-matrix-list",
+  "Provider activation matrix",
+  "Copy matrix",
 ];
 const requiredAdminThemeMarkers = [
   '<html class="dark" lang="en">',
@@ -684,6 +697,13 @@ const requiredReadinessApiMarkers = [
   "buildLaunchGate",
   "launch_gate",
   "paid_launch_blocked",
+  "buildProviderLaunchMatrix",
+  "provider_launch_matrix",
+  "Provider launch matrix",
+  "user_visibility_rule",
+  "activation_sequence",
+  "public_visibility",
+  "Wise fallback",
   "ai_manual_mode_boundary",
   "AI/manual mode fallback",
   "admin_ai_prompt_boundaries",
@@ -1527,8 +1547,15 @@ for (const page of requiredPages) {
   if (page === "/admin-verification" && !text.includes("admin-verification.js?v=3")) {
     fail(failures, `${page} does not reference admin-verification.js?v=3`);
   }
-  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=6")) {
-    fail(failures, `${page} does not reference admin-readiness.js?v=6`);
+  if (page === "/admin-readiness" && !text.includes("admin-readiness.js?v=7")) {
+    fail(failures, `${page} does not reference admin-readiness.js?v=7`);
+  }
+  if (page === "/admin-readiness") {
+    for (const marker of requiredAdminReadinessHtmlMarkers) {
+      if (!text.includes(marker)) {
+        fail(failures, `${page} is missing provider matrix marker ${marker}`);
+      }
+    }
   }
   if (page === "/verification" && !text.includes("verification.js?v=10")) {
     fail(failures, `${page} does not reference verification.js?v=10`);
@@ -1886,11 +1913,11 @@ for (const marker of requiredAdminVerificationMarkers) {
   }
 }
 
-const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=6");
+const { response: adminReadinessResponse, text: adminReadinessText } = await fetchText("/admin-readiness.js?v=7");
 if (adminReadinessResponse.status !== 200) {
-  fail(failures, `admin-readiness.js?v=6 returned ${adminReadinessResponse.status}`);
+  fail(failures, `admin-readiness.js?v=7 returned ${adminReadinessResponse.status}`);
 } else {
-  pass("admin-readiness.js?v=6 returned 200");
+  pass("admin-readiness.js?v=7 returned 200");
 }
 
 for (const marker of requiredAdminReadinessMarkers) {

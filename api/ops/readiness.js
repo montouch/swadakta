@@ -385,6 +385,255 @@ function buildLaunchGate(categories) {
   };
 }
 
+function providerRailStatus(status, fallback = "Review") {
+  return {
+    ready: "Ready",
+    missing: "Missing",
+    manual: "Manual gate",
+    warning: "Check",
+  }[status] || fallback;
+}
+
+function providerLaunchRail(options) {
+  return {
+    id: options.id,
+    label: options.label,
+    type: options.type,
+    status: options.status,
+    status_label: providerRailStatus(options.status),
+    activation_order: options.activation_order,
+    launch_role: options.launch_role,
+    public_visibility: options.public_visibility,
+    next: options.next,
+    founder_rule: options.founder_rule,
+    missing: options.missing || [],
+    docs_url: options.docs_url || "",
+    safe_values: options.safe_values || [],
+  };
+}
+
+function buildProviderLaunchMatrix(context) {
+  const ownerProviderReady = confirmedEnv("SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED");
+  const legalReady = confirmedEnv("SWADAKTA_OWNER_LEGAL_REVIEWED");
+  const financialBoundaryReady = confirmedEnv("SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED");
+  const kenyaReady = confirmedEnv("SWADAKTA_OWNER_KENYA_SETUP_REVIEWED");
+  const stripeSecretMissing = missingEnv(["STRIPE_SECRET_KEY"]);
+  const stripeMissing = [
+    ...stripeSecretMissing,
+    ...context.stripeWebhookMissing,
+    ...(context.serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"]),
+  ];
+  const stripeReady = stripeMissing.length === 0;
+  const paypalReady = context.paypalMissing.length === 0;
+  const mpesaCredentialReady = context.mpesaMissing.length === 0;
+  const mpesaLiveReady =
+    mpesaCredentialReady &&
+    context.serviceRoleConfigured &&
+    hasEnv("MPESA_CALLBACK_TOKEN") &&
+    mpesaMode() === "live" &&
+    kenyaReady;
+  const sumsubReady =
+    context.sumsubNativeMissing.length === 0 &&
+    context.sumsubWebhookMissing.length === 0 &&
+    context.serviceRoleConfigured;
+  const smileLinkReady = anyEnv(["SMILE_ID_VERIFICATION_URL", "SMILE_ID_WEB_LINK_URL", "SMILE_ID_PORTAL_URL"]);
+  const smileReady = context.smileIdConfigured || smileLinkReady;
+  const paystackReady =
+    context.paystackMissing.length === 0 &&
+    confirmedEnv("PAYSTACK_MERCHANT_APPROVED") &&
+    confirmedEnv("PAYSTACK_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED");
+  const flutterwaveReady =
+    context.flutterwaveMissing.length === 0 &&
+    confirmedEnv("FLUTTERWAVE_MERCHANT_APPROVED") &&
+    confirmedEnv("FLUTTERWAVE_WEBHOOK_ENDPOINT_READY") &&
+    confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED");
+  const paidLaunchPrereqs = [
+    ...(ownerProviderReady ? [] : ["SWADAKTA_OWNER_PROVIDER_ACCOUNTS_APPROVED"]),
+    ...(legalReady ? [] : ["SWADAKTA_OWNER_LEGAL_REVIEWED"]),
+    ...(financialBoundaryReady ? [] : ["SWADAKTA_OWNER_FINANCIAL_SERVICES_REVIEWED"]),
+  ];
+
+  const rails = [
+    providerLaunchRail({
+      id: "sumsub_identity",
+      label: "Sumsub global ID",
+      type: "identity",
+      status: sumsubReady ? "ready" : context.sumsubNativeMissing.length ? "missing" : "manual",
+      activation_order: 1,
+      launch_role: "Global identity verification for clients and receivers.",
+      public_visibility: sumsubReady
+        ? "Visible through the verification flow when a provider link is generated."
+        : "Verification can queue, but paid actions stay locked until provider link/webhook evidence is configured.",
+      next: sumsubReady
+        ? "Run one low-risk test account and confirm the webhook updates Swadakta status."
+        : "Create the Sumsub level, add app token, secret key, level name, webhook secret, and service-role key in Vercel.",
+      founder_rule: "No user, screenshot, or AI can mark ID verified; only provider evidence or documented admin exception.",
+      missing: [
+        ...context.sumsubNativeMissing,
+        ...context.sumsubWebhookMissing,
+        ...(context.serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"]),
+      ],
+      docs_url: DOCS.sumsubWebsdkLink,
+      safe_values: [context.identityStartUrl, context.sumsubWebhookUrl],
+    }),
+    providerLaunchRail({
+      id: "smile_id_africa",
+      label: "Smile ID Africa KYC",
+      type: "identity",
+      status: smileReady ? "manual" : "missing",
+      activation_order: 2,
+      launch_role: "Africa-first KYC route, especially for African ID documents and low-bandwidth capture.",
+      public_visibility: smileReady
+        ? "Can be used as an Africa verification route after provider approval and a tested handoff link."
+        : "Hidden as a live provider until Smile ID credentials or a provider-approved web link exist.",
+      next: smileReady
+        ? "Run one Africa test applicant and store the provider reference before paid receiver work."
+        : "Open the Smile ID account, confirm countries/documents, then add Smile credentials or a Smile web-link URL.",
+      founder_rule: "Smile ID is an identity evidence provider, not an automatic work-approval switch.",
+      missing: smileReady ? [] : ["SMILE_ID_API_KEY or SMILE_ID_VERIFICATION_URL", "SMILE_ID_PARTNER_ID"],
+      docs_url: DOCS.smileIdWeb,
+      safe_values: [context.identityStartUrl],
+    }),
+    providerLaunchRail({
+      id: "stripe_card_checkout",
+      label: "Stripe card checkout",
+      type: "payment",
+      status: stripeReady ? "ready" : "missing",
+      activation_order: 3,
+      launch_role: "Primary card rail for AUD, USD, GBP, and EUR quotes.",
+      public_visibility:
+        stripeReady && paidLaunchPrereqs.length === 0
+          ? "Can show for eligible quoted jobs after internal margin, route, and ID gates pass."
+          : "Admin-only until Stripe secret, webhook evidence, service-role key, provider account, legal, and financial-boundary gates pass.",
+      next: stripeReady
+        ? "Run one low-value checkout and confirm provider reference, amount, currency, webhook, and request code."
+        : "Add Stripe secret and webhook secret in Vercel, then register the webhook URL in Stripe.",
+      founder_rule: "Stripe paid status is provider evidence only; it does not release receiver payouts.",
+      missing: [...stripeMissing, ...paidLaunchPrereqs],
+      docs_url: DOCS.stripeCheckout,
+      safe_values: [context.stripeWebhookUrl],
+    }),
+    providerLaunchRail({
+      id: "paypal_orders",
+      label: "PayPal orders",
+      type: "payment",
+      status: paypalReady ? "ready" : "missing",
+      activation_order: 4,
+      launch_role: "Secondary global checkout rail when clients prefer PayPal approval.",
+      public_visibility:
+        paypalReady && paidLaunchPrereqs.length === 0
+          ? "Can show as a client preference after quote, ID, and provider evidence gates pass."
+          : "Admin-only until PayPal credentials and owner provider/legal gates pass.",
+      next: paypalReady
+        ? "Run one PayPal order/capture test and reconcile request code, amount, currency, and payer."
+        : "Create a PayPal REST app, add client ID and secret, then test order creation and capture.",
+      founder_rule: "PayPal capture can confirm funds; disputes, refunds, and payout release still stay founder/admin controlled.",
+      missing: [...context.paypalMissing, ...paidLaunchPrereqs],
+      docs_url: DOCS.paypalOrders,
+      safe_values: [],
+    }),
+    providerLaunchRail({
+      id: "mpesa_daraja",
+      label: "M-Pesa Daraja",
+      type: "payment",
+      status: mpesaLiveReady ? "ready" : mpesaCredentialReady ? "manual" : "missing",
+      activation_order: 5,
+      launch_role: "Kenya KES collection rail after Kenya-side business/payment approval.",
+      public_visibility: mpesaLiveReady
+        ? "Can show for KES jobs after quote, callback evidence, and Kenya setup gates pass."
+        : "Keep sandbox/admin-only until Safaricom approval, callback token, service-role key, and Kenya setup are confirmed.",
+      next: mpesaLiveReady
+        ? "Run one live low-value STK test and confirm callback reference before any receiver assignment."
+        : "Use sandbox first. Add Daraja credentials, callback token, service-role key, and Kenya operating review before live use.",
+      founder_rule: "A sent STK prompt is not payment. Only callback/provider evidence can move the funds state.",
+      missing: [
+        ...context.mpesaMissing,
+        ...(context.serviceRoleConfigured ? [] : ["SUPABASE_SERVICE_ROLE_KEY"]),
+        ...(hasEnv("MPESA_CALLBACK_TOKEN") ? [] : ["MPESA_CALLBACK_TOKEN"]),
+        ...(kenyaReady ? [] : ["SWADAKTA_OWNER_KENYA_SETUP_REVIEWED"]),
+      ],
+      docs_url: DOCS.daraja,
+      safe_values: [context.mpesaWebhookUrl],
+    }),
+    providerLaunchRail({
+      id: "wise_fallback",
+      label: "Wise fallback",
+      type: "payment",
+      status: context.wiseConfigured ? "manual" : "missing",
+      activation_order: 6,
+      launch_role: "Hidden admin fallback for bank/receive-details situations after simpler rails fail.",
+      public_visibility: "Never show as a normal public default; keep it behind admin reconciliation.",
+      next: context.wiseConfigured
+        ? "Use only with receipt reconciliation: sender, amount, currency, date, reference, and request code."
+        : "Add a Wise receive/payment-request URL only after the legal/payment boundary is reviewed.",
+      founder_rule: "AI cannot reconcile Wise. Founder/admin must match receipt evidence before funds count as protected.",
+      missing: context.wiseConfigured ? [] : ["WISE_PAYMENT_LINK_URL or WISE_RECEIVE_DETAILS_URL"],
+      docs_url: DOCS.wiseBusiness,
+      safe_values: [],
+    }),
+    providerLaunchRail({
+      id: "paystack_africa",
+      label: "Paystack Africa expansion",
+      type: "payment",
+      status: paystackReady ? "ready" : "manual",
+      activation_order: 7,
+      launch_role: "Africa expansion merchant rail after settlement and webhook evidence are proven.",
+      public_visibility: paystackReady
+        ? "Can be considered for approved Africa corridors after one pilot payment verifies server-side."
+        : "Hidden from normal users until merchant approval, settlement currencies, webhook, and evidence mapping are all complete.",
+      next: paystackReady
+        ? "Run one pilot payment and verify transaction reference, amount, currency, and customer server-side."
+        : "Complete Paystack merchant approval, webhook secret, settlement currencies, and provider-evidence mapping.",
+      founder_rule: "Expansion rails do not release money automatically; milestone proof still controls payout release.",
+      missing: [
+        ...context.paystackMissing,
+        ...(confirmedEnv("PAYSTACK_MERCHANT_APPROVED") ? [] : ["PAYSTACK_MERCHANT_APPROVED"]),
+        ...(confirmedEnv("PAYSTACK_WEBHOOK_ENDPOINT_READY") ? [] : ["PAYSTACK_WEBHOOK_ENDPOINT_READY"]),
+        ...(confirmedEnv("PAYSTACK_PROVIDER_EVIDENCE_MAPPED") ? [] : ["PAYSTACK_PROVIDER_EVIDENCE_MAPPED"]),
+      ],
+      docs_url: DOCS.paystackWebhooks,
+      safe_values: [context.paystackWebhookUrl],
+    }),
+    providerLaunchRail({
+      id: "flutterwave_africa",
+      label: "Flutterwave Africa expansion",
+      type: "payment",
+      status: flutterwaveReady ? "ready" : "manual",
+      activation_order: 8,
+      launch_role: "Africa expansion merchant rail after settlement and webhook evidence are proven.",
+      public_visibility: flutterwaveReady
+        ? "Can be considered for approved Africa corridors after one pilot payment verifies server-side."
+        : "Hidden from normal users until merchant approval, settlement currencies, webhook, and evidence mapping are all complete.",
+      next: flutterwaveReady
+        ? "Run one pilot payment and verify transaction id/reference, amount, currency, and customer server-side."
+        : "Complete Flutterwave merchant approval, webhook secret, settlement currencies, and provider-evidence mapping.",
+      founder_rule: "Expansion rails do not release money automatically; milestone proof still controls payout release.",
+      missing: [
+        ...context.flutterwaveMissing,
+        ...(confirmedEnv("FLUTTERWAVE_MERCHANT_APPROVED") ? [] : ["FLUTTERWAVE_MERCHANT_APPROVED"]),
+        ...(confirmedEnv("FLUTTERWAVE_WEBHOOK_ENDPOINT_READY") ? [] : ["FLUTTERWAVE_WEBHOOK_ENDPOINT_READY"]),
+        ...(confirmedEnv("FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED") ? [] : ["FLUTTERWAVE_PROVIDER_EVIDENCE_MAPPED"]),
+      ],
+      docs_url: DOCS.flutterwaveWebhooks,
+      safe_values: [context.flutterwaveWebhookUrl],
+    }),
+  ];
+
+  return {
+    title: "Provider launch matrix",
+    summary:
+      "Use this order to activate real money and identity providers without exposing unfinished rails to users.",
+    user_visibility_rule:
+      "Public users should only see rails that have credentials, provider evidence, owner approval, and corridor/legal gates. Wise and Africa expansion rails stay hidden until explicitly ready.",
+    activation_sequence: rails
+      .slice()
+      .sort((left, right) => left.activation_order - right.activation_order)
+      .map((rail) => `${rail.activation_order}. ${rail.label}: ${rail.public_visibility}`),
+    rails,
+  };
+}
+
 function founderStep(id, label, status, summary, action, options = {}) {
   return {
     id,
@@ -1791,6 +2040,24 @@ async function readinessReport(user, authHeader) {
 
   const flatItems = categories.flatMap((category) => category.items);
   const launchGate = buildLaunchGate(categories);
+  const providerLaunchMatrix = buildProviderLaunchMatrix({
+    serviceRoleConfigured,
+    stripeWebhookMissing,
+    paypalMissing,
+    paystackMissing,
+    flutterwaveMissing,
+    mpesaMissing,
+    wiseConfigured,
+    smileIdConfigured,
+    sumsubNativeMissing,
+    sumsubWebhookMissing,
+    stripeWebhookUrl,
+    mpesaWebhookUrl,
+    paystackWebhookUrl,
+    flutterwaveWebhookUrl,
+    identityStartUrl,
+    sumsubWebhookUrl,
+  });
   const counts = flatItems.reduce(
     (acc, entry) => {
       acc[entry.status] = (acc[entry.status] || 0) + 1;
@@ -1808,6 +2075,7 @@ async function readinessReport(user, authHeader) {
     },
     counts,
     launch_gate: launchGate,
+    provider_launch_matrix: providerLaunchMatrix,
     founder_action_pack: buildFounderActionPack(),
     first_paid_pilot_script: buildFirstPaidPilotScript(),
     categories,

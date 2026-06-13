@@ -12,6 +12,7 @@
   const refreshButton = document.querySelector("#refresh-readiness");
   const copyChecklistButton = document.querySelector("#copy-checklist");
   const copyProviderPackButtons = document.querySelectorAll("#copy-provider-pack, #copy-provider-pack-mobile");
+  const copyProviderMatrixButtons = document.querySelectorAll("#copy-provider-matrix, #copy-provider-matrix-mobile");
   const copyFounderPackButtons = document.querySelectorAll("#copy-founder-pack, #copy-founder-pack-mobile");
   const copyPilotScriptButtons = document.querySelectorAll("#copy-pilot-script, #copy-pilot-script-mobile");
   const readinessMode = document.querySelector("#readiness-mode");
@@ -22,6 +23,7 @@
   const nextActionsList = document.querySelector("#next-actions-list");
   const nextActionsCount = document.querySelector("#next-actions-count");
   const categories = document.querySelector("#readiness-categories");
+  const providerMatrixList = document.querySelector("#provider-matrix-list");
   const providerPackList = document.querySelector("#provider-pack-list");
   const protectedActions = document.querySelector("#protected-actions");
   const launchGateSummary = document.querySelector("#launch-gate-summary");
@@ -271,6 +273,39 @@
     ].join("\n\n---\n\n");
   }
 
+  function buildProviderMatrixPack(report = latestReport) {
+    const matrix = report?.provider_launch_matrix || {};
+    const rails = Array.isArray(matrix.rails) ? matrix.rails.slice() : [];
+    rails.sort((left, right) => Number(left.activation_order || 99) - Number(right.activation_order || 99));
+
+    return [
+      matrix.title || "Swadakta provider launch matrix",
+      `Generated: ${report?.generated_at || new Date().toISOString()}`,
+      "",
+      matrix.summary || "Activate providers in order without exposing unfinished rails to users.",
+      matrix.user_visibility_rule || "Keep unverified payment and ID rails hidden until provider evidence is tested.",
+      "",
+      "Activation sequence:",
+      ...(matrix.activation_sequence?.length
+        ? matrix.activation_sequence.map((entry) => `- ${entry}`)
+        : rails.map((rail) => `- ${rail.activation_order || "?"}. ${rail.label || "Provider"}`)),
+      "",
+      "Provider rails:",
+      ...(rails.length
+        ? rails.map((rail) => {
+            const missing = rail.missing?.length ? ` Missing: ${rail.missing.join(", ")}.` : "";
+            const values = rail.safe_values?.length ? ` Safe values: ${rail.safe_values.join(" / ")}.` : "";
+            const docs = rail.docs_url ? ` Docs: ${rail.docs_url}.` : "";
+            return `${rail.activation_order || "?"}. [${statusLabel(rail.status)}] ${rail.label || "Provider"} (${rail.type || "rail"}): ${rail.launch_role || ""} Visibility: ${rail.public_visibility || ""} Next: ${rail.next || ""} Rule: ${rail.founder_rule || ""}${missing}${values}${docs}`;
+          })
+        : ["No provider rails returned by the readiness API."]),
+      "",
+      "Boundary:",
+      "Do not paste secret keys into chat, email, docs, screenshots, or client-visible pages.",
+      "AI can draft setup notes, but provider dashboards and founder/admin approval control money, identity, receiver assignment, refunds, and payout release.",
+    ].join("\n");
+  }
+
   function founderStepText(step = {}, index = 0) {
     const safeValues = Array.isArray(step.safe_values) ? step.safe_values : [];
     return [
@@ -449,6 +484,53 @@
       : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider packs returned by the readiness API.</div>`;
   }
 
+  function renderProviderMatrix(report) {
+    if (!providerMatrixList) return;
+    const matrix = report?.provider_launch_matrix || {};
+    const rails = Array.isArray(matrix.rails) ? matrix.rails.slice() : [];
+    rails.sort((left, right) => Number(left.activation_order || 99) - Number(right.activation_order || 99));
+
+    providerMatrixList.innerHTML = rails.length
+      ? rails
+          .map((rail) => {
+            const missing = Array.isArray(rail.missing) ? rail.missing : [];
+            const safeValues = Array.isArray(rail.safe_values) ? rail.safe_values : [];
+            return `
+              <article class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div class="min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                      <span class="grid h-9 w-9 place-items-center rounded-full bg-on-surface font-label text-xs font-bold text-white">${escapeHtml(String(rail.activation_order || "?").padStart(2, "0"))}</span>
+                      <strong class="font-display text-xl">${escapeHtml(rail.label || "Provider rail")}</strong>
+                      <span class="rounded-full px-3 py-1 font-label text-xs ${statusTone(rail.status)}">${escapeHtml(rail.status_label || statusLabel(rail.status))}</span>
+                      <span class="rounded-full bg-white/70 px-3 py-1 font-label text-xs text-secondary">${escapeHtml(rail.type || "rail")}</span>
+                    </div>
+                    <p class="mt-3 text-sm leading-6 text-on-surface-variant">${escapeHtml(rail.launch_role || "")}</p>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant"><strong class="text-on-surface">Visibility:</strong> ${escapeHtml(rail.public_visibility || "")}</p>
+                    <p class="mt-2 text-sm leading-6 text-on-surface-variant"><strong class="text-on-surface">Next:</strong> ${escapeHtml(rail.next || "")}</p>
+                    <p class="mt-2 text-xs leading-5 text-secondary">${escapeHtml(rail.founder_rule || "")}</p>
+                    ${missing.length ? `<p class="mt-3 font-label text-xs uppercase tracking-[0.14em] text-secondary">Missing: ${escapeHtml(missing.join(", "))}</p>` : ""}
+                  </div>
+                  <div class="flex shrink-0 flex-wrap gap-2">
+                    ${
+                      rail.docs_url
+                        ? `<a class="inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-primary" href="${escapeHtml(rail.docs_url)}" target="_blank" rel="noopener">Docs</a>`
+                        : ""
+                    }
+                    ${
+                      safeValues.length
+                        ? `<button class="copy-value inline-flex h-10 items-center justify-center rounded-full border border-outline-variant/50 bg-white/72 px-4 font-label text-sm font-bold text-on-surface-variant" data-copy-value="${escapeHtml(safeValues.join("\n"))}" type="button">Copy refs</button>`
+                        : ""
+                    }
+                  </div>
+                </div>
+              </article>
+            `;
+          })
+          .join("")
+      : `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">No provider launch matrix returned by the readiness API.</div>`;
+  }
+
   function renderFounderActionPack(report) {
     if (!founderActionList) return;
     const pack = report?.founder_action_pack || {};
@@ -577,6 +659,7 @@
     );
     updateStats(counts);
     renderLaunchGate(report);
+    renderProviderMatrix(report);
     renderFounderActionPack(report);
     renderPilotScript(report);
     nextActionsCount.textContent = `${nextActions.length} priorit${nextActions.length === 1 ? "y" : "ies"}`;
@@ -604,6 +687,9 @@
     categories.innerHTML = "";
     if (providerPackList) {
       providerPackList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
+    }
+    if (providerMatrixList) {
+      providerMatrixList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
     }
     if (founderActionList) {
       founderActionList.innerHTML = `<div class="rounded-3xl border border-outline-variant/30 bg-white/58 p-5 text-on-surface-variant">${escapeHtml(message)}</div>`;
@@ -701,6 +787,12 @@
   copyProviderPackButtons.forEach((button) => {
     button.addEventListener("click", async () => {
       await copyText(buildProviderPack(), "Provider setup pack copied.");
+    });
+  });
+
+  copyProviderMatrixButtons.forEach((button) => {
+    button.addEventListener("click", async () => {
+      await copyText(buildProviderMatrixPack(), "Provider launch matrix copied.");
     });
   });
 
