@@ -151,6 +151,24 @@ async function getPayPalAccessToken(baseUrl) {
   return data.access_token;
 }
 
+async function getPayPalOrderDetails(baseUrl, accessToken, orderId) {
+  const response = await fetch(`${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}`, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await response.json();
+  if (!response.ok) {
+    const error = new Error(data?.message || data?.details?.[0]?.description || "Could not inspect PayPal order before capture.");
+    error.statusCode = response.status || 502;
+    throw error;
+  }
+
+  return data;
+}
+
 function firstCapture(captureResponse) {
   const units = Array.isArray(captureResponse.purchase_units) ? captureResponse.purchase_units : [];
   for (const unit of units) {
@@ -186,12 +204,13 @@ function collectPayPalRequestCodes(captureResponse = {}) {
   return [...codes];
 }
 
-function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
+function assertPayPalEvidenceMatchesRequestCode(providerEvidence, requestCode, evidenceLabel) {
   const expectedCode = requiredText(requestCode, "Request code").toUpperCase();
-  const codes = collectPayPalRequestCodes(captureResponse);
+  const codes = collectPayPalRequestCodes(providerEvidence);
+  const label = evidenceLabel || "PayPal provider evidence";
   if (!codes.length) {
     const error = new Error(
-      "PayPal capture response did not include a Swadakta request code. Keep the captured funds in founder review and reconcile manually before marking a request paid.",
+      `${label} did not include a Swadakta request code. Pause the PayPal flow for founder review and reconcile manually before marking a request paid.`,
     );
     error.statusCode = 409;
     throw error;
@@ -199,7 +218,7 @@ function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
 
   if (!codes.includes(expectedCode)) {
     const error = new Error(
-      `PayPal capture request code mismatch. Expected ${expectedCode}, but provider evidence returned ${codes.join(", ")}.`,
+      `${label} request code mismatch. Expected ${expectedCode}, but provider evidence returned ${codes.join(", ")}.`,
     );
     error.statusCode = 409;
     throw error;
@@ -208,9 +227,63 @@ function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
   return codes;
 }
 
+function assertPayPalOrderMatchesRequestCode(orderDetails, requestCode) {
+  return assertPayPalEvidenceMatchesRequestCode(orderDetails, requestCode, "PayPal order");
+}
+
+function assertPayPalCaptureMatchesRequestCode(captureResponse, requestCode) {
+  return assertPayPalEvidenceMatchesRequestCode(captureResponse, requestCode, "PayPal capture");
+}
+
 function moneyAmount(value) {
   const amount = Number(value || 0);
   return Number.isFinite(amount) && amount > 0 ? Math.round(amount) : 0;
+}
+
+function moneyMinorUnits(value) {
+  const amount = Number(value || 0);
+  return Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0;
+}
+
+function firstPurchaseUnitAmount(providerEvidence = {}) {
+  const units = Array.isArray(providerEvidence.purchase_units) ? providerEvidence.purchase_units : [];
+  const amount = units.find((unit) => unit?.amount?.value && unit?.amount?.currency_code)?.amount;
+  return amount
+    ? {
+        value: amount.value,
+        currency_code: String(amount.currency_code || "").trim().toUpperCase(),
+      }
+    : null;
+}
+
+function assertPayPalOrderAmountMatchesStoredQuote(orderDetails, request = {}) {
+  const orderAmount = firstPurchaseUnitAmount(orderDetails);
+  if (!orderAmount) {
+    const error = new Error("PayPal order details did not include amount/currency evidence. Capture is paused for founder review.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  const orderMinorUnits = moneyMinorUnits(orderAmount.value);
+  const quoteMinorUnits = moneyMinorUnits(request.quote_amount);
+  const orderCurrency = orderAmount.currency_code;
+  const quoteCurrency = String(request.quote_currency || "").trim().toUpperCase();
+
+  if (!quoteMinorUnits || !quoteCurrency) {
+    const error = new Error("Saved Swadakta quote amount/currency is missing. Capture is paused until the request quote is reconciled.");
+    error.statusCode = 409;
+    throw error;
+  }
+
+  if (orderCurrency !== quoteCurrency || orderMinorUnits !== quoteMinorUnits) {
+    const error = new Error(
+      `PayPal order amount/currency does not match the saved quote. Order returned ${orderCurrency || "unknown"} ${orderAmount.value}; quote expects ${quoteCurrency} ${request.quote_amount}. Capture is paused for founder review.`,
+    );
+    error.statusCode = 409;
+    throw error;
+  }
+
+  return orderAmount;
 }
 
 async function findRequestByCode(authHeader, requestCode) {
@@ -264,7 +337,17 @@ async function capturePayPalOrder(authHeader, payload) {
   const requestCode = requiredText(payload.request_code, "Request code").toUpperCase();
   const orderId = normalizePayPalOrderId(payload.paypal_order_id || payload.payment_reference);
   const baseUrl = paypalBaseUrl();
+  const request = await findRequestByCode(authHeader, requestCode);
+  if (!request) {
+    const error = new Error("No Swadakta request matched the request code, so PayPal capture was not attempted.");
+    error.statusCode = 404;
+    throw error;
+  }
+
   const accessToken = await getPayPalAccessToken(baseUrl);
+  const orderDetails = await getPayPalOrderDetails(baseUrl, accessToken, orderId);
+  const paypalOrderRequestCodes = assertPayPalOrderMatchesRequestCode(orderDetails, requestCode);
+  const paypalOrderAmount = assertPayPalOrderAmountMatchesStoredQuote(orderDetails, request);
 
   const captureResponse = await fetch(`${baseUrl}/v2/checkout/orders/${encodeURIComponent(orderId)}/capture`, {
     method: "POST",
@@ -291,16 +374,15 @@ async function capturePayPalOrder(authHeader, payload) {
     throw error;
   }
 
-  const paypalRequestCodes = assertPayPalCaptureMatchesRequestCode(data, requestCode);
-  const amount = moneyAmount(capture.amount?.value || data.purchase_units?.[0]?.amount?.value);
-  const currency = capture.amount?.currency_code || data.purchase_units?.[0]?.amount?.currency_code || "";
+  const paypalCaptureRequestCodes = assertPayPalCaptureMatchesRequestCode(data, requestCode);
+  const paypalRequestCodes = [...new Set([...paypalOrderRequestCodes, ...paypalCaptureRequestCodes])];
+  const amount = moneyAmount(capture.amount?.value || data.purchase_units?.[0]?.amount?.value || paypalOrderAmount.value);
+  const currency =
+    capture.amount?.currency_code ||
+    data.purchase_units?.[0]?.amount?.currency_code ||
+    paypalOrderAmount.currency_code ||
+    "";
   const reference = [orderId, capture.id].filter(Boolean).join(" / ");
-  const request = await findRequestByCode(authHeader, requestCode);
-  if (!request) {
-    const error = new Error("PayPal captured, but no Swadakta request matched the request code.");
-    error.statusCode = 404;
-    throw error;
-  }
 
   const updatePayload = paymentReconciliationPayload({
     amount,
@@ -321,6 +403,8 @@ async function capturePayPalOrder(authHeader, payload) {
     protected_amount: updatePayload.protected_amount,
     provider_reference: updatePayload.payment_reference,
     paypal_request_codes: paypalRequestCodes,
+    paypal_order_request_codes: paypalOrderRequestCodes,
+    paypal_capture_request_codes: paypalCaptureRequestCodes,
     updated_request_id: updatedRequest?.id || null,
   };
 }
@@ -351,7 +435,11 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.__test = {
+  assertPayPalOrderAmountMatchesStoredQuote,
+  assertPayPalOrderMatchesRequestCode,
   assertPayPalCaptureMatchesRequestCode,
   collectPayPalRequestCodes,
+  firstPurchaseUnitAmount,
+  moneyMinorUnits,
   requestCodeFromText,
 };

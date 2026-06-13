@@ -281,7 +281,10 @@ PayPal capture endpoint:
 The capture endpoint:
 
 - Requires a signed-in Supabase admin session.
-- Captures an approved PayPal order using the order ID stored in `Payment/provider ref`.
+- Reloads the saved Swadakta request by `request_code` before contacting PayPal, so capture is not attempted for an unknown or deleted request.
+- Inspects PayPal order details before capture and confirms the order already carries the same Swadakta `request_code` in `reference_id`, `custom_id`, or `invoice_id`.
+- Confirms the PayPal order amount and currency match the saved Swadakta quote before capture, so stale or wrong-amount orders pause for founder review before money is taken.
+- Captures an approved PayPal order using the order ID stored in `Payment/provider ref` only after those pre-capture checks pass.
 - Confirms the PayPal capture response still contains the same Swadakta `request_code` in the purchase-unit/provider evidence before the app updates any request.
 - Updates the Swadakta request record to `Payment: Paid` and `Funds: Deposit confirmed` only when PayPal amount/currency matches the saved quote.
 - Marks the request `Deposit paid` when amount is short or no quote amount is recorded.
@@ -309,7 +312,7 @@ Admin workflow:
 4. Click `Save update`.
 5. Use `Copy quote` to send the client the approved payment message.
 6. After the client approves/pays through PayPal, click `Capture PayPal order`.
-7. If PayPal returns a different or missing Swadakta request code, keep the payment in founder review and reconcile it manually before marking any request paid.
+7. If PayPal order details or capture evidence returns a different/missing Swadakta request code, or if the order amount/currency does not match the saved quote, keep the payment in founder review and reconcile it manually before marking any request paid.
 8. Confirm the request now shows paid/protected funds before assigning or continuing work.
 
 PayPal order creation is currently enabled for `AUD`, `USD`, `GBP`, and `EUR` quotes. Keep `KES` jobs on M-Pesa, bank transfer, Wise, or manual PayPal invoice until account/currency support is confirmed.

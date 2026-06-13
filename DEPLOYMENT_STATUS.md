@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `31`
+- Local commits queued behind the Vercel rate limit: `33`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -65,6 +65,8 @@ Queued local release contents:
 29. Expanded AI dock chat layout gives the floating Swadakta AI assistant a compact header, one-line action rail, hidden repeated safety note, and a much larger conversation area on desktop and mobile.
 30. Stored payment acceptance gate preservation ensures the server payment context fetches `job_acceptance_status` and treats the saved explicit status as more authoritative than stale compliance flags before creating Stripe, PayPal, M-Pesa, or Wise payment routes.
 31. PayPal capture request-code matching blocks a capture from marking a Swadakta request paid unless the PayPal provider evidence returns the same Swadakta `request_code`, reducing wrong-request payment reconciliation risk.
+32. AI chat mobile viewport correction removes the leftover fixed-height dock behavior, uses the full available mobile sheet height, and cache-busts the assistant dock across all public, account, and admin pages.
+33. PayPal pre-capture order/quote validation reloads the saved request first, inspects PayPal order details before capture, blocks mismatched request codes, and refuses stale/wrong-amount orders before money is taken.
 
 Before the next push:
 
