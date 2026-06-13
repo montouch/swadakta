@@ -4,6 +4,8 @@ Last updated: June 13, 2026
 
 This is the founder-side action board for turning Swadakta from a working website into a real operating business. Treat it as the checklist to work through in Chrome with the provider dashboards open.
 
+Use [FOUNDER_EVIDENCE_REGISTER.md](FOUNDER_EVIDENCE_REGISTER.md) as the evidence standard before any launch flag is set to `true`. A dashboard flag should never be ahead of the private proof folder, provider dashboard, or adviser confirmation.
+
 ## Launch Stance
 
 Launch Swadakta as a quote-first verified concierge marketplace.
@@ -161,6 +163,8 @@ Use `PILOT_TEST_SCRIPT.md` for the exact rehearsal.
 After this passes, set `SWADAKTA_OWNER_FIRST_PAID_PILOT_PASSED=true` in Vercel only if the proof, payment, identity, tracking, and closeout records are complete. Leave it false if anything felt improvised.
 
 High-value property, title, construction, supplier-deposit, or sensitive-funds jobs stay blocked until a regulated escrow/provider-held funds route or written legal confirmation exists. Set `SWADAKTA_OWNER_REGULATED_ESCROW_READY=true` only after that route is real, documented, and usable.
+
+Run `scripts/check-founder-evidence.mjs` before changing either flag so the register still covers the current owner and provider readiness gates.
 
 ## What The Founder Must Not Skip
 

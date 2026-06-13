@@ -113,6 +113,14 @@ By default the Vercel function-budget guard allows 12 `api/**/*.js` files, match
 
 If Vercel reports `Deployment rate limited - retry in 24 hours`, do not keep pushing low-risk or cosmetic changes. Continue locally, run targeted checks, use `scripts/deployment-state.mjs` to confirm the state, and push one clean batch when the deployment window resets. Current Vercel limits are tracked in [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md).
 
+Run the founder evidence register check before changing any owner launch flag, payment expansion flag, or paid-launch gate:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-founder-evidence.mjs
+```
+
+The register maps every owner-controlled Vercel flag and Paystack/Flutterwave expansion flag to the proof required before it can be set to `true`.
+
 Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
 
 ```powershell
@@ -127,7 +135,7 @@ Use `.env.example` as the no-secret checklist for Vercel production variables. R
 
 ## Go live
 
-See [REAL_WORLD_LAUNCH_BOARD.md](REAL_WORLD_LAUNCH_BOARD.md), [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md), [PILOT_TEST_SCRIPT.md](PILOT_TEST_SCRIPT.md), [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the real-world founder setup, first paid pilot rehearsal, Supabase, founder console, Vercel, payments, domain, corridor, and launch checklist.
+See [REAL_WORLD_LAUNCH_BOARD.md](REAL_WORLD_LAUNCH_BOARD.md), [FOUNDER_ACTION_PACK.md](FOUNDER_ACTION_PACK.md), [FOUNDER_EVIDENCE_REGISTER.md](FOUNDER_EVIDENCE_REGISTER.md), [PILOT_TEST_SCRIPT.md](PILOT_TEST_SCRIPT.md), [ACTUALIZATION.md](ACTUALIZATION.md), [LAUNCH_RUNBOOK.md](LAUNCH_RUNBOOK.md), [CORRIDOR_OPERATIONS.md](CORRIDOR_OPERATIONS.md), and [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md) for the real-world founder setup, first paid pilot rehearsal, Supabase, founder console, Vercel, payments, domain, corridor, and launch checklist.
 
 See [PAYMENTS_SETUP.md](PAYMENTS_SETUP.md) for the Stripe, PayPal, M-Pesa, bank-transfer, and Wise fallback launch workflow.
 
