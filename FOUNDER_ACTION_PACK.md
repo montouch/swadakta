@@ -8,7 +8,7 @@ For the exact proof needed before owner or Africa expansion flags can be set to 
 
 ## Launch Position
 
-Use Swadakta first as a quote-first concierge and verified-operator marketplace. Do not market it as a bank, remittance provider, legal service, customs broker, licensed escrow service, or guaranteed delivery company.
+Use Swadakta first as a quote-first concierge and verified-operator marketplace. Do not market it as a bank, remittance provider, legal service, customs broker, licensed escrow service, or guaranteed delivery company. Swadakta does not hold client funds; payment providers, banks, direct recipients, suppliers, or regulated escrow/payment providers handle client money.
 
 The safe launch rule is simple: show the live site now, collect non-sensitive pilot interest, and take only low-value paid jobs after legal, insurance, payment-evidence, and ID-verification gates are ready.
 
@@ -37,7 +37,7 @@ When done, set `SWADAKTA_OWNER_BUSINESS_REGISTERED=true` and `SWADAKTA_OWNER_KEN
   - https://www.accc.gov.au/consumers/problem-with-a-product-or-service-you-bought
   - https://www.fairwork.gov.au/find-help-for/independent-contractors
   - https://www.oaic.gov.au/privacy/privacy-guidance-for-organisations-and-government-agencies/organisations/small-business
-- Get legal/compliance advice before holding or moving client money outside regulated provider rails:
+- Get legal/compliance advice before adding any provider-held, regulated escrow, remittance, stored-value, or payment-facilitation route. Do not hold or move client money directly:
   - https://www.austrac.gov.au/enrol-and-register-remittance
   - https://www.asic.gov.au/for-finance-professionals/afs-licensees/do-you-need-an-afs-licence/
 

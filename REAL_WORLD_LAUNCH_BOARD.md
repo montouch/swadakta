@@ -10,7 +10,7 @@ Use [FOUNDER_EVIDENCE_REGISTER.md](FOUNDER_EVIDENCE_REGISTER.md) as the evidence
 
 Launch Swadakta as a quote-first verified concierge marketplace.
 
-Do not describe Swadakta as a bank, remittance company, licensed escrow company, law firm, customs broker, immigration adviser, tax adviser, or guaranteed courier. The app can track funds, milestones, proof, and release decisions, but money should stay inside licensed provider rails unless a lawyer confirms that Swadakta can hold or move money directly.
+Do not describe Swadakta as a bank, remittance company, licensed escrow company, law firm, customs broker, immigration adviser, tax adviser, or guaranteed courier. The app can track funds, milestones, proof, and provider-action decisions, but Swadakta will not hold client funds. Client money must stay with Stripe, PayPal, M-Pesa, a bank, a direct supplier/recipient, or a regulated escrow/payment provider unless a future regulated legal route is explicitly approved and implemented.
 
 Best first paid offer:
 
@@ -33,7 +33,7 @@ Best first paid offer:
    - Stripe/PayPal for global client deposits where supported.
    - M-Pesa for Kenya KES only after Safaricom/Daraja business approval.
    - Wise hidden as admin fallback, not a public default.
-   - True escrow only through a regulated escrow/payment provider or after legal advice.
+   - True escrow only through a regulated escrow/payment provider. Do not use Swadakta operating or personal accounts as escrow.
 
 4. Choose the first ID verification posture.
    - Sumsub for global users.
@@ -60,7 +60,7 @@ Wise stays fallback-only in every corridor. Do not expose it as a normal self-se
 ### Official-source notes checked June 13, 2026
 
 - Australia business setup should use official government paths first. Business.gov.au says business-name registration should come after choosing the structure, getting an ABN, and checking name availability; ABN registration is free through the Australian Government Business Registration Service/ABR if the founder is running a business or enterprise.
-- AUSTRAC is a boundary check, not a normal setup step to guess through. If Swadakta provides a designated service with an Australian link, AUSTRAC says enrolment can be required, and remittance or virtual asset service providers must both enrol and register. The launch rule remains: get legal/compliance advice before holding, transferring, remitting, pooling, or releasing client money outside provider rails.
+- AUSTRAC is a boundary check, not a normal setup step to guess through. If Swadakta provides a designated service with an Australian link, AUSTRAC says enrolment can be required, and remittance or virtual asset service providers must both enrol and register. The launch rule remains: do not hold, transfer, remit, pool, or release client money directly; get legal/compliance advice before adding any provider-held, regulated escrow, remittance, stored-value, or payment-facilitation route.
 - OAIC small-business guidance says many small businesses are not covered by the Privacy Act, but some are. Because Swadakta handles IDs, addresses, proof media, payment references, family contacts, and cross-border operations, treat privacy review as launch-critical even if a size exemption might apply.
 - Safaricom Daraja is the official M-Pesa API developer portal. Use sandbox/testing first, then go live only after Kenya business/payment setup, callback protection, settlement, tax, and evidence mapping are confirmed.
 
@@ -83,7 +83,7 @@ Official starting points:
 
 Ask a lawyer/accountant to review:
 
-- Whether Swadakta can hold client funds, or whether all money must stay in Stripe/PayPal/M-Pesa/escrow provider accounts.
+- Confirm in writing that Swadakta will not hold client funds; all client money must stay with Stripe, PayPal, M-Pesa, a bank, a direct supplier/recipient, or a regulated escrow/payment provider unless a future regulated legal route is explicitly approved and implemented.
 - Whether any part of the model becomes remittance, financial services, stored value, escrow, trust money, or payment facilitation.
 - GST, income tax, contractor payments, refunds, international income, record keeping, and provider fees.
 - Terms, privacy, refund/dispute wording, receiver agreement, prohibited-goods rules, and service limitations.

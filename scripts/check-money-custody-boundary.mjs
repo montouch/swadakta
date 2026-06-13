@@ -25,17 +25,34 @@ for (const [file, marker] of [
   ["PAYMENTS_SETUP.md", "Swadakta should not hold client money"],
   ["PAYMENTS_SETUP.md", "The payout itself happens through the configured provider"],
   ["LAUNCH_RUNBOOK.md", "the rule that Swadakta does not hold client money"],
+  ["REAL_WORLD_LAUNCH_BOARD.md", "Swadakta will not hold client funds"],
+  ["REAL_WORLD_LAUNCH_BOARD.md", "all client money must stay with Stripe, PayPal, M-Pesa, a bank, a direct supplier/recipient, or a regulated escrow/payment provider"],
+  ["REAL_WORLD_LAUNCH_BOARD.md", "Do not use Swadakta operating or personal accounts as escrow"],
+  ["FOUNDER_ACTION_PACK.md", "Swadakta does not hold client funds"],
+  ["FOUNDER_ACTION_PACK.md", "Do not hold or move client money directly"],
   ["SUPABASE_PRODUCTION_STATUS.md", "Supabase security advisors returned zero security warnings"],
 ]) {
   assertIncludes(file, marker);
 }
 
-for (const file of ["payments.html", "brief.html", "trust.html", "PAYMENTS_SETUP.md", "LAUNCH_RUNBOOK.md"]) {
+for (const file of [
+  "payments.html",
+  "brief.html",
+  "trust.html",
+  "PAYMENTS_SETUP.md",
+  "LAUNCH_RUNBOOK.md",
+  "REAL_WORLD_LAUNCH_BOARD.md",
+  "FOUNDER_ACTION_PACK.md",
+]) {
   for (const forbidden of [
     "Swadakta holds client money",
     "Swadakta holds funds",
     "Swadakta-held money",
     "Swadakta-held funds",
+    "Whether Swadakta can hold client funds",
+    "Swadakta can hold client funds",
+    "Swadakta can hold client money",
+    "Swadakta can hold or move money directly",
     "Quote first. Provider-held money. Release by proof.",
     "Money is quoted first, tracked by milestone, and released only after proof",
     "Milestone release still needs proof review",
