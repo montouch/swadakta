@@ -99,13 +99,19 @@ Run a no-secret bundle check before demos or after Vercel deploys:
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
 ```
 
+Before pushing during a launch session, check whether GitHub/Vercel and production are ready for another deployment:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/deployment-state.mjs
+```
+
 Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, the Vercel API function budget, the `release.json` freshness manifest, production admin routing/indexing guards, POST-only API method guards, `Allow` headers, and admin-readiness auth so stale sign-in, admin-entry, money, identity, AI, or deploy-shape code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
 
 `release.json` is a no-secret production freshness marker. If production health says the release ID is missing or stale, redeploy the latest `main` commit in Vercel before demonstrating payment, identity, or admin readiness changes.
 
 By default the Vercel function-budget guard allows 12 `api/**/*.js` files, matching the current deployed project shape. Keep shared helpers in `lib/` instead of `api/`; set `SWADAKTA_VERCEL_FUNCTION_BUDGET` only if the hosting plan or Vercel project limit is intentionally changed.
 
-If Vercel reports `Deployment rate limited — retry in 24 hours`, do not keep pushing low-risk or cosmetic changes. Continue locally, run targeted checks, and push one clean batch when the deployment window resets. Current Vercel limits are tracked in [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md).
+If Vercel reports `Deployment rate limited - retry in 24 hours`, do not keep pushing low-risk or cosmetic changes. Continue locally, run targeted checks, use `scripts/deployment-state.mjs` to confirm the state, and push one clean batch when the deployment window resets. Current Vercel limits are tracked in [DEPLOYMENT_STATUS.md](DEPLOYMENT_STATUS.md).
 
 Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
 

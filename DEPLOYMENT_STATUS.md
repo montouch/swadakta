@@ -13,7 +13,7 @@ Last checked: June 13, 2026
 - Latest pushed GitHub `main` commit observed during rate limit: `0892a04` (`Guard Sumsub webhook route health`)
 - Latest deployed GitHub `main` commit observed before the rate limit: `e1de751` (`Keep Sumsub webhook route within identity function`)
 - Production health passed for `https://swadakta.com` with release marker `2026-06-13-route-safe-sumsub-webhook-v1`.
-- Commit `0892a04` is not live yet because Vercel returned `Deployment rate limited — retry in 24 hours.` Its code is a checker/release-marker guard for the Sumsub route behavior already verified manually on production.
+- Commit `0892a04` is not live yet because Vercel returned `Deployment rate limited - retry in 24 hours.` Its code is a checker/release-marker guard for the Sumsub route behavior already verified manually on production.
 - Git integration is connected to `montouch/swadakta` on `main`; the latest push created a fresh production deployment.
 - Chrome is logged into Vercel for this team.
 - Local `.vercel/project.json`: present locally and ignored by Git.
@@ -66,18 +66,24 @@ After linking, `.vercel/project.json` should exist locally but should not be com
 
 Use this when production health says the release is stale, or when GitHub shows a failed Vercel status:
 
-1. Open the Vercel project deployment page:
+1. Run the deployment-state checker:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/deployment-state.mjs
+```
+
+2. Open the Vercel project deployment page when the checker says the Vercel state needs review:
    - https://vercel.com/brownriley37-2646s-projects/swadakta/deployments
-2. Check the GitHub commit status first:
+3. Check the GitHub commit status if the checker cannot reach GitHub:
    - `https://api.github.com/repos/montouch/swadakta/commits/<sha>/status`
-3. If the failure says `Deployment rate limited — retry in 24 hours`, do not keep pushing cosmetic changes. Wait for the deployment window to reset or upgrade the Vercel plan if launch urgency justifies it.
-4. If the failure is not a rate limit, open Vercel project Git settings and confirm:
+4. If the failure says `Deployment rate limited - retry in 24 hours`, do not keep pushing cosmetic changes. Wait for the deployment window to reset or upgrade the Vercel plan if launch urgency justifies it.
+5. If the failure is not a rate limit, open Vercel project Git settings and confirm:
    - Git repository is `montouch/swadakta`.
    - Production branch is `main`.
    - Auto-deploy is enabled for production branch pushes.
    - There is no ignored-build-step rule blocking the latest commits.
-5. If Git settings look correct, manually trigger a production redeploy from the dashboard or reconnect the GitHub integration.
-6. After deployment is `READY`, run:
+6. If Git settings look correct, manually trigger a production redeploy from the dashboard or reconnect the GitHub integration.
+7. After deployment is `READY`, run:
 
 ```powershell
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-production.mjs
