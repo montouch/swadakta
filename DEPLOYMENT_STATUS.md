@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `29`
+- Local commits queued behind the Vercel rate limit: `30`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -63,6 +63,7 @@ Queued local release contents:
 27. Client quote disclosure builder creates copyable, client-safe payment notes with quote total, service-fee inclusion, provider fee/surcharge boundary, protected-funds status, milestone release rule, and escrow/legal boundary language.
 28. Resolution safety-pause workflow gives users an emergency-first path for threats, unsafe handoffs, missing contact, unlawful pressure, restricted goods, or other safety risks, while pausing risky work and routing the case to founder/provider review.
 29. Expanded AI dock chat layout gives the floating Swadakta AI assistant a compact header, one-line action rail, hidden repeated safety note, and a much larger conversation area on desktop and mobile.
+30. Stored payment acceptance gate preservation ensures the server payment context fetches `job_acceptance_status` and treats the saved explicit status as more authoritative than stale compliance flags before creating Stripe, PayPal, M-Pesa, or Wise payment routes.
 
 Before the next push:
 

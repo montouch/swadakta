@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, assistant mobile chat viewport fix, account transaction readiness hub, job-room communication safety pack, receiver code-of-conduct gate, AI dock mobile sheet fix, client quote disclosure builder, resolution safety-pause workflow, and expanded AI dock chat layout.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, a reusable AI preflight test harness, official-source founder setup notes, signed-in account data-control tooling, broader public scope language, auth email deliverability readiness, resolution evidence-path clarity, verification country/base-change safeguards, tracking closeout review workflow, assistant mobile chat viewport fix, account transaction readiness hub, job-room communication safety pack, receiver code-of-conduct gate, AI dock mobile sheet fix, client quote disclosure builder, resolution safety-pause workflow, expanded AI dock chat layout, and stored payment acceptance gate preservation.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -35,11 +35,13 @@
     "ai_dock_mobile_sheet_fix",
     "client_quote_disclosure_builder",
     "resolution_safety_pause_workflow",
-    "ai_dock_expanded_chat_layout"
+    "ai_dock_expanded_chat_layout",
+    "stored_payment_acceptance_gate_preservation"
   ],
-  "queued_commit_count": 29,
+  "queued_commit_count": 30,
   "queued_commits": [
-    "HEAD Improve AI dock layout and safety pause workflow",
+    "HEAD Preserve stored payment acceptance gates",
+    "a604dfd Improve AI dock layout and safety pause workflow",
     "08c4678 Add client quote disclosure builder",
     "ebc672d Fix AI dock viewport and receiver conduct gate",
     "9914277 Add job-room communication safety pack",

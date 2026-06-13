@@ -778,11 +778,12 @@
       rules_acceptance_founder_review: "founder_review",
       rules_acceptance_refuse: "refuse",
     };
-    const flag = flags.find((value) => acceptanceFlags[value]);
-    if (flag) return acceptanceFlags[flag];
 
     const direct = String(request.job_acceptance_status || "").trim().toLowerCase();
     if (["quote_eligible", "evidence_before_quote", "founder_review", "refuse"].includes(direct)) return direct;
+
+    const flag = flags.find((value) => acceptanceFlags[value]);
+    if (flag) return acceptanceFlags[flag];
 
     const notes = String(request.notes || "").toLowerCase();
     if (notes.includes("acceptance gate: do not accept") || notes.includes("refuse unless")) return "refuse";
