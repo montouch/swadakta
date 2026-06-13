@@ -1134,6 +1134,14 @@ const requiredSumsubWebhookMarkers = [
   "non-final callback",
   "bodyParser: false",
 ];
+const requiredSumsubWebhookGuardMarkers = [
+  ["scripts/check-sumsub-webhook-guard.mjs", "Sumsub webhook signature guard checks passed"],
+  ["scripts/check-sumsub-webhook-guard.mjs", "secretEnvName"],
+  ["scripts/check-sumsub-webhook-guard.mjs", "HMAC_SHA256_HEX"],
+  ["scripts/check-sumsub-webhook-guard.mjs", "Sumsub webhook signature verification failed"],
+  ["api/identity/start-verification.js", "verifySumsubSignature"],
+  ["api/identity/start-verification.js", "Missing Sumsub x-payload-digest header"],
+];
 const requiredRobotsMarkers = [
   "Disallow: /admin",
   "Disallow: /admin-ops",
@@ -1546,6 +1554,7 @@ runSecretScan(failures);
 runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
+runLocalScript(failures, "scripts/check-sumsub-webhook-guard.mjs", "Local Sumsub webhook guard check passed");
 runLocalScript(failures, "scripts/check-proof-media-guard.mjs", "Local proof media guard check passed");
 runLocalScript(failures, "scripts/check-money-custody-boundary.mjs", "Local money custody boundary check passed");
 runLocalScript(failures, "scripts/check-payment-reconciliation.mjs", "Local payment reconciliation check passed");
@@ -1790,6 +1799,12 @@ const localSumsubWebhook = localIdentityEndpoint;
 for (const marker of requiredSumsubWebhookMarkers) {
   if (!localSumsubWebhook.includes(marker)) {
     fail(failures, `Local Sumsub webhook is missing marker ${marker}`);
+  }
+}
+for (const [file, marker] of requiredSumsubWebhookGuardMarkers) {
+  const content = await readLocal(file);
+  if (!content.includes(marker)) {
+    fail(failures, `Local ${file} is missing Sumsub webhook guard marker ${marker}`);
   }
 }
 
