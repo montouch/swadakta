@@ -84,6 +84,7 @@ const forbiddenSitemapMarkers = [
   "/resolution",
 ];
 const expectedSitemapLastmod = "2026-06-13";
+const expectedBriefScriptRef = "stitch-brief.js?v=23";
 const requiredStitchScreens = [
   {
     path: "/",
@@ -459,6 +460,10 @@ const requiredAiPreferenceMarkers = [
 ];
 const requiredBriefHtmlMarkers = [
   "brief-freeform",
+  "Create a request.",
+  "brief-flow-steps",
+  "Request title",
+  "Post a Job",
   "Ask AI to organize",
   "Fill manually",
   "data-ai-mode-status",
@@ -479,7 +484,8 @@ const requiredBriefHtmlMarkers = [
   "job acceptance gate",
   "brief-budget",
   "Budget and quote safety",
-  "Payments &amp; Milestone Protection",
+  "Payment and milestone preference",
+  "Publish request",
   "provider-confirmed milestone protection",
   "funds-boundary",
   "not a licensed escrow provider unless a regulated payment or escrow provider is agreed",
@@ -773,7 +779,7 @@ const requiredReadinessApiMarkers = [
   "swadakta-proof",
   "app-data.js?v=61",
   "stitch-portal.js?v=34",
-  "final-ux-theme.css?v=2",
+  "final-ux-theme.css?v=3",
   "final_ux_live_freshness",
   "final_ux_theme_url",
   "account-home-workflow-first-final-ux",
@@ -1421,8 +1427,8 @@ for (const [file, content] of localHtml) {
     if (content.includes("final-ux-theme.css")) {
       fail(failures, `${file} should use admin-theme.css without final-ux-theme.css`);
     }
-  } else if (file !== "admin.html" && !content.includes("final-ux-theme.css?v=2")) {
-    fail(failures, `${file} does not reference final-ux-theme.css?v=2`);
+  } else if (file !== "admin.html" && !content.includes("final-ux-theme.css?v=3")) {
+    fail(failures, `${file} does not reference final-ux-theme.css?v=3`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (content.toLowerCase().includes(marker.toLowerCase())) {
@@ -1674,8 +1680,8 @@ for (const page of requiredPages) {
     if (text.includes("final-ux-theme.css")) {
       fail(failures, `${page} should use admin-theme.css without final-ux-theme.css`);
     }
-  } else if (!text.includes("final-ux-theme.css?v=2")) {
-    fail(failures, `${page} does not reference final-ux-theme.css?v=2`);
+  } else if (!text.includes("final-ux-theme.css?v=3")) {
+    fail(failures, `${page} does not reference final-ux-theme.css?v=3`);
   }
   for (const marker of forbiddenLegacyPurpleMarkers) {
     if (text.toLowerCase().includes(marker.toLowerCase())) {
@@ -1728,8 +1734,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=22")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=22`);
+  if (page === "/brief" && !text.includes(expectedBriefScriptRef)) {
+    fail(failures, `${page} does not reference ${expectedBriefScriptRef}`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1928,22 +1934,22 @@ for (const marker of requiredAdminThemeCssMarkers) {
   }
 }
 
-const { response: finalUxThemeResponse, text: finalUxThemeText } = await fetchText("/final-ux-theme.css?v=2");
+const { response: finalUxThemeResponse, text: finalUxThemeText } = await fetchText("/final-ux-theme.css?v=3");
 if (finalUxThemeResponse.status !== 200) {
-  fail(failures, `final-ux-theme.css?v=2 returned ${finalUxThemeResponse.status}`);
+  fail(failures, `final-ux-theme.css?v=3 returned ${finalUxThemeResponse.status}`);
 } else {
-  pass("final-ux-theme.css?v=2 returned 200");
+  pass("final-ux-theme.css?v=3 returned 200");
 }
 for (const marker of requiredFinalUxThemeCssMarkers) {
   if (!finalUxThemeText.includes(marker)) {
-    fail(failures, `final-ux-theme.css?v=2 is missing marker ${marker}`);
+    fail(failures, `final-ux-theme.css?v=3 is missing marker ${marker}`);
   } else {
     pass(`final-ux-theme.css contains ${marker}`);
   }
 }
 for (const marker of forbiddenLegacyPurpleMarkers) {
   if (finalUxThemeText.toLowerCase().includes(marker.toLowerCase())) {
-    fail(failures, `final-ux-theme.css?v=2 still contains legacy purple UI marker ${marker}`);
+    fail(failures, `final-ux-theme.css?v=3 still contains legacy purple UI marker ${marker}`);
   }
 }
 
@@ -2197,11 +2203,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=22");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText(`/${expectedBriefScriptRef}`);
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=22 returned ${briefScriptResponse.status}`);
+  fail(failures, `${expectedBriefScriptRef} returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=22 returned 200");
+  pass(`${expectedBriefScriptRef} returned 200`);
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {
