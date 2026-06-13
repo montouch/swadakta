@@ -1563,6 +1563,7 @@ for (const marker of requiredSecretScanMarkers) {
 }
 runSecretScan(failures);
 runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
+runLocalScript(failures, "scripts/check-supabase-contract.mjs", "Local Supabase contract check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 runLocalScript(failures, "scripts/check-sumsub-webhook-guard.mjs", "Local Sumsub webhook guard check passed");

@@ -107,7 +107,7 @@ Before pushing during a launch session, check whether GitHub/Vercel and producti
 C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/deployment-state.mjs
 ```
 
-Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, the Vercel API function budget, the `release.json` freshness manifest, production admin routing/indexing guards, POST-only API method guards, `Allow` headers, and admin-readiness auth so stale sign-in, admin-entry, money, identity, AI, or deploy-shape code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
+Use `SWADAKTA_BASE_URL=http://127.0.0.1:4173` to check the local static server. The check verifies the shared `app-data.js` bundle, the account-home `stitch-portal.js` bundle, the founder ops bundle, the Supabase table/RLS/RPC/storage contract, the Vercel API function budget, the `release.json` freshness manifest, production admin routing/indexing guards, POST-only API method guards, `Allow` headers, and admin-readiness auth so stale sign-in, admin-entry, money, identity, AI, database, or deploy-shape code is caught before a demo. The same check is available as a manual GitHub Action named `Production Health`.
 
 `release.json` is a no-secret production freshness marker. If production health says the release ID is missing or stale, redeploy the latest `main` commit in Vercel before demonstrating payment, identity, or admin readiness changes.
 
