@@ -1408,6 +1408,7 @@
     const freeformBrief = value("#brief-freeform");
     const proof = value("#brief-proof");
     const items = value("#brief-items");
+    const fundsBoundaryAccepted = Boolean(document.querySelector("#funds-boundary")?.checked);
     syncBriefRoutePlan();
     applyInlineGoodsSafety();
     const routeFields = resolveRouteFields();
@@ -1464,13 +1465,17 @@
         identity_verification_required: true,
         identity_verification_consent: true,
         contact_permission: true,
-        professional_boundary_accepted: true,
+        professional_boundary_accepted: fundsBoundaryAccepted,
         terms_accepted_at: now,
         privacy_accepted_at: now,
       };
 
       if (!payload.origin_country || !payload.destination_country || !payload.task_location) {
         throw new Error("Choose a route type, origin, destination, and task location before submitting.");
+      }
+
+      if (!fundsBoundaryAccepted) {
+        throw new Error("Confirm the funds boundary before submitting: Swadakta is not a licensed escrow provider unless a regulated provider is agreed in writing.");
       }
 
       const result = await window.SwadaktaData.createRequest(payload);

@@ -1,7 +1,7 @@
 {
-  "release_id": "2026-06-13-request-acceptance-enforcement-v1",
-  "release_name": "Request acceptance enforcement for protected jobs",
-  "description": "Blocks refused jobs from normal submission, forces evidence-first and founder-review requests into protected lanes, and hides review-gated work from the receiver marketplace.",
+  "release_id": "2026-06-13-funds-boundary-acknowledgement-v1",
+  "release_name": "Funds boundary acknowledgement before paid briefs",
+  "description": "Requires clients to acknowledge Swadakta is not a licensed escrow provider unless a regulated provider is agreed, and enforces the acknowledgement before request creation.",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
   "source_branch": "main"

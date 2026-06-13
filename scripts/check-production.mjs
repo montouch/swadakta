@@ -233,10 +233,12 @@ const requiredAppDataMarkers = [
   "assertPaidPostingAllowed",
   "applyRequestAcceptanceGate",
   "requestAcceptanceStatus",
+  "assertRequestAcknowledgements",
   "rules_acceptance_refuse",
   "acceptance_evidence_before_quote",
   "provider_evidence",
   "This job cannot be submitted through the normal Swadakta flow",
+  "Confirm the funds boundary before submitting paid work",
   "get_my_account_profile",
   "createMpesaStkPush",
   "createResolutionCase",
@@ -423,6 +425,8 @@ const requiredBriefHtmlMarkers = [
   "Budget and quote safety",
   "Payments &amp; Milestone Protection",
   "provider-confirmed milestone protection",
+  "funds-boundary",
+  "not a licensed escrow provider unless a regulated payment or escrow provider is agreed",
 ];
 const requiredBriefScriptMarkers = [
   "brief-ai-organize",
@@ -451,6 +455,8 @@ const requiredBriefScriptMarkers = [
   "This job cannot be posted normally",
   "Verified account; evidence first",
   "Verified account; founder review required",
+  "fundsBoundaryAccepted",
+  "Confirm the funds boundary before submitting",
   "Payment gate:",
   "Receiver gate:",
   "rulesStorageKey",
@@ -690,7 +696,7 @@ const requiredReadinessApiMarkers = [
   "private_proof_media_bucket",
   "storage_read_policy_probe",
   "swadakta-proof",
-  "app-data.js?v=55",
+  "app-data.js?v=56",
   "stitch-portal.js?v=34",
   "final-ux-theme.css?v=2",
   "final_ux_live_freshness",
@@ -1540,8 +1546,8 @@ for (const page of requiredPages) {
       }
     }
   }
-  if (page === "/brief" && !text.includes("stitch-brief.js?v=20")) {
-    fail(failures, `${page} does not reference stitch-brief.js?v=20`);
+  if (page === "/brief" && !text.includes("stitch-brief.js?v=21")) {
+    fail(failures, `${page} does not reference stitch-brief.js?v=21`);
   }
   if (page === "/brief") {
     for (const marker of requiredBriefHtmlMarkers) {
@@ -1986,11 +1992,11 @@ for (const marker of requiredAiPreferenceMarkers) {
   }
 }
 
-const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=20");
+const { response: briefScriptResponse, text: briefScriptText } = await fetchText("/stitch-brief.js?v=21");
 if (briefScriptResponse.status !== 200) {
-  fail(failures, `stitch-brief.js?v=20 returned ${briefScriptResponse.status}`);
+  fail(failures, `stitch-brief.js?v=21 returned ${briefScriptResponse.status}`);
 } else {
-  pass("stitch-brief.js?v=20 returned 200");
+  pass("stitch-brief.js?v=21 returned 200");
 }
 for (const marker of requiredBriefScriptMarkers) {
   if (!briefScriptText.includes(marker)) {

@@ -806,6 +806,23 @@
     };
   }
 
+  function assertRequestAcknowledgements(request) {
+    if (request.compliance_acknowledged !== true) {
+      throw new Error("Confirm the route, item, compliance, and proof statement before submitting paid work.");
+    }
+    if (request.professional_boundary_accepted !== true) {
+      throw new Error(
+        "Confirm the funds boundary before submitting paid work. Swadakta is not a licensed escrow provider unless a regulated payment or escrow provider is agreed in writing.",
+      );
+    }
+    if (request.identity_verification_consent !== true) {
+      throw new Error("Confirm ID verification consent before submitting paid work.");
+    }
+    if (!request.terms_accepted_at || !request.privacy_accepted_at) {
+      throw new Error("Accept the Swadakta terms and privacy policy before submitting paid work.");
+    }
+  }
+
   async function assertPaidPostingAllowed(payload) {
     const supabase = await getSupabase();
 
@@ -839,6 +856,7 @@
 
   async function createRequest(payload) {
     const normalized = applyRequestAcceptanceGate(normalizeRequest(payload));
+    assertRequestAcknowledgements(normalized);
     const supabase = await getSupabase();
 
     if (!supabase) {
