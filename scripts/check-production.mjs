@@ -1566,6 +1566,7 @@ for (const marker of requiredSecretScanMarkers) {
   }
 }
 runSecretScan(failures);
+runLocalScript(failures, "scripts/check-e2e-credential-boundary.mjs", "Local E2E credential boundary check passed");
 runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
 runLocalScript(failures, "scripts/check-ai-protected-preflight.mjs", "Local AI protected-action preflight check passed");
 runLocalScript(failures, "scripts/check-founder-evidence.mjs", "Local founder evidence register check passed");

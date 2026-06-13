@@ -102,6 +102,7 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 ```
 
 Add `--strict-auth` after setting `SWADAKTA_E2E_EMAIL`, `SWADAKTA_E2E_PASSWORD`, `SWADAKTA_E2E_ADMIN_EMAIL`, and `SWADAKTA_E2E_ADMIN_PASSWORD` in the shell to require live user/admin sign-in and readiness-summary checks. Do not commit those values.
+Keep E2E passwords out of chat, docs, `.env.example`, and command history. Put them only in an ignored local env file or a private shell session, then run `scripts/check-e2e-credential-boundary.mjs` before strict auth so the repo proves it is not carrying those values.
 
 For a paid-pilot rehearsal, use `--paid-pilot` instead of the normal demo check. This mode also requires live auth E2E credentials, refuses `--skip-visual`, runs the founder evidence register check as its own gate, and runs the live readiness summary in strict mode so paid work cannot be treated as ready while owner/provider blockers remain:
 
