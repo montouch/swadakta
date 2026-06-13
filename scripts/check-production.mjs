@@ -1191,6 +1191,10 @@ const requiredAiServerMarkers = [
   ["supabase/functions/swadakta-assistant/index.ts", "protected_action_preflight"],
   ["supabase/functions/swadakta-assistant/index.ts", "deterministic-guardrail"],
   ["supabase/functions/swadakta-assistant/index.ts", "secret_or_credential"],
+  ["scripts/check-ai-protected-preflight.mjs", "AI protected-action preflight checks passed"],
+  ["scripts/check-ai-protected-preflight.mjs", "deterministic-guardrail"],
+  ["scripts/check-ai-protected-preflight.mjs", "identity_approval"],
+  ["scripts/check-ai-protected-preflight.mjs", "draft-only external-message prompt"],
 ];
 const requiredIdentityVerificationDocMarkers = [
   "Current app routing",

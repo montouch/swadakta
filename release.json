@@ -1,7 +1,7 @@
 {
   "release_id": "2026-06-13-launch-readiness-batch-v1",
   "release_name": "Launch readiness batch",
-  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, and AI protected-action preflight.",
+  "description": "Batched local release covering Vercel rate-limit recovery docs, founder evidence readiness, final UX cache freshness, Stitch-aligned brief flow, identity return-path fixes, Sumsub status mapping guards, corridor place intelligence with official-alert handoff into paid briefs, server-side payment economics gates, admin corridor rail planning, public route-payment fit guidance, verification readiness planning, AI protected-action preflight, and a reusable AI preflight test harness.",
   "deployment_trigger": "2026-06-13T00:00:00Z-launch-readiness-batch-1",
   "expected_api_function_budget": 12,
   "sumsub_webhook_path": "/api/identity/sumsub-webhook",
@@ -19,11 +19,13 @@
     "admin_corridor_rail_planner",
     "public_route_payment_fit",
     "verification_readiness_planner",
-    "ai_protected_action_preflight"
+    "ai_protected_action_preflight",
+    "ai_preflight_test_harness"
   ],
-  "queued_commit_count": 15,
+  "queued_commit_count": 16,
   "queued_commits": [
-    "HEAD Add AI protected action preflight",
+    "HEAD Add AI protected preflight checks",
+    "8abbecb Add AI protected action preflight",
     "2d77330 Add verification readiness planner",
     "756739e Add public route payment fit",
     "0b1773f Add corridor rail planner",
