@@ -16,6 +16,14 @@
   const draftStatus = document.querySelector("#message-draft-status");
   const submitButton = document.querySelector("#message-submit");
   const liveStatus = document.querySelector("#message-live-status");
+  const safetyPreview = document.querySelector("#message-safety-preview");
+  const safetyPill = document.querySelector("#message-safety-pill");
+  const safetyStatus = document.querySelector("#message-safety-status");
+  const buildAgenda = document.querySelector("#message-build-agenda");
+  const buildProofRequest = document.querySelector("#message-build-proof-request");
+  const buildRecap = document.querySelector("#message-build-recap");
+  const applySafetyPack = document.querySelector("#message-apply-safety-pack");
+  const copySafetyPack = document.querySelector("#message-copy-safety-pack");
 
   if (!card) return;
 
@@ -27,6 +35,7 @@
   let voiceChunks = [];
   let voiceBlob = null;
   let videoRequested = false;
+  let safetyPackText = "";
 
   function setStatus(message, tone = "") {
     if (!draftStatus) return;
@@ -38,6 +47,12 @@
     if (!liveStatus) return;
     liveStatus.textContent = message;
     liveStatus.className = `mt-1 text-sm ${tone || "text-on-surface-variant"}`.trim();
+  }
+
+  function setSafetyStatus(message, tone = "") {
+    if (!safetyStatus) return;
+    safetyStatus.textContent = message;
+    safetyStatus.className = `min-h-6 text-sm font-label sm:self-center ${tone || "text-on-surface-variant"}`.trim();
   }
 
   function readDraft() {
@@ -55,6 +70,134 @@
   function fileSummary(file) {
     const size = file.size >= 1024 * 1024 ? `${(file.size / 1024 / 1024).toFixed(1)} MB` : `${Math.max(1, Math.round(file.size / 1024))} KB`;
     return `${file.name} (${size})`;
+  }
+
+  function statusLabel(value) {
+    return (
+      {
+        progress: "Progress update",
+        blocked: "Blocked",
+        completed: "Completed milestone",
+        needs_admin: "Needs admin",
+        safety_issue: "Safety issue",
+      }[value] || "Progress update"
+    );
+  }
+
+  function currentProofHints() {
+    const files = [...(mediaInput?.files || [])].map((file) => fileSummary(file));
+    const links = String(proofLinksInput?.value || "")
+      .split(/\r?\n/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+    const hints = [];
+
+    if (files.length) hints.push(`Attached media: ${files.join(", ")}`);
+    if (links.length) hints.push(`Existing proof links: ${links.slice(0, 5).join(", ")}${links.length > 5 ? "..." : ""}`);
+    if (voiceBlob) hints.push("Voice note attached: yes, save a written summary with it.");
+    if (videoRequested) hints.push("Video call requested: yes, capture agenda and recap in writing.");
+    return hints;
+  }
+
+  function communicationBoundaryLines() {
+    return [
+      "This message or call does not approve payment release, refunds, ID verification, receiver assignment, restricted goods, or provenance changes.",
+      "Protected decisions require Swadakta/provider evidence in tracking, payments, verification, or admin review.",
+      "If safety, legal, payment, customs, or identity risk appears, pause the work and open a resolution case.",
+    ];
+  }
+
+  function buildCommunicationSafetyPack(kind = "agenda") {
+    const currentMessage = draftInput?.value.trim() || "";
+    const updateStatus = statusLabel(fieldStatus?.value || "progress");
+    const requestLabel = code || "request code pending";
+    const contactLabel = contact || "contact not linked";
+    const proofHints = currentProofHints();
+    const boundaries = communicationBoundaryLines();
+    const purpose =
+      kind === "proof"
+        ? "Ask for the missing proof needed before milestone review."
+        : kind === "recap"
+          ? "Record what was discussed so the job room has a written trail."
+          : "Prepare a focused call without making protected decisions inside the call.";
+    const tasks =
+      kind === "proof"
+        ? [
+            "List the exact photo, receipt, document, location note, voice note, or video needed.",
+            "Ask when the proof can be uploaded to this request.",
+            "Confirm whether anything is blocked, unsafe, delayed, or different from the original scope.",
+          ]
+        : kind === "recap"
+          ? [
+              "Summarize the facts discussed on the call or voice note.",
+              "List proof already received and proof still missing.",
+              "State the next action, owner, and expected time without promising payment release.",
+            ]
+          : [
+              "Confirm the job scope, location, receiver/client availability, and current blocker.",
+              "Agree which proof will be uploaded after the call.",
+              "End with a written recap in this job room before any milestone or issue decision.",
+            ];
+
+    return [
+      "Swadakta job-room safety pack",
+      `Request: ${requestLabel}`,
+      `Contact: ${contactLabel}`,
+      `Update type: ${updateStatus}`,
+      `Purpose: ${purpose}`,
+      "",
+      "What to cover:",
+      ...tasks.map((item) => `- ${item}`),
+      "",
+      "Current draft context:",
+      currentMessage ? `- ${currentMessage}` : "- No typed message yet.",
+      ...proofHints.map((item) => `- ${item}`),
+      "",
+      "Boundary:",
+      ...boundaries.map((item) => `- ${item}`),
+      "",
+      "Written next step:",
+      "- Save the proof, call recap, or blocker update in this job room so tracking and resolution can rely on the same evidence.",
+    ].join("\n");
+  }
+
+  function renderSafetyPack(kind = "agenda") {
+    safetyPackText = buildCommunicationSafetyPack(kind);
+    if (safetyPreview) safetyPreview.textContent = safetyPackText;
+    if (safetyPill) {
+      safetyPill.textContent =
+        kind === "proof" ? "Proof request ready" : kind === "recap" ? "Written recap ready" : "Call agenda ready";
+      safetyPill.className = "inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label text-sm";
+    }
+    try {
+      writeDraft({ ...currentDraftPayload(), communication_safety_pack: safetyPackText });
+    } catch {
+      writeDraft({
+        code,
+        contact,
+        field_status: fieldStatus?.value || "progress",
+        message: draftInput?.value.trim() || "",
+        communication_safety_pack: safetyPackText,
+        updated_at: new Date().toISOString(),
+      });
+    }
+    setSafetyStatus("Pack generated. Apply it to the update or copy it into a message.", "text-primary");
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+    const textarea = document.createElement("textarea");
+    textarea.value = value;
+    textarea.setAttribute("readonly", "");
+    textarea.style.position = "fixed";
+    textarea.style.opacity = "0";
+    document.body.appendChild(textarea);
+    textarea.select();
+    document.execCommand("copy");
+    textarea.remove();
   }
 
   function renderMediaList(files = []) {
@@ -118,11 +261,15 @@
       proof_links: proofLinks,
       has_voice_note: Boolean(voiceBlob),
       video_call_requested: videoRequested,
+      communication_safety_pack: safetyPackText,
       updated_at: new Date().toISOString(),
     };
   }
 
   function updateTextForSubmit(payload, uploadedCount) {
+    if (payload.communication_safety_pack && payload.video_call_requested && !payload.message) {
+      return payload.communication_safety_pack;
+    }
     if (payload.message) return payload.message;
     if (payload.video_call_requested && uploadedCount) return `Video call requested and ${uploadedCount} proof item${uploadedCount === 1 ? "" : "s"} attached.`;
     if (payload.video_call_requested) return "Video call requested from the job room.";
@@ -223,6 +370,8 @@
     if (fieldStatus && saved.field_status) fieldStatus.value = saved.field_status;
     if (proofLinksInput && Array.isArray(saved.proof_links)) proofLinksInput.value = saved.proof_links.join("\n");
     videoRequested = Boolean(saved.video_call_requested);
+    safetyPackText = saved.communication_safety_pack || "";
+    if (safetyPackText && safetyPreview) safetyPreview.textContent = safetyPackText;
     renderMediaList([]);
     if (saved.updated_at) setStatus(`Draft restored from ${new Date(saved.updated_at).toLocaleString()}.`);
   }
@@ -276,7 +425,48 @@
     videoCall.addEventListener("click", () => {
       videoRequested = true;
       renderMediaList(mediaInput?.files || []);
+      renderSafetyPack("agenda");
       setStatus("Video call request added. Keep scheduling inside the job room and do not make payment, release, ID, or assignment decisions on the call alone.");
+    });
+  }
+
+  if (buildAgenda) {
+    buildAgenda.addEventListener("click", () => {
+      renderSafetyPack("agenda");
+    });
+  }
+
+  if (buildProofRequest) {
+    buildProofRequest.addEventListener("click", () => {
+      renderSafetyPack("proof");
+    });
+  }
+
+  if (buildRecap) {
+    buildRecap.addEventListener("click", () => {
+      renderSafetyPack("recap");
+    });
+  }
+
+  if (applySafetyPack) {
+    applySafetyPack.addEventListener("click", () => {
+      if (!safetyPackText) renderSafetyPack("agenda");
+      if (!draftInput) return;
+      const current = draftInput.value.trim();
+      draftInput.value = current ? `${current}\n\n${safetyPackText}` : safetyPackText;
+      setSafetyStatus("Pack applied to the job update.", "text-primary");
+    });
+  }
+
+  if (copySafetyPack) {
+    copySafetyPack.addEventListener("click", async () => {
+      try {
+        if (!safetyPackText) renderSafetyPack("agenda");
+        await copyText(safetyPackText);
+        setSafetyStatus("Proof-safe communication pack copied.", "text-primary");
+      } catch (error) {
+        setSafetyStatus(error.message || "Could not copy the pack.");
+      }
     });
   }
 

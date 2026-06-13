@@ -72,6 +72,44 @@
             <p class="text-on-surface-variant mt-2">Request calls from inside the job so agenda, proof, and decisions stay tied to the request.</p>
           </article>
         </div>
+        <section class="mt-8 rounded-3xl bg-white/72 border border-outline-variant/40 p-5" id="message-safety-pack">
+          <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p class="font-label text-sm uppercase tracking-[0.14em] text-primary">Proof-safe communication pack</p>
+              <h2 class="font-display text-2xl font-bold mt-2">Keep calls useful without moving protected decisions.</h2>
+              <p class="text-on-surface-variant mt-2 max-w-3xl">
+                Build a call agenda, proof request, or written recap that stays attached to the job room. The pack keeps payment release, refunds, ID approval, receiver assignment, and restricted-goods decisions outside chat.
+              </p>
+            </div>
+            <span class="inline-flex min-h-10 px-4 items-center justify-center rounded-full bg-primary-container/10 text-primary font-label text-sm" id="message-safety-pill">Safe draft mode</span>
+          </div>
+          <div class="mt-5 grid gap-3 md:grid-cols-3">
+            <button class="rounded-2xl bg-white/78 border border-outline-variant/40 p-4 text-left hover:border-primary" id="message-build-agenda" type="button">
+              <span class="material-symbols-outlined text-primary">event_note</span>
+              <strong class="block font-display text-lg mt-2">Build call agenda</strong>
+              <span class="block text-sm text-on-surface-variant mt-1">Use before a video or voice call.</span>
+            </button>
+            <button class="rounded-2xl bg-white/78 border border-outline-variant/40 p-4 text-left hover:border-primary" id="message-build-proof-request" type="button">
+              <span class="material-symbols-outlined text-primary">fact_check</span>
+              <strong class="block font-display text-lg mt-2">Build proof request</strong>
+              <span class="block text-sm text-on-surface-variant mt-1">Ask for photos, receipts, links, or a written update.</span>
+            </button>
+            <button class="rounded-2xl bg-white/78 border border-outline-variant/40 p-4 text-left hover:border-primary" id="message-build-recap" type="button">
+              <span class="material-symbols-outlined text-primary">summarize</span>
+              <strong class="block font-display text-lg mt-2">Build written recap</strong>
+              <span class="block text-sm text-on-surface-variant mt-1">Save what was agreed after a call.</span>
+            </button>
+          </div>
+          <div class="mt-5 rounded-2xl bg-surface/70 border border-outline-variant/40 p-4">
+            <p class="font-label text-sm text-on-surface">Generated pack</p>
+            <pre class="mt-3 max-h-72 overflow-auto whitespace-pre-wrap rounded-2xl bg-white/80 p-4 text-sm text-on-surface-variant" id="message-safety-preview">Choose a pack to build a proof-safe agenda or recap.</pre>
+            <div class="mt-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-primary text-white font-bold" id="message-apply-safety-pack" type="button">Apply to update</button>
+              <button class="inline-flex h-11 px-5 items-center justify-center rounded-full bg-white border border-outline-variant/60 text-primary font-bold" id="message-copy-safety-pack" type="button">Copy pack</button>
+              <p class="min-h-6 text-sm text-on-surface-variant font-label sm:self-center" id="message-safety-status" role="status"></p>
+            </div>
+          </div>
+        </section>
         <form class="mt-8 grid gap-5 rounded-3xl bg-white/72 border border-outline-variant/40 p-5" id="message-draft-form">
           <div class="grid gap-4 md:grid-cols-[0.8fr_1.2fr]">
             <label class="grid gap-2">
@@ -136,7 +174,7 @@
     <script src="app-config.js?v=5"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app-data.js?v=61"></script>
-    <script src="messages.js?v=4"></script>
+    <script src="messages.js?v=5"></script>
   <script src="assistant-dock.js?v=15"></script>
 </body>
 </html>
