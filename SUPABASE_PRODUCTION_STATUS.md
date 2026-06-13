@@ -24,8 +24,10 @@ Database: Postgres `17.6.1.127`
   - images, PDFs, short video, and supported audio proof MIME types
   - authenticated users can read/insert/delete their own folder; admins can read through `app_private.is_admin()`.
 - Edge functions are deployed:
-  - `swadakta-assistant`
+  - `swadakta-assistant` version 6, `verify_jwt=true`
   - `noop`
+- `swadakta-assistant` rejects unauthenticated live calls with `401 Missing authorization header`.
+- The deployed AI Edge Function includes the same protected-action preflight, Wise/bank-transfer guardrail, and 64KB AI request-body limit as the Vercel fallback.
 - Auth leaked-password protection is enabled for the Email provider.
 - Supabase security advisors returned zero security warnings after the Auth setting was saved.
 - Duplicate permissive `SELECT` policies on `job_offers` and `resolution_cases` were consolidated into one visible-row policy per table without changing the access model.
@@ -33,6 +35,8 @@ Database: Postgres `17.6.1.127`
 ## Watch Items
 
 - Keep Auth leaked-password protection enabled in the Supabase dashboard.
+- Keep `swadakta-assistant` deployed with `verify_jwt=true` after every Edge Function redeploy.
+- AI model calls still require a fresh, rotated `OPENAI_API_KEY` stored only as a Supabase/Vercel server-side secret. Do not reuse any key that was pasted into chat or a browser field.
 - Auth email deliverability is not cleared until custom SMTP or a reviewed production sender is configured, the sender domain has SPF/DKIM/DMARC evidence, link tracking does not rewrite auth links, and one confirmation plus one password reset are tested on `https://swadakta.com`.
 - Keep the non-secret Vercel flag `SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED=true` aligned with the dashboard setting after advisors are clean.
 - Before paid launch, complete a live sign-up/password-change test using a deliberately weak/leaked test password and confirm Supabase rejects it.

@@ -34,6 +34,8 @@ Both routes accept authenticated POST requests with:
 
 Both routes require a signed-in Supabase session. Admin operations additionally require the signed-in user's `user_id` to exist in `admin_users`.
 
+Both routes reject AI request bodies over 64KB. Keep raw IDs, payment receipts, private documents, and long evidence bundles out of prompts; store evidence in the app/provider systems and send only the minimum safe summary to AI.
+
 It returns:
 
 ```json
@@ -55,6 +57,8 @@ Both AI routes include a deterministic protected-action preflight. Direct protec
 The app must also work when AI mode is off. In manual mode, AI-only links, the floating assistant, and admin prompt packs are hidden or replaced with manual checklists while the queues, messages, payments, tracking, verification, and admin tools keep working.
 
 The browser helper tries the Supabase Edge Function first. If the Edge Function is unavailable or missing its OpenAI secret, it falls back to the same-origin Vercel Function using the signed-in user's Supabase access token.
+
+The deployed Supabase Edge Function must keep `verify_jwt` enabled. If the function is redeployed, confirm it still requires JWT, still uses the server-side OpenAI secret, and still contains the same protected-action and Wise/bank-transfer guardrails as the Vercel fallback.
 
 ## Operating model
 

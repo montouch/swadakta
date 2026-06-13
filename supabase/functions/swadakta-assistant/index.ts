@@ -40,6 +40,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+const maxJsonBodyBytes = 64 * 1024;
 const safeAssistOnlyPattern =
   /\b(draft|write|summari[sz]e|summary|explain|how|what|why|where|when|guide|steps|instructions|checklist|template|reply|message draft|review|risk|recommend|suggest|prepare|outline|question|yes\/no|need evidence|help me understand)\b/i;
 const directActionPattern =
@@ -163,6 +164,24 @@ function safeContext(value: unknown) {
   return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
 }
 
+async function readJsonBody(req: Request): Promise<AssistPayload> {
+  const contentLength = Number(req.headers.get("content-length") || 0);
+  if (contentLength > maxJsonBodyBytes) {
+    throw new HttpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+  }
+
+  const raw = await req.text();
+  if (new TextEncoder().encode(raw).length > maxJsonBodyBytes) {
+    throw new HttpError("AI request is too large. Keep drafts and context under 64KB.", 413);
+  }
+
+  try {
+    return raw ? (JSON.parse(raw) as AssistPayload) : {};
+  } catch {
+    throw new HttpError("Invalid JSON body.", 400);
+  }
+}
+
 function protectedActionReview(payload: AssistPayload) {
   const text = [payload.task, payload.draft, payload.action, payload.intent]
     .map((value) => safeText(value, 4000))
@@ -280,6 +299,7 @@ function systemPrompt(role: Role) {
     "Never claim Swadakta is a licensed escrow provider, bank, law firm, tax advisor, title office, or identity verification provider.",
     "For identity verification, route users to provider-based checks such as Smile ID, Sumsub, or Youverify. Manual review is only an exception for provider outage, unsupported country or document, mismatch, suspected fraud, legal uncertainty, or sensitive high-value work.",
     "For high-value funds, recommend a regulated escrow/payment provider or staged milestone controls plus founder approval.",
+    "For Wise or bank-transfer payments, you may prepare payment wording and reconciliation checklists, but you must not mark funds paid unless provider-grade evidence or founder approval is already present in the app context.",
     "You may draft replies, quote follow-ups, receiver briefs, proof-review notes, risk summaries, checklists, and safe admin note suggestions.",
     "Never state or imply that you performed an external action outside this response.",
     "Protected actions always require system/provider evidence or founder/admin approval: releasing/refunding money, marking payment paid, marking ID verified, vetting/rejecting/assigning receivers, changing provenance manually, sending WhatsApp/email messages, or giving legal/tax/title/financial advice.",
@@ -345,17 +365,10 @@ Deno.serve(async (req: Request) => {
     return jsonResponse({ error: "Method not allowed." }, 405);
   }
 
-  let payload: AssistPayload;
   try {
-    payload = await req.json();
-  } catch {
-    return jsonResponse({ error: "Invalid JSON body." }, 400);
-  }
-
-  const role = safeRole(payload.role);
-  const authHeader = req.headers.get("authorization");
-
-  try {
+    const payload = await readJsonBody(req);
+    const role = safeRole(payload.role);
+    const authHeader = req.headers.get("authorization");
     const user = await verifiedUser(authHeader);
     const review = protectedActionReview(payload);
 
@@ -373,6 +386,7 @@ Deno.serve(async (req: Request) => {
           "draft_only",
           "protected_action_preflight",
           "founder_approval_for_money_identity_assignment_and_messages",
+          "wise_and_bank_transfer_require_verified_receipt_or_statement",
           "no_legal_tax_title_or_financial_advice",
         ],
         protected_action_review: review,
@@ -441,6 +455,7 @@ Deno.serve(async (req: Request) => {
         "draft_only",
         "protected_action_preflight",
         "founder_approval_for_money_identity_assignment_and_messages",
+        "wise_and_bank_transfer_require_verified_receipt_or_statement",
         "no_legal_tax_title_or_financial_advice",
       ],
       protected_action_review: review,

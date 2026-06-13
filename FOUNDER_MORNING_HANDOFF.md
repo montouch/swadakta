@@ -11,6 +11,7 @@ Last updated: June 14, 2026
 - Admin sign-in: `scripts/check-production-admin-flow.mjs` passes; admin users reach `/admin-ops`.
 - Supabase security advisors: zero security lints.
 - Supabase performance advisors: informational unused-index notes and an Auth connection-allocation scale note only. Keep them until real traffic exists.
+- Supabase Edge AI: `swadakta-assistant` is deployed as version 6 with JWT verification on; unauthenticated live calls are rejected.
 
 ## What Is Usable Now
 
@@ -19,6 +20,7 @@ Last updated: June 14, 2026
 - Clients can prepare quote-first briefs with corridor, goods, proof, weather/place context, and compliance prompts.
 - Receivers can apply for work, accept proof/code-of-conduct terms, and later bid/offer for jobs.
 - Admin can review requests, readiness, verification state, receiver offers, payment gates, founder economics, and AI/manual operating packs.
+- AI is structured for safe assistance: it can draft, summarize, triage, and guide, but it cannot move money, verify ID, assign receivers, send external messages, change admin access, or expose secrets.
 
 ## Do Not Do Yet
 
@@ -57,4 +59,3 @@ $node='C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\n
 - Admin console: `https://swadakta.com/admin` or `https://swadakta.com/admin-ops`
 - Readiness desk: `https://swadakta.com/admin-readiness`
 - Verification desk: `https://swadakta.com/admin-verification`
-
