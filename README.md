@@ -95,6 +95,14 @@ Then open:
 
 ## Production health
 
+Run the full launch verifier before demos, provider setup changes, or paid-pilot rehearsal:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-launch-ready.mjs https://swadakta.com
+```
+
+Add `--strict-auth` after setting `SWADAKTA_E2E_EMAIL`, `SWADAKTA_E2E_PASSWORD`, `SWADAKTA_E2E_ADMIN_EMAIL`, and `SWADAKTA_E2E_ADMIN_PASSWORD` in the shell to require live user/admin sign-in and readiness-summary checks. Do not commit those values.
+
 Run a no-secret bundle check before demos or after Vercel deploys:
 
 ```powershell

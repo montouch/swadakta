@@ -5,12 +5,12 @@ Last updated: June 14, 2026
 ## Live Status
 
 - Domain: `https://swadakta.com` is live on Vercel.
-- Latest production commit verified: `7833c95` (`Polish AI and admin visual fit`).
+- Production commit freshness is enforced by `scripts/deployment-state.mjs`; `scripts/check-launch-ready.mjs` requires `production_current`.
 - Production health: `scripts/check-production.mjs` passes against `https://swadakta.com`.
 - Visual QA: `SWADAKTA_VISUAL_BASE_URL=https://swadakta.com scripts/check-visual-fit.mjs` passes.
 - Normal sign-in: `scripts/check-production-auth-flow.mjs` passes; signed-in users land at `/portal#home` and can open `/verification`.
 - Admin sign-in: `scripts/check-production-admin-flow.mjs` passes; admin users reach `/admin-ops`.
-- Supabase project `srwkoulknropnwwyqslj` is `ACTIVE_HEALTHY`; security advisors return zero lints, including no leaked-password warning.
+- Supabase project `srwkoulknropnwwyqslj` is `ACTIVE_HEALTHY`; security advisors return zero lints, and the Email provider has `PASSWORD_HIBP_ENABLED` checked for leaked-password protection.
 - Supabase performance advisors: informational unused-index notes and an Auth connection-allocation scale note only. Keep them until real traffic exists.
 - Supabase Edge AI: `swadakta-assistant` is deployed as version 6 with JWT verification on; unauthenticated live calls are rejected.
 
@@ -48,6 +48,7 @@ Run from `C:\Users\brown\Documents\GitHub\swadakta`:
 
 ```powershell
 $node='C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe'
+& $node scripts/check-launch-ready.mjs https://swadakta.com
 & $node scripts/deployment-state.mjs
 & $node scripts/check-production.mjs
 $env:SWADAKTA_VISUAL_BASE_URL='https://swadakta.com'
@@ -57,6 +58,7 @@ Remove-Item Env:\SWADAKTA_VISUAL_BASE_URL
 ```
 
 `scripts/live-readiness-summary.mjs` needs the admin test email/password in environment variables. Do not commit those values.
+Use `scripts/check-launch-ready.mjs https://swadakta.com --strict-auth` when those E2E credentials are set and a paid-pilot rehearsal needs user/admin sign-in proof.
 
 ## Admin Entry
 
