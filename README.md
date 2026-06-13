@@ -141,6 +141,12 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 
 The register maps every owner-controlled Vercel flag and Paystack/Flutterwave expansion flag to the proof required before it can be set to `true`.
 
+Run the UX simplicity guard after changing Home, Brief, Find Jobs, or account copy. It keeps the Stitch-led experience visual-first by checking that the account dashboard, brief flow, and job-finding areas stay compact and low-copy:
+
+```powershell
+C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe scripts/check-ux-simplicity.mjs
+```
+
 Run only the local secret scanner when changing env, payment, AI, provider, or webhook code:
 
 ```powershell

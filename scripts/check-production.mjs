@@ -1569,6 +1569,7 @@ runSecretScan(failures);
 runLocalScript(failures, "scripts/check-vercel-security-headers.mjs", "Local Vercel security header check passed");
 runLocalScript(failures, "scripts/check-ai-protected-preflight.mjs", "Local AI protected-action preflight check passed");
 runLocalScript(failures, "scripts/check-founder-evidence.mjs", "Local founder evidence register check passed");
+runLocalScript(failures, "scripts/check-ux-simplicity.mjs", "Local UX simplicity guard passed");
 runLocalScript(failures, "scripts/check-supabase-contract.mjs", "Local Supabase contract check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
