@@ -28,7 +28,7 @@ Last checked: June 13, 2026
 ## Local Release Queue
 
 - Current local release marker: `2026-06-13-launch-readiness-batch-v1`
-- Local commits queued behind the Vercel rate limit: `36`
+- Local commits queued behind the Vercel rate limit: `37`
 - Production is still on `2026-06-13-route-safe-sumsub-webhook-v1` until one clean push/deploy succeeds after the rate-limit window resets.
 - Do not judge `swadakta.com` by the new local features until `/release.json` on production matches the local release marker.
 
@@ -70,6 +70,7 @@ Queued local release contents:
 34. Decimal-safe payment reconciliation compares provider payments and saved quotes in minor units, preserves cents from Stripe/Paystack/Flutterwave/PayPal evidence, and blocks stale browser quote amounts that differ by cents from the stored request.
 35. Vercel security-header regression checks guard the apex/www redirect, Sumsub webhook rewrite, global CSP/HSTS/no-sniff/frame/referrer/permissions headers, and no-store/noindex rules for private account and admin surfaces.
 36. Account-profile access regression checks guard the signed-in profile table grants, own-row/admin RLS policies, safe read/save RPC grants, and frontend fallback that lets users enter the account while paid work remains locked if profile storage is unavailable.
+37. Full-page Swadakta AI chat layout guard turns the assistant page into a stable compact-header/message-pane/composer grid, keeps the quick-action bar inside the header on mobile, and gives the conversation area the majority of the visible screen.
 
 Before the next push:
 

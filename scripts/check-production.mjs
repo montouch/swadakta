@@ -454,6 +454,7 @@ const requiredAssistantHtmlMarkers = [
   "data-ai-disabled-when-off",
   "data-ai-mode-status",
   "assistant-mobile-chat-viewport-fix",
+  "assistant-chat-full-height-grid",
   'href="brief.html"',
 ];
 const requiredDockMarkers = [

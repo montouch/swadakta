@@ -54,6 +54,26 @@
           linear-gradient(180deg, rgba(250, 248, 255, 0.42), rgba(255, 255, 255, 0.18)),
           rgba(255, 255, 255, 0.16);
       }
+      /* assistant-chat-full-height-grid */
+      .assistant-chat-shell {
+        display: grid !important;
+        grid-template-rows: auto minmax(0, 1fr) auto;
+        height: 100%;
+      }
+      .assistant-chat-header {
+        min-height: 0;
+        max-height: min(11.5rem, 28vh);
+        overflow-y: auto;
+        overscroll-behavior: contain;
+      }
+      .assistant-message-list {
+        min-height: 0 !important;
+        max-height: 100%;
+        overscroll-behavior: contain;
+      }
+      .chat-composer {
+        min-height: 0;
+      }
       @media (max-width: 640px) {
         main {
           padding: 0.75rem !important;
@@ -120,19 +140,28 @@
           min-height: 0;
           border-radius: 1.2rem;
         }
-        .assistant-chat-shell > header {
-          max-height: 34dvh;
-          overflow-y: auto;
-          padding: 0.55rem !important;
+        .assistant-chat-header {
+          max-height: 9rem;
+          overflow: hidden;
+          padding: 0.5rem !important;
+        }
+        .assistant-header-main {
+          gap: 0.35rem !important;
+        }
+        .assistant-header-controls {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) auto;
+          width: 100%;
+          gap: 0.4rem !important;
         }
         .assistant-chat-shell > header .h-11.w-11 {
-          height: 2.25rem;
-          width: 2.25rem;
+          height: 2.1rem;
+          width: 2.1rem;
           border-radius: 0.9rem;
         }
         .assistant-chat-shell h1 {
-          font-size: 1.25rem !important;
-          line-height: 1.55rem !important;
+          font-size: 1.12rem !important;
+          line-height: 1.32rem !important;
         }
         #assistant-context-copy,
         [data-ai-mode-status] {
@@ -140,17 +169,18 @@
         }
         #assistant-task {
           width: 100%;
-          height: 2.15rem;
+          height: 2rem;
           font-size: 0.78rem;
+          min-width: 0;
         }
         .assistant-chat-shell header a[href="portal.html#home"] {
           flex: 1 1 auto;
-          height: 2.15rem;
+          height: 2rem;
           font-size: 0.78rem;
         }
         .assistant-chat-shell [aria-label="AI quick actions"] {
           flex-wrap: nowrap !important;
-          margin-top: 0.4rem !important;
+          margin-top: 0.25rem !important;
           overflow-x: auto;
           scrollbar-width: none;
           padding-bottom: 0 !important;
@@ -159,14 +189,14 @@
           display: none;
         }
         .assistant-quick-action {
-          height: 2.05rem !important;
-          padding-inline: 0.65rem !important;
+          height: 1.85rem !important;
+          padding-inline: 0.55rem !important;
           font-size: 0.74rem !important;
           white-space: nowrap;
         }
         .assistant-message-list {
           flex: 1 1 auto;
-          min-height: 56dvh;
+          min-height: 0 !important;
           padding-block: 0.75rem !important;
         }
         .chat-composer {
@@ -180,18 +210,18 @@
         }
       }
       @media (max-width: 767px) and (max-height: 700px) {
-        .assistant-chat-shell > header {
-          max-height: 30dvh;
+        .assistant-chat-header {
+          max-height: 8.6rem;
         }
         .assistant-chat-shell h1 {
-          font-size: 1.1rem !important;
-          line-height: 1.35rem !important;
+          font-size: 1.02rem !important;
+          line-height: 1.22rem !important;
         }
         .assistant-chat-shell [aria-label="AI quick actions"] {
           margin-top: 0.3rem !important;
         }
         .assistant-message-list {
-          min-height: 58dvh;
+          min-height: 0 !important;
         }
       }
     </style>
@@ -220,8 +250,8 @@
         </aside>
 
         <section class="assistant-chat-shell glass-panel flex min-h-0 min-w-0 flex-col overflow-hidden rounded-[1.6rem]">
-          <header class="shrink-0 border-b border-outline-variant/30 bg-white/44 px-4 py-4 sm:px-6">
-            <div class="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <header class="assistant-chat-header shrink-0 border-b border-outline-variant/30 bg-white/44 px-4 py-4 sm:px-6">
+            <div class="assistant-header-main flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
               <div class="min-w-0">
                 <div class="flex items-center gap-3">
                   <span class="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-primary text-white shadow-[0_14px_30px_rgba(16, 26, 58, 0.26)]">
@@ -236,7 +266,7 @@
                 <p class="mt-2 text-sm text-on-surface-variant" data-no-ai-copy hidden>AI is off. You can still use Home, Jobs, Messages, Payments, Verification, and Resolution without the assistant.</p>
                 <p class="mt-2 text-xs font-bold text-primary" data-ai-mode-status data-ai-status-on="AI mode is on: ask for drafts, route checks, blockers, and next safe steps." data-ai-status-off="Manual mode is on: use the tool rail and suggested links without chat automation.">AI mode is on: ask for drafts, route checks, blockers, and next safe steps.</p>
               </div>
-              <div class="flex shrink-0 flex-wrap items-center gap-2">
+              <div class="assistant-header-controls flex shrink-0 flex-wrap items-center gap-2">
                 <select class="h-11 max-w-full rounded-full border border-outline-variant/40 bg-white/70 px-4 text-sm" id="assistant-task" data-ai-disabled-when-off aria-label="Assistant task">
                   <option>Explain my next step</option>
                   <option>What happens after verification is requested?</option>
@@ -248,7 +278,7 @@
                 <a class="inline-flex h-11 items-center justify-center rounded-full border border-outline-variant/40 bg-white/70 px-4 font-label text-sm text-primary" href="portal.html#home">Home</a>
               </div>
             </div>
-            <div class="mt-4 flex gap-2 overflow-x-auto pb-1" data-ai-only aria-label="AI quick actions">
+            <div class="assistant-quick-actions mt-4 flex gap-2 overflow-x-auto pb-1" data-ai-only aria-label="AI quick actions">
               <button class="assistant-quick-action inline-flex h-10 shrink-0 items-center gap-2 rounded-full border border-outline-variant/40 bg-white/76 px-4 font-label text-sm text-on-surface hover:border-primary hover:text-primary" type="button" data-task="Explain my next step" data-prompt="I need help choosing the next step from my Swadakta account. Explain where to go first and what is blocked until verification." data-links="portal,corridor,verification">
                 <span class="material-symbols-outlined text-[18px]">route</span>Next step
               </button>
