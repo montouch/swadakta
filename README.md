@@ -110,6 +110,7 @@ C:\Users\brown\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin
 ```
 
 For live production database confirmation, run `supabase/live_contract_check.sql` in the Supabase SQL editor or through the Supabase MCP SQL tool. The expected result is `ok = total` and `missing_or_bad = null` for every section.
+After using Supabase provider evidence, update `SUPABASE_PRODUCTION_STATUS.md` and run `scripts/check-supabase-production-evidence.mjs`; the production health suite now fails if the documented security-advisor, RLS, Edge Function, and performance-advisor evidence goes stale.
 
 The manual GitHub Action named `Production Health` runs the same launch verifier with `--skip-visual`; the full desktop/mobile visual pass remains part of local and Codex desktop verification.
 

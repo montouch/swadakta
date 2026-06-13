@@ -8,6 +8,14 @@ Database: Postgres `17.6.1.127`
 
 ## Confirmed Applied
 
+- Provider connector refresh on June 14, 2026 confirmed:
+  - project status `ACTIVE_HEALTHY` for `srwkoulknropnwwyqslj`.
+  - Production table listing shows the 10 launch-critical public tables with RLS enabled: `admin_users`, `account_profiles`, `service_requests`, `partner_applications`, `field_updates`, `fund_milestones`, `identity_verification_requests`, `resolution_cases`, `job_offers`, and `account_notifications`.
+  - `storage.buckets` has one production bucket row and the storage tables keep RLS enabled.
+  - `swadakta-assistant` is `ACTIVE`, version 6, and `verify_jwt=true`.
+  - `noop` remains `ACTIVE` as a harmless deploy probe.
+  - Supabase security advisors returned zero security warnings.
+  - Performance advisors returned INFO-only findings: unused-index notes are expected while the pilot tables still have little traffic, and the Auth DB connection-allocation INFO note is a scale watch item, not a paid-pilot blocker.
 - Live SQL refresh on June 14, 2026 confirmed:
   - 10/10 launch-critical public tables exist with RLS enabled.
   - 28/28 launch-critical RPCs exist, including `app_private.is_admin()` and `app_private.resolution_ai_triage(...)`.
@@ -47,3 +55,4 @@ Database: Postgres `17.6.1.127`
 - Keep the non-secret Vercel flag `SWADAKTA_OWNER_LEAKED_PASSWORD_PROTECTION_ENABLED=true` aligned with the dashboard setting after advisors are clean.
 - Before paid launch, complete a live sign-up/password-change test using a deliberately weak/leaked test password and confirm Supabase rejects it.
 - Supabase performance advisors currently show only informational unused-index notes for new workflow tables plus the Auth connection-allocation scale note. Keep the indexes until real traffic proves they are unnecessary.
+- Do not remove pilot workflow indexes until production traffic proves they are unnecessary; the current INFO-only unused-index findings are expected before real use.

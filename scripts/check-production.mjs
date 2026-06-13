@@ -1571,6 +1571,7 @@ runLocalScript(failures, "scripts/check-ai-protected-preflight.mjs", "Local AI p
 runLocalScript(failures, "scripts/check-founder-evidence.mjs", "Local founder evidence register check passed");
 runLocalScript(failures, "scripts/check-ux-simplicity.mjs", "Local UX simplicity guard passed");
 runLocalScript(failures, "scripts/check-supabase-contract.mjs", "Local Supabase contract check passed");
+runLocalScript(failures, "scripts/check-supabase-production-evidence.mjs", "Local Supabase production evidence check passed");
 runLocalScript(failures, "scripts/check-account-profile-access.mjs", "Local account profile access check passed");
 runLocalScript(failures, "scripts/check-identity-status-mapping.mjs", "Local identity status mapping check passed");
 runLocalScript(failures, "scripts/check-sumsub-webhook-guard.mjs", "Local Sumsub webhook guard check passed");
