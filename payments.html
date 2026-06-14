@@ -6,7 +6,7 @@
     <title>Payments & Pricing | Swadakta</title>
     <meta
       name="description"
-      content="Swadakta payment rails, quote-first pricing, service fees, provider-held milestone controls, M-Pesa, Stripe, PayPal, bank transfer, Wise fallback, and payout boundaries."
+      content="Swadakta payment rails, quote-first pricing, service fees, provider-held milestone controls, M-Pesa, Stripe, PayPal, bank transfer, manual fallback routes, and payout boundaries."
     />
     <link rel="canonical" href="https://swadakta.com/payments" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -137,8 +137,8 @@
                 <div class="rounded-2xl bg-white/72 border border-outline-variant/35 p-4 flex gap-3">
                   <span class="material-symbols-outlined text-primary">account_balance</span>
                   <div>
-                    <strong>Wise stays hidden as fallback</strong>
-                    <p class="mt-1 text-sm text-on-surface-variant">Wise is used only when simpler rails fail or do not fit because it adds manual reconciliation.</p>
+                    <strong>Manual fallbacks stay admin-only</strong>
+                    <p class="mt-1 text-sm text-on-surface-variant">Manual transfer routes are used only when simpler rails fail or do not fit because they add reconciliation work.</p>
                   </div>
                 </div>
               </div>
@@ -222,7 +222,7 @@
               <h3 class="mt-2 font-display text-2xl font-extrabold">Outside Africa to Africa</h3>
               <p class="mt-2 text-on-surface-variant">Stripe or PayPal first for the client, Smile ID or Sumsub for the receiver, and local payout only after proof and milestone review.</p>
               <div class="mt-4 rounded-2xl bg-primary/10 border border-primary/20 p-4 text-sm text-on-surface-variant">
-                Wise stays fallback-only. High-value or restricted work stays founder-reviewed.
+                Manual fallback routes stay admin-only. High-value or restricted work stays founder-reviewed.
               </div>
             </div>
           </form>
@@ -309,7 +309,7 @@
               <div class="flex items-start justify-between gap-4">
                 <div>
                   <p class="font-label text-xs uppercase tracking-[0.14em] text-on-surface-variant">Fallback gate</p>
-                  <h3 class="mt-2 font-display text-xl font-bold">Bank / Wise</h3>
+                  <h3 class="mt-2 font-display text-xl font-bold">Bank fallback</h3>
                 </div>
                 <span class="grid h-11 w-11 place-items-center rounded-2xl bg-primary/10 text-primary"><span class="material-symbols-outlined">sync_alt</span></span>
               </div>
@@ -575,7 +575,6 @@
                   <option value="paypal">PayPal order</option>
                   <option value="mpesa">M-Pesa Daraja / Paybill</option>
                   <option value="bank">Bank transfer with receipt match</option>
-                  <option value="wise">Wise fallback after simpler rails fail</option>
                   <option value="escrow">Regulated escrow or provider-held funds</option>
                 </select>
               </label>
@@ -666,7 +665,7 @@
             <p class="font-label text-sm uppercase tracking-[0.18em] text-primary">Payment rails</p>
             <h2 class="mt-3 font-display text-3xl md:text-4xl font-extrabold">Use the lowest-friction safe rail first.</h2>
             <p class="mt-4 text-on-surface-variant">
-              Swadakta should not make the operations team reconcile every payment manually. The normal order is card or PayPal for global clients, M-Pesa for suitable KES collections, bank transfer where a receipt trail is clean, and Wise only as an exception fallback.
+              Swadakta should not make the operations team reconcile every payment manually. The normal order is card or PayPal for global clients, M-Pesa for suitable KES collections, and bank transfer only where a receipt trail is clean.
             </p>
           </div>
           <div class="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -687,7 +686,7 @@
             </article>
             <article class="rounded-3xl bg-white/78 border border-outline-variant/40 p-5">
               <span class="material-symbols-outlined text-primary text-3xl">sync_alt</span>
-              <h3 class="mt-3 font-display text-lg font-bold">Bank / Wise fallback</h3>
+              <h3 class="mt-3 font-display text-lg font-bold">Bank fallback</h3>
               <p class="mt-2 text-sm text-on-surface-variant">Manual rails require matching amount, sender, date, and Swadakta reference before funds count as protected.</p>
             </article>
           </div>
@@ -756,7 +755,7 @@
               <p class="mt-2 text-on-surface-variant">Use Daraja STK or Paybill only after business approval, callback setup, and receipt evidence. Provider-payout milestones still need proof review.</p>
               <ul class="mt-4 grid gap-2 text-sm text-on-surface-variant list-disc pl-5">
                 <li>Provider confirmation is separate from receiver payout release.</li>
-                <li>Bank or Wise remains fallback when simpler rails fail.</li>
+                <li>Manual transfer routes remain fallback when simpler rails fail.</li>
               </ul>
             </div>
           </form>
@@ -893,7 +892,6 @@
           paypal: "PayPal order",
           mpesa: "M-Pesa Daraja or Paybill",
           bank: "bank transfer after receipt matching",
-          wise: "Wise fallback after simpler rails fail",
           escrow: "regulated escrow or provider-held payment route",
         }[rail] || "provider payment rail";
       }
@@ -960,7 +958,7 @@
           return {
             eyebrow: "Founder-reviewed route",
             title: "China sourcing or supplier buying",
-            rail: "Quote-only first. Use Stripe or PayPal for a reviewed deposit where supported; Wise or bank only as reconciled fallback.",
+            rail: "Quote-only first. Use Stripe or PayPal for a reviewed deposit where supported; manual transfer only as a reconciled fallback.",
             identity: "Sumsub for global parties; receiver/source helper needs supplier proof, media proof, and item legality checks.",
             visibility: "Founder-reviewed quote only.",
             hardStop: "Do not accept restricted, counterfeit, battery, medicine, food, weapon, brand-infringing, or customs-sensitive goods without official evidence.",
@@ -972,8 +970,8 @@
             eyebrow: "Likely route class",
             title: "Outside Africa to Africa",
             rail: kenyaRoute && currency === "KES"
-              ? "Use Stripe or PayPal when the client can pay globally; M-Pesa can support Kenya KES after Daraja live approval. Wise stays fallback-only."
-              : "Stripe or PayPal first for global card/client payments. Use Wise only after simpler rails fail or do not fit.",
+              ? "Use Stripe or PayPal when the client can pay globally; M-Pesa can support Kenya KES after Daraja live approval. Manual fallback stays admin-only."
+              : "Stripe or PayPal first for global card/client payments. Use manual fallback only after simpler rails fail or do not fit.",
             identity: "Sumsub for the client; Smile ID or Sumsub for the African receiver depending on document coverage.",
             visibility: physicalOrSensitive ? "Founder-reviewed until goods/rules/proof are clear." : "Can be quoted for low-risk service work after readiness gates pass.",
             hardStop: "Do not collect payment if receiver ID, route rules, cost plan, or provider payment evidence is missing.",
@@ -988,7 +986,7 @@
               ? "M-Pesa/Daraja first for Kenya KES after business approval, callback, and receipt evidence."
               : africaExpansionCurrency
                 ? "Paystack or Flutterwave can be considered only after merchant, settlement, webhook, and evidence mapping pass."
-                : "Use approved Africa rail where available; otherwise quote in supported global currency or use bank/Wise fallback with reconciliation.",
+                : "Use approved Africa rail where available; otherwise quote in supported global currency or use manual fallback with reconciliation.",
             identity: "Smile ID first where supported; Sumsub or approved local provider fallback.",
             visibility: africaExpansionCurrency || kenyaRoute ? "Pilot-ready after provider evidence." : "Quote-request only until country/currency rail is proven.",
             hardStop: "Do not show M-Pesa, Paystack, or Flutterwave as normal choices until provider evidence and settlement path are proven.",
@@ -1001,7 +999,7 @@
             title: "Africa to overseas purchase or errand",
             rail: kenyaRoute && currency === "KES"
               ? "Use approved Africa rail for the client where available, then keep overseas purchase/payout founder-controlled."
-              : "Use global card/PayPal if the client can pay that way; use bank/Wise only as a reconciled fallback.",
+              : "Use global card/PayPal if the client can pay that way; use manual fallback only as a reconciled exception.",
             identity: "Smile ID or local provider for the African client; Sumsub for receiver abroad.",
             visibility: "Founder-reviewed pilot only until customs and parcel rules are proven.",
             hardStop: "Do not accept restricted goods, medicines, batteries, food, valuables, or customs-sensitive parcels without official carrier/customs checks.",
@@ -1011,7 +1009,7 @@
         return {
           eyebrow: "Global service route",
           title: "Non-Africa global corridor",
-          rail: "Stripe or PayPal first for supported currencies. Wise remains hidden fallback for cases that cannot use normal checkout.",
+          rail: "Stripe or PayPal first for supported currencies. Manual fallback stays admin-only for cases that cannot use normal checkout.",
           identity: "Sumsub first, then approved provider fallback if country or document coverage requires it.",
           visibility: physicalOrSensitive ? "Quote-request only until item/rules are checked." : "Can be quoted for low-risk service work after readiness gates pass.",
           hardStop: "Do not promise customs, tax, legal, immigration, or regulated delivery outcomes.",
@@ -1026,7 +1024,7 @@
           "Record provider reference before funds count as provider-confirmed; request receiver payout through the provider only after proof review.",
         ];
         let title = "Swadakta-reviewed Africa payment route";
-        let rail = "Stripe or PayPal first if the client pays in AUD/USD/GBP/EUR; bank or Wise fallback if provider checkout is unsuitable.";
+        let rail = "Stripe or PayPal first if the client pays in AUD/USD/GBP/EUR; manual fallback if provider checkout is unsuitable.";
 
         if (country === "kenya" && currency === "KES") {
           title = "M-Pesa first for Kenya KES jobs";
@@ -1039,7 +1037,7 @@
         } else if (flutterwaveCandidateCurrencies.has(currency)) {
           title = "Flutterwave pilot candidate";
           rail = "Use Flutterwave as an expansion candidate after merchant, country, currency, and webhook checks.";
-          checks.push("If local settlement is unclear, quote in a supported global currency and use Stripe, PayPal, or bank/Wise fallback.");
+          checks.push("If local settlement is unclear, quote in a supported global currency and use Stripe, PayPal, or manual fallback.");
         }
 
         if (highValue) checks.push("High-value work needs regulated escrow/payment-provider review or staged provider-held payment evidence.");
