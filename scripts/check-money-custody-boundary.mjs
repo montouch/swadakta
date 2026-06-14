@@ -35,6 +35,27 @@ for (const [file, marker] of [
   assertIncludes(file, marker);
 }
 
+const stitchImportCustodySanitizers = [
+  [
+    "Funds are held in secure escrow and released only when milestones are digitally verified by both parties.",
+    "Funds move through provider-confirmed payment rails, with milestone release only after proof and user approval are recorded.",
+  ],
+  [
+    "Funds held under milestone rules and ID-verified partners. We bridge the gap with transparency and safety.",
+    "Payments move through provider-confirmed rails and ID-verified partners. We bridge the gap with transparency and safety.",
+  ],
+];
+const stitchApplyUi = read("scripts/apply-stitch-ui.mjs");
+for (const [unsafeSource, safeReplacement] of stitchImportCustodySanitizers) {
+  const sourceIndex = stitchApplyUi.indexOf(unsafeSource);
+  const replacementIndex = stitchApplyUi.indexOf(safeReplacement);
+  assert.ok(sourceIndex !== -1, `scripts/apply-stitch-ui.mjs must sanitize Stitch source copy: ${unsafeSource}`);
+  assert.ok(
+    replacementIndex !== -1 && sourceIndex < replacementIndex,
+    `scripts/apply-stitch-ui.mjs must replace unsafe Stitch custody copy with: ${safeReplacement}`,
+  );
+}
+
 for (const file of [
   "payments.html",
   "brief.html",
