@@ -592,7 +592,7 @@ const requiredBriefScriptMarkers = [
 ];
 const requiredTrackingMarkers = [
   "renderPaymentRailPlan",
-  "Wise stays hidden as a fallback rail",
+  "Manual fallback stays hidden",
   "AI can explain and draft updates",
   "tracking-resolution-link",
   "renderResolutionCases",
@@ -609,7 +609,7 @@ const requiredTrackingMarkers = [
 const requiredResolutionPageMarkers = [
   "Resolution Center",
   "Protected decision: AI cannot refund, approve provider payout",
-  "Stripe / PayPal / M-Pesa / Wise provider evidence",
+  "Stripe / PayPal / M-Pesa / bank/manual provider evidence",
   "Refund and dispute evidence ladder",
   "Release pause is automatic",
   "Safety pause",
@@ -1246,6 +1246,9 @@ const forbiddenUserFacingIncompleteMarkers = [
   ["stitch-portal.js", "Wise"],
   ["stitch-portal.js", "Wise stays a fallback"],
   ["stitch-portal.js", "Wise stays hidden"],
+  ["stitch-tracking.js", "Wise"],
+  ["resolution.html", "Wise"],
+  ["rules.html", "Wise"],
   ["tracking.html", "Professional Marketplace"],
   ["messages.html", "Professional Marketplace"],
   ["notifications.html", "Professional Marketplace"],

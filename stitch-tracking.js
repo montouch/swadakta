@@ -181,9 +181,9 @@
         evidence: "M-Pesa receipt or CheckoutRequestID",
       },
       wise: {
-        label: "Wise fallback request",
-        copy: "Wise is a back-office fallback after simpler rails are unsuitable or fail. It needs receipt or statement reconciliation before funds count as protected.",
-        evidence: "Wise transfer reference",
+        label: "Manual transfer fallback",
+        copy: "Manual transfer fallback is back-office only after simpler rails are unsuitable or fail. It needs receipt or statement reconciliation before funds count as protected.",
+        evidence: "Fallback receipt or statement reference",
       },
       bank: {
         label: "Bank transfer reference",
@@ -263,7 +263,7 @@
     if (paymentRisk) {
       paymentRisk.textContent =
         method === "wise"
-          ? "Wise stays hidden as a fallback rail because it adds manual reconciliation. AI can draft notes, but it cannot mark Wise funds paid or release milestones."
+          ? "Manual fallback stays hidden because it adds reconciliation work. AI can draft notes, but it cannot mark funds paid or release milestones."
           : "AI can explain and draft updates, but it cannot mark money paid, assign a receiver, or release/refund funds.";
     }
   }

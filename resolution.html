@@ -99,7 +99,7 @@
               Protected decision: AI cannot refund, approve provider payout, mark payment paid, replace a receiver, approve ID, or clear legal/import risk.
             </p>
             <div class="mt-5 grid gap-3 text-sm text-on-surface-variant">
-              <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">Stripe / PayPal / M-Pesa / Wise provider evidence should be recorded before any payment action.</p>
+              <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">Stripe / PayPal / M-Pesa / bank/manual provider evidence should be recorded before any payment action.</p>
               <p class="rounded-2xl bg-white/70 border border-outline-variant/40 p-4">Safety, legal, restricted goods, refund, and milestone-release requests automatically ask for founder review.</p>
             </div>
           </div>
@@ -134,7 +134,7 @@
               </div>
               <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
                 <span class="font-label text-primary">3. Provider rules decide the money rail</span>
-                <p class="mt-1">Stripe, PayPal, M-Pesa, Wise, bank, or regulated escrow/provider rules control the actual refund, reversal, dispute, or chargeback path.</p>
+                <p class="mt-1">Stripe, PayPal, M-Pesa, bank, or regulated escrow/provider rules control the actual refund, reversal, dispute, or chargeback path.</p>
               </div>
               <div class="rounded-2xl bg-white/72 border border-outline-variant/40 p-4">
                 <span class="font-label text-primary">4. Human approval is required for money</span>
@@ -149,7 +149,7 @@
               <a class="text-on-surface-variant hover:text-primary" href="https://docs.stripe.com/disputes" target="_blank" rel="noreferrer">Stripe dispute evidence</a>
               <a class="text-on-surface-variant hover:text-primary" href="https://developer.paypal.com/docs/disputes/integration-guide/" target="_blank" rel="noreferrer">PayPal dispute flow</a>
               <a class="text-on-surface-variant hover:text-primary" href="https://www.safaricom.co.ke/main-mpesa/m-pesa-for-you/getting-started/m-pesa-reversal" target="_blank" rel="noreferrer">M-Pesa reversal guidance</a>
-              <a class="text-on-surface-variant hover:text-primary" href="https://docs.wise.com/" target="_blank" rel="noreferrer">Wise API docs</a>
+              <a class="text-on-surface-variant hover:text-primary" href="payments.html">Payment rail rules</a>
             </div>
           </div>
         </div>
@@ -246,7 +246,7 @@
 
             <label class="grid gap-2">
               <span class="font-label text-sm text-on-surface-variant">Provider reference</span>
-              <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-provider-reference" placeholder="Stripe, PayPal, M-Pesa, Wise, bank, receipt, or courier reference" type="text" />
+              <input class="h-12 rounded-2xl border border-outline-variant/50 bg-white/80 px-4 outline-none focus:border-primary" id="resolution-provider-reference" placeholder="Stripe, PayPal, M-Pesa, bank, receipt, or courier reference" type="text" />
             </label>
 
             <label class="grid gap-2">
