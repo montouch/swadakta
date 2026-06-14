@@ -1047,7 +1047,7 @@
         "AI cannot mark ID verified, release or refund money, override provider evidence, or assign paid work by itself.",
         "Restricted goods, legal authority, tax, customs, high-value property, and dispute exceptions need provider or founder evidence.",
         "Receiver public trust only improves after verified identity, real proof, completed jobs, and honest reviews.",
-        "Wise stays a fallback path only when primary automatic payment rails fail.",
+        "Manual transfer fallback stays admin-only when primary automatic payment rails fail.",
       ]
         .map((item) => `<li>${escapeHtml(item)}</li>`)
         .join("");
@@ -1320,7 +1320,7 @@
     if (routeLooksAfrican) {
       rails.push("Paystack or Flutterwave can fit supported African corridors after provider setup, settlement, and webhook checks.");
     }
-    rails.push("Wise stays hidden as a fallback only when the normal automatic rails fail or are unsuitable.");
+    rails.push("Manual fallback stays admin-only when the normal automatic rails fail or are unsuitable.");
     return rails.join(" ");
   }
 
