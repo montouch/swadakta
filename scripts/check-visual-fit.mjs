@@ -155,6 +155,28 @@ try {
             }))
             .slice(0, 12);
 
+          const labelOverflowControls = Array.from(document.querySelectorAll("button, a, [role='tab'], [role='button']"))
+            .filter(visible)
+            .map((el) => {
+              const controlText = text(el) || el.getAttribute("aria-label") || el.getAttribute("title") || "";
+              if (!controlText || controlText.length < 3 || isMaterialIcon(el)) return null;
+              const box = el.getBoundingClientRect();
+              const widthOverflow = Math.max(0, el.scrollWidth - Math.ceil(el.clientWidth || box.width));
+              const heightOverflow = Math.max(0, el.scrollHeight - Math.ceil(el.clientHeight || box.height));
+              if (widthOverflow <= 4 && heightOverflow <= 12) return null;
+              return {
+                tag: el.tagName.toLowerCase(),
+                text: controlText.slice(0, 90),
+                className: String(el.className || "").slice(0, 120),
+                widthOverflow,
+                heightOverflow,
+                width: Math.round(box.width),
+                height: Math.round(box.height),
+              };
+            })
+            .filter(Boolean)
+            .slice(0, 12);
+
           const clickTargetsTooSmall = Array.from(document.querySelectorAll("button, a, input, select, textarea"))
             .filter(visible)
             .map((el) => {
@@ -183,7 +205,55 @@ try {
             .filter(Boolean)
             .slice(0, 12);
 
-          return { docOverflow, overflowElements, unlabeledIconControls, clickTargetsTooSmall };
+          const rowCandidates = Array.from(document.querySelectorAll("button, a, [role='tab'], [role='button']"))
+            .filter(visible)
+            .map((el) => {
+              const box = el.getBoundingClientRect();
+              const controlText = text(el) || el.getAttribute("aria-label") || el.getAttribute("title") || "";
+              const className = String(el.className || "");
+              const looksLikeTabOrChip =
+                /tab|chip|pill|filter|top-link|rounded|inline-flex|segment|nav/i.test(className) ||
+                ["tab", "button"].includes(el.getAttribute("role") || "") ||
+                el.tagName === "BUTTON";
+              if (!looksLikeTabOrChip || box.width < 30 || box.height < 24 || !controlText) return null;
+              return {
+                text: controlText.slice(0, 60),
+                className: className.slice(0, 90),
+                top: Math.round(box.top),
+                centerY: Math.round(box.top + box.height / 2),
+                height: Math.round(box.height),
+                width: Math.round(box.width),
+              };
+            })
+            .filter(Boolean)
+            .sort((a, b) => a.top - b.top || a.width - b.width);
+
+          const rows = [];
+          for (const item of rowCandidates) {
+            const row = rows.find((candidate) => Math.abs(candidate.top - item.top) <= 8);
+            if (row) row.items.push(item);
+            else rows.push({ top: item.top, items: [item] });
+          }
+
+          const asymmetricControlRows = rows
+            .filter((row) => row.items.length >= 3)
+            .map((row) => {
+              const heights = row.items.map((item) => item.height);
+              const centers = row.items.map((item) => item.centerY);
+              const heightDelta = Math.max(...heights) - Math.min(...heights);
+              const centerDelta = Math.max(...centers) - Math.min(...centers);
+              if (heightDelta <= 12 && centerDelta <= 8) return null;
+              return {
+                top: row.top,
+                heightDelta,
+                centerDelta,
+                controls: row.items.slice(0, 8).map(({ text, width, height }) => ({ text, width, height })),
+              };
+            })
+            .filter(Boolean)
+            .slice(0, 8);
+
+          return { docOverflow, overflowElements, unlabeledIconControls, labelOverflowControls, clickTargetsTooSmall, asymmetricControlRows };
         });
 
         if (result.docOverflow > 2) failures.push(`${label(route, viewport)} has page horizontal overflow ${result.docOverflow}px`);
@@ -193,8 +263,14 @@ try {
         if (result.unlabeledIconControls.length) {
           failures.push(`${label(route, viewport)} has unlabeled icon controls: ${JSON.stringify(result.unlabeledIconControls, null, 2)}`);
         }
+        if (result.labelOverflowControls.length) {
+          failures.push(`${label(route, viewport)} has control labels that do not fit: ${JSON.stringify(result.labelOverflowControls, null, 2)}`);
+        }
         if (result.clickTargetsTooSmall.length) {
           failures.push(`${label(route, viewport)} has very small click targets: ${JSON.stringify(result.clickTargetsTooSmall, null, 2)}`);
+        }
+        if (result.asymmetricControlRows.length) {
+          failures.push(`${label(route, viewport)} has asymmetric tab/chip/button rows: ${JSON.stringify(result.asymmetricControlRows, null, 2)}`);
         }
       } catch (error) {
         failures.push(`${label(route, viewport)} failed visual check: ${error.message}`);
